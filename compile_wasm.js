@@ -6,7 +6,8 @@ const watFiles = [
   'wasm/isa.wat',
   'wasm/ledger_replay.wat',
   'wasm/account_registry.wat',
-  'wasm/sha256.wat'
+  'wasm/sha256.wat',
+  'wasm/worm_frame.wat'
 ];
 
 async function compileAll() {
