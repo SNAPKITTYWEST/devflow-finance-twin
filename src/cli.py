@@ -1,15 +1,9 @@
 import argparse
 import sys
 from pathlib import Path
-
-try:
-    from worm import WormStorageEngine
-    from twin import FinanceTwinEngine
-    from quantum import QuantumAbstractionLayer
-except ImportError:
-    from src.worm import WormStorageEngine
-    from src.twin import FinanceTwinEngine
-    from src.quantum import QuantumAbstractionLayer
+from worm import WormStorageEngine
+from twin import FinanceTwinEngine
+from quantum import QuantumAbstractionLayer
 
 def main():
     parser = argparse.ArgumentParser(description="Devflow Finance Twin & Quantum Sovereign Stack")
@@ -68,8 +62,7 @@ def main():
     elif args.command == "STATUS":
         print(f"Event Count: {twin.event_count}")
         print(f"Accounts: {dict(twin.accounts)}")
-        seal = twin.latest_decision_seal['cryptographic_digest'] if twin.latest_decision_seal else 'None'
-        print(f"Latest Seal Digest: {seal}")
+        print(f"Latest Seal Digest: {twin.latest_decision_seal['cryptographic_digest'] if twin.latest_decision_seal else 'None'}")
 
     else:
         parser.print_help()

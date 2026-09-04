@@ -2,15 +2,9 @@ from decimal import Decimal, ROUND_HALF_EVEN
 import json
 import hashlib
 from typing import Any, Dict, List, Optional, Tuple
-
-try:
-    from worm import WormStorageEngine
-    from audit import CryptographicAuditLayer
-    from quantum import QuantumAbstractionLayer
-except ImportError:
-    from src.worm import WormStorageEngine
-    from src.audit import CryptographicAuditLayer
-    from src.quantum import QuantumAbstractionLayer
+from worm import WormStorageEngine
+from audit import CryptographicAuditLayer
+from quantum import QuantumAbstractionLayer
 
 def quantize_money(amount: Any) -> Decimal:
     """Enforces strict decimal fixed-point arithmetic for monetary state."""

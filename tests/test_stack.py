@@ -1,22 +1,11 @@
-import sys
-from pathlib import Path
-# Ensure src on path for imports like rom worm import ...
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-
 import unittest
-import json
+import shutil
+from pathlib import Path
 from decimal import Decimal
-
-try:
-    from worm import WormStorageEngine
-    from twin import FinanceTwinEngine
-    from quantum import QuantumAbstractionLayer
-    from audit import CryptographicAuditLayer
-except ImportError:
-    from src.worm import WormStorageEngine
-    from src.twin import FinanceTwinEngine
-    from src.quantum import QuantumAbstractionLayer
-    from src.audit import CryptographicAuditLayer
+from worm import WormStorageEngine
+from twin import FinanceTwinEngine
+from quantum import QuantumAbstractionLayer
+from audit import CryptographicAuditLayer
 
 class TestDevflowFinanceStack(unittest.TestCase):
     def setUp(self):
@@ -52,7 +41,6 @@ class TestDevflowFinanceStack(unittest.TestCase):
 
     def test_adversarial_worm_tampering_detection(self):
         self.twin.execute_command("CREATE_ACCOUNT", "admin", {"account_id": "ACC_001", "initial_balance": "5000.0000"})
-        self.twin.execute_command("CREATE_ACCOUNT", "admin", {"account_id": "ACC_002", "initial_balance": "0.0000"})
         self.twin.execute_command("POST_TRANSACTION", "admin", {
             "transaction_id": "TX_201",
             "from_account": "ACC_001",
@@ -69,6 +57,7 @@ class TestDevflowFinanceStack(unittest.TestCase):
             lines = f.readlines()
 
         # Tamper with the first record payload amount/balance
+        import json
         first_record = json.loads(lines[0])
         first_record["payload"]["data"]["initial_balance"] = "99999.0000"
         lines[0] = json.dumps(first_record) + "\n"
@@ -88,7 +77,7 @@ class TestDevflowFinanceStack(unittest.TestCase):
         self.assertEqual(optimization["circuit_type"], "QAOA_PORTFOLIO_OPTIMIZER")
         self.assertIn("quantum_entropy_digest", optimization)
         # Verify quantum output cannot mutate ledger directly without deterministic twin validation
-        self.assertNotIn("accounts", str(self.twin.accounts))
+        self.assertNotIn("accounts", self.twin.accounts)
 
 if __name__ == "__main__":
     unittest.main()

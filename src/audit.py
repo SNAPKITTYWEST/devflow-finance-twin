@@ -1,6 +1,7 @@
 import hashlib
 import json
-from typing import Any, Dict
+from decimal import Decimal
+from typing import Any, Dict, Optional
 
 class CryptographicAuditLayer:
     """

@@ -1,6 +1,6 @@
 import hashlib
 import random
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 class QuantumAbstractionLayer:
     """
