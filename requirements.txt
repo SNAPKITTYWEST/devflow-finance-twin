@@ -1,0 +1,4 @@
+# Standard library only for core deterministic engine
+# Optional testing utilities
+pytest>=8.0.0
+
