@@ -5,6 +5,7 @@
 [![Lean 4](https://img.shields.io/badge/Lean-4-orange.svg)](lean/)
 [![WebAssembly](https://img.shields.io/badge/WebAssembly-black.svg)](wasm/)
 [![Ada](https://img.shields.io/badge/Ada-2012-purple.svg)](ada/)
+[![Zig](https://img.shields.io/badge/Zig-0.13-orange.svg)](src/native/)
 [![Haskell](https://img.shields.io/badge/Haskell-9.6-teal.svg)](haskell/)
 [![CUDA](https://img.shields.io/badge/CUDA-12.0-brightgreen.svg)](ptx/)
 [![x86_64](https://img.shields.io/badge/x86__64-Assembly-red.svg)](x86_64/)
@@ -19,6 +20,7 @@ A ledger that does not trust its current state — it reconstructs it from prova
 |-----------|--------|---------|----------|
 | **WASM Runtime** | `wasm/runtime.wat` | AGPL-3.0 | WebAssembly Text |
 | **Binary ISA** | `wasm/isa.wat` | AGPL-3.0 | WebAssembly Text |
+| **WORM Frame** | `wasm/worm_frame.wat` | AGPL-3.0 | WebAssembly Text |
 | **Ledger Replay** | `wasm/ledger_replay.wat` | AGPL-3.0 | WebAssembly Text |
 | **Account Registry** | `wasm/account_registry.wat` | AGPL-3.0 | WebAssembly Text |
 | **SHA-256** | `wasm/sha256.wat` | AGPL-3.0 | WebAssembly Text |
@@ -26,7 +28,7 @@ A ledger that does not trust its current state — it reconstructs it from prova
 | **Ada Firmware** | `ada/` | FSL-1.1 | Ada 2012 |
 | **Haskell ISA** | `haskell/CliIsa.hs` | FSL-1.1 | Haskell |
 | **PTX Kernels** | `ptx/` | FSL-1.1 | CUDA/PTX |
-| **TS Loader** | `src/loader.ts` | FSL-1.1 | TypeScript |
+| **Native Loader** | `ada/loader.adb` + `src/native/wasm_loader.zig` | FSL-1.1 | Ada + Zig |
 | **x86_64 ASM** | `x86_64/quantum_validation.s` | FSL-1.1 | GAS |
 
 ## Quick Start
@@ -34,6 +36,10 @@ A ledger that does not trust its current state — it reconstructs it from prova
 ```bash
 # Compile WASM modules
 node compile_wasm.js
+
+# Build native Ada+Zig loader (requires Zig + GNAT)
+zig build
+gnatmake -I ada ada/loader.adb -largs -Llib -lloader
 
 # Run native WASM engine
 node -e "
@@ -83,6 +89,8 @@ Tests cover:
 | DEED-078 | BorrowchainStorageEngine — Blockchain storage | 0 |
 | DEED-079 | FirmwareCreationEngine — BIOS/UEFI firmware | 0 |
 | DEED-080 | EnochianZeroSorryCore — All sorries closed, unified state | 0 |
+| DEED-087 | WORM Frame Serialization, Merkle Accumulator, Log Clearing | 0 |
+| DEED-088 | Native WASM Loader — Ada+Zig, replaces TypeScript | 0 |
 
 ## Threat Model
 
@@ -110,10 +118,13 @@ devflow-finance-twin/
 ├── wasm/                          # WebAssembly runtime (AGPL-3.0)
 │   ├── runtime.wat / runtime.wasm
 │   ├── isa.wat / isa.wasm
+│   ├── worm_frame.wat / worm_frame.wasm
 │   ├── ledger_replay.wat / ledger_replay.wasm
 │   ├── account_registry.wat / account_registry.wasm
 │   └── sha256.wat / sha256.wasm
-├── ada/                           # Ada firmware (FSL-1.1)
+├── ada/                           # Ada firmware + loader (FSL-1.1)
+│   ├── loader.adb / loader.ads
+│   ├── unsigned_types.ads
 │   ├── cli_isa.adb / cli_isa.ads
 │   ├── malbolge_firmware.adb / malbolge_firmware.ads
 │   └── enochian_boot.adb / enochian_boot.ads
@@ -125,12 +136,15 @@ devflow-finance-twin/
 ├── x86_64/                        # x86_64 assembly (FSL-1.1)
 │   └── quantum_validation.s
 ├── src/                           # Source code (FSL-1.1)
-│   ├── loader.ts
+│   ├── native/
+│   │   └── wasm_loader.zig        # Zig WASM runtime layer
+│   ├── loader.ts                  # Legacy TypeScript loader
 │   ├── cli_isa.ts
 │   ├── worm.py                    # Legacy reference
 │   ├── twin.py                    # Legacy reference
 │   ├── audit.py                   # Legacy reference
 │   └── quantum.py                 # Legacy reference
+├── build.zig                      # Zig build script
 ├── tests/
 │   └── test_stack.py
 ├── LICENSE-FSL-1.1
@@ -145,12 +159,12 @@ This repository uses **dual licensing**:
 ### WebAssembly Files (WAT/WASM)
 **GNU Affero General Public License v3.0** ([LICENSE-AGPL-3.0](LICENSE-AGPL-3.0))
 
-Applies to: `wasm/runtime.wat`, `wasm/runtime.wasm`, `wasm/isa.wat`, `wasm/isa.wasm`, `wasm/ledger_replay.wat`, `wasm/ledger_replay.wasm`, `wasm/account_registry.wat`, `wasm/account_registry.wasm`, `wasm/sha256.wat`, `wasm/sha256.wasm`
+Applies to: `wasm/runtime.wat`, `wasm/runtime.wasm`, `wasm/isa.wat`, `wasm/isa.wasm`, `wasm/worm_frame.wat`, `wasm/worm_frame.wasm`, `wasm/ledger_replay.wat`, `wasm/ledger_replay.wasm`, `wasm/account_registry.wat`, `wasm/account_registry.wasm`, `wasm/sha256.wat`, `wasm/sha256.wasm`
 
 ### All Other Files
 **Functional Source License v1.1** ([LICENSE-FSL-1.1](LICENSE-FSL-1.1))
 
-Applies to: Lean 4, Ada, Haskell, PTX/CUDA, TypeScript, x86_64 assembly, and all other source files.
+Applies to: Lean 4, Ada, Haskell, PTX/CUDA, TypeScript, Zig, x86_64 assembly, and all other source files.
 
 Converts to **Apache License 2.0** two (2) years after initial distribution.
 
