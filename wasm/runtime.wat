@@ -1,3 +1,8 @@
+;; Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+;; SPDX-License-Identifier: AGPL-3.0-or-later
+;; SOVEREIGN DEED: DEVFLOW_FINANCE_WASM_RUNTIME-082
+;; "The Twin Executes In Sandbox. Determinism Is Law."
+
 (module
   (memory (export "memory") 64)
 

@@ -1,3 +1,5 @@
+-- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- SPDX-License-Identifier: FSL-1.1
 -- ┌─────────────────────────────────────────────────────────────────────────────┐
 -- │ SOVEREIGN DEED: ENOCHIAN_ENGINE_ROOT                                        │
 -- │ "The Root Holds. The Glyphs Stand. The Pipeline Breathes."                  │

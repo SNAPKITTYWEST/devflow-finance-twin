@@ -1,3 +1,5 @@
+-- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- SPDX-License-Identifier: FSL-1.1
 -- ┌─────────────────────────────────────────────────────────────────────────────┐
 -- │ SOVEREIGN DEED: SHREWD_WEIGHT_LOADER                                        │
 -- │ "The Shrewd Dreams In Weights. Inference Drives The Fleet."                 │

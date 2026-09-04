@@ -1,3 +1,6 @@
+// Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// SPDX-License-Identifier: FSL-1.1
+
 const ACCOUNT_BASE_ADDR: i32 = 1024;
 const ACCOUNT_ENTRY_SIZE: i32 = 16;
 var account_count: i32 = 0;

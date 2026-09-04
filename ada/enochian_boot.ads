@@ -2,6 +2,9 @@
 -- First module to execute after UEFI handoff
 -- Verifies WORM chain, initializes Malbolge, starts Shrew watchdog
 
+-- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- SPDX-License-Identifier: FSL-1.1
+
 package Enochian_Boot is
 
    type Boot_State is (UNINITIALIZED, CHAIN_VERIFIED, ENGINE_RUNNING, HALTED);

@@ -2,6 +2,9 @@
 -- Hardware entropy source via chaotic ternary computation
 -- Isolated from main CPU, no external memory access, deterministic execution
 
+-- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- SPDX-License-Identifier: FSL-1.1
+
 with Interfaces; use Interfaces;
 
 package Malbolge_Firmware is

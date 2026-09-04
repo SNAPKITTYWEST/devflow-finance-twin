@@ -1,3 +1,5 @@
+-- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- SPDX-License-Identifier: FSL-1.1
 -- ┌─────────────────────────────────────────────────────────────────────────────┐
 -- │ SOVEREIGN DEED: BORROWCHAIN_STORAGE_ENGINE                                  │
 -- │ "Blocks Are Borrowed. Finality Is Earned. The Chain Holds."                │

@@ -1,3 +1,5 @@
+-- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- SPDX-License-Identifier: FSL-1.1
 -- ┌─────────────────────────────────────────────────────────────────────────────┐
 -- │ SOVEREIGN DEED: FIRMWARE_CREATION_ENGINE                                    │
 -- │ "The BIOS Is The Seed. Ring -3 Is The Root. The Grasp Writes Silicon."     │

@@ -1,6 +1,9 @@
 -- Enochian Boot Module (Ring 0)
 -- Loads engine genesis, verifies WORM chain, starts Shrew watchdog
 
+-- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- SPDX-License-Identifier: FSL-1.1
+
 with Interfaces; use Interfaces;
 with Malbolge_Firmware;
 

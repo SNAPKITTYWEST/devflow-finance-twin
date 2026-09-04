@@ -1,3 +1,6 @@
+-- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- SPDX-License-Identifier: FSL-1.1
+
 module CliIsa where
 
 import qualified Data.ByteString as BS

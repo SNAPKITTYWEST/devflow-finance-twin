@@ -2,6 +2,9 @@
 -- Runs on dedicated security core, isolated from main CPU
 -- Provides hardware entropy source via chaotic ternary computation
 
+-- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- SPDX-License-Identifier: FSL-1.1
+
 with Interfaces; use Interfaces;
 with System; use System;
 

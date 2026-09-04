@@ -1,3 +1,6 @@
+// Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// SPDX-License-Identifier: FSL-1.1
+
 .global validate_quantum_output
 .global mix_quantum_entropy
 .text

@@ -1,3 +1,8 @@
+;; Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+;; SPDX-License-Identifier: AGPL-3.0-or-later
+;; SOVEREIGN DEED: DEVFLOW_FINANCE_ACCOUNT_REGISTRY-085
+;; Account registry with deterministic fixed-point arithmetic
+
 (module
   (memory (export "memory") 2)
 
