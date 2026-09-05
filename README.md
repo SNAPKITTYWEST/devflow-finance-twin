@@ -29,6 +29,67 @@
 [![Production](https://img.shields.io/badge/Production-Hardened-green.svg)](PRODUCTION.md)
 [![Security](https://img.shields.io/badge/Security-Policy-red.svg)](SECURITY.md)
 [![Changelog](https://img.shields.io/badge/Changelog-v2.0.0-blue.svg)](CHANGELOG.md)
+[![Frontend](https://img.shields.io/badge/Frontend-Interactive__UI-brightgreen.svg)](frontend/quantum_shadow_ledger.html)
+[![Meta_Artifact](https://img.shields.io/badge/Meta__AI-Artifact-blue.svg)](https://www.meta.ai/share/a/870285d6-ca54-4ce2-a963-498cd5b9697b)
+
+---
+
+## Gold Standard Frontend
+
+**[Live Artifact on Meta AI](https://www.meta.ai/share/a/870285d6-ca54-4ce2-a963-498cd5b9697b)** | **[Local Frontend](frontend/quantum_shadow_ledger.html)**
+
+The **Quantum Shadow / Fibonacci Braid Ledger** is a precision instrument frontend implementing the full computational pipeline:
+
+```
+Fn -> braid -> array -> NAND -> crypto -> seal
+```
+
+### 6-Stage Pipeline
+
+| Stage | Component | Description |
+|-------|-----------|-------------|
+| **FIB** | Fibonacci | F(n) via closed-form + BigInt |
+| **BRAID** | Braid Word | Reduced generators sigma_1...sigma_7 |
+| **ARRAY** | Array State | 8-element net generator count vector |
+| **NAND** | NAND DAG | Full adder verification from 5 NAND gates |
+| **CRYPTO** | FNV-1a-64 | 64-bit cryptographic hash |
+| **LEDGER** | Ledger Seal | Append-only integrity seal |
+
+### Interactive Controls
+
+- **FIB INDEX** (range 1-20): Select which Fibonacci number to use
+- **TAMPER**: Simulate seal corruption (red indicators)
+- **NAND**: Toggle NAND gate DAG visualization
+- **QUANTUM**: Quantum shadow visualization
+- **ADVERSARIAL**: Adversarial attack surface analysis
+- **CTF MODE**: 6 mathematical challenges
+
+### CTF Challenges
+
+| # | Challenge | Answer |
+|---|-----------|--------|
+| 1 | Recover hidden state from seal | state = [1,0,-1,1,0,1,0,0] |
+| 2 | Identify malformed braid | index 2 is 0 |
+| 3 | Find invalid refinement | rank check fails |
+| 4 | Reproduce ledger seal | Compute 0x hex seal |
+| 5 | NAND equivalence bug | a=1, b=1, cin=1 |
+| 6 | Weak toy construction | collision trivial |
+
+### Color Theme
+
+| Color | Hex | Usage |
+|-------|-----|-------|
+| Background | `#06070A` | Near-black base |
+| Lime | `#D6FF6A` | Active states, seals |
+| Cyan | `#7AE8FF` | Secondary accent |
+| Amber | `#FFC86A` | Warnings, CTF |
+| Red | `#FF6A6A` | Tamper detection |
+
+### Typography
+
+- **Primary**: JetBrains Mono (400, 500, 700)
+- **Secondary**: IBM Plex Mono (400, 500)
+- **Ligatures**: Disabled (`font-variant-ligatures: none`)
 
 ---
 
@@ -232,6 +293,8 @@ cd he-binary-functor/gfnand/kani && cargo kani
 devflow-finance-twin/
 ├── INVERTED_MONOREPO.md        # Binary-first architecture spec
 ├── MATH_DICTIONARY.md          # All math/arithmetic reference
+├── frontend/                   # Gold Standard Frontend
+│   └── quantum_shadow_ledger.html  # Interactive 6-stage pipeline UI
 ├── SECURITY.md                 # Security policy
 ├── CHANGELOG.md                # Version history
 ├── PRODUCTION.md               # Deployment guide
