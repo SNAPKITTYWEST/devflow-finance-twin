@@ -20,6 +20,24 @@
 
 ---
 
+## Table of Contents
+
+- [What Is This](#what-is-this)
+- [How It Works](#how-it-works)
+- [Architecture](#architecture)
+- [Braid Algebra](#braid-algebra)
+- [Research Lineage](#research-lineage)
+- [Languages](#languages)
+- [Repository Structure](#repository-structure)
+- [Verification](#verification)
+- [Interactive Frontend](#interactive-frontend)
+- [Demo Videos](#demo-videos)
+- [Quick Start](#quick-start)
+- [Documentation](#documentation)
+- [License](#license)
+
+---
+
 ## What Is This
 
 A cryptographic ledger system built on **braid group algebra**. Fibonacci numbers generate braid words, braid words produce state transitions, state transitions get sealed with FNV-1a-64 hashes, and the whole chain is append-only and tamper-evident.
@@ -73,6 +91,60 @@ flowchart LR
     SD --> F
     L --> CHR
     D -.-> INV
+```
+
+---
+
+## Braid Algebra
+
+```mermaid
+stateDiagram-v2
+    [*] --> B0: Init {s | Valid(s)}
+    B0 --> B1: σ₁
+    B1 --> B2: σ₂⁻¹
+    B2 --> B3: σ₁
+    B3 --> B4: σ₃
+
+    state B0 {
+        [*] --> zero: [0,0,0,0,0,0,0,0]
+    }
+    state B1 {
+        [*] --> one: [1,0,0,0,0,0,0,0]
+    }
+    state B2 {
+        [*] --> two: [1,-1,0,0,0,0,0,0]
+    }
+    state B3 {
+        [*] --> three: [2,-1,0,0,0,0,0,0]
+    }
+    state B4 {
+        [*] --> four: [2,-1,1,0,0,0,0,0]
+    }
+```
+
+**Transition function:** `T(σᵢ, Bₙ) = Bₙ + contrib(σᵢ)`
+
+**Refinement type:** `braid_step : (g:Generator) × (s:{s|Valid(s)}) → {s'|s' = s + contrib(g) ∧ Valid(s')}`
+
+---
+
+## Research Lineage
+
+```mermaid
+flowchart TD
+    P["Prolog<br/>Unification + DFS"] --> LR["Logic Reduction<br/>Directed Evaluation"]
+    LR --> D["Datalog<br/>Stratified Fixpoint"]
+    D --> M["Mercury<br/>Mode-Directed Compile"]
+    M --> MU["MUMPS Mini-Syntax<br/>Global Arrays"]
+    MU --> CS["Constraint Systems<br/>ASP Stable Models"]
+    CS --> RS["Recursive-Step Programming<br/>Deterministic Transitions"]
+    RS --> CSM["Cryptographic State Machines<br/>Braid + WORM Seals"]
+
+    style P fill:#1a1c25,stroke:#8a8d98
+    style D fill:#1a1c25,stroke:#8a8d98
+    style M fill:#1a1c25,stroke:#8a8d98
+    style RS fill:#1a1c25,stroke:#d6ff6a
+    style CSM fill:#1a1c25,stroke:#d6ff6a
 ```
 
 ---
@@ -133,56 +205,25 @@ flowchart TD
 
 ---
 
-## Braid Algebra
+## Verification
 
 ```mermaid
-stateDiagram-v2
-    [*] --> B0: Init {s | Valid(s)}
-    B0 --> B1: σ₁
-    B1 --> B2: σ₂⁻¹
-    B2 --> B3: σ₁
-    B3 --> B4: σ₃
+flowchart LR
+    subgraph Formal["Formal Proofs"]
+        L4["Lean 4<br/>12 deeds, 0 sorry"]
+        SPARK["SPARK Ada<br/>SHA-256, CRC-64, HMAC"]
+        KANI["Kani<br/>31 bounded proofs"]
+    end
 
-    state B0 {
-        [*] --> zero: [0,0,0,0,0,0,0,0]
-    }
-    state B1 {
-        [*] --> one: [1,0,0,0,0,0,0,0]
-    }
-    state B2 {
-        [*] --> two: [1,-1,0,0,0,0,0,0]
-    }
-    state B3 {
-        [*] --> three: [2,-1,0,0,0,0,0,0]
-    }
-    state B4 {
-        [*] --> four: [2,-1,1,0,0,0,0,0]
-    }
-```
+    subgraph Runtime["Runtime Checks"]
+        INV["Invariant Guard<br/>|sᵢ| < 8"]
+        CHAIN["Chain Validation<br/>prev_hash = H(record)"]
+        SEAL["Seal Integrity<br/>FNV-1a-64"]
+    end
 
-**Transition function:** `T(σᵢ, Bₙ) = Bₙ + contrib(σᵢ)`
-
-**Refinement type:** `braid_step : (g:Generator) × (s:{s|Valid(s)}) → {s'|s' = s + contrib(g) ∧ Valid(s')}`
-
----
-
-## Research Lineage
-
-```mermaid
-flowchart TD
-    P["Prolog<br/>Unification + DFS"] --> LR["Logic Reduction<br/>Directed Evaluation"]
-    LR --> D["Datalog<br/>Stratified Fixpoint"]
-    D --> M["Mercury<br/>Mode-Directed Compile"]
-    M --> MU["MUMPS Mini-Syntax<br/>Global Arrays"]
-    MU --> CS["Constraint Systems<br/>ASP Stable Models"]
-    CS --> RS["Recursive-Step Programming<br/>Deterministic Transitions"]
-    RS --> CSM["Cryptographic State Machines<br/>Braid + WORM Seals"]
-
-    style P fill:#1a1c25,stroke:#8a8d98
-    style D fill:#1a1c25,stroke:#8a8d98
-    style M fill:#1a1c25,stroke:#8a8d98
-    style RS fill:#1a1c25,stroke:#d6ff6a
-    style CSM fill:#1a1c25,stroke:#d6ff6a
+    L4 --> INV
+    SPARK --> CHAIN
+    KANI --> SEAL
 ```
 
 ---
@@ -218,29 +259,6 @@ flowchart TD
 | 5 | [demo-part5](./docs/assets/demo-part5.mp4) | Braid algebra deep dive |
 | 7 | [demo-part7](./docs/assets/demo-part7.mp4) | Cryptographic seal chain |
 | 8 | [demo-part8](./docs/assets/demo-part8.mp4) | Complete system integration |
-
----
-
-## Verification
-
-```mermaid
-flowchart LR
-    subgraph Formal["Formal Proofs"]
-        L4["Lean 4<br/>12 deeds, 0 sorry"]
-        SPARK["SPARK Ada<br/>SHA-256, CRC-64, HMAC"]
-        KANI["Kani<br/>31 bounded proofs"]
-    end
-
-    subgraph Runtime["Runtime Checks"]
-        INV["Invariant Guard<br/>|sᵢ| < 8"]
-        CHAIN["Chain Validation<br/>prev_hash = H(record)"]
-        SEAL["Seal Integrity<br/>FNV-1a-64"]
-    end
-
-    L4 --> INV
-    SPARK --> CHAIN
-    KANI --> SEAL
-```
 
 ---
 
