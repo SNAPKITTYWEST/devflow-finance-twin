@@ -13,115 +13,73 @@
 [![COBOL](https://img.shields.io/badge/COBOL-Mainframe-green.svg)](cobol/)
 [![Scala](https://img.shields.io/badge/Scala-3.3-red.svg)](scala/)
 [![Chisel](https://img.shields.io/badge/Chisel-Hardware-orange.svg)](chisel/)
+[![Rust](https://img.shields.io/badge/Rust-1.75-orange.svg)](he-binary-functor/gfnand/)
+[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](src/)
+[![SPARK](https://img.shields.io/badge/SPARK_Ada-purple.svg)](he-binary-functor/tensor-parser/)
+[![Kani](https://img.shields.io/badge/Kani_Bounded_Proofs-red.svg)](he-binary-functor/gfnand/kani/)
+[![BQN](https://img.shields.io/badge/BQN-Array_Language-black.svg)](he-binary-functor/gfnand/bqn/)
+[![ICP](https://img.shields.io/badge/ICP-Anchor-blue.svg)](src/icp_anchor.py)
+[![Tests](https://img.shields.io/badge/Tests-122__passing-brightgreen.svg)](tests/)
+[![Lean4](https://img.shields.io/badge/Lean_4-12__deeds__0__sorry-orange.svg)](lean/)
+[![WASM](https://img.shields.io/badge/WASM-6__modules-black.svg)](wasm/)
+[![NAND](https://img.shields.io/badge/NAND__Sharp-Spec-purple.svg)](he-binary-functor/nand-architecture/)
+[![Verilog_A](https://img.shields.io/badge/Verilog__A-Analog-blue.svg)](he-binary-functor/verilog-a/)
+[![FBL](https://img.shields.io/badge/FBL-Braid__Ledger-red.svg)](he-binary-functor/fibonacci-braid-ledger/)
+[![Inverted_Monorepo](https://img.shields.io/badge/Inverted_Monorepo-v2.0.0-brightgreen.svg)](INVERTED_MONOREPO.md)
+[![Production](https://img.shields.io/badge/Production-Hardened-green.svg)](PRODUCTION.md)
+[![Security](https://img.shields.io/badge/Security-Policy-red.svg)](SECURITY.md)
+[![Changelog](https://img.shields.io/badge/Changelog-v2.0.0-blue.svg)](CHANGELOG.md)
 
-Deterministic financial digital twin with WORM storage, cryptographic audit, quantum isolation, and sovereign-grade native execution.
+---
+
+## About
+
+**Devflow Finance Twin** is a deterministic financial digital twin with WORM storage, cryptographic audit, quantum isolation, and sovereign-grade native execution. It implements the **Inverted Monorepo** topology — a binary-first compilation architecture where the NAND# specification is the ground truth, not the artifact.
 
 A ledger that does not trust its current state — it reconstructs it from provable history. The runtime executes in WebAssembly, not Python.
 
+### What Makes This Different
+
+- **Binary-First**: The NAND# binary specification defines exact computational semantics. All higher-level representations (Rust, Ada, Verilog-A, Haskell, Lean 4) are projections of the binary, not the source of truth.
+- **Self-Verifying**: The compiler can be written in its own target language (NAND#), creating a fixed-point where `binary₁ == binary₂` demonstrates self-hosting verification.
+- **Multi-Domain**: The same binary semantics projects into software, hardware, formal proofs, assembly, array languages, and quantum computing.
+- **Production-Grade**: Thread-safe WORM, CSPRNG entropy, atomic writes, 122 tests, 12 Lean 4 deeds with 0 sorries.
+
+---
+
 ## Architecture
 
-### WASM Runtime Layer (AGPL-3.0)
-| Component | Source | Description |
-|-----------|--------|-------------|
-| **WASM Runtime** | `wasm/runtime.wat` | Core dispatch, store, alloc |
-| **Binary ISA** | `wasm/isa.wat` | Binary instruction execution |
-| **WORM Frame** | `wasm/worm_frame.wat` | Phase 17 serialization, Merkle accumulator, log clearing |
-| **Ledger Replay** | `wasm/ledger_replay.wat` | Ledger verification |
-| **Account Registry** | `wasm/account_registry.wat` | Account CRUD |
-| **SHA-256** | `wasm/sha256.wat` | Hash engine |
+### Inverted Compilation Pipeline
 
-### Sovereign Treasury Engine (DEED-089)
-| Component | Source | License | Language |
-|-----------|--------|---------|----------|
-| **PL/I Ledger** | `pli/treasury_ledger.pli` | AGPL-3.0 | PL/I |
-| **PL/I Functor** | `pli/functor_worm.pli` | AGPL-3.0 | PL/I |
-| **PL/I Records** | `pli/treasury_records.pli` | AGPL-3.0 | PL/I |
-| **COBOL Bridge** | `cobol/worm_bridge.cob` | AGPL-3.0 | COBOL |
-| **C WORM Commit** | `src/native/worm_commit.c` | AGPL-3.0 | C |
-| **C WORM Header** | `src/native/worm_block.h` | AGPL-3.0 | C |
-| **NASM Serialization** | `x86_64/treasury_serialization.nasm` | AGPL-3.0 | NASM |
-| **Chisel Accelerator** | `chisel/WormHardwareAccelerator.scala` | AGPL-3.0 | Chisel |
-| **Scala Pure** | `scala/SovereignTreasuryPipeline.scala` | AGPL-3.0 | Scala |
-| **Scala ZIO** | `scala/SovereignTreasuryZIO.scala` | AGPL-3.0 | Scala |
-
-### Formal Verification & Native (FSL-1.1)
-| Component | Source | License | Language |
-|-----------|--------|---------|----------|
-| **Lean 4 Proofs** | `lean/` (12 deed files) | FSL-1.1 | Lean 4 |
-| **Ada Firmware** | `ada/` | FSL-1.1 | Ada 2012 |
-| **Native Loader** | `ada/loader.adb` + `src/native/wasm_loader.zig` | FSL-1.1 | Ada + Zig |
-| **Haskell ISA** | `haskell/CliIsa.hs` | FSL-1.1 | Haskell |
-| **PTX Kernels** | `ptx/` | FSL-1.1 | CUDA/PTX |
-| **x86_64 ASM** | `x86_64/quantum_validation.s` | FSL-1.1 | GAS |
-| **TypeScript** | `src/loader.ts` (legacy) | FSL-1.1 | TypeScript |
-
-## Quick Start
-
-```bash
-# Full build (all layers)
-make full
-
-# Or build individual layers:
-make wasm              # WASM modules via Node.js + wabt.js
-make native            # C + NASM compilation
-make asm               # x86_64 assembly
-make zig-loader        # Ada+Zig native loader (requires Zig + GNAT)
-make scala-pipeline    # Scala pure + ZIO pipeline (requires sbt)
-make chisel            # Chisel hardware generation (requires sbt)
-
-# Run Python baseline tests
-make test
+```
+                    ┌─────────────────────────────────────────┐
+                    │     NAND# Binary Specification           │
+                    │   (nand-architecture/) — Ground Truth    │
+                    └────────────────┬────────────────────────┘
+                                     │
+                    ┌────────────────▼────────────────────────┐
+                    │     GFLOP→NAND Extractor                │
+                    │   (gfnand/) — Parse, IR, Lower          │
+                    └────────────────┬────────────────────────┘
+                                     │
+              ┌──────────────────────┼──────────────────────┐
+              │                      │                      │
+    ┌─────────▼─────────┐ ┌─────────▼─────────┐ ┌─────────▼─────────┐
+    │  Software Domain   │ │  Hardware Domain   │ │  Formal Domain    │
+    │  Rust, Ada, Zig    │ │  Verilog-A, Chisel │ │  Lean 4, SPARK    │
+    └─────────┬─────────┘ └─────────┬─────────┘ └─────────┬─────────┘
+              │                      │                      │
+              └──────────────────────┼──────────────────────┘
+                                     │
+                    ┌────────────────▼────────────────────────┐
+                    │     Production Deployment               │
+                    │   WASM Runtime + Native Loader           │
+                    └─────────────────────────────────────────┘
 ```
 
-## Python Legacy (Reference Only)
+### Full Stack Wiring
 
-```bash
-# Legacy Python reference implementation (preserved for behavioral verification)
-python src/cli.py --storage ledger.worm CREATE_ACCOUNT --account_id ACC_001 --balance 1000.0000
-python src/cli.py --storage ledger.worm VERIFY_HISTORY
 ```
-
-## Testing
-
-```bash
-# Python baseline (3/3 tests pass)
-python -m pytest tests/test_stack.py -v
-```
-
-Tests cover:
-- Deterministic replay & account balances
-- Adversarial WORM tampering detection (hash mismatch)
-- Quantum adapter isolation
-
-## Sovereign Deeds (Lean 4 Formal Verification)
-
-| Deed | Description | Sorries |
-|------|-------------|---------|
-| DEED-071 | EnochianEngineRoot — Glyphs, Phases, Aethyrs, Watchtowers | 0 |
-| DEED-072 | EnochianEngineExecution — Instruction semantics, phase execution | 0 |
-| DEED-073 | MalbolgeProcessorRoot — Ternary processor, trytes, invariants | 0 |
-| DEED-074 | MalbolgePTXKernel — RTX 3080 PTX assembly | 0 |
-| DEED-075 | EnochianMalbolgeIntegration — Call9/Call16 integration | 0 |
-| DEED-076 | BifrostCapabilityExchange — Capability system, handshake | 0 |
-| DEED-077 | SHREWDWeightLoader — Neural network weights, inference | 0 |
-| DEED-078 | BorrowchainStorageEngine — Blockchain storage | 0 |
-| DEED-079 | FirmwareCreationEngine — BIOS/UEFI firmware | 0 |
-| DEED-080 | EnochianZeroSorryCore — All sorries closed, unified state | 0 |
-| DEED-087 | WORM Frame Serialization, Merkle Accumulator, Log Clearing | 0 |
-| DEED-088 | Native WASM Loader — Ada+Zig, replaces TypeScript | 0 |
-| DEED-089 | Sovereign Treasury Engine — PL/I, COBOL, C, NASM, Chisel, Scala full stack | 0 |
-
-## Threat Model
-
-- **WORM & Merkle Chain**: Every record contains `prev_hash` = SHA-256(previous record). Tampering breaks chain validation.
-- **WASM Sandboxing**: Runtime executes in WebAssembly linear memory sandbox, no system access.
-- **Fixed-Point Arithmetic**: 18-decimal fixed-point for financial calculations, no floating-point drift.
-- **Quantum Isolation**: Quantum layer is sandboxed; outputs are suggestions pending deterministic approval.
-- **Lean 4 Proofs**: 12 deed files, 0 sorry policy, formal verification of core invariants.
-
-## Layer Wiring
-
-```text
             ┌─────────────────────────────────────────────┐
             │          Scala + ZIO Pipeline                │
             │  (effectful, resource-safe, streaming)       │
@@ -168,74 +126,195 @@ Tests cover:
             └─────────────────────────────────────────────┘
 ```
 
+### Binary Functor Architecture Flow
+
+```
+    ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+    │  XSLT Input  │────▶│  WASM Trans  │────▶│  Compiled    │
+    └──────────────┘     └──────────────┘     └──────┬───────┘
+                                                      │
+    ┌──────────────┐     ┌──────────────┐     ┌──────▼───────┐
+    │  Tensor Desc │────▶│ Zero-Copy   │────▶│  BTEN Format │
+    │  (SPARK Ada) │     │ Parser       │     │  (CRC64/HMAC)│
+    └──────────────┘     └──────────────┘     └──────┬───────┘
+                                                      │
+    ┌──────────────┐     ┌──────────────┐     ┌──────▼───────┐
+    │  GFLOP Work  │────▶│  BQN Analyze │────▶│  NAND Blocks │
+    │  (FLOPs)     │     │  (ops/bytes) │     │  (9n-6 gates)│
+    └──────────────┘     └──────────────┘     └──────┬───────┘
+                                                      │
+    ┌──────────────┐     ┌──────────────┐     ┌──────▼───────┐
+    │  Block-Lace  │────▶│  FBL Ledger  │────▶│  Verilog-A   │
+    │  Topology    │     │  (braid)     │     │  (analog)    │
+    └──────────────┘     └──────────────┘     └──────────────┘
+```
+
+---
+
+## User Guide
+
+### Quick Start
+
+```bash
+# Full build (all layers)
+make full
+
+# Or build individual layers:
+make wasm              # WASM modules via Node.js + wabt.js
+make native            # C + NASM compilation
+make asm               # x86_64 assembly
+make zig-loader        # Ada+Zig native loader (requires Zig + GNAT)
+make scala-pipeline    # Scala pure + ZIO pipeline (requires sbt)
+make chisel            # Chisel hardware generation (requires sbt)
+
+# Run Python baseline tests
+make test
+```
+
+### Running the Python Reference
+
+```bash
+# Create an account
+python src/cli.py --storage ledger.worm CREATE_ACCOUNT --account_id ACC_001 --balance 1000.0000
+
+# Verify the WORM chain integrity
+python src/cli.py --storage ledger.worm VERIFY_HISTORY
+```
+
+### Cold Boot Protocol
+
+```bash
+# Execute 3-phase cold boot (Python layer)
+python -c "from src.cold_boot import cold_boot; cold_boot()"
+
+# Phases:
+# Phase 1: ROM Anchor — verify firmware integrity (BLAKE3 root)
+# Phase 2: Bridge Init — establish WORM buffer, storage keys, runtime vectors
+# Phase 3: Treasury Driver — enter main loop (WRITE_ONCE / READ_MANY / ANCHOR)
+```
+
+### ICP Anchor (Cross-Chain)
+
+```bash
+# Anchor WORM state hash to Internet Computer canister
+python -c "from src.icp_anchor import anchor_state; anchor_state('ledger.worm')"
+```
+
+### Testing
+
+```bash
+# Python baseline (122 tests)
+python -m pytest tests/test_stack.py -v
+
+# Lean 4 formal proofs
+cd lean && lake build
+
+# Kani bounded proofs
+cd he-binary-functor/gfnand/kani && cargo kani
+```
+
+### WASM Modules
+
+| Module | Source | Size | Purpose |
+|--------|--------|------|---------|
+| runtime.wasm | `wasm/runtime.wat` | 2906 bytes | Core dispatch, store, alloc |
+| isa.wasm | `wasm/isa.wat` | — | Binary instruction execution |
+| worm_frame.wasm | `wasm/worm_frame.wat` | — | Phase 17 serialization, Merkle |
+| ledger_replay.wasm | `wasm/ledger_replay.wat` | — | Ledger verification |
+| account_registry.wasm | `wasm/account_registry.wat` | — | Account CRUD |
+| sha256.wasm | `wasm/sha256.wat` | 604 bytes | Hash engine |
+
+---
+
 ## Project Structure
 
 ```
 devflow-finance-twin/
-├── lean/                          # Lean 4 formal verification (FSL-1.1)
-│   ├── EnochianEngineRoot.lean
-│   ├── EnochianEngineExecution.lean
-│   ├── MalbolgeProcessorRoot.lean
-│   ├── MalbolgePTXKernel.lean
-│   ├── EnochianMalbolgeIntegration.lean
-│   ├── BifrostCapabilityExchange.lean
-│   ├── SHREWDWeightLoader.lean
-│   ├── BorrowchainStorageEngine.lean
-│   ├── FirmwareCreationEngine.lean
-│   └── ZeroSorryCore.lean
-├── wasm/                          # WebAssembly runtime (AGPL-3.0)
-│   ├── runtime.wat / runtime.wasm
-│   ├── isa.wat / isa.wasm
-│   ├── worm_frame.wat / worm_frame.wasm
-│   ├── ledger_replay.wat / ledger_replay.wasm
-│   ├── account_registry.wat / account_registry.wasm
-│   └── sha256.wat / sha256.wasm
-├── pli/                           # PL/I Treasury Engine (AGPL-3.0)
-│   ├── treasury_ledger.pli
-│   ├── functor_worm.pli
-│   └── treasury_records.pli
-├── cobol/                         # COBOL WORM Bridge (AGPL-3.0)
-│   └── worm_bridge.cob
-├── chisel/                        # Chisel Hardware Accelerator (AGPL-3.0)
-│   └── WormHardwareAccelerator.scala
-├── scala/                         # Scala Pipeline (AGPL-3.0)
-│   ├── SovereignTreasuryPipeline.scala
-│   ├── SovereignTreasuryZIO.scala
-│   └── build.sbt
-├── ada/                           # Ada firmware + loader (FSL-1.1)
-│   ├── loader.adb / loader.ads
-│   ├── unsigned_types.ads
-│   ├── cli_isa.adb / cli_isa.ads
-│   ├── malbolge_firmware.adb / malbolge_firmware.ads
-│   └── enochian_boot.adb / enochian_boot.ads
-├── haskell/                       # Haskell ISA (FSL-1.1)
-│   └── CliIsa.hs
-├── ptx/                           # CUDA/PTX kernels (FSL-1.1)
-│   ├── malbolge_step_kernel.cu
-│   └── host_launcher.cu
-├── x86_64/                        # x86_64 assembly (FSL-1.1)
-│   ├── treasury_serialization.nasm
-│   └── quantum_validation.s
-├── src/                           # Source code
-│   ├── native/                    # Native runtime (FSL-1.1 + AGPL-3.0)
-│   │   ├── wasm_loader.zig        # Zig WASM runtime layer (FSL-1.1)
-│   │   ├── worm_commit.c          # C WORM commit (AGPL-3.0)
-│   │   └── worm_block.h           # C WORM header (AGPL-3.0)
-│   ├── loader.ts                  # Legacy TypeScript loader (FSL-1.1)
-│   ├── cli_isa.ts
-│   ├── worm.py                    # Legacy reference
-│   ├── twin.py                    # Legacy reference
-│   ├── audit.py                   # Legacy reference
-│   └── quantum.py                 # Legacy reference
-├── tests/
-│   └── test_stack.py
-├── Makefile                       # Full build system
-├── build.zig                      # Zig build script
-├── compile_wasm.js                # WASM compilation
+├── INVERTED_MONOREPO.md        # Binary-first architecture spec
+├── MATH_DICTIONARY.md          # All math/arithmetic reference
+├── SECURITY.md                 # Security policy
+├── CHANGELOG.md                # Version history
+├── PRODUCTION.md               # Deployment guide
+├── lean/                       # Lean 4 formal verification (FSL-1.1)
+│   └── 12 deed files, 0 sorries
+├── wasm/                       # WebAssembly runtime (AGPL-3.0)
+│   └── 6 modules (runtime, ISA, worm_frame, ledger, acct, sha256)
+├── pli/                        # PL/I Treasury Engine (AGPL-3.0)
+├── cobol/                      # COBOL WORM Bridge (AGPL-3.0)
+├── chisel/                     # Chisel Hardware Accelerator (AGPL-3.0)
+├── scala/                      # Scala Pipeline (AGPL-3.0)
+├── ada/                        # Ada firmware + loader (FSL-1.1)
+├── haskell/                    # Haskell ISA (FSL-1.1)
+├── ptx/                        # CUDA/PTX kernels (FSL-1.1)
+├── x86_64/                     # x86_64 assembly (FSL-1.1)
+├── he-binary-functor/          # Ahmad Ali Parr Binary Functor Architecture
+│   ├── nand-architecture/      # NAND# spec (ISA, binary, grammar, arrays)
+│   ├── gfnand/                 # GFLOP→NAND Extractor (Rust, Kani, BQN)
+│   ├── tensor-parser/          # SPARK Ada zero-copy (SHA-256, CRC64, HMAC)
+│   ├── block-lace/             # Block-Lace topology (C++, Rust, Haskell)
+│   ├── verilog-a/              # Analog/mixed-signal trig processors
+│   ├── fibonacci-braid-ledger/ # FBL: array algebra + ledger
+│   └── he-binary-functor-spec-001.md
+├── src/                        # Python legacy + cold boot + ICP anchor
+├── tests/                      # 122 passing tests
+├── Makefile                    # Full build system
+├── build.zig                   # Zig build script
+├── compile_wasm.js             # WASM compilation
 ├── LICENSE-FSL-1.1
 ├── LICENSE-AGPL-3.0
 └── README.md
 ```
+
+---
+
+## Threat Model
+
+- **WORM & Merkle Chain**: Every record contains `prev_hash` = SHA-256(previous record). Tampering breaks chain validation.
+- **WASM Sandboxing**: Runtime executes in WebAssembly linear memory sandbox, no system access.
+- **Fixed-Point Arithmetic**: 18-decimal fixed-point for financial calculations, no floating-point drift.
+- **Quantum Isolation**: Quantum layer is sandboxed; outputs are suggestions pending deterministic approval.
+- **Lean 4 Proofs**: 12 deed files, 0 sorry policy, formal verification of core invariants.
+- **SPARK Mode**: All Ada cryptographic code in `SPARK_Mode => On` with pre/post conditions.
+- **Kani Proofs**: 31 bounded proof harnesses for NAND verification.
+
+---
+
+## Sovereign Deeds (Lean 4 Formal Verification)
+
+| Deed | Description | Sorries |
+|------|-------------|---------|
+| DEED-071 | EnochianEngineRoot — Glyphs, Phases, Aethyrs, Watchtowers | 0 |
+| DEED-072 | EnochianEngineExecution — Instruction semantics, phase execution | 0 |
+| DEED-073 | MalbolgeProcessorRoot — Ternary processor, trytes, invariants | 0 |
+| DEED-074 | MalbolgePTXKernel — RTX 3080 PTX assembly | 0 |
+| DEED-075 | EnochianMalbolgeIntegration — Call9/Call16 integration | 0 |
+| DEED-076 | BifrostCapabilityExchange — Capability system, handshake | 0 |
+| DEED-077 | SHREWDWeightLoader — Neural network weights, inference | 0 |
+| DEED-078 | BorrowchainStorageEngine — Blockchain storage | 0 |
+| DEED-079 | FirmwareCreationEngine — BIOS/UEFI firmware | 0 |
+| DEED-080 | EnochianZeroSorryCore — All sorries closed, unified state | 0 |
+| DEED-087 | WORM Frame Serialization, Merkle Accumulator, Log Clearing | 0 |
+| DEED-088 | Native WASM Loader — Ada+Zig, replaces TypeScript | 0 |
+| DEED-089 | Sovereign Treasury Engine — PL/I, COBOL, C, NASM, Chisel, Scala full stack | 0 |
+
+---
+
+## Key References
+
+| Document | Location | Description |
+|----------|----------|-------------|
+| Inverted Monorepo | `INVERTED_MONOREPO.md` | Binary-first architecture specification |
+| Math Dictionary | `MATH_DICTIONARY.md` | All mathematical operations and notation |
+| Security Policy | `SECURITY.md` | Threat model and security practices |
+| Changelog | `CHANGELOG.md` | Version history and releases |
+| Production Guide | `PRODUCTION.md` | Deployment and operations |
+| Binary Functor Spec | `he-binary-functor/HE-BINARY-FUNCTOR-SPEC-001.md` | Ahmad's formal spec |
+| FBL Research Paper | `he-binary-functor/fibonacci-braid-ledger/FBL_RESEARCH_PAPER.md` | Fibonacci Braid Ledger |
+| NAND Spec | `he-binary-functor/nand-architecture/NAND_SPEC.md` | NAND# architecture |
+| Cryptographic Invertibility | `he-binary-functor/tensor-parser/CRYPTOGRAPHIC_INVERTIBILITY.md` | Hash reversal analysis |
+| SPARK to Verilog-A | `he-binary-functor/verilog-a/SPARK_TO_VERILOG_A.md` | Cross-domain mapping |
+
+---
 
 ## License
 
@@ -244,12 +323,8 @@ This repository uses **dual licensing**:
 ### WebAssembly Files (WAT/WASM)
 **GNU Affero General Public License v3.0** ([LICENSE-AGPL-3.0](LICENSE-AGPL-3.0))
 
-Applies to: `wasm/runtime.wat`, `wasm/runtime.wasm`, `wasm/isa.wat`, `wasm/isa.wasm`, `wasm/worm_frame.wat`, `wasm/worm_frame.wasm`, `wasm/ledger_replay.wat`, `wasm/ledger_replay.wasm`, `wasm/account_registry.wat`, `wasm/account_registry.wasm`, `wasm/sha256.wat`, `wasm/sha256.wasm`, `pli/treasury_ledger.pli`, `pli/functor_worm.pli`, `pli/treasury_records.pli`, `cobol/worm_bridge.cob`, `src/native/worm_commit.c`, `src/native/worm_block.h`, `x86_64/treasury_serialization.nasm`, `chisel/WormHardwareAccelerator.scala`, `scala/SovereignTreasuryPipeline.scala`, `scala/SovereignTreasuryZIO.scala`
-
 ### All Other Files
 **Functional Source License v1.1** ([LICENSE-FSL-1.1](LICENSE-FSL-1.1))
-
-Applies to: Lean 4, Ada, Haskell, PTX/CUDA, TypeScript, Zig, Scala (build.sbt), x86_64 assembly, and all other source files.
 
 Converts to **Apache License 2.0** two (2) years after initial distribution.
 

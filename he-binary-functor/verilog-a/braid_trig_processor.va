@@ -1,0 +1,16 @@
+`include "disciplines.vams"
+
+module braid_trig_processor (cos_in, sin_in, cos_out, sin_out);
+    input cos_in, sin_in;
+    output cos_out, sin_out;
+    electrical cos_in, sin_in, cos_out, sin_out;
+
+    parameter real PHI_HALF = 0.809016994;
+    parameter real V_THERM = 0.02585;
+    parameter real I_S = 1e-15;
+
+    analog begin
+        V(cos_out) <+ PHI_HALF * V(cos_in) + 0.5 * V(sin_in);
+        V(sin_out) <+ 0.5 * V(cos_in) - PHI_HALF * V(sin_in);
+    end
+endmodule
