@@ -1,48 +1,43 @@
-# braid.bqn – Braid Word Algebra & Reduction Primitives
-MaxStrands ← 8
-MaxWordLen ← 16
+# braid.bqn — Braid word array algebra
+# Generators: positive integers σᵢ, negative = inverse σᵢ⁻¹
 
-# Valid generator: [-7..-1, 1..7] excluding 0
-ValidGen ← { (1 ≤ |𝕩) ∧ (|𝕩 < MaxStrands) }
+STRANDS ← 5
+MAX_GEN ← STRANDS-1
+MAX_WORD ← 64
+EMPTY_W ← ⟨⟩
 
-# Validate entire braid word
-ValidBraidWord ← { (0 ≤ ≠𝕩) ∧ (≠𝕩 ≤ MaxWordLen) ∧ ∧´ ValidGen¨ 𝕩 }
+ValidGen ← { (1 ≤ |𝕩) ∧ (|𝕩 ≤ MAX_GEN) }
+ValidWord ← {
+  w ← 𝕩
+  (≠w ≤ MAX_WORD) ∧ (∧´ ValidGen¨ w)
+}
 
-# Braid word inversion: reverse and negate
-InverseBraid ← - ⌽ 𝕩
+Inv ← -∘⌽
+
+Append ← {
+  a 𝕨
+  w 𝕩
+  r ← a ∾ w
+  ≠r ≤ MAX_WORD ? r ; ! "word length overflow"
+}
 
 # Local cancellation: remove adjacent inverse pairs
-ReduceStep ← {
-  pairs ← (↕ ≠𝕩 - 1) ⊔ ⟨⟩
-  found ← / (¯1 ≠ (𝕩 ⊏˜ ↕ ≠𝕩-1) +` 𝕩 ⊏˜ 1+ ↕ ≠𝕩-1)
-  (0 < ≠found) ? (𝕩 ∾˜ ⟨⟩) ; 𝕩
+CancelStep ← {
+  𝕨 ≡ ⟨⟩ ? ⟨𝕩⟩
+  last ← ⊑⌽𝕨
+  last = -𝕩 ? ¯1↓𝕨 ; 𝕨∾⟨𝕩⟩
+}
+Reduce ← { ⟨⟩ CancelStep´ 𝕩 }
+
+Len ← ≠∘Reduce
+
+StrandOk ← ValidWord
+
+GenSeq ← {
+  n ← 𝕩
+  n ≤ 0 ? EMPTY_W
+  n > MAX_WORD ? ! "genseq overflow"
+  1 + (↕n) | MAX_GEN
 }
 
-# Full reduction: fixed point
-ReduceBraid ← { 𝕩 } # placeholder for iterative reduction
-
-# FNV-1a hash of braid word
-FnvPrime ← 16777619
-FnvOffset ← 2166136261
-
-BraidHash ← {
-  bytes ← (≠𝕩) ∾ (𝕩 + 128)
-  FnvOffset { ((𝕨 ≠ 𝕩) × FnvPrime) }´ bytes
-}
-
-# Deterministic Fibonacci → Braid mapping
-BraidFromFibonacci ← {
-  fib_val ← FibLookup 𝕩
-  bits ← fib_val
-  gens ← ⟨⟩
-  loop ← {
-    (bits = 0) ∨ (≠gens ≥ 8) ? gens ; (
-      pair ← bits ⋈ 7
-      bits ← pair ÷ 8
-      pair = 0 ? 𝕊 bits ⋈ gens
-      : pair ≤ 3 ? 𝕊 (bits ⋈ gens∾pair)
-      : 𝕊 (bits ⋈ gens∾(pair-6))
-    )
-  }
-  loop bits ⋈ gens
-}
+InvInvId ← { 𝕨 ≡ Inv Inv 𝕨 }

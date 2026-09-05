@@ -1,54 +1,63 @@
-# ledger.bqn – Structure-of-Arrays Ledger & State Transitions
+# ledger.bqn — Fibonacci → Braid → State → Seal
 
-EmptyLedger ← {
-  ⟨⟩
+MAX_IDX ← 90
+MAX_STATE ← 256
+SEAL_MOD ← 2⋆32
+
+# Deterministic Fibonacci → Braid mapping
+# g_k = 1 + (k mod (STRANDS-1))
+# s_k = (-1)^k
+# w_n = s_k * g_k for k = 0..min(F_n, MAX_WORD)-1
+BraidFromFib ← {
+  n ← 𝕩
+  n < 0 ? ! "negative fib index"
+  n > MAX_IDX ? ! "index overflow"
+  f ← Fib n
+  L ← f ⌊ MAX_WORD
+  L = 0 ? EMPTY_W
+  gs ← 1 + (↕L) | MAX_GEN
+  ss ← ¯1 ⋆ ↕L
+  ss × gs
 }
 
-# Compute state transition
-ComputeState ← {
-  prev_state ‿ braid ‿ fib_idx ← 𝕩
-  (prev_state ≠ BraidHash braid ≠ fib_idx) % (2⋆32)
+InitState ← { ⟨0, 0, 0, 0, 0⟩ }
+
+# Transition: State × Word → State
+Transition ← {
+  st 𝕨
+  w 𝕩
+  ¬ValidWord w ? ! "invalid word"
+  idx ← 0⊑st
+  new_idx ← idx + 1
+  new_idx > MAX_IDX ? ! "state index overflow"
+  wl ← ≠w
+  rw ← Reduce w
+  rl ← ≠rw
+  ssum ← +´ |¨ w
+  new_seal ← SEAL_MOD | (3⊑st) + ssum × Fib idx
+  chk ← +´ rw
+  new_chk ← (4⊑st) ≠ chk
+  ⟨new_idx, wl, rl, new_seal, new_chk⟩
 }
 
-# Compute seal (FNV-1a)
-ComputeSeal ← {
-  prev_seal ‿ fib_idx ‿ braid ‿ state ← 𝕩
-  entry_bytes ← fib_idx ∾ braid ∾ state
-  seal_input ← prev_seal ∾ entry_bytes
-  FnvOffset + ((∧´ ((FnvOffset ≠ seal_input) × FnvPrime)) % (2⋆32))
+Entry ← {
+  n ← 𝕩
+  w ← BraidFromFib n
+  r ← Reduce w
+  st ← InitState Transition w
+  st ↩ ⟨n⟩ ∾ 1↓st
+  ⟨n, w, r, st, 3⊑st⟩
 }
 
-# Append entry to ledger
-AppendLedgerEntry ← {
-  ledger ‿ fib_idx ‿ braid ← 𝕩
-  idx_ok ← ValidFibIdx fib_idx
-  braid_ok ← ValidBraidWord braid
-  full ← (≠ ledger) ≥ 48
-
-  prev_state ← full ? 0 ; (≠ -1 ⊑ ledger) ⊑ -1 ⊑ ledger
-  new_state ← ComputeState ⟨prev_state, braid, fib_idx⟩
-
-  prev_seal ← full ? 0 ; (≠ -2 ⊑ ledger) ⊑ -2 ⊑ ledger
-  new_seal ← ComputeSeal ⟨prev_seal, fib_idx, braid, new_state⟩
-
-  status ← ¬ (idx_ok ∧ braid_ok ∧ ¬full)
-  new_ledger ← ledger ∾ ⟨fib_idx, braid, new_state, new_seal, status⟩
-  new_ledger ⋈ status
+LedgerSOA ← {
+  n ← 𝕩
+  idxs ← ↕1+n
+  ws ← BraidFromFib¨ idxs
+  rs ← Reduce¨ ws
+  sts ← (InitState Transition¨ ws)
+  sts ↩ idxs ∾˘ 1↓˘ >sts
+  seals ← 3⊑˘ >sts
+  ⟨idxs, ws, rs, sts, seals⟩
 }
 
-# Verify ledger integrity
-VerifyLedger ← {
-  ledger ← 𝕩
-  entries ← ≠ ledger ÷ 5
-  ∧´ {
-    i ← 𝕩
-    entry ← (5×i) ↓ 5 ↑ ledger
-    fib_idx ← ⊑ entry
-    braid ← 1 ⊑ entry
-    state ← 2 ⊑ entry
-    seal ← 3 ⊑ entry
-    prev_state ← i = 0 ? 0 ; (5×(i-1)+2) ⊑ ledger
-    expected ← ComputeState ⟨prev_state, braid, fib_idx⟩
-    expected = state
-  }¨ ↕ entries
-}
+SealOf ← { 3⊑ 3⊑ 𝕩 }
