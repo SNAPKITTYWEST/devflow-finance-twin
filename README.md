@@ -1,6 +1,5 @@
 <p align="center">
-  <img src="./docs/assets/hero-05.gif" width="420">
-  <img src="./docs/assets/hero-04.png" width="420">
+  <img src="./docs/assets/hero-02.jpg" width="540">
 </p>
 
 <p align="center">
@@ -24,85 +23,175 @@
 [![Meta_Artifact](https://img.shields.io/badge/Meta__AI-Artifact-blue.svg)](https://www.meta.ai/share/a/870285d6-ca54-4ce2-a963-498cd5b9697b)
 [![Production](https://img.shields.io/badge/Production-Hardened-green.svg)](PRODUCTION.md)
 [![Security](https://img.shields.io/badge/Security-Policy-red.svg)](SECURITY.md)
-[![Changelog](https://img.shields.io/badge/Changelog-v2.0.0-blue.svg)](CHANGELOG.md)
+
+---
+
+## What This Repo Contains
+
+**279 files** across **20+ programming languages** implementing a complete cryptographic ledger system:
+
+```
+Fibonacci Number -> Braid Word -> Array State -> NAND DAG -> FNV-1a Seal -> Ledger
+```
+
+### By Language
+
+| Count | Language | What It Does |
+|-------|----------|-------------|
+| 30 | **Rust** | GFLOP-to-NAND extractor, Kani verification, braid kernel, IAMAC, malleability engine |
+| 29 | **SPARK Ada** | Zero-copy tensor parser (BTEN format), SHA-256, CRC-64, HMAC-SHA-256 |
+| 16 | **Ada** | Parser bodies, SHA-256 reverse, loader, firmware |
+| 14 | **Haskell** | Liquid Haskell refinements, SGL geometry, BEAM assembly, ISA spec |
+| 12 | **Lean 4** | 12 formal proof deeds with 0 sorry policy (Enochian, Malbolge, Bifrost, WORM) |
+| 12 | **Python** | WORM engine, twin, audit, quantum, cold boot, ICP anchor, CLI |
+| 10 | **Verilog-A** | Trigonometric braid processors, analog computing |
+| 9 | **C** | WORM commit, call fibre, kernel workers |
+| 7 | **BQN** | Array algebra workload analysis, fibonacci/braid/ledger |
+| 6 | **WASM** | 6 modules: runtime, ISA, worm_frame, ledger_replay, account_registry, sha256 |
+| 3 | **PL/I** | Treasury ledger, functor, records |
+| 3 | **Scala** | Sovereign Treasury pipeline + ZIO |
+| 3 | **CUDA/PTX** | Malbolge step kernel, host launcher |
+| 3 | **x86-64 ASM** | Treasury serialization, quantum validation |
+| 3 | **TypeScript** | Legacy loader, ISA |
+| 2 | **Zig** | WASM native loader |
+| 2 | **Chisel** | Hardware accelerator |
+
+### By Directory
+
+| Directory | Files | Description |
+|-----------|-------|-------------|
+| `he-binary-functor/` | 140+ | Ahmad's complete Binary Functor Architecture |
+| `lean/` | 12 | Formal verification proofs |
+| `wasm/` | 12 | WebAssembly runtime modules |
+| `ada/` | 9 | Firmware, loader, CLI ISA |
+| `src/` | 10 | Python legacy, cold boot, ICP anchor |
+| `docs/` | 5 + 12 media | Documentation, videos, images |
+| `frontend/` | 1 | Interactive Quantum Shadow Ledger UI |
+
+---
+
+## System Flowchart
+
+```
+                            +-------------------------+
+                            |     FIBONACCI F(n)      |
+                            |  Closed-form + BigInt   |
+                            +-----------+-------------+
+                                        |
+                                        v
+                            +-------------------------+
+                            |   MATRIX ENCODING       |
+                            |  2x4 [FIB(n) -> binary] |
+                            +-----------+-------------+
+                                        |
+                                        v
+                            +-------------------------+
+                            |     BRAID WORD          |
+                            |  W = [sigma_1, ...]     |
+                            |  Generators 1..4        |
+                            +-----------+-------------+
+                                        |
+                       +----------------+----------------+
+                       |                |                |
+                       v                v                v
+              +----------------+ +-----------+ +----------------+
+              |  BIFURCATION   | | ADVERSARY | | CRYSTALLIZATION|
+              |  split state   | |  mutate   | |  normalize     |
+              +-------+--------+ +-----+-----+ +-------+--------+
+                      |                |                |
+                      +----------------+----------------+
+                                       |
+                                       v
+                            +-------------------------+
+                            |    ARRAY STATE S_n       |
+                            |  8-element Z vector      |
+                            +-----------+-------------+
+                                        |
+                                        v
+                            +-------------------------+
+                            |    NAND DAG VERIFY       |
+                            |  Full adder from 5 gates |
+                            +-----------+-------------+
+                                        |
+                                        v
+                            +-------------------------+
+                            |    FNV-1a-64 HASH        |
+                            |  Seal = H(prev || C(S))  |
+                            +-----------+-------------+
+                                        |
+                                        v
+                            +-------------------------+
+                            |    LEDGER SEAL           |
+                            |  Append-only integrity   |
+                            +-------------------------+
+```
 
 ---
 
 ## Core Model
 
 ```
-RELATION
-    |
-    v
-CONSTRAINT
-    |
-    v
-STATE
-    |
-    v
-RECURSIVE STEP
-    |
-    v
-INVARIANT
-    |
-    v
-SEAL
+RELATION -> CONSTRAINT -> STATE -> RECURSIVE STEP -> INVARIANT -> SEAL
 ```
-
----
-
-## About
-
-Fibonacci Braid Ledger is an experimental research framework for
-investigating cryptographic constructions based on deterministic
-recursive state transitions.
-
-The system explores the reduction of relational logic into a compact
-recursive-step computational model.
-
-A ledger that does not trust its current state -- it reconstructs it from provable history. The runtime executes in WebAssembly, not Python.
 
 ---
 
 ## Research Lineage
 
 ```
-Prolog
-    |
-    v
-Logic Reduction
-    |
-    v
-Datalog
-    |
-    v
-Mercury
-    |
-    v
-MUMPS Mini-Syntax
-    |
-    v
-Constraint Systems
-    |
-    v
-Recursive-Step Programming
-    |
-    v
-Cryptographic State Machines
+Prolog -> Logic Reduction -> Datalog -> Mercury -> MUMPS Mini-Syntax
+  -> Constraint Systems -> Recursive-Step Programming -> Cryptographic State Machines
 ```
+
+---
+
+## What Each Component Does
+
+### Fibonacci Braid Ledger (`he-binary-functor/fibonacci-braid-ledger/`)
+The core research: maps Fibonacci numbers to braid group words, evaluates them as permutations, and seals the result. Contains Liquid Haskell specs, BQN array algebra, RV64I assembly, C++ lock-free ledger, x86-64 ASM, and a research paper.
+
+### NAND Architecture (`he-binary-functor/nand-architecture/`)
+Formal specification of NAND# -- an ISA built from NAND gates. Includes the spec, binary format, grammar, array semantics, omega model, bootstrap chain, and Kani verification harnesses.
+
+### GFLOP-to-NAND Extractor (`he-binary-functor/gfnand/`)
+Parses tensor operations, builds an IR, and lowers them to NAND gate DAGs. Measures FLOPs, gate count, depth, and arithmetic intensity. Includes BQN workload analysis and 6 Kani proofs.
+
+### Tensor Parser (`he-binary-functor/tensor-parser/`)
+SPARK Ada zero-copy parser for BTEN binary tensor format. Includes SHA-256, CRC-64, HMAC-SHA-256, and SHA-256 reverse hash. 29 files, 10 test fixtures.
+
+### Block-Lace (`he-binary-functor/block-lace/`)
+C++ ledger node, Rust re-invocation, Liquid Haskell refinements for topological weaving of block sequences.
+
+### Crypto Primitives (`he-binary-functor/crypto/`)
+IAMAC (homomorphic MAC), malleability engine (Riemann zeta zeros), RSL architecture (10 candidate primitives), braid kernel, WORM seal chain, evolutionary convergence matrix.
+
+### Verilog-A (`he-binary-functor/verilog-a/`)
+Analog/mixed-signal trigonometric processors for braid matrix evaluation. Translinear circuits, SPARK-to-Verilog-A mapping.
+
+### WASM Runtime (`wasm/`)
+6 WebAssembly modules: runtime dispatch, ISA, WORM frame serialization, ledger replay, account registry, SHA-256.
+
+### Lean 4 Proofs (`lean/`)
+12 formal verification deeds with 0 sorry policy. Enochian engine, Malbolge processor, Bifrost capability exchange, WORM frame serialization, treasury engine.
+
+### Python Legacy (`src/`)
+Reference implementation: WORM storage, twin, audit, quantum adapter, cold boot protocol (3-phase), ICP anchor bridge.
+
+### Frontend (`frontend/`)
+Interactive Quantum Shadow Ledger with 6-stage pipeline, CTF challenges, tamper simulation, NAND visualization.
 
 ---
 
 ## Quick Start
 
 ```bash
-# Open the Quantum Shadow Ledger in your browser
+# Open the frontend
 open frontend/quantum_shadow_ledger.html
 
-# Full build (all layers)
+# Full build
 make full
 
-# Run Python baseline tests
+# Run tests
 make test
 ```
 
@@ -112,95 +201,39 @@ make test
 
 | Document | Description |
 |----------|-------------|
-| [Fibonacci Braid Ledger](./docs/FIBONACCI_BRAID_LEDGER.md) | Core specification and formal algebra |
-| [Formal Algebra](./docs/FORMAL_ALGEBRA.md) | Braid state transitions, invariants, verification |
-| [User Guide](./docs/USER.md) | Installation, usage, testing |
-| [About](./docs/ABOUT.md) | Ahmad Ali Parr, SnapKittyWest |
-| [Ledger](./docs/LEDGER.md) | WORM storage, account registry |
+| [Fibonacci Braid Ledger](./docs/FIBONACCI_BRAID_LEDGER.md) | Core specification |
+| [Formal Algebra](./docs/FORMAL_ALGEBRA.md) | Braid state transitions |
+| [User Guide](./docs/USER.md) | Installation, usage |
+| [About](./docs/ABOUT.md) | Ahmad Ali Parr |
+| [Ledger](./docs/LEDGER.md) | WORM storage spec |
 | [Inverted Monorepo](./INVERTED_MONOREPO.md) | Binary-first architecture |
-| [Math Dictionary](./MATH_DICTIONARY.md) | All mathematical operations |
-| [Security Policy](./SECURITY.md) | Threat model and practices |
+| [Math Dictionary](./MATH_DICTIONARY.md) | All math operations |
+| [Security](./SECURITY.md) | Threat model |
 | [Changelog](./CHANGELOG.md) | Version history |
-
----
-
-## Interactive Instrument
-
-**[Open Quantum Shadow Ledger](./frontend/quantum_shadow_ledger.html)**
-
-6-stage pipeline: Fibonacci -> Braid -> Array -> NAND -> Crypto -> Seal
 
 ---
 
 ## Visual Research Archive
 
 <p align="center">
-  <img src="./docs/assets/hero-01.mp4" width="280" poster="./docs/assets/hero-02.jpg">
-  <img src="./docs/assets/hero-02.jpg" width="280">
   <img src="./docs/assets/hero-03.jpg" width="280">
-</p>
-
-<p align="center">
   <img src="./docs/assets/hero-04.png" width="280">
   <img src="./docs/assets/hero-05.gif" width="280">
 </p>
 
 ---
 
-## Demonstration
+## Demonstration (8 Parts)
 
-- [Video Demo Part 1](./docs/assets/demo-part1.mp4) -- Core braid state transitions
-- [Video Demo Part 2](./docs/assets/demo-part2.mp4) -- Adversarial transform
-- [Video Demo Part 3](./docs/assets/demo-part3.mp4) -- NAND recursive primitive
-- [Video Demo Part 4](./docs/assets/demo-part4.mp4) -- Full ledger verification
-
----
-
-## Project Structure
-
-```
-devflow-finance-twin/
-├── docs/                           # Documentation
-│   ├── FIBONACCI_BRAID_LEDGER.md   # Core specification
-│   ├── FORMAL_ALGEBRA.md           # Braid algebra formalization
-│   ├── USER.md                     # User guide
-│   ├── ABOUT.md                    # About Ahmad Ali Parr
-│   ├── LEDGER.md                   # Ledger specification
-│   └── assets/                     # Media files (GIFs, videos, images)
-├── frontend/                       # Gold Standard Frontend
-│   └── quantum_shadow_ledger.html  # Interactive 6-stage pipeline UI
-├── lean/                           # Lean 4 formal verification
-├── wasm/                           # WebAssembly runtime
-├── he-binary-functor/              # Binary Functor Architecture
-│   ├── nand-architecture/          # NAND# spec
-│   ├── gfnand/                     # GFLOP→NAND Extractor
-│   ├── tensor-parser/              # SPARK Ada zero-copy
-│   ├── block-lace/                 # Block-Lace topology
-│   ├── verilog-a/                  # Analog/mixed-signal
-│   ├── crypto/                     # IAMAC, Malleability, RSL
-│   └── fibonacci-braid-ledger/     # FBL: array algebra + ledger
-├── pli/ / cobol/                   # Sovereign Treasury Engine
-├── src/                            # Python legacy + cold boot + ICP
-├── tests/                          # 122 passing tests
-├── INVERTED_MONOREPO.md            # Binary-first architecture
-├── MATH_DICTIONARY.md              # All math/arithmetic reference
-├── SECURITY.md                     # Security policy
-├── CHANGELOG.md                    # Version history
-├── PRODUCTION.md                   # Deployment guide
-└── README.md                       # This file
-```
-
----
-
-## Threat Model
-
-- **WORM & Merkle Chain**: Every record contains prev_hash = SHA-256(previous record). Tampering breaks chain validation.
-- **WASM Sandboxing**: Runtime executes in WebAssembly linear memory sandbox, no system access.
-- **Fixed-Point Arithmetic**: 18-decimal fixed-point for financial calculations, no floating-point drift.
-- **Quantum Isolation**: Quantum layer is sandboxed; outputs are suggestions pending deterministic approval.
-- **Lean 4 Proofs**: 12 deed files, 0 sorry policy, formal verification of core invariants.
-- **SPARK Mode**: All Ada cryptographic code in SPARK_Mode => On.
-- **Kani Proofs**: 31 bounded proof harnesses for NAND verification.
+| Part | Video | Description |
+|------|-------|-------------|
+| 1 | [demo-part1](./docs/assets/demo-part1.mp4) | Core braid state transitions and seal generation |
+| 2 | [demo-part2](./docs/assets/demo-part2.mp4) | Adversarial transform and crystallization |
+| 3 | [demo-part3](./docs/assets/demo-part3.mp4) | NAND recursive primitive |
+| 4 | [demo-part4](./docs/assets/demo-part4.mp4) | Full ledger verification |
+| 5 | [demo-part5](./docs/assets/demo-part5.mp4) | Braid algebra deep dive |
+| 7 | [demo-part7](./docs/assets/demo-part7.mp4) | Cryptographic seal chain |
+| 8 | [demo-part8](./docs/assets/demo-part8.mp4) | Complete system integration |
 
 ---
 
