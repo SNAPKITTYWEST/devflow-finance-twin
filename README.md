@@ -20,6 +20,24 @@
 
 ---
 
+## Table of Contents
+
+- [What Is This](#what-is-this)
+- [How It Works](#how-it-works)
+- [Architecture](#architecture)
+- [Braid Algebra](#braid-algebra)
+- [Research Lineage](#research-lineage)
+- [Languages](#languages)
+- [Repository Structure](#repository-structure)
+- [Verification](#verification)
+- [Interactive Frontend](#interactive-frontend)
+- [Demo Videos](#demo-videos)
+- [Quick Start](#quick-start)
+- [Documentation](#documentation)
+- [License](#license)
+
+---
+
 ## What Is This
 
 A cryptographic ledger system built on **braid group algebra**. Fibonacci numbers generate braid words, braid words produce state transitions, state transitions get sealed with FNV-1a-64 hashes, and the whole chain is append-only and tamper-evident.
@@ -31,18 +49,17 @@ A cryptographic ledger system built on **braid group algebra**. Fibonacci number
 ## How It Works
 
 ```mermaid
-flowchart TD
-    A["Fibonacci F(n)"] --> B["Braid Word W"]
-    B --> C{"Generator Valid?"}
-    C -->|Yes| D["State Transition T(σ, S)"]
-    C -->|No| E["REJECT"]
-    D --> F{"Invariant Holds?"}
-    F -->|No| G["Discard Transient"]
-    F -->|Yes| H["Crystallize C(S)"]
-    H --> I["Seal = H(Seal_prev ‖ C(S))"]
-    I --> J["Append to Ledger"]
-    J --> K["Next Recursive State"]
-    K --> A
+flowchart LR
+    A[Fib F_n] --> B[Braid Word]
+    B --> C{Valid?}
+    C -->|Yes| D[Transition]
+    C -->|No| E[REJECT]
+    D --> F{Invariant?}
+    F -->|No| G[Discard]
+    F -->|Yes| H[Crystallize]
+    H --> I[Seal]
+    I --> J[Ledger]
+    J --> A
 ```
 
 ---
@@ -51,28 +68,43 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph Core["Core Pipeline"]
-        F["FIB<br/>Fibonacci"] --> B["BRAID<br/>Word Gen"]
-        B --> S["ARRAY<br/>State Vec"]
-        S --> N["NAND<br/>Gate DAG"]
-        N --> C["CRYPTO<br/>FNV-1a"]
-        C --> L["LEDGER<br/>Seal Chain"]
-    end
+    FI[Fib Index] --> FIB[FIB]
+    FIB --> BRAID[BRAID]
+    BRAID --> ARRAY[ARRAY]
+    ARRAY --> NAND[NAND]
+    NAND --> CRYPTO[CRYPTO]
+    CRYPTO --> LEDGER[LEDGER]
+    LEDGER --> CHK[Chain Check]
+```
 
-    subgraph Input["Input Layer"]
-        FI["Fib Index n"]
-        SD["Seed"]
-    end
+---
 
-    subgraph Verify["Verification"]
-        INV["Invariant Check"]
-        CHR["Chain Validation"]
-    end
+## Braid Algebra
 
-    FI --> F
-    SD --> F
-    L --> CHR
-    D -.-> INV
+**Transition function:** `T(σᵢ, Bₙ) = Bₙ + contrib(σᵢ)`
+
+**Refinement type:** `braid_step : (g:Generator) × (s:{s|Valid(s)}) → {s'|s' = s + contrib(g) ∧ Valid(s')}`
+
+| Step | Generator | State |
+|------|-----------|-------|
+| B0 | init | `[0,0,0,0,0,0,0,0]` |
+| B1 | σ₁ | `[1,0,0,0,0,0,0,0]` |
+| B2 | σ₂⁻¹ | `[1,-1,0,0,0,0,0,0]` |
+| B3 | σ₁ | `[2,-1,0,0,0,0,0,0]` |
+| B4 | σ₃ | `[2,-1,1,0,0,0,0,0]` |
+
+---
+
+## Research Lineage
+
+```mermaid
+flowchart LR
+    P[Prolog] --> D[Datalog]
+    D --> M[Mercury]
+    M --> MU[MUMPS]
+    MU --> CS[ASP]
+    CS --> RS[Recursive-Step]
+    RS --> CSM[Crypto State Machine]
 ```
 
 ---
@@ -100,90 +132,48 @@ flowchart LR
 
 ## Repository Structure
 
-```mermaid
-flowchart TD
-    Repo["devflow-finance-twin/"] --> Docs["docs/<br/>Documentation + Media"]
-    Repo --> Frontend["frontend/<br/>Quantum Shadow Ledger UI"]
-    Repo --> Lean["lean/<br/>12 Formal Proofs"]
-    Repo --> Wasm["wasm/<br/>6 WASM Modules"]
-    Repo --> Ada["ada/<br/>Firmware + Loader"]
-    Repo --> Haskell["haskell/<br/>ISA Spec"]
-    Repo --> Ptx["ptx/<br/>CUDA Kernels"]
-    Repo --> Asm["x86_64/<br/>Assembly"]
-    Repo --> Pli["pli/<br/>Treasury Engine"]
-    Repo --> Cobol["cobol/<br/>WORM Bridge"]
-    Repo --> Chisel["chisel/<br/>Hardware Accel"]
-    Repo --> Scala["scala/<br/>Pipeline"]
-    Repo --> Src["src/<br/>Python Legacy"]
-    Repo --> Tests["tests/<br/>122 Tests"]
-    Repo --> FBL["he-binary-functor/<br/>Binary Functor Architecture"]
-
-    FBL --> NandArch["nand-architecture/<br/>NAND# ISA Spec"]
-    FBL --> Gfnand["gfnand/<br/>GFLOP→NAND Extractor"]
-    FBL --> Tensor["tensor-parser/<br/>SPARK Ada Parser"]
-    FBL --> BlockLace["block-lace/<br/>Topology"]
-    FBL --> Verilog["verilog-a/<br/>Analog Circuits"]
-    FBL --> Crypto["crypto/<br/>IAMAC, Malleability, RSL"]
-    FBL --> FblCore["fibonacci-braid-ledger/<br/>Core Research"]
-    FBL --> Kernel["kernel/<br/>State Machines"]
-    FBL --> RateLimiter["rate-limiter/<br/>RISC-V + Haskell"]
-    FBL --> Xslt["xslt-wasm/<br/>XSLT Compiler"]
-    FBL --> Sgl["sgl/<br/>Geometry Language"]
+```
+devflow-finance-twin/
+├── he-binary-functor/          # Binary Functor Architecture
+│   ├── nand-architecture/      #   NAND# ISA spec
+│   ├── gfnand/                 #   GFLOP→NAND extractor (Rust + Kani)
+│   ├── tensor-parser/          #   SPARK Ada zero-copy parser
+│   ├── fibonacci-braid-ledger/ #   Core research (C, Haskell, BQN, CPP)
+│   ├── crypto/                 #   IAMAC, Malleability, RSL (Rust)
+│   ├── verilog-a/              #   Analog braid circuits
+│   ├── kernel/                 #   State machines (Haskell + ASM)
+│   ├── block-lace/             #   Topology layer
+│   ├── lean4/                  #   Attractor + quench proofs
+│   ├── rate-limiter/           #   RISC-V + Haskell
+│   └── xslt-wasm/              #   XSLT→WASM compiler
+├── lean/                       # 12 Lean 4 formal proofs
+├── wasm/                       # 6 WASM modules
+├── ada/                        # Firmware + loader
+├── pli/                        # Treasury ledger
+├── scala/                      # Sovereign Treasury pipeline
+├── ptx/                        # CUDA kernels
+├── x86_64/                     # Assembly
+├── cobol/                      # WORM bridge
+├── chisel/                     # Hardware accelerator
+├── haskell/                    # ISA spec
+├── frontend/                   # Quantum Shadow Ledger UI
+├── src/                        # Python core
+├── tests/                      # 122 tests
+└── docs/                       # Documentation + media assets
 ```
 
 ---
 
-## Braid Algebra
+## Verification
 
-```mermaid
-stateDiagram-v2
-    [*] --> B0: Init {s | Valid(s)}
-    B0 --> B1: σ₁
-    B1 --> B2: σ₂⁻¹
-    B2 --> B3: σ₁
-    B3 --> B4: σ₃
-
-    state B0 {
-        [*] --> zero: [0,0,0,0,0,0,0,0]
-    }
-    state B1 {
-        [*] --> one: [1,0,0,0,0,0,0,0]
-    }
-    state B2 {
-        [*] --> two: [1,-1,0,0,0,0,0,0]
-    }
-    state B3 {
-        [*] --> three: [2,-1,0,0,0,0,0,0]
-    }
-    state B4 {
-        [*] --> four: [2,-1,1,0,0,0,0,0]
-    }
-```
-
-**Transition function:** `T(σᵢ, Bₙ) = Bₙ + contrib(σᵢ)`
-
-**Refinement type:** `braid_step : (g:Generator) × (s:{s|Valid(s)}) → {s'|s' = s + contrib(g) ∧ Valid(s')}`
-
----
-
-## Research Lineage
-
-```mermaid
-flowchart TD
-    P["Prolog<br/>Unification + DFS"] --> LR["Logic Reduction<br/>Directed Evaluation"]
-    LR --> D["Datalog<br/>Stratified Fixpoint"]
-    D --> M["Mercury<br/>Mode-Directed Compile"]
-    M --> MU["MUMPS Mini-Syntax<br/>Global Arrays"]
-    MU --> CS["Constraint Systems<br/>ASP Stable Models"]
-    CS --> RS["Recursive-Step Programming<br/>Deterministic Transitions"]
-    RS --> CSM["Cryptographic State Machines<br/>Braid + WORM Seals"]
-
-    style P fill:#1a1c25,stroke:#8a8d98
-    style D fill:#1a1c25,stroke:#8a8d98
-    style M fill:#1a1c25,stroke:#8a8d98
-    style RS fill:#1a1c25,stroke:#d6ff6a
-    style CSM fill:#1a1c25,stroke:#d6ff6a
-```
+| Layer | Tool | What It Checks |
+|-------|------|----------------|
+| Formal | Lean 4 — 12 deeds, 0 sorry | Invariant preservation |
+| Formal | SPARK Ada | SHA-256, CRC-64, HMAC |
+| Formal | Kani — 31 bounded proofs | Seal integrity |
+| Runtime | Invariant guard | `\|sᵢ\| < 8` |
+| Runtime | Chain validation | `prev_hash = H(record)` |
+| Runtime | FNV-1a-64 | Seal integrity |
 
 ---
 
@@ -218,29 +208,6 @@ flowchart TD
 | 5 | [demo-part5](./docs/assets/demo-part5.mp4) | Braid algebra deep dive |
 | 7 | [demo-part7](./docs/assets/demo-part7.mp4) | Cryptographic seal chain |
 | 8 | [demo-part8](./docs/assets/demo-part8.mp4) | Complete system integration |
-
----
-
-## Verification
-
-```mermaid
-flowchart LR
-    subgraph Formal["Formal Proofs"]
-        L4["Lean 4<br/>12 deeds, 0 sorry"]
-        SPARK["SPARK Ada<br/>SHA-256, CRC-64, HMAC"]
-        KANI["Kani<br/>31 bounded proofs"]
-    end
-
-    subgraph Runtime["Runtime Checks"]
-        INV["Invariant Guard<br/>|sᵢ| < 8"]
-        CHAIN["Chain Validation<br/>prev_hash = H(record)"]
-        SEAL["Seal Integrity<br/>FNV-1a-64"]
-    end
-
-    L4 --> INV
-    SPARK --> CHAIN
-    KANI --> SEAL
-```
 
 ---
 
