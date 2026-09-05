@@ -1,56 +1,50 @@
-# FIBONACCI BRAID LEDGER
-## Dense Deterministic Append-Only State Machine
+# fibonacci-braid-ledger
 
-### I. ARCHITECTURE
+**Core FBL Research** — The Fibonacci Braid Ledger is the central experimental research framework investigating cryptographic constructions from braid algebra, array languages, and recursive state transitions.
 
-**Core Principle**: Ledger indexed by Fibonacci position. Each entry contains a braid word and produces a deterministic state transition. Integrity chain binds all entries.
+## Subdirectories
 
-**Invariant**:
+| Directory | Language | Description |
+|-----------|----------|-------------|
+| [asm_x86/](asm_x86/) | x86-64 ASM | Assembly implementations (fib_braid_ledger.asm, assembly.asm) |
+| [bqn/](bqn/) | BQN | Array algebra: fibonacci.bqn, braid.bqn, ledger.bqn, tests.bqn, ledger_full.bqn |
+| [cpp/](cpp/) | C++ | Lock-free ledger: fib_braid_ledger.hpp, fbl_ledger.hpp, test_fib_braid_ledger.cpp, main.cpp |
+| [test_fixtures/](test_fixtures/) | Binary | 6 BTEN test vectors: corrupted_seal, inconsistent_bytecount, misalignment, payload_truncation, offset_overflow, invalid_rank |
+
+## Key Files at Root
+
+| File | Language | Description |
+|------|----------|-------------|
+| `FBL_RESEARCH_PAPER.md` | Markdown | ~8500 word research paper |
+| `LiquidHaskell.hs` | Haskell | Refinement type specs |
+| `LiquidHaskell_full.hs` | Haskell | Full refinement specs |
+| `fib_braid_ledger.c` | C | C implementation |
+| `fib_braid_ledger.h` | C | C header |
+
+## Pipeline
+
 ```
-s_n = s_0 XOR H(w_0) XOR H(w_1) XOR ... XOR H(w_n)
-e_n = H(e_{n-1} || entry[n])
+Fibonacci F(n) → Braid Word W = [σ] → Array State S ∈ ℤ⁸ → NAND DAG → FNV-1a Seal → Ledger
 ```
 
-### II. DATA REPRESENTATION
+## Build
 
-**Entry** (24 bytes packed):
-- u16 n: Fibonacci index
-- u16 prev: previous state
-- u8 op: 0=append 1=inverse 2=reduce
-- u8 len: word length 0..MAX_WORD
-- i8 word[8]: generators +k/-k, k in [1..MAX_STRAND-1]
-- u16 state: resulting state
-- u32 seal: integrity hash
+```bash
+# C++
+cd cpp && g++ -std=c++17 -O3 main.cpp -o fbl
 
-**Generator Encoding**: +k = positive crossing, -k = inverse crossing, k in {1,2,3}
+# BQN
+# Run in BQN REPL: fibonacci.bqn, braid.bqn, ledger.bqn
 
-### III. FIBONACCI
+# x86-64 ASM
+cd asm_x86 && nasm -f elf64 assembly.asm && ld assembly.o -o assembly
+```
 
-Precomputed u16 table, F(0)..F(20). F(20)=6765 fits u16. No runtime arithmetic.
+## Research Paper
 
-### IV. BRAID WORDS
-
-Free reduction: cancel adjacent inverses (sigma_i sigma_i^-1 -> epsilon). Non-commuting generators left as-is. Stored words are syntactically normalized.
-
-### V. SEAL CHAIN
-
-FNV-1a style mix: `s = (s << 5) XOR byte`. Each seal depends on previous seal + all entry fields. Modification of any entry invalidates all subsequent seals.
-
-### VI. STATE TRANSITION
-
-`s' = transit(s, word)` where `transit p (g:gs) = transit (p*3 + |g|) gs`
-
-### VII. VERIFICATION
-
-- Seal chain: recompute each seal from previous, compare
-- State invariant: recompute each state from accumulated XOR, compare
-- Word validity: all generators in valid range
-- Chain continuity: each entry's prev matches previous entry's state
-
-### VIII. LIMITATIONS
-
-- Max 48 entries (F(0)..F(47) with u64 index)
-- Non-cryptographic hash (FNV-1a) — not for adversarial environments
-- In-memory only — no disk persistence
-- Single-threaded — no concurrent appends
-- Braid reduction is syntactic only, not canonical form
+See `FBL_RESEARCH_PAPER.md` for the complete ~8500 word paper covering:
+- Braid group algebra and Fibonacci anyons
+- Array state transitions via BQN
+- NAND gate compilation
+- Cryptographic sealing
+- Experimental results

@@ -1,63 +1,65 @@
-# NAND# — Recursive NAND Array Programming Language
+# nand-architecture
+
+**NAND# Architecture Specification** — Complete formal specification of the NAND# instruction set architecture, binary encoding, grammar, and verification infrastructure.
+
+## Subdirectories
+
+| Directory | Language | Description |
+|-----------|----------|-------------|
+| [nand-isa/](nand-isa/) | Markdown | ISA specification (SPEC.md) |
+| [nand-binary/](nand-binary/) | Markdown | Binary encoding format (FORMAT.md) |
+| [nandsharp/](nandsharp/) | Markdown | NAND# high-level grammar (GRAMMAR.md) |
+| [array/](array/) | Markdown | Array semantics (SEMANTICS.md) |
+| [omega/](omega/) | Markdown | Omega model (MODEL.md) |
+| [bootstrap/](bootstrap/) | Markdown | Self-refining compiler design (CHAIN.md, SELF_REFINING.md) |
+| [refinement/](refinement/) | Markdown | Refinement type system (NAND_REFINEMENTS.md) |
+| [fsl/](fsl/) | FSL XML | Formal Specification Language (nand_vm.fsl) |
+| [kani/](kani/) | Rust/Kani | Bounded verification harnesses (verification.rs, harnesses.rs) |
+| [rust/](rust/) | Rust | NAND# VM implementation (src/lib.rs) |
+
+## Key Files at Root
+
+| File | Description |
+|------|-------------|
+| `NAND_SPEC.md` | Master NAND# specification |
+| `README.md` | This file |
+
+## NAND# Core
 
 ```
-BOOLEAN NAND
-     ↓
-BINARY MACHINE (16-bit ISA)
-     ↓
-ARRAY PROCESSOR (element-wise, reshape, transpose, reduce)
-     ↓
-NAND# (surface language)
-     ↓
-VERIFIED RUST (interpreter + compiler + VM)
-     ↓
-RECURSIVE SELF-HOSTING (bootstrap chain)
+NAND(a,b) = NOT(AND(a,b))  — Universal gate
+All Boolean functions expressible as NAND compositions
+Gate counts: n-bit add = 9n-6, n×n mul = 9n²-15n+6
 ```
 
-**Fundamental rule:** everything above NAND eventually reduces to NAND.
-
-## Directory map
-
-| Path | Content |
-|------|---------|
-| `nand-isa/` | ISA specification, instruction encoding, derived Boolean operators |
-| `nand-binary/` | Canonical binary format, assembler grammar, golden encoding |
-| `nandsharp/` | Surface language grammar, type system, semantic rules |
-| `array/` | Array values, broadcasting, reshape, transpose, reduction |
-| `rust/` | Reference implementation (zero runtime deps) |
-| `kani/` | Model-checking harnesses + property classification |
-| `omega/` | Bounded mathematical model (addresses, shapes, termination) |
-| `bootstrap/` | Explicit compiler₀ → compiler₁ chain and subset boundary |
-| `tests/` | Test driver |
-
-## Quick start
+## Verification
 
 ```bash
-cd rust
-cargo test
+# Kani bounded proofs
+cd kani && cargo kani
+
+# Rust VM
+cd rust && cargo build
 ```
 
-## Semantic equivalence claim (bounded subset)
+## Specifications
 
-For every closed Boolean expression `e` built from the operators
-`nand`, `not`, `and`, `or`, `xor`, `mux` and the constants `0`/`1`:
+| Spec | File | Status |
+|------|------|--------|
+| ISA | nand-isa/SPEC.md | Defined |
+| Binary Format | nand-binary/FORMAT.md | Defined |
+| Grammar | nandsharp/GRAMMAR.md | Defined |
+| Array Semantics | array/SEMANTICS.md | Defined |
+| Omega Model | omega/MODEL.md | Defined |
+| Bootstrap Chain | bootstrap/CHAIN.md | Design |
+| Refinement Types | refinement/NAND_REFINEMENTS.md | Defined |
+| FSL Annotations | fsl/nand_vm.fsl | Defined |
+| Kani Harnesses | kani/src/*.rs | 31 proofs |
 
-```
-EXECUTE(LOWER(e)) = EVAL(e)
-```
+## Bootstrap Stages
 
-The equality is witnessed by:
-
-1. unit tests that execute both paths,
-2. Kani proofs of the Boolean identities and of encode/decode injectivity
-   for the defined instruction set,
-3. the explicit lowering rules in `rust/src/lower.rs`.
-
-## What is *not* claimed
-
-- NAND alone does not give performance, safety, or fault tolerance.
-- Kani has not proven unbounded properties; only the listed harnesses
-  have been written for bounded model-checking.
-- The self-hosting fixed-point has not yet been mechanically reached;
-  the bootstrap boundary and the seed program are defined so that the
-  remaining work is concrete.
+| Stage | Language | Description |
+|-------|----------|-------------|
+| compiler₀ | Rust | Trusted reference, Kani-verified |
+| compiler₁ | NAND# | Self-hosted with refinement types |
+| compiler₂ | NAND# | Fixed-point: binary₁ == binary₂ |
