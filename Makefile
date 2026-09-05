@@ -1,7 +1,6 @@
 # Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # DEED-089: Sovereign Treasury Engine — Build System
-# Wires PL/I, COBOL, NASM, C, Chisel, Scala, and WASM layers together.
 
 CC = gcc
 NASM = nasm
@@ -23,13 +22,14 @@ ASM_OBJS = x86_64/treasury_serialization.o
 # Static library
 LIBRARY = lib/libworm.a
 
-.PHONY: all wasm native asm clean test
+.PHONY: all wasm native asm clean test test-verbose test-unit lint help
 
 all: wasm native asm $(LIBRARY)
 
 # ── WASM compilation (Node.js + wabt.js) ──────────────────────────────────────
 
 wasm:
+	@echo "=== Compiling WASM modules ==="
 	node compile_wasm.js
 
 # ── Native C compilation ──────────────────────────────────────────────────────
@@ -85,14 +85,39 @@ chisel:
 # ── Python tests (baseline) ──────────────────────────────────────────────────
 
 test:
-	python -m pytest tests/test_stack.py -v
+	@echo "=== Running production test suite ==="
+	PYTHONPATH=src python -m pytest tests/test_stack.py -v --tb=short
+
+test-verbose:
+	@echo "=== Running production test suite (verbose) ==="
+	PYTHONPATH=src python -m pytest tests/test_stack.py -v --tb=long -s
+
+test-unit:
+	@echo "=== Running unit tests only ==="
+	PYTHONPATH=src python -m pytest tests/test_stack.py -v -k "not Integration and not adversarial" --tb=short
+
+test-integration:
+	@echo "=== Running integration tests ==="
+	PYTHONPATH=src python -m pytest tests/test_stack.py -v -k "Integration" --tb=short
+
+# ── Linting ───────────────────────────────────────────────────────────────────
+
+lint:
+	@echo "=== Checking Python syntax ==="
+	@python -m py_compile src/worm.py && echo "worm.py: OK"
+	@python -m py_compile src/twin.py && echo "twin.py: OK"
+	@python -m py_compile src/audit.py && echo "audit.py: OK"
+	@python -m py_compile src/quantum.py && echo "quantum.py: OK"
+	@python -m py_compile src/cli.py && echo "cli.py: OK"
 
 # ── Clean ─────────────────────────────────────────────────────────────────────
 
 clean:
 	rm -f $(NATIVE_OBJS) $(ASM_OBJS) $(LIBRARY)
-	rm -rf generated/
+	rm -rf generated/ lib/
 	rm -f data/treasury-worm*.bin
+	rm -f src/*.pyc
+	rm -rf src/__pycache__
 
 # ── Full build (all layers) ──────────────────────────────────────────────────
 
@@ -101,3 +126,20 @@ full: all zig-loader scala-pipeline chisel
 	@echo "WASM modules: $(WASM_MODULES)"
 	@echo "Native library: $(LIBRARY)"
 	@echo "Run 'make test' to verify baseline"
+
+# ── Help ──────────────────────────────────────────────────────────────────────
+
+help:
+	@echo "Targets:"
+	@echo "  all            Build WASM + native C + NASM assembly"
+	@echo "  wasm           Compile WASM modules via Node.js"
+	@echo "  native         Compile native C objects"
+	@echo "  asm            Compile NASM assembly"
+	@echo "  test           Run production test suite"
+	@echo "  test-verbose   Run tests with full output"
+	@echo "  test-unit      Run unit tests only"
+	@echo "  test-integration  Run integration tests only"
+	@echo "  lint           Syntax-check all Python sources"
+	@echo "  clean          Remove build artifacts"
+	@echo "  full           Full build (all layers)"
+	@echo "  help           Show this help"

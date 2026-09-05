@@ -1,4 +1,4 @@
+# Devflow Finance Twin — Production Dependencies
 # Standard library only for core deterministic engine
-# Optional testing utilities
-pytest>=8.0.0
-
+# Pinned versions for reproducibility
+pytest>=8.0.0,<9.0.0
