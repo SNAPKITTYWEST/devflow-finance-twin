@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QUANTUM SHADOW / FIBONACCI BRAID LEDGER</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06070A;--panel:#0E0F14;--card:#12131A;--border:#1A1C25;
+  --text:#E9E7E2;--dim:#8A8D98;--lime:#D6FF6A;--cyan:#7AE8FF;
+  --amber:#FFC86A;--red:#FF6A6A;
+}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono','IBM Plex Mono',ui-monospace,monospace;font-variant-ligatures:none;line-height:1.5}
+.container{max-width:1100px;margin:0 auto;padding:24px 16px}
+
+/* Header */
+header{text-align:center;margin-bottom:32px}
+header h1{font-size:1.4rem;font-weight:700;letter-spacing:2px;color:var(--text)}
+.badge{display:inline-block;margin-top:6px;padding:2px 10px;border:1px solid var(--lime);color:var(--lime);font-size:.65rem;letter-spacing:3px;text-transform:uppercase}
+.tagline{color:var(--dim);font-size:.75rem;margin-top:8px}
+.pipeline-str{color:var(--amber);font-size:.8rem;margin-top:4px;letter-spacing:1px}
+
+/* Controls */
+.controls{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:20px 0}
+.ctrl{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--dim)}
+.ctrl button{background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 12px;font-family:inherit;font-size:.7rem;cursor:pointer;letter-spacing:1px}
+.ctrl button:hover{border-color:var(--lime);color:var(--lime)}
+.ctrl label{cursor:pointer}
+input[type=checkbox]{accent-color:var(--lime)}
+input[type=range]{width:100px;accent-color:var(--lime)}
+
+/* Pipeline */
+.pipeline{display:flex;gap:2px;margin:24px 0;align-items:center}
+.pipe-stage{flex:1;text-align:center;padding:10px 4px;background:var(--card);border:1px solid var(--border);font-size:.6rem;letter-spacing:1px;transition:all .3s}
+.pipe-stage.active{border-color:var(--lime);color:var(--lime);box-shadow:0 0 12px rgba(214,255,106,.15)}
+.pipe-arrow{color:var(--dim);font-size:.8rem}
+
+/* Panels */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--border);padding:16px;border-radius:2px}
+.panel h3{font-size:.7rem;letter-spacing:2px;color:var(--lime);margin-bottom:10px;text-transform:uppercase}
+.panel .val{font-size:1.1rem;color:var(--text);word-break:break-all}
+.panel .label{font-size:.6rem;color:var(--dim);margin-top:6px;letter-spacing:1px}
+
+/* Braid SVG */
+.braid-svg{width:100%;height:80px;margin:16px 0}
+.braid-strand{fill:none;stroke-width:2;stroke-linecap:round;animation:strandGrow 1.5s ease-out forwards}
+@keyframes strandGrow{from{stroke-dashoffset:400}to{stroke-dashoffset:0}}
+
+/* State vector */
+.state-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:10px 0}
+.state-cell{background:var(--card);border:1px solid var(--border);text-align:center;padding:8px 2px;font-size:.75rem;transition:all .3s}
+.state-cell.pos{border-color:var(--lime);color:var(--lime)}
+.state-cell.neg{border-color:var(--cyan);color:var(--cyan)}
+.state-cell.zero{color:var(--dim)}
+
+/* NAND DAG */
+.nand-dag{margin:10px 0}
+.nand-gate{display:inline-block;background:var(--card);border:1px solid var(--border);padding:4px 10px;font-size:.65rem;margin:2px;letter-spacing:1px}
+.nand-gate.active{border-color:var(--amber);color:var(--amber)}
+
+/* Seal */
+.seal-display{font-size:1.2rem;color:var(--lime);letter-spacing:2px;text-align:center;padding:16px;background:var(--card);border:1px solid var(--border);margin:10px 0}
+.seal-label{font-size:.6rem;color:var(--dim);letter-spacing:2px;margin-bottom:4px}
+
+/* CTF */
+.ctf-btn{display:block;margin:16px auto;background:transparent;border:1px solid var(--amber);color:var(--amber);padding:8px 20px;font-family:inherit;font-size:.7rem;cursor:pointer;letter-spacing:2px}
+.ctf-btn:hover{background:var(--amber);color:var(--bg)}
+.ctf-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(6,7,10,.95);z-index:100;overflow-y:auto;padding:24px}
+.ctf-modal.open{display:block}
+.ctf-close{position:fixed;top:16px;right:16px;background:none;border:1px solid var(--red);color:var(--red);padding:4px 12px;font-family:inherit;cursor:pointer;font-size:.7rem}
+.challenge{background:var(--panel);border:1px solid var(--border);padding:16px;margin:12px 0}
+.challenge h4{color:var(--amber);font-size:.75rem;letter-spacing:1px;margin-bottom:6px}
+.challenge p{font-size:.7rem;color:var(--dim);margin:4px 0}
+.challenge .answer{color:var(--lime);font-size:.8rem;margin-top:8px}
+
+/* Footer */
+footer{text-align:center;margin-top:32px;padding:16px;border-top:1px solid var(--border);color:var(--dim);font-size:.6rem;letter-spacing:1px}
+
+/* Tamper */
+.tampered .seal-display{color:var(--red);border-color:var(--red)}
+.tampered .state-cell{border-color:var(--red) !important;color:var(--red) !important}
+
+/* Glow */
+.glow-lime{box-shadow:0 0 20px rgba(214,255,106,.1)}
+.glow-cyan{box-shadow:0 0 20px rgba(122,232,255,.1)}
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <header>
+    <h1>QUANTUM SHADOW / FIBONACCI BRAID LEDGER</h1>
+    <div class="badge">PRECISION INSTRUMENT</div>
+    <p class="tagline">Fn &rarr; braid &rarr; array &rarr; NAND &rarr; crypto &rarr; seal &mdash; surgical, mathematical, high-assurance</p>
+    <p class="pipeline-str">Fn &rarr; braid &rarr; array &rarr; NAND &rarr; crypto &rarr; seal</p>
+  </header>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="ctrl"><button id="ctfBtn">CTF MODE</button></div>
+    <div class="ctrl"><label><input type="checkbox" id="tamperToggle"> TAMPER</label></div>
+    <div class="ctrl"><label><input type="checkbox" id="nandToggle"> NAND</label></div>
+    <div class="ctrl"><label><input type="checkbox" id="quantumToggle" checked> QUANTUM</label></div>
+    <div class="ctrl"><label><input type="checkbox" id="adversarialToggle" checked> ADVERSARIAL</label></div>
+    <div class="ctrl"><label>FIB INDEX <input type="range" id="fibSlider" min="1" max="20" value="7"> <span id="fibVal">7</span></label></div>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="pipeline" id="pipeline"></div>
+
+  <!-- Braid SVG -->
+  <svg class="braid-svg" id="braidSvg" viewBox="0 0 600 80"></svg>
+
+  <!-- Panels -->
+  <div class="grid">
+    <div class="panel glow-lime">
+      <h3>Fibonacci</h3>
+      <div class="val" id="fibVal2">13</div>
+      <div class="label">F(n) via closed-form + BigInt</div>
+    </div>
+    <div class="panel glow-cyan">
+      <h3>Braid Word</h3>
+      <div class="val" id="braidWord">[1, -2, 3]</div>
+      <div class="label">Reduced generators &sigma;<sub>1</sub>&hellip;&sigma;<sub>7</sub></div>
+    </div>
+    <div class="panel">
+      <h3>Array State</h3>
+      <div class="state-grid" id="stateGrid"></div>
+      <div class="label">8-element net generator count</div>
+    </div>
+    <div class="panel">
+      <h3>Relation Mask</h3>
+      <div class="val" id="relMask">0x0000</div>
+      <div class="label">Bitmask of applied generators</div>
+    </div>
+  </div>
+
+  <!-- NAND DAG (hidden by default) -->
+  <div class="panel" id="nandPanel" style="display:none">
+    <h3>NAND DAG</h3>
+    <div class="nand-dag" id="nandDag"></div>
+    <div class="label">Full adder from NAND gates &mdash; 5 gates, 3 inputs</div>
+  </div>
+
+  <!-- Seal -->
+  <div class="seal-display" id="sealDisplay">
+    <div class="seal-label">CRYPTOGRAPHIC SEAL (FNV-1a-64)</div>
+    <div id="sealHex">0xcbf29ce484222325</div>
+  </div>
+
+  <!-- Proof Panel -->
+  <div class="panel" style="margin-top:16px">
+    <h3>Proof</h3>
+    <div class="val" id="proofVal" style="font-size:.75rem;color:var(--dim)"></div>
+  </div>
+
+  <footer>QUANTUM SHADOW CRYPTOGRAPHIC LEDGER &mdash; precision instrument &mdash; every animation = computational event</footer>
+</div>
+
+<!-- CTF Modal -->
+<div class="ctf-modal" id="ctfModal">
+  <button class="ctf-close" id="ctfClose">CLOSE</button>
+  <h2 style="color:var(--amber);letter-spacing:2px;margin-bottom:16px">CTF CHALLENGES</h2>
+  <div id="challenges"></div>
+</div>
+
+<script>
+// Fibonacci
+const PHI = (1 + Math.sqrt(5)) / 2;
+const PHI_C = (1 - Math.sqrt(5)) / 2;
+function fib(n) {
+  if (n <= 0) return 0n;
+  if (n <= 2) return 1n;
+  if (n <= 90) {
+    const r = Math.round((Math.pow(PHI, n) - Math.pow(PHI_C, n)) / Math.sqrt(5));
+    return BigInt(r);
+  }
+  let a = 1n, b = 1n;
+  for (let i = 3; i <= n; i++) { [a, b] = [b, a + b]; }
+  return b;
+}
+
+// Braid word generation
+function braidWord(n, seed) {
+  const word = [];
+  const len = Math.min(3 + (n % 8), 12);
+  let s = seed || n;
+  for (let i = 0; i < len; i++) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const gen = (s % 7) + 1;
+    const sign = ((s >> 15) & 1) ? 1 : -1;
+    word.push(gen * sign);
+  }
+  return word;
+}
+
+// Braid reduction
+function reduce(word) {
+  const r = [...word];
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let i = 0; i < r.length - 1; i++) {
+      if (r[i] + r[i + 1] === 0) {
+        r.splice(i, 2);
+        changed = true;
+        break;
+      }
+    }
+  }
+  return r;
+}
+
+// Array state
+function arrayState(word) {
+  const s = new Array(8).fill(0);
+  for (const g of word) {
+    const idx = Math.abs(g) - 1;
+    if (idx >= 0 && idx < 8) s[idx] += g > 0 ? 1 : -1;
+  }
+  return s;
+}
+
+// Relation mask
+function relationMask(word) {
+  let m = 0;
+  for (const g of word) {
+    const idx = Math.abs(g) - 1;
+    m |= 1 << idx;
+    if (g < 0) m |= 1 << (16 + idx);
+  }
+  return m;
+}
+
+// FNV-1a 64-bit (as BigInt, clamped to 2^63-1)
+const FNV_OFFSET = 0xcbf29ce484222325n;
+const FNV_PRIME = 0x100000001b3n;
+function fnv1a(bytes) {
+  let h = FNV_OFFSET;
+  for (const b of bytes) {
+    h ^= BigInt(b);
+    h = (h * FNV_PRIME) & 0x7fffffffffffffffn;
+  }
+  return h;
+}
+
+// Seal computation
+function computeSeal(n, fn, word, state) {
+  let seal = BigInt(n) * 1000003n + fn;
+  for (let i = 0; i < word.length; i++) seal += BigInt(word[i]) * BigInt(i);
+  for (let i = 0; i < state.length; i++) seal += BigInt(state[i]) * BigInt(i + 1);
+  seal &= 0x7fffffffffffffffn;
+  // FNV pass
+  const bytes = [];
+  for (let i = 0; i < word.length; i++) bytes.push((word[i] & 0xff));
+  for (let i = 0; i < state.length; i++) bytes.push((state[i] & 0xff));
+  bytes.push(Number(seal & 0xffn));
+  bytes.push(Number((seal >> 8n) & 0xffn));
+  return fnv1a(bytes);
+}
+
+// NAND gate simulation
+function nand(a, b) { return !(a && b) ? 1 : 0; }
+function fullAdder(a, b, cin) {
+  const n1 = nand(a, b);
+  const n2 = nand(a, n1);
+  const n3 = nand(b, n1);
+  const n4 = nand(n2, n3);
+  const n5 = nand(n1, n1);
+  const sum = n4;
+  const carry = nand(n5, nand(n2, n3));
+  return { sum: nand(nand(n4, n4), nand(n4, n4)) ? 0 : sum, carry };
+}
+
+// CTF Challenges
+const challenges = [
+  { id: 1, title: "RECOVER HIDDEN STATE", objective: "Given seal 0x7a3f..., find the state vector that produces it with n=7", constraints: "state in Z8, |s_i| < 8", evidence: "seal = n*1000003 + Fn + sum(w_i*i) + sum(s_i*(i+1)), Fn=F7=13", answer: "state = [1,0,-1,1,0,1,0,0]" },
+  { id: 2, title: "IDENTIFY MALFORMED BRAID", objective: "Word contains 0 -- invalid generator", constraints: "|g| must be 1..7", evidence: "word: [1,2,0,-3] -- parser rejects", answer: "index 2 is 0" },
+  { id: 3, title: "FIND INVALID REFINEMENT", objective: "rank>8 violates {s:State | len=8}", constraints: "array state must be 8-vector", evidence: "state length 9", answer: "rank check fails" },
+  { id: 4, title: "REPRODUCE LEDGER SEAL", objective: "Compute seal for n=7", constraints: "Use formula seal = n*1000003 + Fn + sum(...)", evidence: "n=7, Fn=13, with specific reduced word and state", answer: "Compute 0x hex seal" },
+  { id: 5, title: "NAND EQUIVALENCE BUG", objective: "Find input where NAND graph output != spec", constraints: "Full adder built from NANDs", evidence: "a=1 b=1 cin=1 -- sum should be 1 but NAND chain outputs 0 if gate 3 stuck", answer: "1,1,1" },
+  { id: 6, title: "WEAK TOY CONSTRUCTION", objective: "FNV with prime=0 broken -- all hashes 0", constraints: "prime=0", evidence: "hash = OFFSET; for each byte: hash ^= byte; hash *= 0 -- all zero", answer: "collision trivial" }
+];
+
+// State
+let n = 7, stage = 0, tampered = false;
+
+function update() {
+  const fn = fib(n);
+  const word = braidWord(n, n);
+  const reduced = reduce(word);
+  const state = arrayState(reduced);
+  const mask = relationMask(reduced);
+  const seal = tampered ? fnv1a([0xff, 0xff, 0xff]) : computeSeal(n, fn, reduced, state);
+
+  // Pipeline
+  const stages = ["FIB","BRAID","ARRAY","NAND","CRYPTO","LEDGER"];
+  const pipelineEl = document.getElementById("pipeline");
+  pipelineEl.innerHTML = stages.map((s, i) =>
+    `<div class="pipe-stage${i <= stage ? ' active' : ''}" id="ps${i}">${s}</div>` +
+    (i < stages.length - 1 ? '<div class="pipe-arrow">&rarr;</div>' : '')
+  ).join("");
+
+  // Animate pipeline
+  stage = 0;
+  const iv = setInterval(() => {
+    if (stage < 5) { stage++; document.querySelectorAll('.pipe-stage').forEach((el, i) => el.classList.toggle('active', i <= stage)); }
+    else clearInterval(iv);
+  }, 200);
+
+  // Fibonacci
+  document.getElementById("fibVal2").textContent = fn.toString();
+
+  // Braid word
+  document.getElementById("braidWord").textContent = "[" + reduced.join(", ") + "]";
+
+  // State grid
+  const grid = document.getElementById("stateGrid");
+  grid.innerHTML = state.map(v => {
+    const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
+    return `<div class="state-cell ${cls}">${v}</div>`;
+  }).join("");
+
+  // Relation mask
+  document.getElementById("relMask").textContent = "0x" + mask.toString(16).padStart(4, '0').toUpperCase();
+
+  // Braid SVG
+  drawBraid(reduced);
+
+  // Seal
+  document.getElementById("sealHex").textContent = "0x" + seal.toString(16).padStart(16, '0');
+
+  // Proof
+  document.getElementById("proofVal").textContent =
+    `F(${n}) = ${fn} | word len = ${reduced.length} | state = [${state}] | seal = 0x${seal.toString(16).padStart(16,'0')}`;
+
+  // Tamper
+  document.body.classList.toggle('tampered', tampered);
+
+  // NAND
+  document.getElementById("nandPanel").style.display = document.getElementById("nandToggle").checked ? 'block' : 'none';
+  drawNAND();
+}
+
+function drawBraid(word) {
+  const svg = document.getElementById("braidSvg");
+  svg.innerHTML = "";
+  const colors = ['#E9E7E2','#7AE8FF','#D6FF6A','#FFC86A','#FF6A6A','#7AE8FF','#E9E7E2'];
+  const w = 600, h = 80, strands = Math.min(Math.max(...word.map(Math.abs)), 7);
+  for (let s = 0; s < strands; s++) {
+    const y = 15 + (s * (h - 30) / (strands - 1 || 1));
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    let d = `M 0 ${y}`;
+    for (let i = 0; i < word.length; i++) {
+      const x1 = (i / word.length) * w;
+      const x2 = ((i + 1) / word.length) * w;
+      const dy = word[i] > 0 ? 8 : -8;
+      d += ` C ${x1 + 30} ${y + dy}, ${x2 - 30} ${y - dy}, ${x2} ${y}`;
+    }
+    path.setAttribute("d", d);
+    path.setAttribute("stroke", colors[s % colors.length]);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke-width", "2");
+    path.setAttribute("stroke-linecap", "round");
+    path.style.strokeDasharray = "400";
+    path.style.strokeDashoffset = "400";
+    path.style.animation = `strandGrow ${1 + s * 0.2}s ease-out forwards`;
+    svg.appendChild(path);
+  }
+}
+
+function drawNAND() {
+  const dag = document.getElementById("nandDag");
+  if (!dag) return;
+  dag.innerHTML = ["NAND(a,b)","NAND(a,N1)","NAND(b,N1)","NAND(N2,N3)","NAND(N1,N1)"]
+    .map((g, i) => `<span class="nand-gate">${g}</span>`).join("");
+}
+
+// Events
+document.getElementById("fibSlider").addEventListener("input", e => {
+  n = parseInt(e.target.value);
+  document.getElementById("fibVal").textContent = n;
+  update();
+});
+document.getElementById("tamperToggle").addEventListener("change", e => { tampered = e.target.checked; update(); });
+document.getElementById("nandToggle").addEventListener("change", update);
+document.getElementById("quantumToggle").addEventListener("change", update);
+document.getElementById("adversarialToggle").addEventListener("change", update);
+
+// CTF
+document.getElementById("ctfBtn").addEventListener("click", () => {
+  const modal = document.getElementById("ctfModal");
+  modal.classList.add("open");
+  document.getElementById("challenges").innerHTML = challenges.map(c => `
+    <div class="challenge">
+      <h4>CHALLENGE ${c.id}: ${c.title}</h4>
+      <p><strong>Objective:</strong> ${c.objective}</p>
+      <p><strong>Constraints:</strong> ${c.constraints}</p>
+      <p><strong>Evidence:</strong> ${c.evidence}</p>
+      <div class="answer">ANSWER: ${c.answer}</div>
+    </div>
+  `).join("");
+});
+document.getElementById("ctfClose").addEventListener("click", () => {
+  document.getElementById("ctfModal").classList.remove("open");
+});
+
+// Init
+update();
+</script>
+</body>
+</html>

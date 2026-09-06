@@ -1,0 +1,19 @@
+#include "disciplines.vams"
+
+module trig_processor(in_theta, out_sin, out_cos);
+    input in_theta;
+    output out_sin, out_cos;
+    voltage in_theta, out_sin, out_cos;
+    
+    parameter real max_voltage = 3.3;
+    parameter real pi = 3.14159265359;
+    
+    analog begin
+        V(out_sin) <+ max_voltage * sin(V(in_theta));
+        V(out_cos) <+ max_voltage * cos(V(in_theta));
+        
+        if (abs(V(in_theta)) > pi) begin
+            $strobe("CRITICAL: Trigonometric boundary violation detected in semiconductor substrate.");
+        end
+    end
+endmodule

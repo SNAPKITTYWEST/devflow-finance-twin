@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fsl version="1.0" target="nandsharp-vm" xmlns="urn:nandsharp:fsl">
+
+  <constants>
+    <const name="MEM_SIZE" value="65536" type="nat"/>
+    <const name="REG_COUNT" value="16" type="nat"/>
+    <const name="WORD_BITS" value="16" type="nat"/>
+  </constants>
+
+  <type name="RegId">
+    <refinement>
+      <predicate>{r : nat | 0 &lt;= r &amp;&amp; r &lt; REG_COUNT}</predicate>
+    </refinement>
+  </type>
+
+  <type name="Bit">
+    <refinement>
+      <predicate>{v : nat | v = 0 || v = 1}</predicate>
+    </refinement>
+  </type>
+
+  <invariant name="r0_zero">
+    <forall>s : State</forall>
+    <ensures>s.reg[0] = 0</ensures>
+  </invariant>
+
+  <type name="Addr">
+    <refinement>
+      <predicate>{a : nat | 0 &lt;= a &amp;&amp; a &lt; MEM_SIZE}</predicate>
+    </refinement>
+  </type>
+
+  <function name="addr_add">
+    <params>
+      <param name="base" type="nat"/>
+      <param name="imm" type="nat"/>
+    </params>
+    <requires>
+      <predicate>0 &lt;= imm &amp;&amp; imm &lt; 16</predicate>
+    </requires>
+    <ensures>
+      <predicate>result = (base + imm) mod 65536</predicate>
+    </ensures>
+  </function>
+
+  <instruction name="Load">
+    <fields>
+      <field name="dst" type="RegId"/>
+      <field name="a" type="RegId"/>
+      <field name="imm" type="nat"/>
+    </fields>
+    <requires>
+      <predicate>0 &lt;= imm &amp;&amp; imm &lt; 16</predicate>
+    </requires>
+    <assigns>
+      <target>s.reg[dst]</target>
+    </assigns>
+    <ensures>
+      <predicate>(dst = 0) ==&gt; (s.reg[0] = 0)</predicate>
+    </ensures>
+  </instruction>
+
+  <instruction name="Store">
+    <fields>
+      <field name="dst" type="RegId"/>
+      <field name="a" type="RegId"/>
+      <field name="imm" type="nat"/>
+    </fields>
+    <requires>
+      <predicate>0 &lt;= imm &amp;&amp; imm &lt; 16</predicate>
+    </requires>
+    <assigns>
+      <target>s.mem[addr_add(s.reg[a], imm)]</target>
+    </assigns>
+  </instruction>
+
+  <function name="linear_index">
+    <param name="base" type="Addr"/>
+    <param name="shape" type="NatSeq"/>
+    <param name="idxs" type="NatSeq"/>
+    <requires>
+      <predicate>length(idxs) == length(shape)</predicate>
+      <predicate>forall i. idxs[i] &lt; shape[i]</predicate>
+      <predicate>product(shape) &gt; 0</predicate>
+    </requires>
+    <returns type="Addr"
+             ensures="result == base + sum(idxs[i] * stride(shape, i))
+                      &amp;&amp; result &lt; base + product(shape)"/>
+  </function>
+
+  <invariant name="pc_in_bounds">
+    <body><![CDATA[0 <= pc && pc < 65536]]></body>
+  </invariant>
+
+  <invariant name="mem_wellformed">
+    <body><![CDATA[forall a. 0 <= a < 65536 ==> 0 <= mem[a] && mem[a] <= 0xFFFF]]></body>
+  </invariant>
+
+</fsl>

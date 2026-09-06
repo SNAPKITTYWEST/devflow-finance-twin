@@ -1,0 +1,52 @@
+`include "disciplines.vams"
+`include "constants.vams"
+
+// =====================================================================
+// RAW QUANTUM VERILOG-A GROVER ITERATION (Continuous-Time Analog)
+// Maps discrete quantum search into continuous analog voltage domain
+// =====================================================================
+
+module grover_analog_core (
+    inout electrical [3:0] psi_re,
+    inout electrical [3:0] psi_im,
+    input electrical clk_hw,
+    input electrical target_idx
+);
+
+    parameter real THETA_NUM = 89.0;
+    parameter real THETA_DEN = 2462.0;
+    parameter real THETA_PHASE = THETA_NUM / THETA_DEN;
+
+    parameter real C_QUANTUM = 1.0p;
+    parameter real G_DIFFUSE = 1.0m;
+    parameter real V_TH = 0.5;
+
+    real mean_re, mean_im;
+    real oracle_shift;
+    integer i;
+
+    analog begin
+        mean_re = (V(psi_re[0]) + V(psi_re[1]) + V(psi_re[2]) + V(psi_re[3])) / 4.0;
+        mean_im = (V(psi_im[0]) + V(psi_im[1]) + V(psi_im[2]) + V(psi_im[3])) / 4.0;
+
+        for (i = 0; i < 4; i = i + 1) begin
+            if (abs(V(target_idx) - i) < 0.1) begin
+                oracle_shift = -1.0;
+            end else begin
+                oracle_shift = 1.0;
+            end
+
+            I(psi_re[i]) <+ C_QUANTUM * ddt(V(psi_re[i]));
+            I(psi_re[i]) <+ -G_DIFFUSE * (2.0 * mean_im - (oracle_shift * V(psi_im[i])));
+
+            I(psi_im[i]) <+ C_QUANTUM * ddt(V(psi_im[i]));
+            I(psi_im[i]) <+ G_DIFFUSE * (2.0 * mean_re - (oracle_shift * V(psi_re[i])));
+        end
+
+        @(cross(V(clk_hw) - V_TH, +1)) begin
+            for (i = 0; i < 4; i = i + 1) begin
+                $strobe("Tick crossing: Crystallizing phase at node %d, V_re=%g", i, V(psi_re[i]));
+            end
+        end
+    end
+endmodule

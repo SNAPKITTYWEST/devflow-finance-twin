@@ -1,0 +1,31 @@
+include "std.qh";
+
+qubit[256] q;
+bit[256] c;
+double theta = 0.1;
+double learning_rate = 0.01;
+double target_energy = 0.0;
+
+gate manifold_step(double t) {
+    for (int i = 0; i < 256; i++) {
+        ry(t * (i + 1), q[i]);
+        if (i > 0) {
+            cx q[i-1], q[i];
+        }
+    }
+}
+
+while (true) {
+    manifold_step(theta);
+
+    measure q -> c;
+    double current_energy = calculate_expectation(c);
+
+    if (abs(current_energy - target_energy) < 1e-6) {
+        break;
+    }
+
+    theta = theta - (learning_rate * (current_energy - target_energy));
+
+    reset q;
+}

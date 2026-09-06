@@ -1,0 +1,123 @@
+-- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+-- DEED-089: Sovereign Treasury Engine — PL/I Treasury Ledger Entry
+-- Canonical PL/I treasury ledger with ALIGNED, FIXED layouts for deterministic byte offsets.
+
+ /* =====================================================================
+    SOVEREIGN TREASURY ENGINE
+    PL/I → COBOL Bridging & WORM Cryptographic Storage
+    Raw PL/I Implementation (no intermediate abstractions)
+    ===================================================================== */
+
+ TREASURY: PROCEDURE OPTIONS(MAIN);
+
+    /* -----------------------------------------------------------------
+       1. Canonical PL/I Treasury Ledger Entry
+          ALIGNED, FIXED layouts for deterministic byte offsets
+       ----------------------------------------------------------------- */
+    DECLARE
+      1 TREASURY_LEDGER_ENTRY BASED (P_ENTRY),
+        3 TX_HEADER,
+          5 TX_ID CHARACTER(36),
+          5 TX_TIMESTAMP FIXED DECIMAL(15,0),
+          5 TX_SEQUENCE FIXED BINARY(31,0),
+        3 TX_PAYLOAD,
+          5 SOURCE_ACCOUNT CHARACTER(16),
+          5 DEST_ACCOUNT CHARACTER(16),
+          5 TRANSFER_AMOUNT FIXED DECIMAL(12,2),
+          5 CURRENCY_CODE CHARACTER(3),
+          5 COMPLIANCE_FLAG BIT(8);
+
+    DECLARE P_ENTRY POINTER;
+    DECLARE ENTRY_STORAGE CHARACTER(128) BASED (P_ENTRY);
+
+    /* -----------------------------------------------------------------
+       2. Fixed-width serialization buffer
+       ----------------------------------------------------------------- */
+    DECLARE
+      1 SERIAL_BUFFER,
+        3 SER_MAGIC CHARACTER(4) INIT('WORM'),
+        3 SER_PREV_HASH CHARACTER(64),
+        3 SER_CURRENT_HASH CHARACTER(64),
+        3 SER_RECORD_COUNT FIXED BINARY(31) INIT(0),
+        3 SER_PAYLOAD CHARACTER(4096);
+
+    DECLARE
+      I FIXED BINARY(31),
+      J FIXED BINARY(31),
+      HASH_WORK CHARACTER(64),
+      PAYLOAD_OFFSET FIXED BINARY(31) INIT(0),
+      RC FIXED BINARY(31);
+
+    /* -----------------------------------------------------------------
+       3. Deterministic SHA-256 style placeholder
+       ----------------------------------------------------------------- */
+    HASH_BLOCK: PROCEDURE (IN_BUF, OUT_HASH);
+      DECLARE IN_BUF CHARACTER(*) VARYING;
+      DECLARE OUT_HASH CHARACTER(64);
+      DECLARE K FIXED BINARY(31);
+      DECLARE ACC FIXED BINARY(31) INIT(0);
+
+      DO K = 1 TO LENGTH(IN_BUF);
+         ACC = ACC + RANK(SUBSTR(IN_BUF,K,1));
+         ACC = MOD(ACC * 31 + 17, 2147483647);
+      END;
+      OUT_HASH = HEX(ACC) || HEX(ACC*3) || HEX(ACC*7) ||
+                 HEX(ACC*11) || HEX(ACC*13) || HEX(ACC*17) ||
+                 HEX(ACC*19) || HEX(ACC*23);
+      OUT_HASH = SUBSTR(OUT_HASH || (64)'0', 1, 64);
+    END HASH_BLOCK;
+
+    /* -----------------------------------------------------------------
+       4. Main pipeline — create one treasury entry and commit to WORM
+       ----------------------------------------------------------------- */
+    ALLOCATE ENTRY_STORAGE SET (P_ENTRY);
+
+    TX_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+    TX_TIMESTAMP = 20260904152800123;
+    TX_SEQUENCE = 100042;
+    SOURCE_ACCOUNT = 'TREASURY-MAIN-01';
+    DEST_ACCOUNT = 'SETTLEMENT-ACC-09';
+    TRANSFER_AMOUNT = 1250000.50;
+    CURRENCY_CODE = 'USD';
+    COMPLIANCE_FLAG = '10000000'B;
+
+    /* -----------------------------------------------------------------
+       5. Byte-level serialization into fixed buffer
+       ----------------------------------------------------------------- */
+    SER_PREV_HASH = (64)'0';
+
+    SUBSTR(SER_PAYLOAD, 1, 36) = TX_ID;
+    SUBSTR(SER_PAYLOAD, 37, 15) = TX_TIMESTAMP;
+    SUBSTR(SER_PAYLOAD, 52, 4) = UNSPEC(TX_SEQUENCE);
+    SUBSTR(SER_PAYLOAD, 56, 16) = SOURCE_ACCOUNT;
+    SUBSTR(SER_PAYLOAD, 72, 16) = DEST_ACCOUNT;
+    SUBSTR(SER_PAYLOAD, 88, 8) = UNSPEC(TRANSFER_AMOUNT);
+    SUBSTR(SER_PAYLOAD, 96, 3) = CURRENCY_CODE;
+    SUBSTR(SER_PAYLOAD, 99, 1) = UNSPEC(COMPLIANCE_FLAG);
+
+    SER_RECORD_COUNT = 1;
+    PAYLOAD_OFFSET = 100;
+
+    /* -----------------------------------------------------------------
+       6. Cryptographic seal of the block
+       ----------------------------------------------------------------- */
+    CALL HASH_BLOCK(SER_PREV_HASH || SER_PAYLOAD, SER_CURRENT_HASH);
+
+    /* -----------------------------------------------------------------
+       7. Low-level immutable append (conceptual)
+       ----------------------------------------------------------------- */
+    PUT SKIP LIST ('=== WORM BLOCK READY FOR IMMUTABLE COMMIT ===');
+    PUT SKIP LIST ('Magic : ' || SER_MAGIC);
+    PUT SKIP LIST ('Previous Hash : ' || SER_PREV_HASH);
+    PUT SKIP LIST ('Current Hash : ' || SER_CURRENT_HASH);
+    PUT SKIP LIST ('Record Count : ' || SER_RECORD_COUNT);
+    PUT SKIP LIST ('TX_ID : ' || TX_ID);
+    PUT SKIP LIST ('Amount : ' || TRANSFER_AMOUNT);
+    PUT SKIP LIST ('Currency : ' || CURRENCY_CODE);
+    PUT SKIP LIST ('Sequence : ' || TX_SEQUENCE);
+    PUT SKIP LIST ('================================================');
+
+    FREE ENTRY_STORAGE;
+
+ END TREASURY;

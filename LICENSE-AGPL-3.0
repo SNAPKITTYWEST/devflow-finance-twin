@@ -1,0 +1,32 @@
+                    GNU AFFERO GENERAL PUBLIC LICENSE
+                       Version 3, 19 November 2007
+
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published
+ by the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ NOTICE: This license applies specifically to the following files:
+   - wasm/runtime.wat
+   - wasm/runtime.wasm
+   - wasm/isa.wat
+   - wasm/isa.wasm
+   - wasm/ledger_replay.wat
+   - wasm/ledger_replay.wasm
+   - wasm/account_registry.wat
+   - wasm/account_registry.wasm
+   - wasm/sha256.wat
+   - wasm/sha256.wasm
+
+ All other files in this repository are licensed under the
+ Functional Source License v1.1 (FSL-1.1).
