@@ -1,0 +1,34 @@
+cabal-version:      3.0
+name:               cobalt
+version:            0.1.0
+synopsis:           localCobalt — Prolog-to-x86-64 compiler via functor crystal expansion
+license:            MIT
+author:             SNAPKITTYWEST
+maintainer:         jessicalw34@gmail.com
+build-type:         Simple
+
+common deps
+  build-depends:
+    base        >= 4.14 && < 5,
+    bytestring  >= 0.11,
+    containers  >= 0.6,
+    text        >= 1.2
+
+library
+  import:           deps
+  exposed-modules:
+    Cobalt.Dense
+    Cobalt.Trilock
+    X86BatchAssembler
+    MagicCobalt
+  hs-source-dirs:   .
+  default-language: Haskell2010
+  ghc-options:      -Wall -Wno-unused-top-binds
+
+executable cobalt
+  import:           deps
+  main-is:          Main.hs
+  hs-source-dirs:   src
+  build-depends:    cobalt
+  default-language: Haskell2010
+  ghc-options:      -Wall
