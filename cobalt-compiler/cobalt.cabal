@@ -1,32 +1,83 @@
 cabal-version:      3.0
 name:               cobalt
-version:            0.1.0
-synopsis:           localCobalt — Prolog-to-x86-64 compiler via functor crystal expansion
+version:            0.2.0
+synopsis:           localCobalt — Prolog-to-x86-64 + LiquidHaskell formal bridge
 license:            MIT
-author:             SNAPKITTYWEST
+author:             Ahmad Ali Parr — Bel Esprit D'Accord Irrevocable Trust
 maintainer:         jessicalw34@gmail.com
 build-type:         Simple
 
-common deps
-  build-depends:
-    base        >= 4.14 && < 5,
-    bytestring  >= 0.11,
-    containers  >= 0.6,
-    text        >= 1.2
+-- Build the liquid-fixpoint bridge (requires liquid-fixpoint on PATH):
+--   cabal build -f lh-bridge
+flag lh-bridge
+  description: Build Language.Fixpoint.* bridge modules (needs liquid-fixpoint)
+  default:     False
+  manual:      True
 
+-- ── Core deps shared by all stanzas ──────────────────────────────────────────
+common base-deps
+  build-depends:
+    base              >= 4.14 && < 5,
+    bytestring        >= 0.11,
+    containers        >= 0.6,
+    text              >= 1.2
+
+-- ── Main library — self-contained, no external LH tooling needed ─────────────
 library
-  import:           deps
+  import:           base-deps
+  build-depends:
+    hashable          >= 1.3,
+    unordered-containers >= 0.2
+
   exposed-modules:
+    -- Core compiler (original pipeline)
     Cobalt.Dense
     Cobalt.Trilock
     X86BatchAssembler
     MagicCobalt
+
+    -- ISA family
+    ISA.Core
+    ISA.Macro
+    ISA.Program
+    ISA.Examples
+
+    -- LiquidOps pipelines
+    LiquidOps.Kernel
+    LiquidOps.KernelFull
+    LiquidOps.NAND
+
+    -- Algebraic foundation (LiquidHaskell refinements)
+    Core.Nat
+    Core.Group
+
+    -- Calculus (LiquidHaskell specs)
+    Calculus.Limit
+    Calculus.Derivative
+    Calculus.Integral
+
+    -- Physics (LiquidHaskell specs)
+    Physics.Godel
+    Physics.WormholeBH
+
   hs-source-dirs:   .
   default-language: Haskell2010
   ghc-options:      -Wall -Wno-unused-top-binds
 
+  if flag(lh-bridge)
+    exposed-modules:
+      Language.Fixpoint.LiquidOps.Kernel
+      Language.Fixpoint.Smt.Theories.Recurse
+      Language.Fixpoint.Solver.Eliminate
+      Language.Fixpoint.Solver.Simplify
+      Language.Haskell.Liquid.Transforms.CoreToLogic
+      Language.Haskell.Liquid.Transforms.DenseDex
+    build-depends:
+      liquid-fixpoint >= 0.9
+
+-- ── Demo executable ───────────────────────────────────────────────────────────
 executable cobalt
-  import:           deps
+  import:           base-deps
   main-is:          Main.hs
   hs-source-dirs:   src
   build-depends:    cobalt
