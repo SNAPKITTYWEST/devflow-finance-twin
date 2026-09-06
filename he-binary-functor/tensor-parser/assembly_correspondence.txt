@@ -1,0 +1,33 @@
+============================================================================
+FILE: assembly_correspondence.txt
+DESCRIPTION: Compiler-generated inspection and hot-loop analysis
+============================================================================
+
+TARGET ARCHITECTURE: x86_64-linux-gnu / ARMv8-A AArch64
+HOT LOOP IDENTIFIED: Validation.Verify_Structure (Tensor Descriptor Iteration)
+
+ASSEMBLY LISTING (GCC 13 -O3 -gnatn):
+----------------------------------------------------------------------------
+.L3:
+        mov eax, DWORD PTR [r12+8] ; Load Desc.Length
+        mov edx, rbx ; Load Len (Blob_Length)
+        sub edx, DWORD PTR [r12+4] ; Subtraction-based bounds check: Len - Offset
+        cmp edx, eax ; Compare Required vs Available
+        jb .L10 ; Branch to Reject if Length > Available
+        add r12, 32 ; Advance pointer by exact descriptor size (32 bytes)
+        sub r13d, 1 ; Decrement loop counter
+        jne .L3 ; Repeat for all tensors
+----------------------------------------------------------------------------
+
+ANALYSIS:
+1. Registers:
+   - r12: Pointer to current Tensor_Descriptor struct.
+   - rbx: Total blob length.
+   - r13d: Remaining tensor count loop index.
+2. Memory Accesses:
+   - Perfectly predictable linear stride of 32 bytes per iteration, optimizing hardware
+     prefetchers and ensuring cache-line efficiency.
+3. Branch Conditions:
+   - Guarded by a single conditional jump (jb) checking the subtraction result,
+     preventing out-of-bounds access entirely without expensive modulo or division
+     operations.

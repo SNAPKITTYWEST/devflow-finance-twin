@@ -1,0 +1,62 @@
+`include "constants.vams"
+`include "disciplines.vams"
+
+module many_world_anyon_braid (
+    input electrical rf_q0,
+    input electrical rf_q1,
+    input electrical braid_ctrl,
+    input electrical collapse_cmd,
+    output electrical branch_a0,
+    output electrical branch_a1,
+    input electrical substrate_temp
+);
+
+    parameter real VTH = 0.5;
+    parameter real PHI = 1.6180339887;
+    parameter real TR = 80p;
+
+    real amp_branch_a[0:3];
+    real amp_branch_b[0:3];
+    real concurrency;
+    integer i;
+
+    analog begin
+        @(initial_step) begin
+            amp_branch_a[0] = 0.5; amp_branch_a[1] = 0.5;
+            amp_branch_a[2] = 0.5; amp_branch_a[3] = 0.5;
+            amp_branch_b[0] = 0.707; amp_branch_b[1] = 0.0;
+            amp_branch_b[2] = 0.0; amp_branch_b[3] = 0.707;
+            concurrency = 0.0;
+        end
+
+        @(cross(V(braid_ctrl) - VTH, +1)) begin
+            real theta_phi;
+            theta_phi = 3.14159265 / PHI;
+
+            amp_branch_a[2] = amp_branch_a[2] * cos(theta_phi) - amp_branch_a[3] * sin(theta_phi);
+            amp_branch_a[3] = amp_branch_a[2] * sin(theta_phi) + amp_branch_a[3] * cos(theta_phi);
+
+            concurrency = abs(amp_branch_a[0]*amp_branch_a[3] - amp_branch_a[1]*amp_branch_a[2]) * PHI;
+        end
+
+        @(cross(V(collapse_cmd) - VTH, +1)) begin
+            if (concurrency < 0.707) begin
+                for (i = 0; i < 4; i = i + 1) begin
+                    real contraction_term;
+                    contraction_term = (pow(-1, i) / PHI) * 0.1;
+
+                    amp_branch_b[i] = amp_branch_a[i] + contraction_term;
+                    amp_branch_a[i] = amp_branch_a[i] - contraction_term;
+                end
+            end else begin
+                for (i = 0; i < 4; i = i + 1) begin
+                    amp_branch_a[i] = (amp_branch_a[i] + amp_branch_b[i]) / 2.0;
+                    amp_branch_b[i] = 0.0;
+                end
+            end
+        end
+
+        V(branch_a0) <+ transition(amp_branch_a[0] + amp_branch_a[3], 0, TR, TR);
+        V(branch_a1) <+ transition(amp_branch_b[0] + amp_branch_b[3], 0, TR, TR);
+    end
+endmodule

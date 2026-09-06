@@ -1,0 +1,27 @@
+#include "disciplines.vams"
+
+module trig_braid_processor (sin_out, cos_out, theta_in, v_dd, gnd);
+    output sin_out, cos_out;
+    input theta_in, v_dd;
+    ground gnd;
+
+    voltage sin_out, cos_out, theta_in, v_dd;
+
+    parameter real PHI_HALF = 0.8090169943749474;
+    parameter real MAX_VOLTAGE = 1.8;
+    parameter real MIN_VOLTAGE = 0.0;
+
+    analog begin
+        @(initial_step) begin
+            if (V(v_dd) > 2.0 || V(v_dd) < 1.0) 
+                $strobe("FATAL: Supply voltage violates safe operational domain bounds.");
+        end
+
+        V(sin_out) <+ transition(PHI_HALF * sin(V(theta_in)) + 0.5 * cos(V(theta_in)), 1e-9, 1e-12);
+        V(cos_out) <+ transition(0.5 * sin(V(theta_in)) - PHI_HALF * cos(V(theta_in)), 1e-9, 1e-12);
+
+        if (V(sin_out) > MAX_VOLTAGE || V(sin_out) < MIN_VOLTAGE) begin
+            $warning("WARNING: Trigonometric output saturated safety boundary.");
+        end
+    end
+endmodule

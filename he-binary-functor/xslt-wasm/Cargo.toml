@@ -1,0 +1,15 @@
+[package]
+name = "xslt_wasm_compiler"
+version = "0.1.0"
+edition = "2021"
+description = "XSLT → WebAssembly compiler for browser XSLT deprecation bypass"
+
+[dependencies]
+
+[lib]
+name = "xslt_wasm_compiler"
+path = "src/compiler.rs"
+
+[profile.release]
+opt-level = "s"
+lto = true

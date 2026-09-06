@@ -1,0 +1,16 @@
+[package]
+name = "pwc-verified"
+version = "0.1.0"
+edition = "2021"
+description = "Polynomial Wormhole Constraint - Formally Verified Rust Extraction"
+
+[dependencies]
+# No external dependencies - pure verified Rust
+
+[profile.release]
+opt-level = 3
+lto = true
+debug-assertions = true
+
+[profile.test]
+debug-assertions = true

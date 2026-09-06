@@ -1,0 +1,63 @@
+`include "constants.vams"
+`include "disciplines.vams"
+
+// =====================================================================
+// SPATIAL QUANTUM LATTICE: 2-QUBIT COUPLING MODEL
+// Implements Grover via spatial microwave addressing and cross-resonance
+// =====================================================================
+
+module spatial_grover_lattice (
+    input electrical rf_q0,
+    input electrical rf_q1,
+    input electrical gate_ctrl,
+    input electrical collapse_cmd,
+    output electrical out_q0,
+    output electrical out_q1
+);
+
+    parameter real DISTANCE = 50u;
+    parameter real COUPLING_K = 1.0e-3;
+    parameter real VTH = 0.5;
+    parameter real TR = 100p;
+
+    real q0_amp, q0_phase;
+    real q1_amp, q1_phase;
+    real interaction_term;
+
+    analog begin
+        @(initial_step) begin
+            q0_amp = 1.0; q0_phase = 0.0;
+            q1_amp = 1.0; q1_phase = 0.0;
+        end
+
+        @(cross(V(rf_q0) - VTH, +1)) begin
+            q0_amp = 0.7071;
+            q0_phase = 0.0;
+        end
+
+        @(cross(V(rf_q1) - VTH, +1)) begin
+            q1_amp = 0.7071;
+            q1_phase = 0.0;
+        end
+
+        interaction_term = COUPLING_K * (1.0 / pow(DISTANCE, 3));
+
+        @(cross(V(gate_ctrl) - VTH, +1)) begin
+            q0_phase = q0_phase + interaction_term;
+            q1_phase = q1_phase + interaction_term;
+        end
+
+        @(cross(V(rf_q0) - VTH, -1)) begin
+            q0_amp = 1.0 - q0_amp;
+            q1_amp = 1.0 - q1_amp;
+        end
+
+        @(cross(V(collapse_cmd) - VTH, +1)) begin
+            q0_amp = (q0_amp > 0.5) ? 1.0 : 0.0;
+            q1_amp = (q1_amp > 0.5) ? 1.0 : 0.0;
+        end
+
+        V(out_q0) <+ transition(q0_amp, 0, TR, TR);
+        V(out_q1) <+ transition(q1_amp, 0, TR, TR);
+    end
+endmodule

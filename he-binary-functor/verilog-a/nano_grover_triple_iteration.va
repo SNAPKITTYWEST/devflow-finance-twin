@@ -1,0 +1,71 @@
+`include "constants.vams"
+`include "disciplines.vams"
+
+module nano_grover_triple_iteration (
+    input electrical rf_q0,
+    input electrical rf_q1,
+    input electrical gate_ctrl,
+    input electrical collapse_cmd,
+    output electrical out_q0,
+    output electrical out_q1,
+    input electrical substrate_temp
+);
+
+    parameter real VTH = 0.5;
+    parameter real TR = 80p;
+    parameter integer TARGET_STATE = 3;
+
+    real amp[0:3];
+    real mean_val;
+    integer i;
+    integer iter_count;
+
+    analog begin
+        @(initial_step) begin
+            amp[0] = 0.5; amp[1] = 0.5;
+            amp[2] = 0.5; amp[3] = 0.5;
+            iter_count = 0;
+        end
+
+        @(cross(V(rf_q0) - VTH, +1)) begin
+            if (iter_count < 3) begin
+                amp[0] = 0.5;
+                amp[1] = 0.5;
+                amp[2] = 0.5;
+                amp[3] = 0.5;
+
+                amp[TARGET_STATE] = -amp[TARGET_STATE];
+
+                mean_val = (amp[0] + amp[1] + amp[2] + amp[3]) / 4.0;
+                for (i = 0; i < 4; i = i + 1) begin
+                    real delta;
+                    delta = 2.0 * mean_val - amp[i];
+                    amp[i] = amp[i] + transition(delta, 0, TR, TR);
+                end
+
+                iter_count = iter_count + 1;
+            end
+        end
+
+        @(cross(V(collapse_cmd) - VTH, +1)) begin
+            if (iter_count >= 3) begin
+                real max_amp;
+                integer max_idx;
+                max_amp = -1.0;
+                max_idx = 0;
+                for (i = 0; i < 4; i = i + 1) begin
+                    if (abs(amp[i]) > max_amp) begin
+                        max_amp = abs(amp[i]);
+                        max_idx = i;
+                    end
+                end
+                for (i = 0; i < 4; i = i + 1) begin
+                    amp[i] = (i == max_idx) ? 1.0 : 0.0;
+                end
+            end
+        end
+
+        V(out_q0) <+ transition(amp[0] + amp[1], 0, TR, TR);
+        V(out_q1) <+ transition(amp[2] + amp[3], 0, TR, TR);
+    end
+endmodule

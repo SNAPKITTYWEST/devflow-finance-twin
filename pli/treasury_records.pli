@@ -1,0 +1,56 @@
+-- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+-- DEED-089: Sovereign Treasury Engine — PL/I Treasury Record Declaration
+-- Shared PL/I structure for cross-language interop.
+
+ /* =====================================================================
+    SOVEREIGN TREASURY ENGINE — PL/I RECORD DECLARATIONS
+    Shared between treasur_ledger.pli and functor_worm.pli
+    ===================================================================== */
+
+ /* Canonical Treasury Ledger Entry — ALIGNED, FIXED layouts */
+ DECLARE
+   1 TREASURY_LEDGER_ENTRY,
+     3 TX_HEADER,
+       5 TX_ID CHARACTER(36),
+       5 TX_TIMESTAMP FIXED DECIMAL(15,0),
+       5 TX_SEQUENCE FIXED BINARY(31,0),
+     3 TX_PAYLOAD,
+       5 SOURCE_ACCOUNT CHARACTER(16),
+       5 DEST_ACCOUNT CHARACTER(16),
+       5 TRANSFER_AMOUNT FIXED DECIMAL(12,2),
+       5 CURRENCY_CODE CHARACTER(3),
+       5 COMPLIANCE_FLAG BIT(8);
+
+ /* WORM Block Header — matches C WormBlock struct */
+ DECLARE
+   1 WORM_BLOCK_HEADER,
+     3 WB_MAGIC CHARACTER(4),
+     3 WB_PREV_HASH CHARACTER(64),
+     3 WB_CURR_HASH CHARACTER(64),
+     3 WB_REC_COUNT FIXED BINARY(31),
+     3 WB_PAYLOAD CHARACTER(4096);
+
+ /* Serialization buffer layout */
+ DECLARE
+   1 SERIAL_BUFFER,
+     3 SER_MAGIC CHARACTER(4) INIT('WORM'),
+     3 SER_PREV_HASH CHARACTER(64),
+     3 SER_CURRENT_HASH CHARACTER(64),
+     3 SER_RECORD_COUNT FIXED BINARY(31) INIT(0),
+     3 SER_PAYLOAD CHARACTER(4096);
+
+ /* Morphism table for functor serialization */
+ DECLARE
+   1 MORPHISM_ENTRY,
+     3 M_NAME CHARACTER(16),
+     3 M_OFFSET FIXED BINARY(31),
+     3 M_LENGTH FIXED BINARY(31),
+     3 M_TYPE FIXED BINARY(15);
+
+ /* Constants */
+ DECLARE
+   ENTRY_SIZE FIXED BINARY(31) VALUE(128),
+   BLOCK_SIZE FIXED BINARY(31) VALUE(4220),
+   PAYLOAD_SIZE FIXED BINARY(31) VALUE(4096),
+   HASH_SIZE FIXED BINARY(31) VALUE(64);

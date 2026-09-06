@@ -1,0 +1,43 @@
+`include "constants.vams"
+`include "disciplines.vams"
+
+module fibonacci_topological_lattice (
+    input electrical braid_ctrl,
+    input electrical collapse_cmd,
+    output electrical spectral_out,
+    input electrical substrate_temp
+);
+
+    parameter real PHI = 1.61803398875;
+    parameter real GOLDEN_GAP = 0.618;
+    parameter real TR = 100p;
+
+    real fusion_amplitude_I;
+    real fusion_amplitude_Tau;
+    integer braid_count;
+
+    analog begin
+        @(initial_step) begin
+            fusion_amplitude_I = 1.0;
+            fusion_amplitude_Tau = 0.0;
+            braid_count = 0;
+        end
+
+        @(cross(V(braid_ctrl) - 0.5, +1)) begin
+            real old_I = fusion_amplitude_I;
+            real old_Tau = fusion_amplitude_Tau;
+
+            fusion_amplitude_I = (PHI/2.0)*old_I + (0.5)*old_Tau;
+            fusion_amplitude_Tau = (0.5)*old_I - (PHI/2.0)*old_Tau;
+
+            braid_count = braid_count + 1;
+        end
+
+        @(cross(V(collapse_cmd) - 0.5, +1)) begin
+            real energy_eigenvalue;
+            energy_eigenvalue = PHI * pow(0.618, braid_count);
+
+            V(spectral_out) <+ transition(energy_eigenvalue, 0, TR, TR);
+        end
+    end
+endmodule
