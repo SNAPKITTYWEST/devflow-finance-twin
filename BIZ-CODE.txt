@@ -1,0 +1,3270 @@
++---------------------------+        +------------------------------+
+|        External APIs      |        |   External Rails / Banks     |
+|  (Fintechs, Partners)     |        |  ACH, Wire, RTP, FedNow      |
++-------------+-------------+        +---------------+--------------+
+              |                                      |
+              v                                      v
++---------------------------+        +------------------------------+
+|        C# BaaS Layer      |<------>|   Rail Adapters (C#)        |
+|  API / App / Domain /     |        |  ACH / Wire / RTP / Card    |
+|  Infra / Integration      |        +------------------------------+
+|                           |
+|  - REST APIs              |
+|  - AuthN/AuthZ            |
+|  - Idempotency            |
+|  - Treasury services      |
+|  - Orchestration          |
+|  - Events (derived)       |
++-------------+-------------+
+              |
+              |  Service boundary (no ledger duplication)
+              v
++---------------------------+
+|   IBM i RPGLE + DB2 for i |
+|   Authoritative Ledger    |
+|                           |
+|  - Double-entry engine    |
+|  - Accounts / Journals    |
+|  - Posting / Settlement   |
+|  - ACH state / batches    |
+|  - Reconciliation         |
+|  - EOD / Exception queues |
++-------------+-------------+
+              |
+              v
++---------------------------+
+|     Audit / Events        |
+|  Immutable evidence layer |
++---------------------------+
+CREATE TABLE CUSTOMERS (
+    CUSTOMER_ID      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    EXTERNAL_REF     VARCHAR(64) NOT NULL,
+    NAME             VARCHAR(256) NOT NULL,
+    EMAIL            VARCHAR(256),
+    STATUS           VARCHAR(32) NOT NULL,
+    CREATED_AT       TIMESTAMP NOT NULL,
+    UPDATED_AT       TIMESTAMP NOT NULL,
+    UNIQUE (EXTERNAL_REF)
+);
+
+CREATE TABLE ENTITIES (
+    ENTITY_ID        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    CUSTOMER_ID      BIGINT NOT NULL,
+    LEGAL_NAME       VARCHAR(256) NOT NULL,
+    TYPE             VARCHAR(32) NOT NULL, -- CORP, LLC, INDIVIDUAL
+    TAX_ID           VARCHAR(64),
+    COUNTRY          CHAR(2) NOT NULL,
+    CREATED_AT       TIMESTAMP NOT NULL,
+    UPDATED_AT       TIMESTAMP NOT NULL,
+    FOREIGN KEY (CUSTOMER_ID) REFERENCES CUSTOMERS (CUSTOMER_ID)
+);
+
+CREATE TABLE ACCOUNT_TYPES (
+    ACCOUNT_TYPE_ID  SMALLINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    CODE             VARCHAR(32) NOT NULL,
+    DESCRIPTION      VARCHAR(128) NOT NULL,
+    NORMAL_BALANCE   CHAR(1) NOT NULL CHECK (NORMAL_BALANCE IN ('D','C')),
+    UNIQUE (CODE)
+);
+
+CREATE TABLE CURRENCIES (
+    CURRENCY_CODE    CHAR(3) PRIMARY KEY,
+    SCALE            SMALLINT NOT NULL CHECK (SCALE BETWEEN 0 AND 6)
+);
+
+CREATE TABLE ACCOUNTS (
+    ACCOUNT_ID       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ENTITY_ID        BIGINT NOT NULL,
+    ACCOUNT_TYPE_ID  SMALLINT NOT NULL,
+    LEDGER_ID        BIGINT NOT NULL,
+    CURRENCY_CODE    CHAR(3) NOT NULL,
+    STATUS           VARCHAR(32) NOT NULL,
+    OPENED_AT        TIMESTAMP NOT NULL,
+    CLOSED_AT        TIMESTAMP,
+    FOREIGN KEY (ENTITY_ID) REFERENCES ENTITIES (ENTITY_ID),
+    FOREIGN KEY (ACCOUNT_TYPE_ID) REFERENCES ACCOUNT_TYPES (ACCOUNT_TYPE_ID),
+    FOREIGN KEY (CURRENCY_CODE) REFERENCES CURRENCIES (CURRENCY_CODE)
+);
+
+CREATE TABLE LEDGERS (
+    LEDGER_ID        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    NAME             VARCHAR(128) NOT NULL,
+    BASE_CURRENCY    CHAR(3) NOT NULL,
+    CREATED_AT       TIMESTAMP NOT NULL,
+    FOREIGN KEY (BASE_CURRENCY) REFERENCES CURRENCIES (CURRENCY_CODE)
+);
+
+CREATE TABLE JOURNALS (
+    JOURNAL_ID       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    LEDGER_ID        BIGINT NOT NULL,
+    TRANSACTION_ID   BIGINT NOT NULL,
+    EFFECTIVE_DATE   DATE NOT NULL,
+    POSTING_DATE     TIMESTAMP NOT NULL,
+    STATUS           VARCHAR(32) NOT NULL, -- POSTED, REVERSED, PENDING
+    SOURCE           VARCHAR(64) NOT NULL,
+    IDEMPOTENCY_KEY  VARCHAR(128) NOT NULL,
+    CORRELATION_ID   VARCHAR(128),
+    CREATED_AT       TIMESTAMP NOT NULL,
+    FOREIGN KEY (LEDGER_ID) REFERENCES LEDGERS (LEDGER_ID),
+    UNIQUE (IDEMPOTENCY_KEY)
+);
+
+CREATE TABLE JOURNAL_LINES (
+    JOURNAL_LINE_ID  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    JOURNAL_ID       BIGINT NOT NULL,
+    ACCOUNT_ID       BIGINT NOT NULL,
+    AMOUNT           DECIMAL(18,4) NOT NULL,
+    CURRENCY_CODE    CHAR(3) NOT NULL,
+    DIRECTION        CHAR(1) NOT NULL CHECK (DIRECTION IN ('D','C')),
+    FOREIGN KEY (JOURNAL_ID) REFERENCES JOURNALS (JOURNAL_ID),
+    FOREIGN KEY (ACCOUNT_ID) REFERENCES ACCOUNTS (ACCOUNT_ID),
+    FOREIGN KEY (CURRENCY_CODE) REFERENCES CURRENCIES (CURRENCY_CODE)
+);
+
+CREATE TABLE TRANSACTIONS (
+    TRANSACTION_ID   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    EXTERNAL_REF     VARCHAR(64),
+    ACCOUNT_ID       BIGINT NOT NULL,
+    AMOUNT           DECIMAL(18,4) NOT NULL,
+    CURRENCY_CODE    CHAR(3) NOT NULL,
+    DIRECTION        CHAR(1) NOT NULL CHECK (DIRECTION IN ('D','C')),
+    EFFECTIVE_DATE   DATE NOT NULL,
+    STATUS           VARCHAR(32) NOT NULL, -- INITIATED, POSTED, FAILED
+    SOURCE           VARCHAR(64) NOT NULL,
+    IDEMPOTENCY_KEY  VARCHAR(128) NOT NULL,
+    CORRELATION_ID   VARCHAR(128),
+    CREATED_AT       TIMESTAMP NOT NULL,
+    UPDATED_AT       TIMESTAMP NOT NULL,
+    FOREIGN KEY (ACCOUNT_ID) REFERENCES ACCOUNTS (ACCOUNT_ID),
+    FOREIGN KEY (CURRENCY_CODE) REFERENCES CURRENCIES (CURRENCY_CODE),
+    UNIQUE (IDEMPOTENCY_KEY)
+);
+
+CREATE TABLE BALANCES (
+    ACCOUNT_ID       BIGINT PRIMARY KEY,
+    LEDGER_BALANCE   DECIMAL(18,4) NOT NULL,
+    AVAILABLE_BAL    DECIMAL(18,4) NOT NULL,
+    HOLDS_BAL        DECIMAL(18,4) NOT NULL,
+    UPDATED_AT       TIMESTAMP NOT NULL,
+    FOREIGN KEY (ACCOUNT_ID) REFERENCES ACCOUNTS (ACCOUNT_ID)
+);
+
+CREATE TABLE HOLDS (
+    HOLD_ID          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ACCOUNT_ID       BIGINT NOT NULL,
+    AMOUNT           DECIMAL(18,4) NOT NULL,
+    CURRENCY_CODE    CHAR(3) NOT NULL,
+    STATUS           VARCHAR(32) NOT NULL, -- ACTIVE, RELEASED, EXPIRED
+    CREATED_AT       TIMESTAMP NOT NULL,
+    RELEASED_AT      TIMESTAMP,
+    FOREIGN KEY (ACCOUNT_ID) REFERENCES ACCOUNTS (ACCOUNT_ID),
+    FOREIGN KEY (CURRENCY_CODE) REFERENCES CURRENCIES (CURRENCY_CODE)
+);
+
+CREATE TABLE PAYMENT_RAILS (
+    RAIL_ID          SMALLINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    CODE             VARCHAR(32) NOT NULL, -- ACH, WIRE, RTP, FEDNOW, CARD
+    DESCRIPTION      VARCHAR(128),
+    UNIQUE (CODE)
+);
+
+CREATE TABLE PAYMENTS (
+    PAYMENT_ID       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    TRANSACTION_ID   BIGINT NOT NULL,
+    RAIL_ID          SMALLINT NOT NULL,
+    STATUS           VARCHAR(32) NOT NULL, -- SUBMITTED, SETTLED, RETURNED
+    REQUESTED_AT     TIMESTAMP NOT NULL,
+    SETTLED_AT       TIMESTAMP,
+    RETURNED_AT      TIMESTAMP,
+    FOREIGN KEY (TRANSACTION_ID) REFERENCES TRANSACTIONS (TRANSACTION_ID),
+    FOREIGN KEY (RAIL_ID) REFERENCES PAYMENT_RAILS (RAIL_ID)
+);
+
+CREATE TABLE ACH_BATCHES (
+    ACH_BATCH_ID     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    RAIL_ID          SMALLINT NOT NULL,
+    COMPANY_ID       VARCHAR(32) NOT NULL,
+    EFFECTIVE_DATE   DATE NOT NULL,
+    STATUS           VARCHAR(32) NOT NULL, -- CREATED, SUBMITTED, PROCESSED
+    NACHA_FILE_ID    VARCHAR(64),
+    CREATED_AT       TIMESTAMP NOT NULL,
+    FOREIGN KEY (RAIL_ID) REFERENCES PAYMENT_RAILS (RAIL_ID)
+);
+
+CREATE TABLE ACH_ENTRIES (
+    ACH_ENTRY_ID     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ACH_BATCH_ID     BIGINT NOT NULL,
+    PAYMENT_ID       BIGINT NOT NULL,
+    TRACE_NUMBER     VARCHAR(32),
+    STATUS           VARCHAR(32) NOT NULL, -- PENDING, SETTLED, RETURNED
+    CREATED_AT       TIMESTAMP NOT NULL,
+    FOREIGN KEY (ACH_BATCH_ID) REFERENCES ACH_BATCHES (ACH_BATCH_ID),
+    FOREIGN KEY (PAYMENT_ID) REFERENCES PAYMENTS (PAYMENT_ID)
+);
+
+CREATE TABLE SETTLEMENTS (
+    SETTLEMENT_ID    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    PAYMENT_ID       BIGINT NOT NULL,
+    AMOUNT           DECIMAL(18,4) NOT NULL,
+    CURRENCY_CODE    CHAR(3) NOT NULL,
+    SETTLEMENT_DATE  DATE NOT NULL,
+    STATUS           VARCHAR(32) NOT NULL,
+    FOREIGN KEY (PAYMENT_ID) REFERENCES PAYMENTS (PAYMENT_ID),
+    FOREIGN KEY (CURRENCY_CODE) REFERENCES CURRENCIES (CURRENCY_CODE)
+);
+
+CREATE TABLE RECONCILIATIONS (
+    RECONCILIATION_ID BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    LEDGER_ID         BIGINT NOT NULL,
+    PERIOD_START      DATE NOT NULL,
+    PERIOD_END        DATE NOT NULL,
+    STATUS            VARCHAR(32) NOT NULL, -- COMPLETED, EXCEPTION
+    CREATED_AT        TIMESTAMP NOT NULL,
+    COMPLETED_AT      TIMESTAMP,
+    FOREIGN KEY (LEDGER_ID) REFERENCES LEDGERS (LEDGER_ID)
+);
+
+CREATE TABLE FEES (
+    FEE_ID           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    TRANSACTION_ID   BIGINT NOT NULL,
+    ACCOUNT_ID       BIGINT NOT NULL,
+    AMOUNT           DECIMAL(18,4) NOT NULL,
+    CURRENCY_CODE    CHAR(3) NOT NULL,
+    CREATED_AT       TIMESTAMP NOT NULL,
+    FOREIGN KEY (TRANSACTION_ID) REFERENCES TRANSACTIONS (TRANSACTION_ID),
+    FOREIGN KEY (ACCOUNT_ID) REFERENCES ACCOUNTS (ACCOUNT_ID),
+    FOREIGN KEY (CURRENCY_CODE) REFERENCES CURRENCIES (CURRENCY_CODE)
+);
+
+CREATE TABLE IDEMPOTENCY_KEYS (
+    IDEMPOTENCY_KEY  VARCHAR(128) PRIMARY KEY,
+    RESOURCE_TYPE    VARCHAR(64) NOT NULL,
+    RESOURCE_ID      BIGINT NOT NULL,
+    STATUS           VARCHAR(32) NOT NULL,
+    CREATED_AT       TIMESTAMP NOT NULL
+);
+
+CREATE TABLE AUDIT_EVENTS (
+    AUDIT_EVENT_ID   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ACTOR            VARCHAR(128) NOT NULL,
+    ACTION           VARCHAR(64) NOT NULL,
+    RESOURCE_TYPE    VARCHAR(64) NOT NULL,
+    RESOURCE_ID      BIGINT NOT NULL,
+    CORRELATION_ID   VARCHAR(128),
+    REASON_CODE      VARCHAR(64),
+    CREATED_AT       TIMESTAMP NOT NULL,
+    PAYLOAD          CLOB
+);
+
+CREATE TABLE SYSTEM_EVENTS (
+    SYSTEM_EVENT_ID  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    TYPE             VARCHAR(64) NOT NULL,
+    CORRELATION_ID   VARCHAR(128),
+    CREATED_AT       TIMESTAMP NOT NULL,
+    PAYLOAD          CLOB
+);
+
+CREATE TABLE ERROR_QUEUE (
+    ERROR_ID         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    SOURCE           VARCHAR(64) NOT NULL,
+    CORRELATION_ID   VARCHAR(128),
+    ERROR_CODE       VARCHAR(64) NOT NULL,
+    MESSAGE          VARCHAR(1024) NOT NULL,
+    RETRYABLE        CHAR(1) NOT NULL CHECK (RETRYABLE IN ('Y','N')),
+    CREATED_AT       TIMESTAMP NOT NULL,
+    PAYLOAD          CLOB
+);
+**free
+ctl-opt dftactgrp(*no) actgrp('LEDGER') option(*srcstmt:*nodebugio);
+
+dcl-f TRANSACTIONS keyed usage(*update) extdesc('TRANSACTIONS');
+dcl-f JOURNALS     keyed usage(*update) extdesc('JOURNALS');
+dcl-f JOURNAL_LINES keyed usage(*update) extdesc('JOURNAL_LINES');
+dcl-f BALANCES     keyed usage(*update) extdesc('BALANCES');
+dcl-f AUDIT_EVENTS keyed usage(*output) extdesc('AUDIT_EVENTS');
+dcl-f ERROR_QUEUE  keyed usage(*output) extdesc('ERROR_QUEUE');
+
+dcl-s transId      packed(15:0);
+dcl-s journalId    packed(15:0);
+dcl-s debitTotal   packed(18:4);
+dcl-s creditTotal  packed(18:4);
+dcl-s sqlState     char(5);
+dcl-s corrId       char(128);
+dcl-s idemKey      char(128);
+dcl-s nowTs        timestamp;
+
+dcl-proc PostTransaction;
+  dcl-pi *n;
+    pTransId packed(15:0) const;
+  end-pi;
+
+  transId = pTransId;
+  exec sql set option commit = *chg, usingsqlca = *yes;
+
+  // Load transaction
+  exec sql
+    select IDEMPOTENCY_KEY, CORRELATION_ID, STATUS
+      into :idemKey, :corrId, :*inlr
+      from TRANSACTIONS
+     where TRANSACTION_ID = :transId
+       for update of STATUS;
+
+  sqlState = sqlstate;
+  if sqlState <> '00000';
+     callp LogError('POSTTRAN':'TXN_LOAD':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Idempotency: if already POSTED, return without side effects
+  if %trim(*inlr) = 'POSTED';
+     // No-op but log audit
+     callp LogAudit('SYSTEM':'TransactionAlreadyPosted':'TRANSACTION':transId:corrId);
+     commit;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Create journal header
+  exec sql
+    insert into JOURNALS (
+      LEDGER_ID, TRANSACTION_ID, EFFECTIVE_DATE, POSTING_DATE,
+      STATUS, SOURCE, IDEMPOTENCY_KEY, CORRELATION_ID, CREATED_AT
+    )
+    values (
+      (select LEDGER_ID from ACCOUNTS a
+         join TRANSACTIONS t on a.ACCOUNT_ID = t.ACCOUNT_ID
+        where t.TRANSACTION_ID = :transId),
+      :transId,
+      current_date,
+      current_timestamp,
+      'PENDING',
+      'C#-API',
+      :idemKey,
+      :corrId,
+      current_timestamp
+    );
+
+  if sqlcode <> 0;
+     sqlState = sqlstate;
+     callp LogError('POSTTRAN':'JOURNAL_INSERT':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  exec sql
+    select JOURNAL_ID into :journalId
+      from JOURNALS
+     where TRANSACTION_ID = :transId
+       and IDEMPOTENCY_KEY = :idemKey;
+
+  if sqlcode <> 0;
+     sqlState = sqlstate;
+     callp LogError('POSTTRAN':'JOURNAL_SELECT':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Build debit/credit lines (simplified: single account + offset account)
+  dcl-s accountId packed(15:0);
+  dcl-s offsetAccountId packed(15:0);
+  dcl-s amount decimal(18:4);
+  dcl-s currency char(3);
+  dcl-s direction char(1);
+
+  exec sql
+    select ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+      into :accountId, :amount, :currency, :direction
+      from TRANSACTIONS
+     where TRANSACTION_ID = :transId;
+
+  if sqlcode <> 0;
+     sqlState = sqlstate;
+     callp LogError('POSTTRAN':'TXN_SELECT':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Determine offset account (e.g., settlement or cash account)
+  exec sql
+    select OFFSET_ACCOUNT_ID
+      into :offsetAccountId
+      from ACCOUNT_TYPES at
+      join ACCOUNTS a on a.ACCOUNT_TYPE_ID = at.ACCOUNT_TYPE_ID
+     where a.ACCOUNT_ID = :accountId;
+
+  if sqlcode <> 0 or offsetAccountId = 0;
+     sqlState = sqlstate;
+     callp LogError('POSTTRAN':'OFFSET_ACCOUNT':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Insert journal lines: one debit, one credit
+  if direction = 'D';
+     // Debit primary, credit offset
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :journalId, :accountId, :amount, :currency, 'D'
+       );
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :journalId, :offsetAccountId, :amount, :currency, 'C'
+       );
+  else;
+     // Credit primary, debit offset
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :journalId, :accountId, :amount, :currency, 'C'
+       );
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :journalId, :offsetAccountId, :amount, :currency, 'D'
+       );
+  endif;
+
+  if sqlcode <> 0;
+     sqlState = sqlstate;
+     callp LogError('POSTTRAN':'JLINE_INSERT':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Validate double-entry invariant: SUM(D) = SUM(C)
+  exec sql
+    select coalesce(sum(case when DIRECTION = 'D' then AMOUNT else 0 end),0),
+           coalesce(sum(case when DIRECTION = 'C' then AMOUNT else 0 end),0)
+      into :debitTotal, :creditTotal
+      from JOURNAL_LINES
+     where JOURNAL_ID = :journalId;
+
+  if debitTotal <> creditTotal;
+     callp LogError('POSTTRAN':'IMBALANCED_JOURNAL':corrId:'00000');
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Update balances atomically
+  callp UpdateBalance(accountId:direction:amount:corrId);
+  callp UpdateBalance(offsetAccountId:
+                      (case direction; when 'D' => 'C'; other; 'D'; endcase):
+                      amount:corrId);
+
+  if %error;
+     // UpdateBalance must set error state via SQLCA
+     sqlState = sqlstate;
+     callp LogError('POSTTRAN':'BALANCE_UPDATE':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Mark journal and transaction as POSTED
+  exec sql
+    update JOURNALS
+       set STATUS = 'POSTED'
+     where JOURNAL_ID = :journalId;
+
+  exec sql
+    update TRANSACTIONS
+       set STATUS = 'POSTED',
+           UPDATED_AT = current_timestamp
+     where TRANSACTION_ID = :transId;
+
+  if sqlcode <> 0;
+     sqlState = sqlstate;
+     callp LogError('POSTTRAN':'STATUS_UPDATE':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Audit event
+  callp LogAudit('SYSTEM':'TransactionPosted':'TRANSACTION':transId:corrId);
+
+  commit;
+  *inlr = *on;
+end-proc;
+dcl-proc UpdateBalance;
+  dcl-pi *n;
+    pAccountId packed(15:0) const;
+    pDirection char(1) const;
+    pAmount    decimal(18:4) const;
+    pCorrId    char(128) const;
+  end-pi;
+
+  dcl-s sqlState char(5);
+  dcl-s ledgerBal decimal(18:4);
+  dcl-s availBal  decimal(18:4);
+
+  exec sql
+    select LEDGER_BALANCE, AVAILABLE_BAL
+      into :ledgerBal, :availBal
+      from BALANCES
+     where ACCOUNT_ID = :pAccountId
+       for update of LEDGER_BALANCE, AVAILABLE_BAL;
+
+  sqlState = sqlstate;
+  if sqlState <> '00000';
+     callp LogError('UPDBAL':'BAL_SELECT':pCorrId:sqlState);
+     rollback;
+     return;
+  endif;
+
+  select;
+  when pDirection = 'D';
+     ledgerBal += pAmount;
+     availBal  += pAmount;
+  when pDirection = 'C';
+     ledgerBal -= pAmount;
+     availBal  -= pAmount;
+  other;
+     callp LogError('UPDBAL':'INVALID_DIRECTION':pCorrId:'00000');
+     rollback;
+     return;
+  endsl;
+
+  exec sql
+    update BALANCES
+       set LEDGER_BALANCE = :ledgerBal,
+           AVAILABLE_BAL  = :availBal,
+           UPDATED_AT     = current_timestamp
+     where ACCOUNT_ID = :pAccountId;
+
+  sqlState = sqlstate;
+  if sqlState <> '00000';
+     callp LogError('UPDBAL':'BAL_UPDATE':pCorrId:sqlState);
+     rollback;
+     return;
+  endif;
+end-proc;
+dcl-proc LogError;
+  dcl-pi *n;
+    pSource   char(64) const;
+    pCode     char(64) const;
+    pCorrId   char(128) const;
+    pSqlState char(5) const;
+  end-pi;
+
+  exec sql
+    insert into ERROR_QUEUE (
+      SOURCE, CORRELATION_ID, ERROR_CODE, MESSAGE, RETRYABLE, CREATED_AT, PAYLOAD
+    ) values (
+      :pSource,
+      :pCorrId,
+      :pCode,
+      'SQLSTATE=' concat :pSqlState,
+      'Y',
+      current_timestamp,
+      NULL
+    );
+end-proc;
+
+dcl-proc LogAudit;
+  dcl-pi *n;
+    pActor        char(128) const;
+    pAction       char(64) const;
+    pResType      char(64) const;
+    pResId        packed(15:0) const;
+    pCorrId       char(128) const;
+  end-pi;
+
+  exec sql
+    insert into AUDIT_EVENTS (
+      ACTOR, ACTION, RESOURCE_TYPE, RESOURCE_ID,
+      CORRELATION_ID, REASON_CODE, CREATED_AT, PAYLOAD
+    ) values (
+      :pActor,
+      :pAction,
+      :pResType,
+      :pResId,
+      :pCorrId,
+      NULL,
+      current_timestamp,
+      NULL
+    );
+end-proc;
+Api
+  - Controllers (REST)
+  - DTOs
+  - Versioning
+  - AuthN/AuthZ
+
+Application
+  - Commands / Queries
+  - Orchestrations (Treasury, Payments)
+  - Idempotency middleware
+  - Policies (retry, circuit breaker)
+
+Domain
+  - Aggregates: Account, Ledger, Transaction, Payment, Rail
+  - Value objects: Money, AccountId, JournalId
+  - Domain events (derived from RPG/DB2 state)
+
+Infrastructure
+  - RPG/DB2 gateway (service boundary)
+  - DB2 access (ADO.NET / ODBC) for non-ledger metadata
+  - Message bus (events)
+  - Secret store integration (placeholders only)
+
+Integration
+  - External bank APIs
+  - ACH file generator/parser
+  - Wire/RTP/FedNow adapters
+
+Contracts
+  - API contracts (DTOs)
+  - Rail adapter interfaces
+  - Event contracts
+
+Observability
+  - Logging
+  - Metrics
+  - Tracing (OpenTelemetry)
+public interface IPaymentRailAdapter
+{
+    string RailCode { get; } // "ACH", "WIRE", "RTP", "FEDNOW", "CARD"
+
+    Task<AchInstructionResult> ValidateAsync(AchInstruction instruction, CancellationToken ct);
+    Task<AuthorizationResult> AuthorizeAsync(PaymentContext context, CancellationToken ct);
+    Task<BatchResult> CreateBatchAsync(PaymentBatchRequest request, CancellationToken ct);
+    Task<SubmissionResult> SubmitAsync(PaymentBatch batch, CancellationToken ct);
+    Task<SettlementResult> ProcessSettlementAsync(SettlementNotification notification, CancellationToken ct);
+    Task<ReturnResult> ProcessReturnAsync(ReturnNotification notification, CancellationToken ct);
+    Task<ReconciliationResult> ReconcileAsync(ReconciliationContext context, CancellationToken ct);
+}
+public interface ILedgerService
+{
+    Task<TransactionPostedResponse> PostTransactionAsync(
+        PostTransactionRequest request,
+        CancellationToken ct);
+
+    Task<AccountBalanceResponse> GetAccountBalanceAsync(
+        long accountId,
+        CancellationToken ct);
+
+    Task<JournalEntriesResponse> GetJournalEntriesAsync(
+        long accountId,
+        CancellationToken ct);
+}
+
+public sealed class LedgerService : ILedgerService
+{
+    private readonly IRpgInvoker _rpgInvoker; // bridge to IBM i programs
+    private readonly ILogger<LedgerService> _logger;
+
+    public LedgerService(IRpgInvoker rpgInvoker, ILogger<LedgerService> logger)
+    {
+        _rpgInvoker = rpgInvoker;
+        _logger = logger;
+    }
+
+    public async Task<TransactionPostedResponse> PostTransactionAsync(
+        PostTransactionRequest request,
+        CancellationToken ct)
+    {
+        // Idempotency key enforced by RPG/DB2
+        var rpgRequest = new RpgPostTransactionRequest
+        {
+            TransactionId = request.TransactionId,
+            CorrelationId = request.CorrelationId,
+            IdempotencyKey = request.IdempotencyKey
+        };
+
+        var result = await _rpgInvoker.InvokeAsync("POSTTRAN", rpgRequest, ct);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Posting failed {@Result}", result);
+            return new TransactionPostedResponse
+            {
+                Success = false,
+                Status = "FAILED",
+                ErrorCode = result.ErrorCode,
+                CorrelationId = request.CorrelationId
+            };
+        }
+
+        return new TransactionPostedResponse
+        {
+            Success = true,
+            Status = "POSTED",
+            CorrelationId = request.CorrelationId
+        };
+    }
+
+    public Task<AccountBalanceResponse> GetAccountBalanceAsync(long accountId, CancellationToken ct)
+    {
+        // Read-only query to BALANCES table (no ledger duplication)
+        throw new NotImplementedException();
+    }
+
+    public Task<JournalEntriesResponse> GetJournalEntriesAsync(long accountId, CancellationToken ct)
+    {
+        // Read-only query to JOURNAL_LINES/JOURNALS
+        throw new NotImplementedException();
+    }
+}
+public class IdempotencyMiddleware : IMiddleware
+{
+    private readonly IIdempotencyStore _store;
+    private readonly ILogger<IdempotencyMiddleware> _logger;
+
+    public IdempotencyMiddleware(IIdempotencyStore store, ILogger<IdempotencyMiddleware> logger)
+    {
+        _store = store;
+        _logger = logger;
+    }
+
+    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+    {
+        var key = context.Request.Headers["Idempotency-Key"].FirstOrDefault();
+        var correlationId = context.TraceIdentifier;
+
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            await next(context);
+            return;
+        }
+
+        var existing = await _store.GetAsync(key, context.Request.Path, context.Request.Method);
+
+        if (existing is not null)
+        {
+            _logger.LogInformation("Idempotent replay {Key} {CorrelationId}", key, correlationId);
+            context.Response.StatusCode = existing.StatusCode;
+            await context.Response.WriteAsync(existing.Body);
+            return;
+        }
+
+        // Capture response
+        var originalBody = context.Response.Body;
+        using var buffer = new MemoryStream();
+        context.Response.Body = buffer;
+
+        await next(context);
+
+        buffer.Seek(0, SeekOrigin.Begin);
+        var bodyText = await new StreamReader(buffer).ReadToEndAsync();
+        buffer.Seek(0, SeekOrigin.Begin);
+        await buffer.CopyToAsync(originalBody);
+        context.Response.Body = originalBody;
+
+        await _store.SaveAsync(new IdempotencyRecord
+        {
+            Key = key,
+            Path = context.Request.Path,
+            Method = context.Request.Method,
+            StatusCode = context.Response.StatusCode,
+            Body = bodyText,
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+    }
+}public record CreateCustomerRequest(
+    string ExternalRef,
+    string Name,
+    string Email);
+
+public record CreateCustomerResponse(
+    long CustomerId,
+    string ExternalRef);
+
+public record CreateAccountRequest(
+    long EntityId,
+    string AccountTypeCode,
+    string CurrencyCode);
+
+public record CreateAccountResponse(
+    long AccountId);
+
+public record PostTransactionRequest(
+    long AccountId,
+    decimal Amount,
+    string CurrencyCode,
+    string Direction, // "D" or "C"
+    string Source,
+    string IdempotencyKey,
+    string CorrelationId);
+
+public record PostTransactionResponse(
+    long TransactionId,
+    string Status,
+    string CorrelationId);
+POST /customers
+POST /entities
+POST /accounts
+GET  /accounts/{id}
+GET  /accounts/{id}/balance
+POST /transactions
+GET  /transactions/{id}
+POST /transfers
+POST /payments
+POST /ach/batches
+GET  /payments/{id}
+POST /payments/{id}/cancel
+POST /payments/{id}/reverse
+GET  /ledger/accounts/{id}/entries
+GET  /reconciliation/{id}
+ClosingBalance =
+  OpeningBalance
+  + Credits
+  - Debits
+  + Adjustments
+ACH Instruction
+  -> Validation
+  -> Authorization
+  -> Batch
+  -> Entry
+  -> Submission
+  -> Processing
+  -> Settlement
+  -> Return/Exception
+  -> ReconciliationINITIATED
+VALIDATED
+AUTHORIZED
+SUBMITTED
+SETTLED
+RETURNED
+FAILED
+CANCELLED
+REVERSEDpublic abstract record DomainEvent(string EventId, string CorrelationId, DateTimeOffset OccurredAt);
+
+public record AccountCreated(
+    string EventId,
+    string CorrelationId,
+    DateTimeOffset OccurredAt,
+    long AccountId,
+    long EntityId) : DomainEvent(EventId, CorrelationId, OccurredAt);
+
+public record TransactionInitiated(
+    string EventId,
+    string CorrelationId,
+    DateTimeOffset OccurredAt,
+    long TransactionId,
+    long AccountId,
+    decimal Amount,
+    string CurrencyCode) : DomainEvent(EventId, CorrelationId, OccurredAt);
+
+// ... TransactionPosted, PaymentSubmitted, PaymentSettled, PaymentReturned, etc.
+
+CREATE TABLE ACCOUNTS (
+    ACCOUNT_ID       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    LEDGER_ID        BIGINT NOT NULL,
+    CURRENCY_CODE    CHAR(3) NOT NULL,
+    STATUS           VARCHAR(32) NOT NULL,
+    OPENED_AT        TIMESTAMP NOT NULL
+);
+
+CREATE TABLE BALANCES (
+    ACCOUNT_ID       BIGINT PRIMARY KEY,
+    LEDGER_BALANCE   DECIMAL(18,4) NOT NULL,
+    AVAILABLE_BAL    DECIMAL(18,4) NOT NULL,
+    HOLDS_BAL        DECIMAL(18,4) NOT NULL,
+    UPDATED_AT       TIMESTAMP NOT NULL,
+    FOREIGN KEY (ACCOUNT_ID) REFERENCES ACCOUNTS (ACCOUNT_ID)
+);
+
+CREATE TABLE TRANSACTIONS (
+    TRANSACTION_ID   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ACCOUNT_ID       BIGINT NOT NULL,
+    AMOUNT           DECIMAL(18,4) NOT NULL,
+    CURRENCY_CODE    CHAR(3) NOT NULL,
+    DIRECTION        CHAR(1) NOT NULL CHECK (DIRECTION IN ('D','C')),
+    STATUS           VARCHAR(32) NOT NULL,
+    IDEMPOTENCY_KEY  VARCHAR(128) NOT NULL,
+    CORRELATION_ID   VARCHAR(128),
+    CREATED_AT       TIMESTAMP NOT NULL,
+    UPDATED_AT       TIMESTAMP NOT NULL,
+    FOREIGN KEY (ACCOUNT_ID) REFERENCES ACCOUNTS (ACCOUNT_ID),
+    UNIQUE (IDEMPOTENCY_KEY)
+);
+
+CREATE TABLE JOURNALS (
+    JOURNAL_ID       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    TRANSACTION_ID   BIGINT NOT NULL,
+    EFFECTIVE_DATE   DATE NOT NULL,
+    POSTING_DATE     TIMESTAMP NOT NULL,
+    STATUS           VARCHAR(32) NOT NULL,
+    IDEMPOTENCY_KEY  VARCHAR(128) NOT NULL,
+    CORRELATION_ID   VARCHAR(128),
+    CREATED_AT       TIMESTAMP NOT NULL,
+    FOREIGN KEY (TRANSACTION_ID) REFERENCES TRANSACTIONS (TRANSACTION_ID),
+    UNIQUE (IDEMPOTENCY_KEY)
+);
+
+CREATE TABLE JOURNAL_LINES (
+    JOURNAL_LINE_ID  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    JOURNAL_ID       BIGINT NOT NULL,
+    ACCOUNT_ID       BIGINT NOT NULL,
+    AMOUNT           DECIMAL(18,4) NOT NULL,
+    CURRENCY_CODE    CHAR(3) NOT NULL,
+    DIRECTION        CHAR(1) NOT NULL CHECK (DIRECTION IN ('D','C')),
+    FOREIGN KEY (JOURNAL_ID) REFERENCES JOURNALS (JOURNAL_ID),
+    FOREIGN KEY (ACCOUNT_ID) REFERENCES ACCOUNTS (ACCOUNT_ID)
+);
+
+CREATE TABLE ERROR_QUEUE (
+    ERROR_ID         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    SOURCE           VARCHAR(64) NOT NULL,
+    CORRELATION_ID   VARCHAR(128),
+    ERROR_CODE       VARCHAR(64) NOT NULL,
+    MESSAGE          VARCHAR(1024) NOT NULL,
+    CREATED_AT       TIMESTAMP NOT NULL
+);**free
+ctl-opt dftactgrp(*no) actgrp('LEDGER') option(*srcstmt:*nodebugio);
+
+dcl-f TRANSACTIONS keyed usage(*update) extdesc('TRANSACTIONS');
+dcl-f JOURNALS     keyed usage(*update) extdesc('JOURNALS');
+dcl-f JOURNAL_LINES keyed usage(*update) extdesc('JOURNAL_LINES');
+dcl-f BALANCES     keyed usage(*update) extdesc('BALANCES');
+dcl-f ERROR_QUEUE  keyed usage(*output) extdesc('ERROR_QUEUE');
+
+dcl-s transId      packed(15:0);
+dcl-s journalId    packed(15:0);
+dcl-s debitTotal   packed(18:4);
+dcl-s creditTotal  packed(18:4);
+dcl-s sqlState     char(5);
+dcl-s corrId       char(128);
+dcl-s idemKey      char(128);
+dcl-s status       char(32);
+dcl-s accountId    packed(15:0);
+dcl-s amount       decimal(18:4);
+dcl-s currency     char(3);
+dcl-s direction    char(1);
+dcl-s offsetAccountId packed(15:0);
+
+dcl-proc PostTransaction;
+  dcl-pi *n;
+    pTransId packed(15:0) const;
+  end-pi;
+
+  transId = pTransId;
+
+  exec sql set option commit = *chg, usingsqlca = *yes;
+
+  // Load transaction row FOR UPDATE
+  exec sql
+    select ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION,
+           IDEMPOTENCY_KEY, CORRELATION_ID, STATUS
+      into :accountId, :amount, :currency, :direction,
+           :idemKey, :corrId, :status
+      from TRANSACTIONS
+     where TRANSACTION_ID = :transId
+       for update of STATUS;
+
+  sqlState = sqlstate;
+  if sqlState <> '00000';
+     LogError('POSTTRAN':'TXN_LOAD':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Idempotency: already POSTED? no-op
+  if %trim(status) = 'POSTED';
+     commit;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Determine offset account (hard-coded for demo)
+  offsetAccountId = 1; // e.g., settlement account
+
+  // Create journal header
+  exec sql
+    insert into JOURNALS (
+      TRANSACTION_ID, EFFECTIVE_DATE, POSTING_DATE,
+      STATUS, IDEMPOTENCY_KEY, CORRELATION_ID, CREATED_AT
+    ) values (
+      :transId,
+      current_date,
+      current_timestamp,
+      'PENDING',
+      :idemKey,
+      :corrId,
+      current_timestamp
+    );
+
+  if sqlcode <> 0;
+     sqlState = sqlstate;
+     LogError('POSTTRAN':'JOURNAL_INSERT':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  exec sql
+    select JOURNAL_ID into :journalId
+      from JOURNALS
+     where TRANSACTION_ID = :transId
+       and IDEMPOTENCY_KEY = :idemKey;
+
+  if sqlcode <> 0;
+     sqlState = sqlstate;
+     LogError('POSTTRAN':'JOURNAL_SELECT':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Insert debit/credit lines
+  if direction = 'D';
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :journalId, :accountId, :amount, :currency, 'D'
+       );
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :journalId, :offsetAccountId, :amount, :currency, 'C'
+       );
+  else;
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :journalId, :accountId, :amount, :currency, 'C'
+       );
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :journalId, :offsetAccountId, :amount, :currency, 'D'
+       );
+  endif;
+
+  if sqlcode <> 0;
+     sqlState = sqlstate;
+     LogError('POSTTRAN':'JLINE_INSERT':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Double-entry invariant
+  exec sql
+    select coalesce(sum(case when DIRECTION = 'D' then AMOUNT else 0 end),0),
+           coalesce(sum(case when DIRECTION = 'C' then AMOUNT else 0 end),0)
+      into :debitTotal, :creditTotal
+      from JOURNAL_LINES
+     where JOURNAL_ID = :journalId;
+
+  if debitTotal <> creditTotal;
+     LogError('POSTTRAN':'IMBALANCED_JOURNAL':corrId:'00000');
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Update balances
+  UpdateBalance(accountId:direction:amount:corrId);
+  if direction = 'D';
+     UpdateBalance(offsetAccountId:'C':amount:corrId);
+  else;
+     UpdateBalance(offsetAccountId:'D':amount:corrId);
+  endif;
+
+  // Mark journal and transaction as POSTED
+  exec sql
+    update JOURNALS
+       set STATUS = 'POSTED'
+     where JOURNAL_ID = :journalId;
+
+  exec sql
+    update TRANSACTIONS
+       set STATUS = 'POSTED',
+           UPDATED_AT = current_timestamp
+     where TRANSACTION_ID = :transId;
+
+  if sqlcode <> 0;
+     sqlState = sqlstate;
+     LogError('POSTTRAN':'STATUS_UPDATE':corrId:sqlState);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  commit;
+  *inlr = *on;
+end-proc;
+
+dcl-proc UpdateBalance;
+  dcl-pi *n;
+    pAccountId packed(15:0) const;
+    pDirection char(1) const;
+    pAmount    decimal(18:4) const;
+    pCorrId    char(128) const;
+  end-pi;
+
+  dcl-s ledgerBal decimal(18:4);
+  dcl-s availBal  decimal(18:4);
+  dcl-s sqlState  char(5);
+
+  exec sql
+    select LEDGER_BALANCE, AVAILABLE_BAL
+      into :ledgerBal, :availBal
+      from BALANCES
+     where ACCOUNT_ID = :pAccountId
+       for update of LEDGER_BALANCE, AVAILABLE_BAL;
+
+  sqlState = sqlstate;
+  if sqlState <> '00000';
+     LogError('UPDBAL':'BAL_SELECT':pCorrId:sqlState);
+     rollback;
+     return;
+  endif;
+
+  select;
+  when pDirection = 'D';
+     ledgerBal += pAmount;
+     availBal  += pAmount;
+  when pDirection = 'C';
+     ledgerBal -= pAmount;
+     availBal  -= pAmount;
+  other;
+     LogError('UPDBAL':'INVALID_DIRECTION':pCorrId:'00000');
+     rollback;
+     return;
+  endsl;
+
+  exec sql
+    update BALANCES
+       set LEDGER_BALANCE = :ledgerBal,
+           AVAILABLE_BAL  = :availBal,
+           UPDATED_AT     = current_timestamp
+     where ACCOUNT_ID = :pAccountId;
+
+  sqlState = sqlstate;
+  if sqlState <> '00000';
+     LogError('UPDBAL':'BAL_UPDATE':pCorrId:sqlState);
+     rollback;
+     return;
+  endif;
+end-proc;
+
+dcl-proc LogError;
+  dcl-pi *n;
+    pSource   char(64) const;
+    pCode     char(64) const;
+    pCorrId   char(128) const;
+    pSqlState char(5) const;
+  end-pi;
+
+  exec sql
+    insert into ERROR_QUEUE (
+      SOURCE, CORRELATION_ID, ERROR_CODE, MESSAGE, CREATED_AT
+    ) values (
+      :pSource,
+      :pCorrId,
+      :pCode,
+      'SQLSTATE=' concat :pSqlState,
+      current_timestamp
+    );
+end-proc;
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TXN-FSL-SUPERVISOR.
+
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+       01  TRANSACTION-STATE.
+           05  TX-ID                 PIC 9(15) COMP-3.
+           05  TX-ACCOUNT-ID         PIC 9(15) COMP-3.
+           05  TX-AMOUNT             PIC 9(15)V9(4) COMP-3.
+           05  TX-CURRENCY           PIC X(3).
+           05  TX-DIRECTION          PIC X(1).
+           05  TX-STATUS             PIC X(32).
+           05  TX-IDEMPOTENCY-KEY    PIC X(128).
+           05  TX-CORRELATION-ID     PIC X(128).
+
+       01  FLAGS.
+           05  CAN-POST-FLAG         PIC 9(1) COMP-3 VALUE 0.
+           05  IS-IDEMPOTENT         PIC 9(1) COMP-3 VALUE 0.
+
+       01  SQLSTATE-FIELD            PIC X(5).
+
+       PROCEDURE DIVISION.
+
+       MAIN-LOGIC.
+           PERFORM LOAD-TRANSACTION
+           PERFORM EVALUATE-STATE
+           IF CAN-POST-FLAG = 1 AND IS-IDEMPOTENT = 1
+               CALL "POSTTRAN" USING TX-ID
+               IF RETURN-CODE NOT = 0
+                   PERFORM LOG-ERROR
+               END-IF
+           ELSE
+               PERFORM LOG-ERROR
+           END-IF
+           GOBACK.
+
+       LOAD-TRANSACTION.
+           EXEC SQL
+                SELECT TRANSACTION_ID,
+                       ACCOUNT_ID,
+                       AMOUNT,
+                       CURRENCY_CODE,
+                       DIRECTION,
+                       STATUS,
+                       IDEMPOTENCY_KEY,
+                       CORRELATION_ID
+                  INTO :TX-ID,
+                       :TX-ACCOUNT-ID,
+                       :TX-AMOUNT,
+                       :TX-CURRENCY,
+                       :TX-DIRECTION,
+                       :TX-STATUS,
+                       :TX-IDEMPOTENCY-KEY,
+                       :TX-CORRELATION-ID
+                  FROM TRANSACTIONS
+                 WHERE TRANSACTION_ID = :TX-ID
+           END-EXEC
+           MOVE SQLSTATE TO SQLSTATE-FIELD
+           IF SQLSTATE-FIELD NOT = "00000"
+               PERFORM LOG-ERROR
+           END-IF
+           .
+
+       EVALUATE-STATE.
+           IF TX-STATUS = "INITIATED"
+              MOVE 1 TO CAN-POST-FLAG
+           ELSE
+              MOVE 0 TO CAN-POST-FLAG
+           END-IF
+
+           IF TX-IDEMPOTENCY-KEY NOT = SPACES
+              MOVE 1 TO IS-IDEMPOTENT
+           ELSE
+              MOVE 0 TO IS-IDEMPOTENT
+           END-IF
+           .
+
+       LOG-ERROR.
+           EXEC SQL
+                INSERT INTO ERROR_QUEUE (
+                    SOURCE, CORRELATION_ID, ERROR_CODE, MESSAGE, CREATED_AT
+                ) VALUES (
+                    'COBOL-FSL',
+                    :TX-CORRELATION-ID,
+                    'FSL_ERROR',
+                    'STATE OR SQL FAILURE',
+                    CURRENT_TIMESTAMP
+                )
+           END-EXEC
+           .// DTOs
+public record PostTransactionRequest(
+    long AccountId,
+    decimal Amount,
+    string CurrencyCode,
+    string Direction,
+    string IdempotencyKey);
+
+public record PostTransactionResponse(
+    long TransactionId,
+    string Status,
+    string CorrelationId);
+
+// Controller
+[ApiController]
+[Route("transactions")]
+public class TransactionsController : ControllerBase
+{
+    private readonly ILedgerGateway _ledger;
+
+    public TransactionsController(ILedgerGateway ledger)
+    {
+        _ledger = ledger;
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<PostTransactionResponse>> Post(
+        [FromBody] PostTransactionRequest request,
+        CancellationToken ct)
+    {
+        var correlationId = HttpContext.TraceIdentifier;
+
+        var result = await _ledger.InitiateAndPostAsync(request, correlationId, ct);
+
+        if (!result.Success)
+            return StatusCode(500, new PostTransactionResponse(
+                result.TransactionId,
+                "FAILED",
+                correlationId));
+
+        return Ok(new PostTransactionResponse(
+            result.TransactionId,
+            "POSTED",
+            correlationId));
+    }
+}
+
+// Ledger gateway: C# -> DB2 row + COBOL FSL + RPG
+public interface ILedgerGateway
+{
+    Task<(bool Success, long TransactionId)> InitiateAndPostAsync(
+        PostTransactionRequest request,
+        string correlationId,
+        CancellationToken ct);
+}
+
+public sealed class LedgerGateway : ILedgerGateway
+{
+    private readonly IDbConnection _db;        // DB2 connection
+    private readonly ICobolInvoker _cobol;     // bridge to COBOL FSL
+
+    public LedgerGateway(IDbConnection db, ICobolInvoker cobol)
+    {
+        _db = db;
+        _cobol = cobol;
+    }
+
+    public async Task<(bool Success, long TransactionId)> InitiateAndPostAsync(
+        PostTransactionRequest request,
+        string correlationId,
+        CancellationToken ct)
+    {
+        using var tx = _db.BeginTransaction();
+
+        // Create TRANSACTIONS row (INITIATED)
+        var cmd = _db.CreateCommand();
+        cmd.Transaction = tx;
+        cmd.CommandText = @"
+            INSERT INTO TRANSACTIONS (
+                ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION,
+                STATUS, IDEMPOTENCY_KEY, CORRELATION_ID,
+                CREATED_AT, UPDATED_AT
+            ) VALUES (
+                @acct, @amt, @cur, @dir,
+                'INITIATED', @idem, @corr,
+                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            );
+            SELECT IDENTITY_VAL_LOCAL() FROM SYSIBM.SYSDUMMY1";
+        cmd.Parameters.Add(newParameter(cmd, "@acct", request.AccountId));
+        cmd.Parameters.Add(newParameter(cmd, "@amt", request.Amount));
+        cmd.Parameters.Add(newParameter(cmd, "@cur", request.CurrencyCode));
+        cmd.Parameters.Add(newParameter(cmd, "@dir", request.Direction));
+        cmd.Parameters.Add(newParameter(cmd, "@idem", request.IdempotencyKey));
+        cmd.Parameters.Add(newParameter(cmd, "@corr", correlationId));
+
+        var txnId = Convert.ToInt64(await cmd.ExecuteScalarAsync(ct));
+
+        tx.Commit();
+
+        // Call COBOL FSL supervisor, which will call RPG POSTTRAN
+        var cobolRequest = new CobolTransactionState
+        {
+            TransactionId = txnId
+        };
+
+        var result = await _cobol.InvokeAsync("TXN-FSL-SUPERVISOR", cobolRequest, ct);
+
+        return (result.Success, txnId);
+    }
+
+    private static IDbDataParameter newParameter(IDbCommand cmd, string name, object value)
+    {
+        var p = cmd.CreateParameter();
+        p.ParameterName = name;
+        p.Value = value;
+        return p;
+    }
+}
+
+public sealed class CobolTransactionState
+{
+    public long TransactionId { get; set; }
+}
+
+
+**free
+ctl-opt dftactgrp(*no) actgrp('LEDGER') option(*srcstmt:*nodebugio);
+
+dcl-f TRANSACTIONS keyed usage(*update) extdesc('TRANSACTIONS');
+dcl-f JOURNALS     keyed usage(*update) extdesc('JOURNALS');
+dcl-f JOURNAL_LINES keyed usage(*update) extdesc('JOURNAL_LINES');
+dcl-f BALANCES     keyed usage(*update) extdesc('BALANCES');
+dcl-f ERROR_QUEUE  keyed usage(*output) extdesc('ERROR_QUEUE');
+
+dcl-s origTransId  packed(15:0);
+dcl-s revTransId   packed(15:0);
+dcl-s journalId    packed(15:0);
+dcl-s revJournalId packed(15:0);
+dcl-s sqlState     char(5);
+dcl-s corrId       char(128);
+dcl-s idemKey      char(128);
+dcl-s amount       decimal(18:4);
+dcl-s currency     char(3);
+dcl-s direction    char(1);
+dcl-s accountId    packed(15:0);
+
+dcl-proc ReverseTransaction;
+  dcl-pi *n;
+    pOrigTransId packed(15:0) const;
+    pIdemKey     char(128)   const;
+    pCorrId      char(128)   const;
+  end-pi;
+
+  origTransId = pOrigTransId;
+  idemKey     = pIdemKey;
+  corrId      = pCorrId;
+
+  exec sql set option commit = *chg, usingsqlca = *yes;
+
+  // Load original transaction (must be POSTED)
+  exec sql
+    select ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION, STATUS
+      into :accountId, :amount, :currency, :direction, :sqlState
+      from TRANSACTIONS
+     where TRANSACTION_ID = :origTransId;
+
+  if sqlcode <> 0;
+     LogError('REVTRAN':'ORIG_LOAD':corrId:sqlstate);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  if %trim(sqlState) <> 'POSTED';
+     LogError('REVTRAN':'ORIG_NOT_POSTED':corrId:'00000');
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Create reversal transaction row
+  exec sql
+    insert into TRANSACTIONS (
+      ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION,
+      STATUS, IDEMPOTENCY_KEY, CORRELATION_ID,
+      CREATED_AT, UPDATED_AT
+    ) values (
+      :accountId, :amount, :currency,
+      case when :direction = 'D' then 'C' else 'D' end,
+      'INITIATED', :idemKey, :corrId,
+      current_timestamp, current_timestamp
+    );
+
+  if sqlcode <> 0;
+     LogError('REVTRAN':'REV_INSERT':corrId:sqlstate);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  exec sql
+    select TRANSACTION_ID into :revTransId
+      from TRANSACTIONS
+     where IDEMPOTENCY_KEY = :idemKey
+       and CORRELATION_ID = :corrId;
+
+  if sqlcode <> 0;
+     LogError('REVTRAN':'REV_SELECT':corrId:sqlstate);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Create reversal journal header
+  exec sql
+    insert into JOURNALS (
+      TRANSACTION_ID, EFFECTIVE_DATE, POSTING_DATE,
+      STATUS, IDEMPOTENCY_KEY, CORRELATION_ID, CREATED_AT
+    ) values (
+      :revTransId,
+      current_date,
+      current_timestamp,
+      'PENDING',
+      :idemKey,
+      :corrId,
+      current_timestamp
+    );
+
+  if sqlcode <> 0;
+     LogError('REVTRAN':'REV_J_INSERT':corrId:sqlstate);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  exec sql
+    select JOURNAL_ID into :revJournalId
+      from JOURNALS
+     where TRANSACTION_ID = :revTransId
+       and IDEMPOTENCY_KEY = :idemKey;
+
+  if sqlcode <> 0;
+     LogError('REVTRAN':'REV_J_SELECT':corrId:sqlstate);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Build compensating lines by inverting original journal lines
+  dcl-ds jl qualified;
+    journalId    packed(15:0);
+    accountId    packed(15:0);
+    amt          decimal(18:4);
+    curr         char(3);
+    dir          char(1);
+  end-ds;
+
+  exec sql
+    declare C_LINES cursor for
+      select JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+        from JOURNAL_LINES
+       where JOURNAL_ID = (
+         select JOURNAL_ID from JOURNALS
+          where TRANSACTION_ID = :origTransId
+       );
+
+  exec sql open C_LINES;
+
+  dou sqlcode <> 0;
+     exec sql
+       fetch C_LINES
+        into :jl.journalId, :jl.accountId, :jl.amt, :jl.curr, :jl.dir;
+
+     if sqlcode <> 0;
+        leave;
+     endif;
+
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :revJournalId,
+         :jl.accountId,
+         :jl.amt,
+         :jl.curr,
+         case when :jl.dir = 'D' then 'C' else 'D' end
+       );
+  enddo;
+
+  exec sql close C_LINES;
+
+  // Double-entry check on reversal journal
+  exec sql
+    select coalesce(sum(case when DIRECTION = 'D' then AMOUNT else 0 end),0),
+           coalesce(sum(case when DIRECTION = 'C' then AMOUNT else 0 end),0)
+      into :debitTotal, :creditTotal
+      from JOURNAL_LINES
+     where JOURNAL_ID = :revJournalId;
+
+  if debitTotal <> creditTotal;
+     LogError('REVTRAN':'REV_IMBALANCE':corrId:'00000');
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Apply compensating balance updates
+  exec sql
+    declare C_BAL cursor for
+      select ACCOUNT_ID, AMOUNT, DIRECTION
+        from JOURNAL_LINES
+       where JOURNAL_ID = :revJournalId;
+
+  exec sql open C_BAL;
+
+  dcl-s balAccId packed(15:0);
+  dcl-s balAmt   decimal(18:4);
+  dcl-s balDir   char(1);
+
+  dou sqlcode <> 0;
+     exec sql
+       fetch C_BAL
+        into :balAccId, :balAmt, :balDir;
+
+     if sqlcode <> 0;
+        leave;
+     endif;
+
+     UpdateBalance(balAccId:balDir:balAmt:corrId);
+  enddo;
+
+  exec sql close C_BAL;
+
+  // Mark reversal journal and transaction as POSTED
+  exec sql
+    update JOURNALS
+       set STATUS = 'POSTED'
+     where JOURNAL_ID = :revJournalId;
+
+  exec sql
+    update TRANSACTIONS
+       set STATUS = 'POSTED',
+           UPDATED_AT = current_timestamp
+     where TRANSACTION_ID = :revTransId;
+
+  if sqlcode <> 0;
+     LogError('REVTRAN':'REV_STATUS_UPDATE':corrId:sqlstate);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  commit;
+  *inlr = *on;
+end-proc;
+**free
+ctl-opt dftactgrp(*no) actgrp('LEDGER') option(*srcstmt:*nodebugio);
+
+dcl-f TRANSACTIONS keyed usage(*update) extdesc('TRANSACTIONS');
+dcl-f JOURNALS     keyed usage(*update) extdesc('JOURNALS');
+dcl-f JOURNAL_LINES keyed usage(*update) extdesc('JOURNAL_LINES');
+dcl-f BALANCES     keyed usage(*update) extdesc('BALANCES');
+dcl-f ERROR_QUEUE  keyed usage(*output) extdesc('ERROR_QUEUE');
+
+dcl-s adjTransId   packed(15:0);
+dcl-s journalId    packed(15:0);
+dcl-s sqlState     char(5);
+dcl-s corrId       char(128);
+dcl-s idemKey      char(128);
+dcl-s accountId    packed(15:0);
+dcl-s deltaAmount  decimal(18:4);
+dcl-s currency     char(3);
+dcl-s direction    char(1);
+
+dcl-proc AdjustTransaction;
+  dcl-pi *n;
+    pAccountId   packed(15:0) const;
+    pDeltaAmount decimal(18:4) const;
+    pCurrency    char(3)      const;
+    pDirection   char(1)      const;
+    pIdemKey     char(128)    const;
+    pCorrId      char(128)    const;
+  end-pi;
+
+  accountId   = pAccountId;
+  deltaAmount = pDeltaAmount;
+  currency    = pCurrency;
+  direction   = pDirection;
+  idemKey     = pIdemKey;
+  corrId      = pCorrId;
+
+  exec sql set option commit = *chg, usingsqlca = *yes;
+
+  // Create adjustment transaction
+  exec sql
+    insert into TRANSACTIONS (
+      ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION,
+      STATUS, IDEMPOTENCY_KEY, CORRELATION_ID,
+      CREATED_AT, UPDATED_AT
+    ) values (
+      :accountId, :deltaAmount, :currency, :direction,
+      'INITIATED', :idemKey, :corrId,
+      current_timestamp, current_timestamp
+    );
+
+  if sqlcode <> 0;
+     LogError('ADJTRAN':'ADJ_INSERT':corrId:sqlstate);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  exec sql
+    select TRANSACTION_ID into :adjTransId
+      from TRANSACTIONS
+     where IDEMPOTENCY_KEY = :idemKey
+       and CORRELATION_ID = :corrId;
+
+  if sqlcode <> 0;
+     LogError('ADJTRAN':'ADJ_SELECT':corrId:sqlstate);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Create adjustment journal
+  exec sql
+    insert into JOURNALS (
+      TRANSACTION_ID, EFFECTIVE_DATE, POSTING_DATE,
+      STATUS, IDEMPOTENCY_KEY, CORRELATION_ID, CREATED_AT
+    ) values (
+      :adjTransId,
+      current_date,
+      current_timestamp,
+      'PENDING',
+      :idemKey,
+      :corrId,
+      current_timestamp
+    );
+
+  if sqlcode <> 0;
+     LogError('ADJTRAN':'ADJ_J_INSERT':corrId:sqlstate);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  exec sql
+    select JOURNAL_ID into :journalId
+      from JOURNALS
+     where TRANSACTION_ID = :adjTransId
+       and IDEMPOTENCY_KEY = :idemKey;
+
+  if sqlcode <> 0;
+     LogError('ADJTRAN':'ADJ_J_SELECT':corrId:sqlstate);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Single-account adjustment: debit/credit vs offset account (e.g., adjustment reserve)
+  dcl-s offsetAccountId packed(15:0);
+  offsetAccountId = 2; // example adjustment account
+
+  if direction = 'D';
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :journalId, :accountId, :deltaAmount, :currency, 'D'
+       );
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :journalId, :offsetAccountId, :deltaAmount, :currency, 'C'
+       );
+  else;
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :journalId, :accountId, :deltaAmount, :currency, 'C'
+       );
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :journalId, :offsetAccountId, :deltaAmount, :currency, 'D'
+       );
+  endif;
+
+  // Double-entry check
+  exec sql
+    select coalesce(sum(case when DIRECTION = 'D' then AMOUNT else 0 end),0),
+           coalesce(sum(case when DIRECTION = 'C' then AMOUNT else 0 end),0)
+      into :debitTotal, :creditTotal
+      from JOURNAL_LINES
+     where JOURNAL_ID = :journalId;
+
+  if debitTotal <> creditTotal;
+     LogError('ADJTRAN':'ADJ_IMBALANCE':corrId:'00000');
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  // Apply balance updates
+  UpdateBalance(accountId:direction:deltaAmount:corrId);
+  if direction = 'D';
+     UpdateBalance(offsetAccountId:'C':deltaAmount:corrId);
+  else;
+     UpdateBalance(offsetAccountId:'D':deltaAmount:corrId);
+  endif;
+
+  exec sql
+    update JOURNALS
+       set STATUS = 'POSTED'
+     where JOURNAL_ID = :journalId;
+
+  exec sql
+    update TRANSACTIONS
+       set STATUS = 'POSTED',
+           UPDATED_AT = current_timestamp
+     where TRANSACTION_ID = :adjTransId;
+
+  if sqlcode <> 0;
+     LogError('ADJTRAN':'ADJ_STATUS_UPDATE':corrId:sqlstate);
+     rollback;
+     *inlr = *on;
+     return;
+  endif;
+
+  commit;
+  *inlr = *on;
+end-proc;
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. ACH-FSL-SUPERVISOR.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+       01  ACH-INSTRUCTION.
+           05  ACH-ID              PIC 9(15) COMP-3.
+           05  PAYMENT-ID          PIC 9(15) COMP-3.
+           05  TX-ID               PIC 9(15) COMP-3.
+           05  AMOUNT              PIC 9(15)V9(4) COMP-3.
+           05  CURRENCY            PIC X(3).
+           05  STATUS              PIC X(32).
+           05  RAIL-CODE           PIC X(8).
+           05  NACHA-TRACE         PIC X(32).
+           05  CORRELATION-ID      PIC X(128).
+
+       01  FLAGS.
+           05  CAN-SUBMIT          PIC 9(1) COMP-3 VALUE 0.
+           05  CAN-SETTLE          PIC 9(1) COMP-3 VALUE 0.
+           05  CAN-RETURN          PIC 9(1) COMP-3 VALUE 0.
+
+       01  SQLSTATE-FIELD          PIC X(5).
+
+       PROCEDURE DIVISION.
+
+       MAIN-LOGIC.
+           PERFORM LOAD-ACH
+           PERFORM EVALUATE-ACH-STATE
+           IF CAN-SUBMIT = 1
+               PERFORM SUBMIT-ACH
+           END-IF
+           IF CAN-SETTLE = 1
+               PERFORM SETTLE-ACH
+           END-IF
+           IF CAN-RETURN = 1
+               PERFORM RETURN-ACH
+           END-IF
+           GOBACK.
+
+       LOAD-ACH.
+           EXEC SQL
+                SELECT ACH_BATCH_ID,
+                       PAYMENT_ID,
+                       TRANSACTION_ID,
+                       AMOUNT,
+                       CURRENCY_CODE,
+                       STATUS,
+                       'ACH',
+                       TRACE_NUMBER,
+                       CORRELATION_ID
+                  INTO :ACH-ID,
+                       :PAYMENT-ID,
+                       :TX-ID,
+                       :AMOUNT,
+                       :CURRENCY,
+                       :STATUS,
+                       :RAIL-CODE,
+                       :NACHA-TRACE,
+                       :CORRELATION-ID
+                  FROM ACH_ENTRIES
+                 WHERE ACH_ENTRY_ID = :ACH-ID
+           END-EXEC
+           MOVE SQLSTATE TO SQLSTATE-FIELD
+           IF SQLSTATE-FIELD NOT = "00000"
+               PERFORM LOG-ERROR
+           END-IF
+           .
+
+       EVALUATE-ACH-STATE.
+           EVALUATE STATUS
+               WHEN "CREATED"
+                    MOVE 1 TO CAN-SUBMIT
+               WHEN "SUBMITTED"
+                    MOVE 1 TO CAN-SETTLE
+               WHEN "SETTLED"
+                    MOVE 0 TO CAN-SETTLE
+               WHEN "RETURN_PENDING"
+                    MOVE 1 TO CAN-RETURN
+               WHEN OTHER
+                    MOVE 0 TO CAN-SUBMIT
+                    MOVE 0 TO CAN-SETTLE
+                    MOVE 0 TO CAN-RETURN
+           END-EVALUATE
+           .
+
+       SUBMIT-ACH.
+           * here you would generate NACHA file, mark status SUBMITTED
+           EXEC SQL
+                UPDATE ACH_ENTRIES
+                   SET STATUS = 'SUBMITTED'
+                 WHERE ACH_ENTRY_ID = :ACH-ID
+           END-EXEC
+           .
+
+       SETTLE-ACH.
+           * settlement triggers ledger posting via RPG
+           CALL "POSTTRAN" USING TX-ID
+           IF RETURN-CODE NOT = 0
+               PERFORM LOG-ERROR
+           ELSE
+               EXEC SQL
+                    UPDATE ACH_ENTRIES
+                       SET STATUS = 'SETTLED'
+                     WHERE ACH_ENTRY_ID = :ACH-ID
+               END-EXEC
+           END-IF
+           .
+
+       RETURN-ACH.
+           * return triggers reversal via RPG
+           CALL "REVTRAN" USING TX-ID
+           IF RETURN-CODE NOT = 0
+               PERFORM LOG-ERROR
+           ELSE
+               EXEC SQL
+                    UPDATE ACH_ENTRIES
+                       SET STATUS = 'RETURNED'
+                     WHERE ACH_ENTRY_ID = :ACH-ID
+               END-EXEC
+           END-IF
+           .
+
+       LOG-ERROR.
+           EXEC SQL
+                INSERT INTO ERROR_QUEUE (
+                    SOURCE, CORRELATION_ID, ERROR_CODE, MESSAGE, CREATED_AT
+                ) VALUES (
+                    'ACH-FSL',
+                    :CORRELATION-ID,
+                    'ACH_FSL_ERROR',
+                    'ACH STATE OR LEDGER FAILURE',
+                    CURRENT_TIMESTAMP
+                )
+           END-EXEC
+           .
+[ApiController]
+[Route("payments")]
+public class PaymentsController : ControllerBase
+{
+    private readonly ILedgerGateway _ledger;
+    private readonly IAchRailService _achRail;
+
+    public PaymentsController(ILedgerGateway ledger, IAchRailService achRail)
+    {
+        _ledger = ledger;
+        _achRail = achRail;
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<CreatePaymentResponse>> CreatePayment(
+        [FromBody] CreatePaymentRequest request,
+        CancellationToken ct)
+    {
+        var correlationId = HttpContext.TraceIdentifier;
+
+        // 1. Create transaction + post via ledger gateway
+        var postReq = new PostTransactionRequest(
+            request.DebitAccountId,
+            request.Amount,
+            request.CurrencyCode,
+            "D",
+            request.IdempotencyKey);
+
+        var postResult = await _ledger.InitiateAndPostAsync(postReq, correlationId, ct);
+
+        if (!postResult.Success)
+            return StatusCode(500, new CreatePaymentResponse(
+                0, "FAILED", correlationId));
+
+        // 2. Create ACH entry (rail metadata only)
+        var achId = await _achRail.CreateAchEntryAsync(
+            new AchEntryRequest
+            {
+                PaymentId = request.PaymentId,
+                TransactionId = postResult.TransactionId,
+                Amount = request.Amount,
+                CurrencyCode = request.CurrencyCode,
+                CorrelationId = correlationId
+            },
+            ct);
+
+        return Ok(new CreatePaymentResponse(
+            achId,
+            "SUBMITTED",
+            correlationId));
+    }
+
+    [HttpPost("{id}/reverse")]
+    public async Task<ActionResult<ReversePaymentResponse>> ReversePayment(
+        long id,
+        [FromBody] ReversePaymentRequest request,
+        CancellationToken ct)
+    {
+        var correlationId = HttpContext.TraceIdentifier;
+
+        // Lookup original transaction for this payment
+        var txId = await _achRail.GetTransactionIdForPaymentAsync(id, ct);
+
+        // Call RPG reversal via gateway
+        var result = await _ledger.ReverseAsync(txId, request.IdempotencyKey, correlationId, ct);
+
+        if (!result.Success)
+            return StatusCode(500, new ReversePaymentResponse(
+                id, "FAILED", correlationId));
+
+        return Ok(new ReversePaymentResponse(
+            id, "REVERSED", correlationId));
+    }
+}
+
+public record CreatePaymentRequest(
+    long PaymentId,
+    long DebitAccountId,
+    decimal Amount,
+    string CurrencyCode,
+    string IdempotencyKey);
+
+public record CreatePaymentResponse(
+    long AchEntryId,
+    string Status,
+    string CorrelationId);
+
+public record ReversePaymentRequest(
+    string IdempotencyKey);
+
+public record ReversePaymentResponse(
+    long PaymentId,
+    string Status,
+    string CorrelationId);
+public interface ILedgerGateway
+{
+    Task<(bool Success, long TransactionId)> InitiateAndPostAsync(
+        PostTransactionRequest request,
+        string correlationId,
+        CancellationToken ct);
+
+    Task<(bool Success)> ReverseAsync(
+        long originalTransactionId,
+        string idempotencyKey,
+        string correlationId,
+        CancellationToken ct);
+}
+
+public sealed class LedgerGateway : ILedgerGateway
+{
+    // ... existing fields/ctor ...
+
+    public async Task<(bool Success)> ReverseAsync(
+        long originalTransactionId,
+        string idempotencyKey,
+        string correlationId,
+        CancellationToken ct)
+    {
+        var cobolRequest = new CobolReverseState
+        {
+            OriginalTransactionId = originalTransactionId,
+            IdempotencyKey = idempotencyKey,
+            CorrelationId = correlationId
+        };
+
+        var result = await _cobol.InvokeAsync("ACH-FSL-SUPERVISOR", cobolRequest, ct);
+        return (result.Success);
+    }
+}
+
+public sealed class CobolReverseState
+{
+    public long OriginalTransactionId { get; set; }
+    public string IdempotencyKey { get; set; } = "";
+    public string CorrelationId { get; set; } = "";
+}
+
+**free
+ctl-opt dftactgrp(*no) actgrp('LEDGER') option(*srcstmt:*nodebugio);
+
+dcl-f TRANSACTIONS keyed usage(*update) extdesc('TRANSACTIONS');
+dcl-f JOURNALS keyed usage(*update) extdesc('JOURNALS');
+dcl-f JOURNAL_LINES keyed usage(*update) extdesc('JOURNAL_LINES');
+dcl-f BALANCES keyed usage(*update) extdesc('BALANCES');
+dcl-f ERROR_QUEUE keyed usage(*output) extdesc('ERROR_QUEUE');
+
+dcl-s origTransId packed(15:0);
+dcl-s revTransId packed(15:0);
+dcl-s origJournalId packed(15:0);
+dcl-s revJournalId packed(15:0);
+dcl-s accountId packed(15:0);
+dcl-s amount decimal(18:4);
+dcl-s currency char(3);
+dcl-s direction char(1);
+dcl-s status char(32);
+dcl-s sqlState char(5);
+dcl-s corrId char(128);
+dcl-s idemKey char(128);
+dcl-s debitTotal decimal(18:4);
+dcl-s creditTotal decimal(18:4);
+
+dcl-proc REVTRAN;
+  dcl-pi *n;
+    pOrigTransId packed(15:0) const;
+    pIdemKey char(128) const;
+    pCorrId char(128) const;
+  end-pi;
+
+  origTransId = pOrigTransId;
+  idemKey = pIdemKey;
+  corrId = pCorrId;
+
+  exec sql set option commit = *chg, usingsqlca = *yes;
+
+  exec sql
+    select ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION, STATUS
+      into :accountId, :amount, :currency, :direction, :status
+      from TRANSACTIONS
+     where TRANSACTION_ID = :origTransId;
+
+  if sqlcode <> 0;
+     LogError('REVTRAN':'LOAD_ORIG':corrId:sqlstate);
+     rollback;
+     return;
+  endif;
+
+  if %trim(status) <> 'POSTED';
+     LogError('REVTRAN':'NOT_POSTED':corrId:'00000');
+     rollback;
+     return;
+  endif;
+
+  exec sql
+    select JOURNAL_ID into :origJournalId
+      from JOURNALS
+     where TRANSACTION_ID = :origTransId;
+
+  if sqlcode <> 0;
+     LogError('REVTRAN':'LOAD_ORIG_J':corrId:sqlstate);
+     rollback;
+     return;
+  endif;
+
+  exec sql
+    insert into TRANSACTIONS (
+      ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION,
+      STATUS, IDEMPOTENCY_KEY, CORRELATION_ID,
+      CREATED_AT, UPDATED_AT
+    ) values (
+      :accountId, :amount, :currency,
+      case when :direction = 'D' then 'C' else 'D' end,
+      'INITIATED', :idemKey, :corrId,
+      current_timestamp, current_timestamp
+    );
+
+  exec sql
+    select TRANSACTION_ID into :revTransId
+      from TRANSACTIONS
+     where IDEMPOTENCY_KEY = :idemKey;
+
+  exec sql
+    insert into JOURNALS (
+      TRANSACTION_ID, EFFECTIVE_DATE, POSTING_DATE,
+      STATUS, IDEMPOTENCY_KEY, CORRELATION_ID, CREATED_AT
+    ) values (
+      :revTransId,
+      current_date,
+      current_timestamp,
+      'PENDING',
+      :idemKey,
+      :corrId,
+      current_timestamp
+    );
+
+  exec sql
+    select JOURNAL_ID into :revJournalId
+      from JOURNALS
+     where TRANSACTION_ID = :revTransId;
+
+  dcl-ds jl qualified;
+    account packed(15:0);
+    amt decimal(18:4);
+    curr char(3);
+    dir char(1);
+  end-ds;
+
+  exec sql
+    declare C1 cursor for
+      select ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+        from JOURNAL_LINES
+       where JOURNAL_ID = :origJournalId;
+
+  exec sql open C1;
+
+  dou sqlcode <> 0;
+     exec sql fetch C1 into :jl.account, :jl.amt, :jl.curr, :jl.dir;
+     if sqlcode <> 0; leave; endif;
+
+     exec sql
+       insert into JOURNAL_LINES (
+         JOURNAL_ID, ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION
+       ) values (
+         :revJournalId,
+         :jl.account,
+         :jl.amt,
+         :jl.curr,
+         case when :jl.dir = 'D' then 'C' else 'D' end
+       );
+  enddo;
+
+  exec sql close C1;
+
+  exec sql
+    select coalesce(sum(case when DIRECTION='D' then AMOUNT else 0 end),0),
+           coalesce(sum(case when DIRECTION='C' then AMOUNT else 0 end),0)
+      into :debitTotal, :creditTotal
+      from JOURNAL_LINES
+     where JOURNAL_ID = :revJournalId;
+
+  if debitTotal <> creditTotal;
+     LogError('REVTRAN':'IMBALANCE':corrId:'00000');
+     rollback;
+     return;
+  endif;
+
+  exec sql
+    declare C2 cursor for
+      select ACCOUNT_ID, AMOUNT, DIRECTION
+        from JOURNAL_LINES
+       where JOURNAL_ID = :revJournalId;
+
+  exec sql open C2;
+
+  dcl-s balAcc packed(15:0);
+  dcl-s balAmt decimal(18:4);
+  dcl-s balDir char(1);
+
+  dou sqlcode <> 0;
+     exec sql fetch C2 into :balAcc, :balAmt, :balDir;
+     if sqlcode <> 0; leave; endif;
+
+     UpdateBalance(balAcc:balDir:balAmt:corrId);
+  enddo;
+
+  exec sql close C2;
+
+  exec sql
+    update JOURNALS
+       set STATUS='POSTED'
+     where JOURNAL_ID = :revJournalId;
+
+  exec sql
+    update TRANSACTIONS
+       set STATUS='POSTED'
+     where TRANSACTION_ID = :revTransId;
+
+  commit;
+end-proc;
+**free
+ctl-opt dftactgrp(*no) actgrp('LEDGER') option(*srcstmt:*nodebugio);
+
+dcl-f TRANSACTIONS keyed usage(*update) extdesc('TRANSACTIONS');
+dcl-f JOURNALS keyed usage(*update) extdesc('JOURNALS');
+dcl-f JOURNAL_LINES keyed usage(*update) extdesc('JOURNAL_LINES');
+dcl-f BALANCES keyed usage(*update) extdesc('BALANCES');
+dcl-f ERROR_QUEUE keyed usage(*output) extdesc('ERROR_QUEUE');
+
+dcl-s adjTransId packed(15:0);
+dcl-s journalId packed(15:0);
+dcl-s accountId packed(15:0);
+dcl-s deltaAmount decimal(18:4);
+dcl-s currency char(3);
+dcl-s direction char(1);
+dcl-s offsetAccount packed(15:0);
+dcl-s debitTotal decimal(18:4);
+dcl-s creditTotal decimal(18:4);
+dcl-s corrId char(128);
+dcl-s idemKey char(128);
+
+dcl-proc ADJTRAN;
+  dcl-pi *n;
+    pAccountId packed(15:0) const;
+    pDeltaAmount decimal(18:4) const;
+    pCurrency char(3) const;
+    pDirection char(1) const;
+    pIdemKey char(128) const;
+    pCorrId char(128) const;
+  end-pi;
+
+  accountId = pAccountId;
+  deltaAmount = pDeltaAmount;
+  currency = pCurrency;
+  direction = pDirection;
+  idemKey = pIdemKey;
+  corrId = pCorrId;
+
+  exec sql set option commit = *chg, usingsqlca = *yes;
+
+  exec sql
+    insert into TRANSACTIONS (
+      ACCOUNT_ID, AMOUNT, CURRENCY_CODE, DIRECTION,
+      STATUS, IDEMPOTENCY_KEY, CORRELATION_ID,
+      CREATED_AT, UPDATED_AT
+    ) values (
+      :accountId, :deltaAmount, :currency, :direction,
+      'INITIATED', :idemKey, :corrId,
+      current_timestamp, current_timestamp
+    );
+
+  exec sql
+    select TRANSACTION_ID into :adjTransId
+      from TRANSACTIONS
+     where IDEMPOTENCY_KEY = :idemKey;
+
+  exec sql
+    insert into JOURNALS (
+      TRANSACTION_ID, EFFECTIVE_DATE, POSTING_DATE,
+      STATUS, IDEMPOTENCY_KEY, CORRELATION_ID, CREATED_AT
+    ) values (
+      :adjTransId,
+      current_date,
+      current_timestamp,
+      'PENDING',
+      :idemKey,
+      :corrId,
+      current_timestamp
+    );
+
+  exec sql
+    select JOURNAL_ID into :journalId
+      from JOURNALS
+     where TRANSACTION_ID = :adjTransId;
+
+  offsetAccount = 2;
+
+  if direction = 'D';
+     exec sql
+       insert into JOURNAL_LINES values(:journalId,:accountId,:deltaAmount,:currency,'D');
+     exec sql
+       insert into JOURNAL_LINES values(:journalId,:offsetAccount,:deltaAmount,:currency,'C');
+  else;
+     exec sql
+       insert into JOURNAL_LINES values(:journalId,:accountId,:deltaAmount,:currency,'C');
+     exec sql
+       insert into JOURNAL_LINES values(:journalId,:offsetAccount,:deltaAmount,:currency,'D');
+  endif;
+
+  exec sql
+    select coalesce(sum(case when DIRECTION='D' then AMOUNT else 0 end),0),
+           coalesce(sum(case when DIRECTION='C' then AMOUNT else 0 end),0)
+      into :debitTotal, :creditTotal
+      from JOURNAL_LINES
+     where JOURNAL_ID = :journalId;
+
+  if debitTotal <> creditTotal;
+     LogError('ADJTRAN':'IMBALANCE':corrId:'00000');
+     rollback;
+     return;
+  endif;
+
+  UpdateBalance(accountId:direction:deltaAmount:corrId);
+
+  if direction='D';
+     UpdateBalance(offsetAccount:'C':deltaAmount:corrId);
+  else;
+     UpdateBalance(offsetAccount:'D':deltaAmount:corrId);
+  endif;
+
+  exec sql update JOURNALS set STATUS='POSTED' where JOURNAL_ID=:journalId;
+  exec sql update TRANSACTIONS set STATUS='POSTED' where TRANSACTION_ID=:adjTransId;
+
+  commit;
+end-proc;
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. ACH-FSL.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+       01 ACH-REC.
+          05 ACH-ID              PIC 9(15) COMP-3.
+          05 PAYMENT-ID          PIC 9(15) COMP-3.
+          05 TX-ID               PIC 9(15) COMP-3.
+          05 AMOUNT              PIC 9(15)V9(4) COMP-3.
+          05 CURRENCY            PIC X(3).
+          05 STATUS              PIC X(32).
+          05 CORR-ID             PIC X(128).
+
+       01 FLAGS.
+          05 CAN-SUBMIT          PIC 9(1) COMP-3 VALUE 0.
+          05 CAN-SETTLE          PIC 9(1) COMP-3 VALUE 0.
+          05 CAN-RETURN          PIC 9(1) COMP-3 VALUE 0.
+
+       PROCEDURE DIVISION.
+
+       MAIN.
+           PERFORM LOAD-ACH
+           PERFORM EVAL-STATE
+           IF CAN-SUBMIT = 1
+              PERFORM SUBMIT
+           END-IF
+           IF CAN-SETTLE = 1
+              PERFORM SETTLE
+           END-IF
+           IF CAN-RETURN = 1
+              PERFORM RETURN
+           END-IF
+           GOBACK.
+
+       LOAD-ACH.
+           EXEC SQL
+                SELECT ACH_ENTRY_ID,
+                       PAYMENT_ID,
+                       TRANSACTION_ID,
+                       AMOUNT,
+                       CURRENCY_CODE,
+                       STATUS,
+                       CORRELATION_ID
+                  INTO :ACH-ID,
+                       :PAYMENT-ID,
+                       :TX-ID,
+                       :AMOUNT,
+                       :CURRENCY,
+                       :STATUS,
+                       :CORR-ID
+                  FROM ACH_ENTRIES
+                 WHERE ACH_ENTRY_ID = :ACH-ID
+           END-EXEC.
+
+       EVAL-STATE.
+           EVALUATE STATUS
+              WHEN "CREATED"
+                 MOVE 1 TO CAN-SUBMIT
+              WHEN "SUBMITTED"
+                 MOVE 1 TO CAN-SETTLE
+              WHEN "RETURN_PENDING"
+                 MOVE 1 TO CAN-RETURN
+              WHEN OTHER
+                 MOVE 0 TO CAN-SUBMIT
+                 MOVE 0 TO CAN-SETTLE
+                 MOVE 0 TO CAN-RETURN
+           END-EVALUATE.
+
+       SUBMIT.
+           EXEC SQL
+                UPDATE ACH_ENTRIES
+                   SET STATUS='SUBMITTED'
+                 WHERE ACH_ENTRY_ID=:ACH-ID
+           END-EXEC.
+
+       SETTLE.
+           CALL "POSTTRAN" USING TX-ID
+           IF RETURN-CODE = 0
+              EXEC SQL
+                   UPDATE ACH_ENTRIES
+                      SET STATUS='SETTLED'
+                    WHERE ACH_ENTRY_ID=:ACH-ID
+              END-EXEC
+           ELSE
+              PERFORM LOG-ERR
+           END-IF.
+
+       RETURN.
+           CALL "REVTRAN" USING TX-ID
+           IF RETURN-CODE = 0
+              EXEC SQL
+                   UPDATE ACH_ENTRIES
+                      SET STATUS='RETURNED'
+                    WHERE ACH_ENTRY_ID=:ACH-ID
+              END-EXEC
+           ELSE
+              PERFORM LOG-ERR
+           END-IF.
+
+       LOG-ERR.
+           EXEC SQL
+                INSERT INTO ERROR_QUEUE (
+                    SOURCE, CORRELATION_ID, ERROR_CODE, MESSAGE, CREATED_AT
+                ) VALUES (
+                    'ACH-FSL',
+                    :CORR-ID,
+                    'ACH_FSL_ERROR',
+                    'STATE FAILURE',
+                    CURRENT_TIMESTAMP
+                )
+           END-EXEC.
+[ApiController]
+[Route("payments")]
+public class PaymentsController : ControllerBase
+{
+    private readonly ILedgerGateway _ledger;
+    private readonly IAchRail _ach;
+
+    public PaymentsController(ILedgerGateway ledger, IAchRail ach)
+    {
+        _ledger = ledger;
+        _ach = ach;
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<CreatePaymentResponse>> CreatePayment(
+        CreatePaymentRequest req,
+        CancellationToken ct)
+    {
+        var corr = HttpContext.TraceIdentifier;
+
+        var postReq = new PostTransactionRequest(
+            req.DebitAccountId,
+            req.Amount,
+            req.CurrencyCode,
+            "D",
+            req.IdempotencyKey);
+
+        var post = await _ledger.InitiateAndPostAsync(postReq, corr, ct);
+
+        if (!post.Success)
+            return StatusCode(500, new CreatePaymentResponse(0, "FAILED", corr));
+
+        var achId = await _ach.CreateEntryAsync(
+            new AchEntryRequest
+            {
+                PaymentId = req.PaymentId,
+                TransactionId = post.TransactionId,
+                Amount = req.Amount,
+                CurrencyCode = req.CurrencyCode,
+                CorrelationId = corr
+            },
+            ct);
+
+        return Ok(new CreatePaymentResponse(achId, "SUBMITTED", corr));
+    }
+
+    [HttpPost("{id}/reverse")]
+    public async Task<ActionResult<ReversePaymentResponse>> Reverse(long id,
+        ReversePaymentRequest req,
+        CancellationToken ct)
+    {
+        var corr = HttpContext.TraceIdentifier;
+
+        var txId = await _ach.GetTransactionIdAsync(id, ct);
+
+        var rev = await _ledger.ReverseAsync(txId, req.IdempotencyKey, corr, ct);
+
+        if (!rev.Success)
+            return StatusCode(500, new ReversePaymentResponse(id, "FAILED", corr));
+
+        return Ok(new ReversePaymentResponse(id, "REVERSED", corr));
+    }
+}
+// Binary record layout for transaction command
+// Matches COBOL + RPG expectations exactly.
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+public struct LedgerCommandRecord
+{
+    public long TransactionId;              // PIC 9(15) COMP-3 mapped as 8-byte
+    public long AccountId;                  // PIC 9(15) COMP-3
+    public decimal Amount;                  // DECIMAL(18,4) encoded as 16 bytes
+    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 3)]
+    public string Currency;                 // CHAR(3)
+    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1)]
+    public string Direction;                // 'D' or 'C'
+    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+    public string IdempotencyKey;           // CHAR(128)
+    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+    public string CorrelationId;            // CHAR(128)
+}
+public interface ICobolGateway
+{
+    Task<bool> InvokeLedgerCommandAsync(LedgerCommandRecord record,
+                                        string programName,
+                                        CancellationToken ct);
+}
+
+public sealed class CobolGateway : ICobolGateway
+{
+    private readonly IIbmProgramInvoker _invoker; // abstraction over IBM i program call
+
+    public CobolGateway(IIbmProgramInvoker invoker)
+    {
+        _invoker = invoker;
+    }
+
+    public async Task<bool> InvokeLedgerCommandAsync(LedgerCommandRecord record,
+                                                     string programName,
+                                                     CancellationToken ct)
+    {
+        var size = Marshal.SizeOf<LedgerCommandRecord>();
+        var buffer = new byte[size];
+        var ptr = Marshal.AllocHGlobal(size);
+        try
+        {
+            Marshal.StructureToPtr(record, ptr, false);
+            Marshal.Copy(ptr, buffer, 0, size);
+
+            // Binary call: single parameter, fixed-length buffer
+            var result = await _invoker.CallAsync(programName, buffer, ct);
+            return result.Success;
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
+    }       IDENTIFICATION DIVISION.
+       PROGRAM-ID. LEDGER-GATEWAY.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+       01  CMD-BUFFER.
+           05  CMD-TRANSACTION-ID   PIC 9(15) COMP-3.
+           05  CMD-ACCOUNT-ID       PIC 9(15) COMP-3.
+           05  CMD-AMOUNT           PIC 9(15)V9(4) COMP-3.
+           05  CMD-CURRENCY         PIC X(3).
+           05  CMD-DIRECTION        PIC X(1).
+           05  CMD-IDEMPOTENCY-KEY  PIC X(128).
+           05  CMD-CORRELATION-ID   PIC X(128).
+
+       LINKAGE SECTION.
+       01  RAW-BUFFER               PIC X(512).
+
+       PROCEDURE DIVISION USING RAW-BUFFER.
+
+       MAIN-LOGIC.
+           MOVE RAW-BUFFER TO CMD-BUFFER
+
+           EVALUATE CMD-DIRECTION
+              WHEN "D"
+                 CALL "POSTTRAN" USING CMD-TRANSACTION-ID
+              WHEN "R"
+                 CALL "REVTRAN" USING CMD-TRANSACTION-ID
+              WHEN "A"
+                 CALL "ADJTRAN" USING
+                      CMD-ACCOUNT-ID
+                      CMD-AMOUNT
+                      CMD-CURRENCY
+                      "D"
+                      CMD-IDEMPOTENCY-KEY
+                      CMD-CORRELATION-ID
+              WHEN OTHER
+                 PERFORM LOG-ERROR
+           END-EVALUATE
+
+           GOBACK.
+
+       LOG-ERROR.
+           EXEC SQL
+                INSERT INTO ERROR_QUEUE (
+                    SOURCE, CORRELATION_ID, ERROR_CODE, MESSAGE, CREATED_AT
+                ) VALUES (
+                    'LEDGER-GATEWAY',
+                    :CMD-CORRELATION-ID,
+                    'INVALID_CMD',
+                    'UNKNOWN DIRECTION',
+                    CURRENT_TIMESTAMP
+                )
+           END-EXEC.
+CREATE TABLE TREASURY_ACCOUNTS (
+    T_ACCOUNT_ID    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    BANK_ACCOUNT_ID BIGINT NOT NULL,
+    CATEGORY        VARCHAR(32) NOT NULL, -- OPERATING, RESERVE, SETTLEMENT
+    CURRENCY_CODE   CHAR(3) NOT NULL,
+    FOREIGN KEY (BANK_ACCOUNT_ID) REFERENCES ACCOUNTS (ACCOUNT_ID)
+);
+
+CREATE TABLE TREASURY_POSITIONS (
+    T_ACCOUNT_ID    BIGINT NOT NULL,
+    AS_OF_DATE      DATE NOT NULL,
+    LEDGER_BALANCE  DECIMAL(18,4) NOT NULL,
+    AVAILABLE_BAL   DECIMAL(18,4) NOT NULL,
+    IN_TRANSIT      DECIMAL(18,4) NOT NULL,
+    PRIMARY KEY (T_ACCOUNT_ID, AS_OF_DATE),
+    FOREIGN KEY (T_ACCOUNT_ID) REFERENCES TREASURY_ACCOUNTS (T_ACCOUNT_ID)
+);
+
+}CREATE TABLE TREASURY_ACCOUNTS (
+    T_ACCOUNT_ID    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    BANK_ACCOUNT_ID BIGINT NOT NULL,
+    CATEGORY        VARCHAR(32) NOT NULL, -- OPERATING, RESERVE, SETTLEMENT
+    CURRENCY_CODE   CHAR(3) NOT NULL,
+    FOREIGN KEY (BANK_ACCOUNT_ID) REFERENCES ACCOUNTS (ACCOUNT_ID)
+);
+
+CREATE TABLE TREASURY_POSITIONS (
+    T_ACCOUNT_ID    BIGINT NOT NULL,
+    AS_OF_DATE      DATE NOT NULL,
+    LEDGER_BALANCE  DECIMAL(18,4) NOT NULL,
+    AVAILABLE_BAL   DECIMAL(18,4) NOT NULL,
+    IN_TRANSIT      DECIMAL(18,4) NOT NULL,
+    PRIMARY KEY (T_ACCOUNT_ID, AS_OF_DATE),
+    FOREIGN KEY (T_ACCOUNT_ID) REFERENCES TREASURY_ACCOUNTS (T_ACCOUNT_ID)
+);
+
+**free
+ctl-opt dftactgrp(*no) actgrp('TREASURY') option(*srcstmt:*nodebugio);
+
+dcl-f TREASURY_ACCOUNTS keyed usage(*input) extdesc('TREASURY_ACCOUNTS');
+dcl-f BALANCES keyed usage(*input) extdesc('BALANCES');
+dcl-f TRANSACTIONS keyed usage(*input) extdesc('TRANSACTIONS');
+dcl-f TREASURY_POSITIONS keyed usage(*update) extdesc('TREASURY_POSITIONS');
+dcl-f ERROR_QUEUE keyed usage(*output) extdesc('ERROR_QUEUE');
+
+dcl-s tAccountId packed(15:0);
+dcl-s bankAccountId packed(15:0);
+dcl-s asOfDate date;
+dcl-s ledgerBal decimal(18:4);
+dcl-s availBal decimal(18:4);
+dcl-s inTransit decimal(18:4);
+dcl-s sqlState char(5);
+
+dcl-proc ComputeTreasuryPositions;
+  dcl-pi *n;
+    pAsOfDate date const;
+  end-pi;
+
+  asOfDate = pAsOfDate;
+
+  exec sql set option commit = *chg, usingsqlca = *yes;
+
+  exec sql
+    declare C_TACC cursor for
+      select T_ACCOUNT_ID, BANK_ACCOUNT_ID
+        from TREASURY_ACCOUNTS;
+
+  exec sql open C_TACC;
+
+  dou sqlcode <> 0;
+     exec sql fetch C_TACC into :tAccountId, :bankAccountId;
+     if sqlcode <> 0; leave; endif;
+
+     exec sql
+       select LEDGER_BALANCE, AVAILABLE_BAL
+         into :ledgerBal, :availBal
+         from BALANCES
+        where ACCOUNT_ID = :bankAccountId;
+
+     if sqlcode <> 0;
+        LogError('TREASURY':'BAL_LOAD':'00000':'BAL_FAIL');
+        iterate;
+     endif;
+
+     exec sql
+       select coalesce(sum(AMOUNT),0)
+         into :inTransit
+         from TRANSACTIONS
+        where ACCOUNT_ID = :bankAccountId
+          and STATUS in ('INITIATED','PENDING')
+          and date(CREATED_AT) <= :asOfDate;
+
+     if sqlcode <> 0;
+        LogError('TREASURY':'TXN_LOAD':'00000':'TXN_FAIL');
+        iterate;
+     endif;
+
+     exec sql
+       merge into TREASURY_POSITIONS tp
+       using (values(:tAccountId,:asOfDate,:ledgerBal,:availBal,:inTransit))
+             as v(T_ACCOUNT_ID,AS_OF_DATE,LEDGER_BALANCE,AVAILABLE_BAL,IN_TRANSIT)
+          on tp.T_ACCOUNT_ID = v.T_ACCOUNT_ID
+         and tp.AS_OF_DATE = v.AS_OF_DATE
+       when matched then
+         update set LEDGER_BALANCE = v.LEDGER_BALANCE,
+                    AVAILABLE_BAL  = v.AVAILABLE_BAL,
+                    IN_TRANSIT     = v.IN_TRANSIT
+       when not matched then
+         insert (T_ACCOUNT_ID,AS_OF_DATE,LEDGER_BALANCE,AVAILABLE_BAL,IN_TRANSIT)
+         values (v.T_ACCOUNT_ID,v.AS_OF_DATE,v.LEDGER_BALANCE,v.AVAILABLE_BAL,v.IN_TRANSIT);
+
+  enddo;
+
+  exec sql close C_TACC;
+
+  commit;
+end-proc;
+
+dcl-proc LogError;
+  dcl-pi *n;
+    pSource char(64) const;
+    pCode   char(64) const;
+    pSql    char(5)  const;
+    pMsg    char(64) const;
+  end-pi;
+
+  exec sql
+    insert into ERROR_QUEUE (
+      SOURCE, CORRELATION_ID, ERROR_CODE, MESSAGE, CREATED_AT
+    ) values (
+      :pSource,
+      '',
+      :pCode,
+      'SQLSTATE=' concat :pSql concat ' ' concat :pMsg,
+      current_timestamp
+    );
+end-proc;
+
+public record CashPositionResponse(
+    DateTime AsOfDate,
+    string CurrencyCode,
+    decimal OperatingBalance,
+    decimal ReserveBalance,
+    decimal SettlementBalance,
+    decimal TotalInTransit);
+
+[ApiController]
+[Route("treasury/positions")]
+public class TreasuryController : ControllerBase
+{
+    private readonly ITreasuryRepository _repo;
+
+    public TreasuryController(ITreasuryRepository repo)
+    {
+        _repo = repo;
+    }
+
+    [HttpGet("{date}")]
+    public async Task<ActionResult<CashPositionResponse>> Get(DateOnly date,
+        CancellationToken ct)
+    {
+        var positions = await _repo.GetPositionsAsync(date, ct);
+
+        var operating = positions.Where(p => p.Category == "OPERATING").Sum(p => p.AvailableBal);
+        var reserve   = positions.Where(p => p.Category == "RESERVE").Sum(p => p.AvailableBal);
+        var settle    = positions.Where(p => p.Category == "SETTLEMENT").Sum(p => p.AvailableBal);
+        var inTransit = positions.Sum(p => p.InTransit);
+        var currency  = positions.Select(p => p.CurrencyCode).FirstOrDefault() ?? "USD";
+
+        return Ok(new CashPositionResponse(
+            date.ToDateTime(TimeOnly.MinValue),
+            currency,
+            operating,
+            reserve,
+            settle,
+            inTransit));
+    }
+}
+
+public sealed class TreasuryPositionDto
+{
+    public long TreasuryAccountId { get; set; }
+    public string Category { get; set; } = "";
+    public string CurrencyCode { get; set; } = "";
+    public decimal LedgerBal { get; set; }
+    public decimal AvailableBal { get; set; }
+    public decimal InTransit { get; set; }
+}
+
+public interface ITreasuryRepository
+{
+    Task<IReadOnlyList<TreasuryPositionDto>> GetPositionsAsync(DateOnly asOf, CancellationToken ct);
+}
+
+public sealed class Db2TreasuryRepository : ITreasuryRepository
+{
+    private readonly IDbConnection _db;
+
+    public Db2TreasuryRepository(IDbConnection db) => _db = db;
+
+    public async Task<IReadOnlyList<TreasuryPositionDto>> GetPositionsAsync(DateOnly asOf, CancellationToken ct)
+    {
+        var cmd = _db.CreateCommand();
+        cmd.CommandText = @"
+            SELECT ta.T_ACCOUNT_ID,
+                   ta.CATEGORY,
+                   ta.CURRENCY_CODE,
+                   tp.LEDGER_BALANCE,
+                   tp.AVAILABLE_BAL,
+                   tp.IN_TRANSIT
+              FROM TREASURY_ACCOUNTS ta
+              JOIN TREASURY_POSITIONS tp
+                ON ta.T_ACCOUNT_ID = tp.T_ACCOUNT_ID
+             WHERE tp.AS_OF_DATE = @asOf";
+        var p = cmd.CreateParameter();
+        p.ParameterName = "@asOf";
+        p.Value = asOf.ToDateTime(TimeOnly.MinValue);
+        cmd.Parameters.Add(p);
+
+        var list = new List<TreasuryPositionDto>();
+        using var reader = await cmd.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+        {
+            list.Add(new TreasuryPositionDto
+            {
+                TreasuryAccountId = reader.GetInt64(0),
+                Category          = reader.GetString(1),
+                CurrencyCode      = reader.GetString(2),
+                LedgerBal         = reader.GetDecimal(3),
+                AvailableBal      = reader.GetDecimal(4),
+                InTransit         = reader.GetDecimal(5)
+            });
+        }
+        return list;
+    }
+}
+CREATE TABLE RTP_RAILS (
+    RTP_RAIL_ID      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    NAME             VARCHAR(32) NOT NULL, -- 'RTP', 'FEDNOW'
+    STATUS           VARCHAR(32) NOT NULL, -- 'ACTIVE','DISABLED'
+    CREATED_AT       TIMESTAMP NOT NULL
+);
+
+CREATE TABLE RTP_INSTRUCTIONS (
+    RTP_INSTRUCTION_ID BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    RTP_RAIL_ID        BIGINT NOT NULL,
+    PAYMENT_ID         BIGINT NOT NULL,
+    TRANSACTION_ID     BIGINT NOT NULL,
+    AMOUNT             DECIMAL(18,4) NOT NULL,
+    CURRENCY_CODE      CHAR(3) NOT NULL,
+    STATUS             VARCHAR(32) NOT NULL, -- 'CREATED','SUBMITTED','SETTLED','FAILED'
+    CORRELATION_ID     VARCHAR(128),
+    CREATED_AT         TIMESTAMP NOT NULL,
+    UPDATED_AT         TIMESTAMP NOT NULL,
+    FOREIGN KEY (RTP_RAIL_ID) REFERENCES RTP_RAILS (RTP_RAIL_ID),
+    FOREIGN KEY (TRANSACTION_ID) REFERENCES TRANSACTIONS (TRANSACTION_ID)
+);
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. RTP-FSL.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+       01 RTP-REC.
+          05 RTP-INSTR-ID        PIC 9(15) COMP-3.
+          05 RTP-RAIL-ID         PIC 9(15) COMP-3.
+          05 PAYMENT-ID          PIC 9(15) COMP-3.
+          05 TX-ID               PIC 9(15) COMP-3.
+          05 AMOUNT              PIC 9(15)V9(4) COMP-3.
+          05 CURRENCY            PIC X(3).
+          05 STATUS              PIC X(32).
+          05 CORR-ID             PIC X(128).
+
+       01 FLAGS.
+          05 CAN-SUBMIT          PIC 9(1) COMP-3 VALUE 0.
+          05 CAN-SETTLE          PIC 9(1) COMP-3 VALUE 0.
+
+       PROCEDURE DIVISION.
+
+       MAIN.
+           PERFORM LOAD-RTP
+           PERFORM EVAL-STATE
+           IF CAN-SUBMIT = 1
+              PERFORM SUBMIT
+           END-IF
+           IF CAN-SETTLE = 1
+              PERFORM SETTLE
+           END-IF
+           GOBACK.
+
+       LOAD-RTP.
+           EXEC SQL
+                SELECT RTP_INSTRUCTION_ID,
+                       RTP_RAIL_ID,
+                       PAYMENT_ID,
+                       TRANSACTION_ID,
+                       AMOUNT,
+                       CURRENCY_CODE,
+                       STATUS,
+                       CORRELATION_ID
+                  INTO :RTP-INSTR-ID,
+                       :RTP-RAIL-ID,
+                       :PAYMENT-ID,
+                       :TX-ID,
+                       :AMOUNT,
+                       :CURRENCY,
+                       :STATUS,
+                       :CORR-ID
+                  FROM RTP_INSTRUCTIONS
+                 WHERE RTP_INSTRUCTION_ID = :RTP-INSTR-ID
+           END-EXEC.
+
+       EVAL-STATE.
+           EVALUATE STATUS
+              WHEN "CREATED"
+                 MOVE 1 TO CAN-SUBMIT
+              WHEN "SUBMITTED"
+                 MOVE 1 TO CAN-SETTLE
+              WHEN OTHER
+                 MOVE 0 TO CAN-SUBMIT
+                 MOVE 0 TO CAN-SETTLE
+           END-EVALUATE.
+
+       SUBMIT.
+           * send to RTP/FedNow gateway (outside core)
+           EXEC SQL
+                UPDATE RTP_INSTRUCTIONS
+                   SET STATUS='SUBMITTED',
+                       UPDATED_AT=CURRENT_TIMESTAMP
+                 WHERE RTP_INSTRUCTION_ID=:RTP-INSTR-ID
+           END-EXEC.
+
+       SETTLE.
+           * settlement posts ledger via RPG
+           CALL "POSTTRAN" USING TX-ID
+           IF RETURN-CODE = 0
+              EXEC SQL
+                   UPDATE RTP_INSTRUCTIONS
+                      SET STATUS='SETTLED',
+                          UPDATED_AT=CURRENT_TIMESTAMP
+                    WHERE RTP_INSTRUCTION_ID=:RTP-INSTR-ID
+              END-EXEC
+           ELSE
+              PERFORM LOG-ERR
+           END-IF.
+
+       LOG-ERR.
+           EXEC SQL
+                INSERT INTO ERROR_QUEUE (
+                    SOURCE, CORRELATION_ID, ERROR_CODE, MESSAGE, CREATED_AT
+                ) VALUES (
+                    'RTP-FSL',
+                    :CORR-ID,
+                    'RTP_FSL_ERROR',
+                    'RTP STATE OR LEDGER FAILURE',
+                    CURRENT_TIMESTAMP
+                )
+           END-EXEC.
+**free
+ctl-opt dftactgrp(*no) actgrp('EOD') option(*srcstmt:*nodebugio);
+
+dcl-f BALANCES keyed usage(*input) extdesc('BALANCES');
+dcl-f LEDGER_EOD_SNAP keyed usage(*update) extdesc('LEDGER_EOD_SNAP');
+dcl-f ERROR_QUEUE keyed usage(*output) extdesc('ERROR_QUEUE');
+
+dcl-s accountId packed(15:0);
+dcl-s ledgerBal decimal(18:4);
+dcl-s availBal decimal(18:4);
+dcl-s holdsBal decimal(18:4);
+dcl-s asOfDate date;
+dcl-s sqlState char(5);
+
+dcl-proc RunEndOfDay;
+  dcl-pi *n;
+    pAsOfDate date const;
+  end-pi;
+
+  asOfDate = pAsOfDate;
+
+  exec sql set option commit = *chg, usingsqlca = *yes;
+
+  exec sql
+    declare C_BAL cursor for
+      select ACCOUNT_ID, LEDGER_BALANCE, AVAILABLE_BAL, HOLDS_BAL
+        from BALANCES;
+
+  exec sql open C_BAL;
+
+  dou sqlcode <> 0;
+     exec sql fetch C_BAL into :accountId, :ledgerBal, :availBal, :holdsBal;
+     if sqlcode <> 0; leave; endif;
+
+     exec sql
+       insert into LEDGER_EOD_SNAP (
+         ACCOUNT_ID, AS_OF_DATE, LEDGER_BALANCE, AVAILABLE_BAL, HOLDS_BAL
+       ) values (
+         :accountId, :asOfDate, :ledgerBal, :availBal, :holdsBal
+       );
+  enddo;
+
+  exec sql close C_BAL;
+
+  // run treasury cash position for this date
+  ComputeTreasuryPositions(asOfDate);
+
+  commit;
+end-proc;
+public sealed class ConcurrencyInvariantHarness
+{
+    private readonly ILedgerGateway _ledger;
+    private readonly IDbConnection _db;
+
+    public ConcurrencyInvariantHarness(ILedgerGateway ledger, IDbConnection db)
+    {
+        _ledger = ledger;
+        _db = db;
+    }
+
+    public async Task RunAsync(int workers, int iterations, CancellationToken ct)
+    {
+        var tasks = Enumerable.Range(0, workers)
+            .Select(w => WorkerAsync(w, iterations, ct));
+        await Task.WhenAll(tasks);
+
+        await AssertDoubleEntryAsync(ct);
+    }
+
+    private async Task WorkerAsync(int workerId, int iterations, CancellationToken ct)
+    {
+        var rnd = new Random(workerId);
+        for (var i = 0; i < iterations; i++)
+        {
+            var corr = $"W{workerId}-I{i}";
+            var idem = $"IDEMP-{workerId}-{i}";
+
+            var amount = (decimal)(rnd.Next(1, 1000)) / 100m;
+
+            var req = new PostTransactionRequest(
+                accountId: 1000 + workerId,
+                Amount: amount,
+                CurrencyCode: "USD",
+                Direction: i % 2 == 0 ? "D" : "C",
+                IdempotencyKey: idem);
+
+            var post = await _ledger.InitiateAndPostAsync(req, corr, ct);
+
+            if (i % 10 == 0 && post.Success)
+            {
+                await _ledger.ReverseAsync(post.TransactionId, idem + "-REV", corr + "-REV", ct);
+            }
+        }
+    }
+
+    private async Task AssertDoubleEntryAsync(CancellationToken ct)
+    {
+        var cmd = _db.CreateCommand();
+        cmd.CommandText = @"
+            SELECT COALESCE(SUM(CASE WHEN DIRECTION='D' THEN AMOUNT ELSE 0 END),0) AS DEBITS,
+                   COALESCE(SUM(CASE WHEN DIRECTION='C' THEN AMOUNT ELSE 0 END),0) AS CREDITS
+              FROM JOURNAL_LINES";
+        using var reader = await cmd.ExecuteReaderAsync(ct);
+        if (await reader.ReadAsync(ct))
+        {
+            var debits = reader.GetDecimal(0);
+            var credits = reader.GetDecimal(1);
+            if (debits != credits)
+                throw new InvalidOperationException($"Invariant violated: D={debits} C={credits}");
+        }
+    }
+}CREATE TABLE DOMAIN_EVENTS (
+    EVENT_ID        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    EVENT_TYPE      VARCHAR(64) NOT NULL,
+    AGGREGATE_TYPE  VARCHAR(64) NOT NULL,
+    AGGREGATE_ID    BIGINT NOT NULL,
+    OCCURRED_AT     TIMESTAMP NOT NULL,
+    PAYLOAD_BIN     BLOB(4096) NOT NULL,
+    CORRELATION_ID  VARCHAR(128),
+    STATUS          VARCHAR(32) NOT NULL -- 'RECORDED','REPLAYED'
+);
+
+CREATE TABLE EVENT_OUTBOX (
+    OUTBOX_ID       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    EVENT_ID        BIGINT NOT NULL,
+    CREATED_AT      TIMESTAMP NOT NULL,
+    DISPATCHED_AT   TIMESTAMP,
+    FOREIGN KEY (EVENT_ID) REFERENCES DOMAIN_EVENTS (EVENT_ID)
+);
+public interface IEventPublisher
+{
+    Task RecordAsync(string eventType,
+                     string aggregateType,
+                     long aggregateId,
+                     byte[] payload,
+                     string correlationId,
+                     CancellationToken ct);
+
+    Task DispatchPendingAsync(CancellationToken ct);
+
+    Task ReplayAsync(long eventId, CancellationToken ct);
+}
+
+public sealed class Db2EventPublisher : IEventPublisher
+{
+    private readonly IDbConnection _db;
+
+    public Db2EventPublisher(IDbConnection db) => _db = db;
+
+    public async Task RecordAsync(string eventType,
+                                  string aggregateType,
+                                  long aggregateId,
+                                  byte[] payload,
+                                  string correlationId,
+                                  CancellationToken ct)
+    {
+        using var tx = _db.BeginTransaction();
+        var cmd = _db.CreateCommand();
+        cmd.Transaction = tx;
+        cmd.CommandText = @"
+            INSERT INTO DOMAIN_EVENTS (
+                EVENT_TYPE, AGGREGATE_TYPE, AGGREGATE_ID,
+                OCCURRED_AT, PAYLOAD_BIN, CORRELATION_ID, STATUS
+            ) VALUES (
+                @etype, @atype, @aid,
+                CURRENT_TIMESTAMP, @payload, @corr, 'RECORDED'
+            );
+            SELECT IDENTITY_VAL_LOCAL() FROM SYSIBM.SYSDUMMY1";
+        cmd.Parameters.Add(NewParam(cmd, "@etype", eventType));
+        cmd.Parameters.Add(NewParam(cmd, "@atype", aggregateType));
+        cmd.Parameters.Add(NewParam(cmd, "@aid", aggregateId));
+        cmd.Parameters.Add(NewParam(cmd, "@payload", payload));
+        cmd.Parameters.Add(NewParam(cmd, "@corr", correlationId));
+
+        var eventId = Convert.ToInt64(await cmd.ExecuteScalarAsync(ct));
+
+        var outbox = _db.CreateCommand();
+        outbox.Transaction = tx;
+        outbox.CommandText = @"
+            INSERT INTO EVENT_OUTBOX (EVENT_ID, CREATED_AT)
+            VALUES (@eid, CURRENT_TIMESTAMP)";
+        outbox.Parameters.Add(NewParam(outbox, "@eid", eventId));
+        await outbox.ExecuteNonQueryAsync(ct);
+
+        tx.Commit();
+    }
+
+    public async Task DispatchPendingAsync(CancellationToken ct)
+    {
+        var cmd = _db.CreateCommand();
+        cmd.CommandText = @"
+            SELECT eo.OUTBOX_ID, de.EVENT_ID, de.EVENT_TYPE, de.PAYLOAD_BIN
+              FROM EVENT_OUTBOX eo
+              JOIN DOMAIN_EVENTS de ON eo.EVENT_ID = de.EVENT_ID
+             WHERE eo.DISPATCHED_AT IS NULL";
+        using var reader = await cmd.ExecuteReaderAsync(ct);
+        var toDispatch = new List<(long OutboxId, long EventId, string Type, byte[] Payload)>();
+        while (await reader.ReadAsync(ct))
+        {
+            toDispatch.Add((
+                reader.GetInt64(0),
+                reader.GetInt64(1),
+                reader.GetString(2),
+                (byte[])reader.GetValue(3)));
+        }
+
+        foreach (var e in toDispatch)
+        {
+            // send to Kafka, MQ, etc. (omitted)
+            var upd = _db.CreateCommand();
+            upd.CommandText = @"
+                UPDATE EVENT_OUTBOX
+                   SET DISPATCHED_AT = CURRENT_TIMESTAMP
+                 WHERE OUTBOX_ID = @oid";
+            upd.Parameters.Add(NewParam(upd, "@oid", e.OutboxId));
+            await upd.ExecuteNonQueryAsync(ct);
+        }
+    }
+
+    public async Task ReplayAsync(long eventId, CancellationToken ct)
+    {
+        var cmd = _db.CreateCommand();
+        cmd.CommandText = @"
+            SELECT EVENT_TYPE, AGGREGATE_TYPE, AGGREGATE_ID, PAYLOAD_BIN
+              FROM DOMAIN_EVENTS
+             WHERE EVENT_ID = @eid";
+        cmd.Parameters.Add(NewParam(cmd, "@eid", eventId));
+
+        using var reader = await cmd.ExecuteReaderAsync(ct);
+        if (!await reader.ReadAsync(ct))
+            throw new InvalidOperationException("Event not found");
+
+        var type = reader.GetString(0);
+        var aggType = reader.GetString(1);
+        var aggId = reader.GetInt64(2);
+        var payload = (byte[])reader.GetValue(3);
+
+        // apply replay logic (e.g., rebuild projections) based on type/payload
+        // authoritative ledger remains RPG+DB2; replay is for views/integrations only
+    }
+
+    private static IDbDataParameter NewParam(IDbCommand cmd, string name, object value)
+    {
+        var p = cmd.CreateParameter();
+        p.ParameterName = name;
+        p.Value = value;
+        return p;
+    }
+}
+
