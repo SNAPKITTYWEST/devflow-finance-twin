@@ -1,21 +1,22 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T22:11:04Z
+**Timestamp:** 2026-09-10T22:15:04Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 1 |
-| Files Added | 1 |
+| Files Discovered | 2 |
+| Files Added | 2 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 0 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/jit_webllm_toy_transformer.js`
+- `lean/lean_jacobian_tensor_framework.lean`
+- `rust/sovereign_neural_saas_core.rs`
 
 ## Files Unchanged
 _None_
