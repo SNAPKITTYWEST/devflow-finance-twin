@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T19:20:31Z
+**Timestamp:** 2026-09-10T19:24:17Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/vsm2500_isa_kernel.cu`
+- `src/vsm2500_core.sv`
 
 ## Files Unchanged
 _None_
