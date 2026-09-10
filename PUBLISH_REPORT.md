@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T19:30:50Z
+**Timestamp:** 2026-09-10T19:34:21Z
 **Branch:** master
 
 ## Summary
@@ -15,11 +15,11 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/hopper_gemm_kernel_spec.txt`
-- `src/vsm2500_semantic_cuda.cu`
-- `src/vsm2500_specification.txt`
-- `lean/vsm_binary_semantics.lean`
-- `lean/vsm_semantic_algebra.lean`
+- `lean/ArrayVerificationExamples.lean`
+- `lean/ArrayVerification_Template.lean`
+- `docs/coherent_maxwell_demon.md`
+- `docs/demon_hole_quantum_circuit.md`
+- `src/nct_resonance_simulator.py`
 
 ## Files Unchanged
 _None_
