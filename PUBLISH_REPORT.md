@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T23:02:42Z
+**Timestamp:** 2026-09-10T23:04:44Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/invariant_registry.a68`
+- `src/oss1230_manifest.a68`
 
 ## Files Unchanged
 _None_
