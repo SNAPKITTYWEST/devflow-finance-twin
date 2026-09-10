@@ -1,22 +1,21 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T18:06:17Z
+**Timestamp:** 2026-09-10T18:09:39Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 2 |
-| Files Added | 2 |
+| Files Discovered | 1 |
+| Files Added | 1 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 0 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/a68/tensor.a68`
-- `src/python/astra_hardened_ingestion.py`
+- `src/ebnf/81130392bc1d11c719679c5f93e3f0c0.ebnf`
 
 ## Files Unchanged
 _None_

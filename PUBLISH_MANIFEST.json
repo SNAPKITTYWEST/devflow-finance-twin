@@ -1,12 +1,11 @@
 {
-  "timestamp": "2026-09-10T18:06:17Z",
+  "timestamp": "2026-09-10T18:09:38Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "90b0ebc889a6179099736aaa3288b6f8471b6d6b",
-  "commit_after": "5eb29546bb5703d1502ffc078be1ad2ff0894064",
+  "commit_before": "e02d7a274e3d7dfc3ef4f8700ad6dec0c62fa5e9",
+  "commit_after": "7083c4cd1e562186fd39c7b7b2f721422ba75e12",
   "files_added": [
-    "src/a68/tensor.a68",
-    "src/python/astra_hardened_ingestion.py"
+    "src/ebnf/81130392bc1d11c719679c5f93e3f0c0.ebnf"
   ],
   "files_modified": [
 
@@ -22,6 +21,6 @@
 
   ],
   "sha256": [
-    {"file": "python/astra_hardened_ingestion.py", "source_hash": "f0647a493ce0d5a2690647b70bc7e7f0f28eac69acb8ab56f6ddff3ad47ab6dd", "destination_hash": "f0647a493ce0d5a2690647b70bc7e7f0f28eac69acb8ab56f6ddff3ad47ab6dd", "status": "COPIED"},    {"file": "a68/tensor.a68", "source_hash": "8fa71f2422e8841e433bb2f4902b7b3fc0ba701cc3c8ee0df67aec7ab509c472", "destination_hash": "8fa71f2422e8841e433bb2f4902b7b3fc0ba701cc3c8ee0df67aec7ab509c472", "status": "COPIED"}
+    {"file": "ebnf/81130392bc1d11c719679c5f93e3f0c0.ebnf", "source_hash": "f5113a0f80ccdb4ea4261810f72ed692eacb5e8b049935549c726de32f19d6d7", "destination_hash": "f5113a0f80ccdb4ea4261810f72ed692eacb5e8b049935549c726de32f19d6d7", "status": "COPIED"}
   ]
 }

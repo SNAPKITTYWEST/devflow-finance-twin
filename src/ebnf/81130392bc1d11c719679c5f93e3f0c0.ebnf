@@ -1,0 +1,60 @@
+(* NAND# Grammar — EBNF, refinement-carrying *)
+
+Program     ::= { Decl } Expr
+
+Decl        ::= "type" Ident "=" Type
+              | "refine" Ident "=" "{" Ident ":" Type "|" Predicate "}"
+              | "def" Ident ":" RefinedType "=" Expr
+
+Type        ::= "Bit"
+              | "Word" "<" Nat ">"
+              | "Array" "<" Type "," Nat ">"
+              | "Register" "<" Nat ">"
+              | "Address" "<" Nat ">"
+              | "Opcode" "<" Nat ">"
+              | "Word" | "Generator" "<" Nat ">"   (* braid *)
+              | "FibIndex" "<" Nat ">"
+              | "FibValue"
+              | "Ledger" "<" Type "," Nat ">"
+              | "Program" "<" Nat ">"
+              | Ident
+              | "{" Ident ":" Type "|" Predicate "}"
+
+RefinedType ::= "{" Ident ":" Type "|" Predicate "}"
+
+Predicate   ::= Expr
+              | Predicate "∧" Predicate
+              | Predicate "∨" Predicate
+              | "¬" Predicate
+              | Predicate "→" Predicate
+              | "∀" Ident ":" Type "." Predicate
+              | "∃" Ident ":" Type "." Predicate
+              | Expr "=" Expr
+              | Expr "<" Expr | Expr "≤" Expr | Expr ">" Expr | Expr "≥" Expr
+              | "Valid" "(" Expr ")"
+              | "InBounds" "(" Expr "," Expr ")"
+
+Expr        ::= Literal
+              | Ident
+              | "nand" "(" Expr "," Expr ")"   (* only primitive *)
+              | Expr "[" Expr "]"               (* array index, must be in-bounds refined *)
+              | "{" Expr "," Expr "}"           (* pair *)
+              | "let" Ident ":" RefinedType "=" Expr "in" Expr
+              | "refine" Expr "by" Predicate
+              | "Array" "[" { Expr "," } "]"
+              | "Word" "[" { Generator "," } "]"
+              | "Fib" "(" Expr ")"
+              | "Ledger" "[" { Expr "," } "]"
+
+Generator   ::= ("σ" | "σ⁻¹") Nat   (* braid generator σ_i or inverse, refined *)
+
+Literal     ::= "0" | "1" | Nat | "ε" (* empty word/array *)
+
+Nat         ::= [0-9]+
+
+Ident       ::= [A-Za-z_][A-Za-z0-9_']*
+
+(* Binary ISA encoding — refined binary must decode to valid typed instruction *)
+Instruction ::= Opcode Register Register Register   (* NAND rd,ra,rb : rd = ¬(ra ∧ rb) *)
+Opcode      ::= 0..15 refined to ValidOpcode
+Register    ::= 0..31 refined to ValidRegister
