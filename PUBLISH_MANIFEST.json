@@ -1,22 +1,36 @@
 {
-  "timestamp": "2026-09-10T17:32:27Z",
+  "timestamp": "2026-09-10T17:38:34Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "b9875682d0a75890c50da3d12181b26849ee8529",
-  "commit_after": "6465655e7ebb50f0b62c33b58796a1760f0ec428",
+  "commit_before": "99455d7e92a5618f502bb98ef322ba5e4938dbab",
+  "commit_after": "edbcc8c57273491cad2a415c4b8b464056670ae2",
   "files_added": [
-    "src/agol86_model.a86"
+    "src/agol86/agol86_activ.py",
+    "src/agol86/agol86_attention.py",
+    "src/agol86/agol86_block.py",
+    "src/agol86/agol86_export_onnx.py",
+    "src/agol86/agol86_infer.py",
+    "src/agol86/agol86_jacobian.py",
+    "src/agol86/agol86_mixed_precision.py",
+    "src/agol86/agol86_model.py",
+    "src/agol86/agol_activ.py",
+    "src/agol86/agol_attention.py",
+    "src/agol86/agol_block.py",
+    "src/agol86/agol_infer.py",
+    "src/agol86/agol_model.py",
+    "src/agol86/ddp_train.py",
+    "src/agol86/export_onnx.py",
+    "src/agol86/main.py",
+    "src/agol86/main_agol86.py",
+    "src/agol86/mixed_precision_train.py",
+    "src/agol86/triton_attention.py"
   ],
   "files_modified": [
 
   ],
   "files_moved": [],
   "files_unchanged": [
-    "architecture.md -> docs/architecture.md [IDENTICAL]",
-    "braid/algebra/generator.rs -> braid/algebra/generator.rs [IDENTICAL]",
-    "config.json -> config-or-data/config.json [IDENTICAL]",
-    "mathematics/topology/manifold.py -> mathematics/topology/manifold.py [IDENTICAL]",
-    "source/util.ts -> frontend/source/util.ts [IDENTICAL]"
+
   ],
   "files_conflicted": [
 
@@ -25,6 +39,6 @@
 
   ],
   "sha256": [
-    {"file": "braid/algebra/generator.rs", "source_hash": "f4c57fcfbf3903abc4cb3cdec1f230f9cad00acb925a48df5932bd9e340062d7", "destination_hash": "f4c57fcfbf3903abc4cb3cdec1f230f9cad00acb925a48df5932bd9e340062d7", "status": "UNCHANGED"},    {"file": "architecture.md", "source_hash": "9896f6609468487178bbe913f0103d4bb061cf9dd86b0845b41931971108ad08", "destination_hash": "9896f6609468487178bbe913f0103d4bb061cf9dd86b0845b41931971108ad08", "status": "UNCHANGED"},    {"file": "source/util.ts", "source_hash": "d42934387ec8d3811bec200e3945c7a837f667b76590cd524c8232d0a21f703f", "destination_hash": "d42934387ec8d3811bec200e3945c7a837f667b76590cd524c8232d0a21f703f", "status": "UNCHANGED"},    {"file": "config.json", "source_hash": "eb69cd7eb6642b0fcbc2ce54c9a4be17a5df808d4b3f0bbd5207794ed53c16d3", "destination_hash": "eb69cd7eb6642b0fcbc2ce54c9a4be17a5df808d4b3f0bbd5207794ed53c16d3", "status": "UNCHANGED"},    {"file": "agol86_model.a86", "source_hash": "9eac397dfc9b8da5de1a99b1851cfa24b26c7492901473b81b82adb7398359d2", "destination_hash": "9eac397dfc9b8da5de1a99b1851cfa24b26c7492901473b81b82adb7398359d2", "status": "COPIED"},    {"file": "mathematics/topology/manifold.py", "source_hash": "4099e2cb38fbd566637666ad95cb6e5483f620de2941e357c640902ec4203e67", "destination_hash": "4099e2cb38fbd566637666ad95cb6e5483f620de2941e357c640902ec4203e67", "status": "UNCHANGED"}
+    {"file": "agol86/agol86_activ.py", "source_hash": "dce18ddfc04ffb90b4202846308c633e1311d9298a9658a13275844790cc70f5", "destination_hash": "dce18ddfc04ffb90b4202846308c633e1311d9298a9658a13275844790cc70f5", "status": "COPIED"},    {"file": "agol86/agol86_export_onnx.py", "source_hash": "a1ebc949c7c98ae9a344aa581ea9ad370a27789a4c1f6a1ed658871954b193ac", "destination_hash": "a1ebc949c7c98ae9a344aa581ea9ad370a27789a4c1f6a1ed658871954b193ac", "status": "COPIED"},    {"file": "agol86/export_onnx.py", "source_hash": "888d6a449cf314adfd8350fdc5d297d4d22ba0f8efe3bf91a933cf62ba6b52e8", "destination_hash": "888d6a449cf314adfd8350fdc5d297d4d22ba0f8efe3bf91a933cf62ba6b52e8", "status": "COPIED"},    {"file": "agol86/agol_block.py", "source_hash": "5ab102669b6adc1a755bc46bebb4aa528cd9ecace061b1b203555b02877c734f", "destination_hash": "5ab102669b6adc1a755bc46bebb4aa528cd9ecace061b1b203555b02877c734f", "status": "COPIED"},    {"file": "agol86/triton_attention.py", "source_hash": "ca96837b203f3652179f2ec4bd0ba98b93e224476a216f5f6c46a178cdb656d5", "destination_hash": "ca96837b203f3652179f2ec4bd0ba98b93e224476a216f5f6c46a178cdb656d5", "status": "COPIED"},    {"file": "agol86/agol_model.py", "source_hash": "7b8c59229bdb1ba8950d3b52b16136d0d8464115b0f3931909f860989f3c0b25", "destination_hash": "7b8c59229bdb1ba8950d3b52b16136d0d8464115b0f3931909f860989f3c0b25", "status": "COPIED"},    {"file": "agol86/agol_activ.py", "source_hash": "1f94fc641a068cf9ea761cdf44220f6a76e30a4daab6e22156fce3dde941e113", "destination_hash": "1f94fc641a068cf9ea761cdf44220f6a76e30a4daab6e22156fce3dde941e113", "status": "COPIED"},    {"file": "agol86/agol86_mixed_precision.py", "source_hash": "889e42104f09002a70b9b4d9502ba348a835732d7e758af41465b96c9a8575a8", "destination_hash": "889e42104f09002a70b9b4d9502ba348a835732d7e758af41465b96c9a8575a8", "status": "COPIED"},    {"file": "agol86/agol_attention.py", "source_hash": "f0ae14709d8da2450d32af00d6719dbef90aefebba53c648352457f396ce258a", "destination_hash": "f0ae14709d8da2450d32af00d6719dbef90aefebba53c648352457f396ce258a", "status": "COPIED"},    {"file": "agol86/agol86_block.py", "source_hash": "743d5e461dad1c39cf59e16a5b772d3207d396946b6204265f7b604ae9ccab4e", "destination_hash": "743d5e461dad1c39cf59e16a5b772d3207d396946b6204265f7b604ae9ccab4e", "status": "COPIED"},    {"file": "agol86/agol_infer.py", "source_hash": "a5d35860622e85a4c1e6258790ccae77863af66ae971ff20e477135bba6ebe07", "destination_hash": "a5d35860622e85a4c1e6258790ccae77863af66ae971ff20e477135bba6ebe07", "status": "COPIED"},    {"file": "agol86/mixed_precision_train.py", "source_hash": "69ba531f5f041fba6e7188ce39d91c6d872f8983df06c6f5dba28ef73afc6caa", "destination_hash": "69ba531f5f041fba6e7188ce39d91c6d872f8983df06c6f5dba28ef73afc6caa", "status": "COPIED"},    {"file": "agol86/agol86_jacobian.py", "source_hash": "df4359a51b6120217ac17b692518fdd2c3ccf2e03d6634da74ff1226b8f69554", "destination_hash": "df4359a51b6120217ac17b692518fdd2c3ccf2e03d6634da74ff1226b8f69554", "status": "COPIED"},    {"file": "agol86/agol86_attention.py", "source_hash": "17fc9c4994aa5006741a6d29010631d670802d2065af8bf39b6102c6f7ae24c6", "destination_hash": "17fc9c4994aa5006741a6d29010631d670802d2065af8bf39b6102c6f7ae24c6", "status": "COPIED"},    {"file": "agol86/ddp_train.py", "source_hash": "ddb1d96c6d2902da6a7355409a39c893a518473906b705c4501502e26f6764cd", "destination_hash": "ddb1d96c6d2902da6a7355409a39c893a518473906b705c4501502e26f6764cd", "status": "COPIED"},    {"file": "agol86/main.py", "source_hash": "992e06465ce5cd78e31e2695a5aad2e2574cd0aba095d28f3718ad39089b9b63", "destination_hash": "992e06465ce5cd78e31e2695a5aad2e2574cd0aba095d28f3718ad39089b9b63", "status": "COPIED"},    {"file": "agol86/agol86_model.py", "source_hash": "0c023c6d34203e31b57b734c2e04a3b3a3d5909bb7de588970f3f7d229bf32e2", "destination_hash": "0c023c6d34203e31b57b734c2e04a3b3a3d5909bb7de588970f3f7d229bf32e2", "status": "COPIED"},    {"file": "agol86/main_agol86.py", "source_hash": "a14b0b96503d1acab49fbe8f5345c5aaebc6f452932db09ed12a10e30f797bf5", "destination_hash": "a14b0b96503d1acab49fbe8f5345c5aaebc6f452932db09ed12a10e30f797bf5", "status": "COPIED"},    {"file": "agol86/agol86_infer.py", "source_hash": "0d8ed615238abfafba7d6cc172970b7dea38d902b6cfc6b9474ac6820d388391", "destination_hash": "0d8ed615238abfafba7d6cc172970b7dea38d902b6cfc6b9474ac6820d388391", "status": "COPIED"}
   ]
 }
