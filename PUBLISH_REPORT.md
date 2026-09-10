@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T19:06:10Z
+**Timestamp:** 2026-09-10T19:08:16Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/p3_binary_microcode_p2_fabric.cpp`
+- `src/p4_microcode_vsm2500.cpp`
 
 ## Files Unchanged
 _None_
