@@ -1,0 +1,285 @@
+! mlp.a68
+! TRANSFORMER FEED-FORWARD NETWORK (MLP) COMPONENT — OSS 1230
+! TARGET: MLP = Linear -> GELU -> Linear
+! MATH: MLP(x) = W2 * GELU(W1 * x + b1) + b2
+! DEPENDENCY: tensor.a68
+! LICENSE: AGPL-3.0-or-later
+MODULE mlp;
+
+  IMPORT tensor;
+
+  ! ============================================================
+  ! SECTION 1: CONSTANTS
+  ! ============================================================
+  REAL MLP_GELU_SQRT2PI := 0.7978845608028654;
+  REAL MLP_GELU_COEFF   := 0.044715;
+  REAL MLP_INIT_STDDEV  := 0.02;
+  REAL MLP_EPSILON      := 1.0e-12;
+
+  ! ============================================================
+  ! SECTION 2: TYPES
+  ! ============================================================
+  ! MLPParams: weight matrices and biases for two-layer MLP
+  ! W1 : D_model x D_ff  — first projection
+  ! b1 : D_ff            — first bias
+  ! W2 : D_ff   x D_model — second projection
+  ! b2 : D_model          — second bias
+  MODE MLPParams = STRUCT(
+    [] REAL w1, [] REAL b1,
+    [] REAL w2, [] REAL b2,
+    INT d_model, INT d_ff
+  );
+
+  ! MLPForwardCache: intermediates for backward pass
+  ! pre : linear1 output before activation (N x D_ff)
+  ! act : after GELU activation (N x D_ff)
+  ! out : final output (N x D_model)
+  MODE MLPForwardCache = STRUCT(
+    [] REAL pre, [] REAL act, [] REAL out
+  );
+
+  ! MLPGrads: accumulated gradients
+  MODE MLPGrads = STRUCT(
+    [] REAL dw1, [] REAL db1,
+    [] REAL dw2, [] REAL db2
+  );
+
+  ! ============================================================
+  ! SECTION 3: GELU ACTIVATION
+  ! ============================================================
+  ! gelu_scalar: GELU(x) = 0.5 * x * (1 + tanh(sqrt(2/pi) * (x + 0.044715*x^3)))
+  ! Domain: x in R
+  ! Range: approximately x for large positive x, 0 for large negative x
+  PROC gelu_scalar = (REAL x) REAL:
+  BEGIN
+    REAL x3 := x * x * x;
+    REAL inner := MLP_GELU_SQRT2PI * (x + MLP_GELU_COEFF * x3);
+    0.5 * x * (1.0 + (EXP(2.0 * inner) - 1.0) / (EXP(2.0 * inner) + 1.0))
+  END;
+
+  ! gelu_deriv: d/dx GELU(x)
+  ! Formula: 0.5*(1+tanh(a)) + 0.5*x*sech^2(a)*(da/dx)
+  ! where a = sqrt(2/pi)*(x + 0.044715*x^3)
+  PROC gelu_deriv_scalar = (REAL x) REAL:
+  BEGIN
+    REAL x2 := x * x;
+    REAL x3 := x2 * x;
+    REAL a := MLP_GELU_SQRT2PI * (x + MLP_GELU_COEFF * x3);
+    REAL exp2a := EXP(2.0 * a);
+    REAL tanh_a := (exp2a - 1.0) / (exp2a + 1.0);
+    REAL sech2_a := 1.0 - tanh_a * tanh_a;
+    REAL da_dx := MLP_GELU_SQRT2PI * (1.0 + 3.0 * MLP_GELU_COEFF * x2);
+    0.5 * (1.0 + tanh_a) + 0.5 * x * sech2_a * da_dx
+  END;
+
+  ! gelu_vector: applies GELU elementwise to vector
+  PROC gelu_vector = ([] REAL x, INT len) [] REAL:
+  BEGIN
+    [] REAL y := HEAP [len] REAL;
+    FOR i FROM 1 TO len DO y[i] := gelu_scalar(x[i]) OD;
+    y
+  END;
+
+  ! gelu_deriv_vector: elementwise GELU derivative
+  PROC gelu_deriv_vector = ([] REAL x, INT len) [] REAL:
+  BEGIN
+    [] REAL dy := HEAP [len] REAL;
+    FOR i FROM 1 TO len DO dy[i] := gelu_deriv_scalar(x[i]) OD;
+    dy
+  END;
+
+  ! ============================================================
+  ! SECTION 4: FORWARD PASS
+  ! ============================================================
+  ! mlp_forward: X (N x D_model) -> out (N x D_model)
+  !   pre = X * W1^T + b1  [N x D_ff]
+  !   act = GELU(pre)       [N x D_ff]
+  !   out = act * W2^T + b2 [N x D_model]
+  PROC mlp_forward = (MLPParams p, [] REAL x, INT n) MLPForwardCache:
+  BEGIN
+    INT dm := p.d_model; INT dff := p.d_ff;
+    ! Linear 1: pre[i,d] = sum_k X[i,k]*W1[d,k] + b1[d]
+    [] REAL pre := HEAP [n * dff] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO dff DO
+        REAL acc := p.b1[d];
+        FOR k FROM 1 TO dm DO
+          acc +:= x[i * dm + k] * p.w1[(d - 1) * dm + k]
+        OD;
+        pre[i * dff + d] := acc
+      OD
+    OD;
+    ! GELU activation
+    [] REAL act := gelu_vector(pre, n * dff);
+    ! Linear 2: out[i,d] = sum_k act[i,k]*W2[d,k] + b2[d]
+    [] REAL out := HEAP [n * dm] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO dm DO
+        REAL acc := p.b2[d];
+        FOR k FROM 1 TO dff DO
+          acc +:= act[i * dff + k] * p.w2[(d - 1) * dff + k]
+        OD;
+        out[i * dm + d] := acc
+      OD
+    OD;
+    MLPForwardCache(pre, act, out)
+  END;
+
+  ! ============================================================
+  ! SECTION 5: BACKWARD PASS
+  ! ============================================================
+  ! mlp_backward: computes dL/dX and gradient accumulators
+  PROC mlp_backward = (MLPParams p, [] REAL x, MLPForwardCache cache,
+                        [] REAL dl_dout, INT n) STRUCT([] REAL, MLPGrads):
+  BEGIN
+    INT dm := p.d_model; INT dff := p.d_ff;
+    ! dL/dact = dL/dout * W2  (N x D_ff)
+    [] REAL dl_dact := HEAP [n * dff] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR k FROM 1 TO dff DO
+        REAL acc := 0.0;
+        FOR d FROM 1 TO dm DO
+          acc +:= dl_dout[i * dm + d] * p.w2[(d - 1) * dff + k]
+        OD;
+        dl_dact[i * dff + k] := acc
+      OD
+    OD;
+    ! dL/dpre = dL/dact * GELU'(pre)  (N x D_ff, elementwise)
+    [] REAL dl_dpre := HEAP [n * dff] REAL;
+    FOR i FROM 1 TO n * dff DO
+      dl_dpre[i] := dl_dact[i] * gelu_deriv_scalar(cache.pre[i])
+    OD;
+    ! dL/dW2 = dL/dout^T * act  (D_model x D_ff)
+    [] REAL dw2 := HEAP [dm * dff] REAL;
+    FOR d FROM 1 TO dm DO
+      FOR k FROM 1 TO dff DO
+        REAL acc := 0.0;
+        FOR i FROM 0 TO n - 1 DO
+          acc +:= dl_dout[i * dm + d] * cache.act[i * dff + k]
+        OD;
+        dw2[(d - 1) * dff + k] := acc
+      OD
+    OD;
+    ! dL/db2 = sum over rows of dL/dout  (D_model)
+    [] REAL db2 := HEAP [dm] REAL;
+    FOR d FROM 1 TO dm DO
+      REAL acc := 0.0;
+      FOR i FROM 0 TO n - 1 DO acc +:= dl_dout[i * dm + d] OD;
+      db2[d] := acc
+    OD;
+    ! dL/dW1 = dL/dpre^T * X  (D_ff x D_model)
+    [] REAL dw1 := HEAP [dff * dm] REAL;
+    FOR d FROM 1 TO dff DO
+      FOR k FROM 1 TO dm DO
+        REAL acc := 0.0;
+        FOR i FROM 0 TO n - 1 DO
+          acc +:= dl_dpre[i * dff + d] * x[i * dm + k]
+        OD;
+        dw1[(d - 1) * dm + k] := acc
+      OD
+    OD;
+    ! dL/db1 = sum over rows of dL/dpre  (D_ff)
+    [] REAL db1 := HEAP [dff] REAL;
+    FOR d FROM 1 TO dff DO
+      REAL acc := 0.0;
+      FOR i FROM 0 TO n - 1 DO acc +:= dl_dpre[i * dff + d] OD;
+      db1[d] := acc
+    OD;
+    ! dL/dX = dL/dpre * W1  (N x D_model)
+    [] REAL dl_dx := HEAP [n * dm] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR k FROM 1 TO dm DO
+        REAL acc := 0.0;
+        FOR d FROM 1 TO dff DO
+          acc +:= dl_dpre[i * dff + d] * p.w1[(d - 1) * dm + k]
+        OD;
+        dl_dx[i * dm + k] := acc
+      OD
+    OD;
+    STRUCT([] REAL, MLPGrads)(dl_dx, MLPGrads(dw1, db1, dw2, db2))
+  END;
+
+  ! ============================================================
+  ! SECTION 6: INITIALIZATION
+  ! ============================================================
+  PROC mlp_params_new = (INT d_model, INT d_ff) MLPParams:
+  BEGIN
+    [] REAL w1 := HEAP [d_ff * d_model] REAL;
+    [] REAL b1 := HEAP [d_ff] REAL;
+    [] REAL w2 := HEAP [d_model * d_ff] REAL;
+    [] REAL b2 := HEAP [d_model] REAL;
+    FOR i FROM 1 TO d_ff * d_model DO w1[i] := 0.0 OD;
+    FOR i FROM 1 TO d_ff DO b1[i] := 0.0 OD;
+    FOR i FROM 1 TO d_model * d_ff DO w2[i] := 0.0 OD;
+    FOR i FROM 1 TO d_model DO b2[i] := 0.0 OD;
+    MLPParams(w1, b1, w2, b2, d_model, d_ff)
+  END;
+
+  PROC mlp_params_normal_init = (REF MLPParams p) VOID:
+  BEGIN
+    INT dm := p.d_model; INT dff := p.d_ff;
+    FOR i FROM 1 TO dff * dm DO
+      REAL u1 := RANDOM + MLP_EPSILON;
+      REAL u2 := RANDOM;
+      REAL z := SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159265 * u2);
+      p.w1[i] := MLP_INIT_STDDEV * z
+    OD;
+    FOR i FROM 1 TO dff DO p.b1[i] := 0.0 OD;
+    FOR i FROM 1 TO dm * dff DO
+      REAL u1 := RANDOM + MLP_EPSILON;
+      REAL u2 := RANDOM;
+      REAL z := SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159265 * u2);
+      p.w2[i] := MLP_INIT_STDDEV * z
+    OD;
+    FOR i FROM 1 TO dm DO p.b2[i] := 0.0 OD
+  END;
+
+  ! ============================================================
+  ! SECTION 7: TESTS
+  ! ============================================================
+  PROC test_gelu_zero = () BOOL:
+    ABS(gelu_scalar(0.0)) < MLP_EPSILON;
+
+  PROC test_gelu_positive_large = () BOOL:
+    gelu_scalar(10.0) > 9.0;
+
+  PROC test_gelu_negative_large = () BOOL:
+    ABS(gelu_scalar(-10.0)) < 0.001;
+
+  PROC test_gelu_deriv_at_zero = () BOOL:
+    ABS(gelu_deriv_scalar(0.0) - 0.5) < 1.0e-6;
+
+  PROC test_mlp_output_shape = () BOOL:
+  BEGIN
+    MLPParams p := mlp_params_new(8, 32);
+    mlp_params_normal_init(p);
+    INT n := 4;
+    [] REAL x := HEAP [n * 8] REAL;
+    FOR i FROM 1 TO n * 8 DO x[i] := RANDOM OD;
+    MLPForwardCache cache := mlp_forward(p, x, n);
+    UPB cache.out = n * 8
+  END;
+
+  PROC test_mlp_bias_zero_passthrough = () BOOL:
+  BEGIN
+    MLPParams p := mlp_params_new(2, 4);
+    FOR i FROM 1 TO 4 * 2 DO p.w1[i] := 0.0 OD;
+    FOR i FROM 1 TO 2 * 4 DO p.w2[i] := 0.0 OD;
+    [] REAL x := HEAP [2] REAL; x[1] := 1.0; x[2] := 2.0;
+    MLPForwardCache c := mlp_forward(p, x, 1);
+    ABS(c.out[1]) < MLP_EPSILON AND ABS(c.out[2]) < MLP_EPSILON
+  END;
+
+  PROC run_mlp_tests = () INT:
+  BEGIN
+    BOOL all :=
+      test_gelu_zero() AND
+      test_gelu_positive_large() AND
+      test_gelu_negative_large() AND
+      test_gelu_deriv_at_zero() AND
+      test_mlp_output_shape() AND
+      test_mlp_bias_zero_passthrough();
+    IF all THEN 0 ELSE -1 FI
+  END;
+
+END ! MODULE mlp

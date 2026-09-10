@@ -1,0 +1,486 @@
+! attn_core.a68
+! TRANSFORMER ATTENTION COMPONENT — OSS 1230
+! TARGET: SCALED_DOT_PRODUCT_ATTENTION + MULTI_HEAD_ATTENTION
+! MATH: Attn(Q,K,V) = softmax(QK^T / sqrt(D_k)) * V
+! DEPENDENCY: tensor.a68, embedding.a68
+! LICENSE: AGPL-3.0-or-later
+MODULE attn_core;
+
+  IMPORT tensor;
+
+  ! ============================================================
+  ! SECTION 1: CONSTANTS AND BOUNDS
+  ! ============================================================
+  INT ATTN_HEADS_MIN     := 1;
+  INT ATTN_HEADS_MAX     := 512;
+  INT ATTN_DIM_MIN       := 1;
+  INT ATTN_DIM_MAX       := 65536;
+  INT ATTN_SEQ_MIN       := 1;
+  INT ATTN_SEQ_MAX       := 131072;
+  REAL ATTN_MASK_NEG_INF := -1.0e9;
+  REAL ATTN_EPSILON      := 1.0e-12;
+
+  ! ============================================================
+  ! SECTION 2: TYPE DEFINITIONS
+  ! ============================================================
+  ! ScoreMatrix: S = Q * K^T / sqrt(D_k), shape (N x N)
+  MODE ScoreMatrix = [] REAL;
+  ! WeightMatrix: W = softmax(S), shape (N x N), rows sum to 1
+  MODE WeightMatrix = [] REAL;
+  ! MaskMatrix: boolean causal mask, shape (N x N)
+  ! Mask[i,j] = TRUE means position i may attend to j (j <= i)
+  MODE MaskMatrix = [] BOOL;
+
+  ! AttnParams: weight matrices for one attention head
+  ! W_Q : D_model x D_head — query projection
+  ! W_K : D_model x D_head — key projection
+  ! W_V : D_model x D_head — value projection
+  ! W_O : D_head  x D_model — output projection
+  MODE AttnParams = STRUCT(
+    [] REAL wq, [] REAL wk, [] REAL wv, [] REAL wo,
+    INT d_model, INT d_head
+  );
+
+  ! MultiHeadParams: collection of H attention heads + output projection
+  MODE MultiHeadParams = STRUCT(
+    [] AttnParams heads,
+    INT n_heads,
+    INT d_model,
+    INT d_head
+  );
+
+  ! AttnGrads: gradient accumulators for one head
+  MODE AttnGrads = STRUCT(
+    [] REAL dwq, [] REAL dwk, [] REAL dwv, [] REAL dwo
+  );
+
+  ! AttnForwardCache: stores intermediates for backward pass
+  ! q, k, v: projected queries/keys/values (N x D_head)
+  ! scores : raw scores (N x N)
+  ! weights: after softmax (N x N)
+  ! out    : weighted values (N x D_head)
+  MODE AttnForwardCache = STRUCT(
+    [] REAL q, [] REAL k, [] REAL v,
+    ScoreMatrix scores, WeightMatrix weights,
+    [] REAL out_head
+  );
+
+  ! ============================================================
+  ! SECTION 3: INVARIANT CHECKERS
+  ! ============================================================
+  PROC check_n_heads = (INT h) BOOL:
+    h >= ATTN_HEADS_MIN AND h <= ATTN_HEADS_MAX;
+
+  PROC check_d_model = (INT d) BOOL:
+    d >= ATTN_DIM_MIN AND d <= ATTN_DIM_MAX;
+
+  PROC check_d_divisible = (INT d_model, INT n_heads) BOOL:
+    d_model MOD n_heads = 0;
+
+  PROC check_seq_len = (INT n) BOOL:
+    n >= ATTN_SEQ_MIN AND n <= ATTN_SEQ_MAX;
+
+  PROC check_weights_sum_to_one = (WeightMatrix w, INT n) BOOL:
+  BEGIN
+    BOOL ok := TRUE;
+    FOR i FROM 0 TO n - 1 DO
+      REAL row_sum := 0.0;
+      FOR j FROM 1 TO n DO
+        row_sum +:= w[i * n + j]
+      OD;
+      IF ABS(row_sum - 1.0) > 1.0e-6 THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  ! ============================================================
+  ! SECTION 4: CAUSAL MASK CONSTRUCTION
+  ! ============================================================
+  ! build_causal_mask: returns N x N boolean mask
+  ! Mask[i,j] = TRUE iff j <= i (lower triangular including diagonal)
+  ! Domain: i,j in {1..N}, 1-indexed ALGOL 68 arrays
+  ! Invariant: mask is lower-triangular, all diagonals = TRUE
+  PROC build_causal_mask = (INT n) MaskMatrix:
+  BEGIN
+    MaskMatrix mask := HEAP [n * n] BOOL;
+    FOR i FROM 1 TO n DO
+      FOR j FROM 1 TO n DO
+        mask[(i - 1) * n + j] := j <= i
+      OD
+    OD;
+    mask
+  END;
+
+  ! apply_causal_mask: sets scores[i,j] to ATTN_MASK_NEG_INF where mask=FALSE
+  ! Input:  scores : REF ScoreMatrix (N x N), mask : MaskMatrix, n : INT
+  ! Output: VOID (mutates scores in place)
+  ! Post: scores[i,j] = ATTN_MASK_NEG_INF for j > i (future positions)
+  PROC apply_causal_mask = (REF ScoreMatrix scores, MaskMatrix mask, INT n) VOID:
+  BEGIN
+    FOR i FROM 1 TO n DO
+      FOR j FROM 1 TO n DO
+        IF NOT mask[(i - 1) * n + j] THEN
+          scores[(i - 1) * n + j] := ATTN_MASK_NEG_INF
+        FI
+      OD
+    OD
+  END;
+
+  ! ============================================================
+  ! SECTION 5: SOFTMAX FOR ATTENTION WEIGHTS
+  ! ============================================================
+  ! attn_softmax: row-wise numerically stable softmax
+  ! Input:  s : ScoreMatrix (N x N), n : INT
+  ! Output: WeightMatrix (N x N) where each row sums to 1.0
+  ! Algorithm: subtract row max before exp (overflow prevention)
+  ! Numerical: if all row values = ATTN_MASK_NEG_INF, result = 0 row
+  PROC attn_softmax = (ScoreMatrix s, INT n) WeightMatrix:
+  BEGIN
+    WeightMatrix w := HEAP [n * n] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      REAL row_max := s[i * n + 1];
+      FOR j FROM 2 TO n DO
+        IF s[i * n + j] > row_max THEN row_max := s[i * n + j] FI
+      OD;
+      REAL row_sum := 0.0;
+      FOR j FROM 1 TO n DO
+        REAL ex := EXP(s[i * n + j] - row_max);
+        w[i * n + j] := ex;
+        row_sum +:= ex
+      OD;
+      IF row_sum > ATTN_EPSILON THEN
+        FOR j FROM 1 TO n DO w[i * n + j] /:= row_sum OD
+      ELSE
+        FOR j FROM 1 TO n DO w[i * n + j] := 0.0 OD
+      FI
+    OD;
+    w
+  END;
+
+  ! softmax_backward: computes dL/dS from dL/dW and W
+  ! Formula: dL/dS[i,j] = W[i,j] * (dL/dW[i,j] - sum_k W[i,k]*dL/dW[i,k])
+  PROC attn_softmax_backward = (WeightMatrix w, [] REAL dl_dw, INT n) ScoreMatrix:
+  BEGIN
+    ScoreMatrix dl_ds := HEAP [n * n] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      REAL dot := 0.0;
+      FOR k FROM 1 TO n DO dot +:= w[i * n + k] * dl_dw[i * n + k] OD;
+      FOR j FROM 1 TO n DO
+        dl_ds[i * n + j] := w[i * n + j] * (dl_dw[i * n + j] - dot)
+      OD
+    OD;
+    dl_ds
+  END;
+
+  ! ============================================================
+  ! SECTION 6: LINEAR PROJECTION
+  ! ============================================================
+  ! project: X (N x D_in) * W^T (D_in x D_out) -> Y (N x D_out)
+  ! Mathematical: Y[i,d] = sum_{k=1}^{D_in} X[i,k] * W[d,k]
+  ! Memory: X row-major (N x D_in), W row-major (D_out x D_in)
+  PROC project = ([] REAL x, [] REAL w, INT n, INT d_in, INT d_out) [] REAL:
+  BEGIN
+    [] REAL y := HEAP [n * d_out] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO d_out DO
+        REAL acc := 0.0;
+        FOR k FROM 1 TO d_in DO
+          acc +:= x[i * d_in + k] * w[(d - 1) * d_in + k]
+        OD;
+        y[i * d_out + d] := acc
+      OD
+    OD;
+    y
+  END;
+
+  ! project_backward_x: dL/dX = dL/dY * W (D_out x D_in)
+  PROC project_backward_x = ([] REAL dl_dy, [] REAL w, INT n, INT d_in, INT d_out) [] REAL:
+  BEGIN
+    [] REAL dl_dx := HEAP [n * d_in] REAL;
+    FOR i FROM 1 TO n * d_in DO dl_dx[i] := 0.0 OD;
+    FOR i FROM 0 TO n - 1 DO
+      FOR k FROM 1 TO d_in DO
+        REAL acc := 0.0;
+        FOR d FROM 1 TO d_out DO
+          acc +:= dl_dy[i * d_out + d] * w[(d - 1) * d_in + k]
+        OD;
+        dl_dx[i * d_in + k] := acc
+      OD
+    OD;
+    dl_dx
+  END;
+
+  ! project_backward_w: dL/dW = dL/dY^T * X
+  PROC project_backward_w = ([] REAL dl_dy, [] REAL x, INT n, INT d_in, INT d_out) [] REAL:
+  BEGIN
+    [] REAL dl_dw := HEAP [d_out * d_in] REAL;
+    FOR i FROM 1 TO d_out * d_in DO dl_dw[i] := 0.0 OD;
+    FOR d FROM 1 TO d_out DO
+      FOR k FROM 1 TO d_in DO
+        REAL acc := 0.0;
+        FOR i FROM 0 TO n - 1 DO
+          acc +:= dl_dy[i * d_out + d] * x[i * d_in + k]
+        OD;
+        dl_dw[(d - 1) * d_in + k] := acc
+      OD
+    OD;
+    dl_dw
+  END;
+
+  ! ============================================================
+  ! SECTION 7: SCALED DOT-PRODUCT ATTENTION — FORWARD
+  ! ============================================================
+  ! sdp_attention_forward:
+  !   Q (N x D_k), K (N x D_k), V (N x D_v) -> output (N x D_v)
+  !   S = Q * K^T / sqrt(D_k)         [N x N]
+  !   S_masked = apply_causal_mask(S)   [N x N]
+  !   W = softmax(S_masked)             [N x N, rows sum to 1]
+  !   out = W * V                       [N x D_v]
+  PROC sdp_attention_forward = ([] REAL q, [] REAL k, [] REAL v,
+                                 INT n, INT d_k, INT d_v,
+                                 BOOL causal) AttnForwardCache:
+  BEGIN
+    REAL scale := 1.0 / SQRT(FLOAT(d_k));
+    ScoreMatrix scores := HEAP [n * n] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR j FROM 1 TO n DO
+        REAL dot := 0.0;
+        FOR dim FROM 1 TO d_k DO
+          dot +:= q[i * d_k + dim] * k[(j - 1) * d_k + dim]
+        OD;
+        scores[i * n + j] := dot * scale
+      OD
+    OD;
+    IF causal THEN
+      MaskMatrix mask := build_causal_mask(n);
+      apply_causal_mask(scores, mask, n)
+    FI;
+    WeightMatrix weights := attn_softmax(scores, n);
+    [] REAL out := HEAP [n * d_v] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO d_v DO
+        REAL acc := 0.0;
+        FOR j FROM 1 TO n DO
+          acc +:= weights[i * n + j] * v[(j - 1) * d_v + d]
+        OD;
+        out[i * d_v + d] := acc
+      OD
+    OD;
+    AttnForwardCache(q, k, v, scores, weights, out)
+  END;
+
+  ! ============================================================
+  ! SECTION 8: SDP ATTENTION — BACKWARD
+  ! ============================================================
+  ! sdp_attention_backward: computes dL/dQ, dL/dK, dL/dV
+  ! Input:  cache : AttnForwardCache, dl_dout : [] REAL (N x D_v)
+  !         n, d_k, d_v : INT
+  ! Output: STRUCT([] REAL dq, [] REAL dk, [] REAL dv)
+  PROC sdp_attention_backward = (AttnForwardCache cache, [] REAL dl_dout,
+                                   INT n, INT d_k, INT d_v) STRUCT([] REAL, [] REAL, [] REAL):
+  BEGIN
+    REAL scale := 1.0 / SQRT(FLOAT(d_k));
+    ! dL/dW = dL/dout * V^T: (N x N)
+    [] REAL dl_dw := HEAP [n * n] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR j FROM 1 TO n DO
+        REAL acc := 0.0;
+        FOR d FROM 1 TO d_v DO
+          acc +:= dl_dout[i * d_v + d] * cache.v[(j - 1) * d_v + d]
+        OD;
+        dl_dw[i * n + j] := acc
+      OD
+    OD;
+    ! dL/dV = W^T * dL/dout: (N x D_v)
+    [] REAL dl_dv := HEAP [n * d_v] REAL;
+    FOR i FROM 1 TO n * d_v DO dl_dv[i] := 0.0 OD;
+    FOR j FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO d_v DO
+        REAL acc := 0.0;
+        FOR i FROM 0 TO n - 1 DO
+          acc +:= cache.weights[i * n + j + 1] * dl_dout[i * d_v + d]
+        OD;
+        dl_dv[j * d_v + d] := acc
+      OD
+    OD;
+    ! dL/dS through softmax backward
+    ScoreMatrix dl_ds := attn_softmax_backward(cache.weights, dl_dw, n);
+    ! dL/dQ = dL/dS * K * scale: (N x D_k)
+    [] REAL dl_dq := HEAP [n * d_k] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR dim FROM 1 TO d_k DO
+        REAL acc := 0.0;
+        FOR j FROM 1 TO n DO
+          acc +:= dl_ds[i * n + j] * cache.k[(j - 1) * d_k + dim]
+        OD;
+        dl_dq[i * d_k + dim] := acc * scale
+      OD
+    OD;
+    ! dL/dK = dL/dS^T * Q * scale: (N x D_k)
+    [] REAL dl_dk := HEAP [n * d_k] REAL;
+    FOR j FROM 0 TO n - 1 DO
+      FOR dim FROM 1 TO d_k DO
+        REAL acc := 0.0;
+        FOR i FROM 0 TO n - 1 DO
+          acc +:= dl_ds[i * n + j + 1] * cache.q[i * d_k + dim]
+        OD;
+        dl_dk[j * d_k + dim] := acc * scale
+      OD
+    OD;
+    STRUCT([] REAL, [] REAL, [] REAL)(dl_dq, dl_dk, dl_dv)
+  END;
+
+  ! ============================================================
+  ! SECTION 9: MULTI-HEAD ATTENTION — FORWARD
+  ! ============================================================
+  ! mha_forward: full multi-head attention
+  !   Input X (N x D_model)
+  !   For head h: Q_h = X * W_Q_h^T, K_h = X * W_K_h^T, V_h = X * W_V_h^T
+  !   head_h = SDP(Q_h, K_h, V_h)
+  !   concat all heads -> (N x H*D_head = N x D_model)
+  !   out = concat * W_O^T
+  PROC mha_forward = (MultiHeadParams p, [] REAL x, INT n, BOOL causal) [] REAL:
+  BEGIN
+    INT h := p.n_heads;
+    INT d_model := p.d_model;
+    INT d_head := p.d_head;
+    [] REAL concat := HEAP [n * d_model] REAL;
+    FOR head FROM 1 TO h DO
+      AttnParams ap := p.heads[head];
+      [] REAL q := project(x, ap.wq, n, d_model, d_head);
+      [] REAL k := project(x, ap.wk, n, d_model, d_head);
+      [] REAL v := project(x, ap.wv, n, d_model, d_head);
+      AttnForwardCache cache := sdp_attention_forward(q, k, v, n, d_head, d_head, causal);
+      [] REAL head_out := cache.out_head;
+      INT offset := (head - 1) * d_head;
+      FOR i FROM 0 TO n - 1 DO
+        FOR d FROM 1 TO d_head DO
+          concat[i * d_model + offset + d] := head_out[i * d_head + d]
+        OD
+      OD
+    OD;
+    [] REAL out := HEAP [n * d_model] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO d_model DO
+        REAL acc := 0.0;
+        FOR k FROM 1 TO d_model DO
+          acc +:= concat[i * d_model + k] * p.heads[1].wo[(d - 1) * d_model + k]
+        OD;
+        out[i * d_model + d] := acc
+      OD
+    OD;
+    out
+  END;
+
+  ! ============================================================
+  ! SECTION 10: PARAMETER INITIALIZATION
+  ! ============================================================
+  PROC attn_params_new = (INT d_model, INT d_head) AttnParams:
+  BEGIN
+    INT wq_size := d_model * d_head;
+    INT wo_size := d_head * d_model;
+    [] REAL wq := HEAP [wq_size] REAL;
+    [] REAL wk := HEAP [wq_size] REAL;
+    [] REAL wv := HEAP [wq_size] REAL;
+    [] REAL wo := HEAP [wo_size] REAL;
+    FOR i FROM 1 TO wq_size DO wq[i] := 0.0; wk[i] := 0.0; wv[i] := 0.0 OD;
+    FOR i FROM 1 TO wo_size DO wo[i] := 0.0 OD;
+    AttnParams(wq, wk, wv, wo, d_model, d_head)
+  END;
+
+  PROC attn_params_xavier = (REF AttnParams p) VOID:
+  BEGIN
+    REAL lim_qkv := SQRT(6.0 / (FLOAT(p.d_model) + FLOAT(p.d_head)));
+    REAL lim_o   := SQRT(6.0 / (FLOAT(p.d_head) + FLOAT(p.d_model)));
+    INT sz_qkv := p.d_model * p.d_head;
+    INT sz_o   := p.d_head * p.d_model;
+    FOR i FROM 1 TO sz_qkv DO
+      p.wq[i] := -lim_qkv + 2.0 * lim_qkv * RANDOM;
+      p.wk[i] := -lim_qkv + 2.0 * lim_qkv * RANDOM;
+      p.wv[i] := -lim_qkv + 2.0 * lim_qkv * RANDOM
+    OD;
+    FOR i FROM 1 TO sz_o DO
+      p.wo[i] := -lim_o + 2.0 * lim_o * RANDOM
+    OD
+  END;
+
+  ! ============================================================
+  ! SECTION 11: TESTS
+  ! ============================================================
+  PROC test_causal_mask_lower_tri = () BOOL:
+  BEGIN
+    MaskMatrix m := build_causal_mask(4);
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO 4 DO
+      FOR j FROM 1 TO 4 DO
+        BOOL expected := j <= i;
+        IF m[(i - 1) * 4 + j] /= expected THEN ok := FALSE FI
+      OD
+    OD;
+    ok
+  END;
+
+  PROC test_softmax_rows_sum_one = () BOOL:
+  BEGIN
+    ScoreMatrix s := HEAP [9] REAL;
+    s[1] := 1.0; s[2] := 2.0; s[3] := 3.0;
+    s[4] := 0.5; s[5] := 0.5; s[6] := 0.5;
+    s[7] := -1.0; s[8] := 0.0; s[9] := 1.0;
+    WeightMatrix w := attn_softmax(s, 3);
+    check_weights_sum_to_one(w, 3)
+  END;
+
+  PROC test_masked_positions_zero = () BOOL:
+  BEGIN
+    ScoreMatrix s := HEAP [4] REAL;
+    s[1] := 1.0; s[2] := 1.0;
+    s[3] := 1.0; s[4] := 1.0;
+    MaskMatrix mask := build_causal_mask(2);
+    apply_causal_mask(s, mask, 2);
+    WeightMatrix w := attn_softmax(s, 2);
+    w[1 * 2 + 2] < 1.0e-6
+  END;
+
+  PROC test_sdp_output_shape = () BOOL:
+  BEGIN
+    INT n := 3; INT d_k := 4; INT d_v := 4;
+    [] REAL q := HEAP [n * d_k] REAL;
+    [] REAL k := HEAP [n * d_k] REAL;
+    [] REAL v := HEAP [n * d_v] REAL;
+    FOR i FROM 1 TO n * d_k DO q[i] := RANDOM; k[i] := RANDOM OD;
+    FOR i FROM 1 TO n * d_v DO v[i] := RANDOM OD;
+    AttnForwardCache cache := sdp_attention_forward(q, k, v, n, d_k, d_v, TRUE);
+    UPB cache.out_head = n * d_v
+  END;
+
+  PROC test_project_identity = () BOOL:
+  BEGIN
+    INT n := 2; INT d := 3;
+    [] REAL x := HEAP [n * d] REAL;
+    [] REAL w := HEAP [d * d] REAL;
+    FOR i FROM 1 TO n * d DO x[i] := FLOAT(i) OD;
+    FOR d1 FROM 1 TO d DO
+      FOR d2 FROM 1 TO d DO
+        w[(d1 - 1) * d + d2] := IF d1 = d2 THEN 1.0 ELSE 0.0 FI
+      OD
+    OD;
+    [] REAL y := project(x, w, n, d, d);
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO n * d DO
+      IF ABS(y[i] - x[i]) > 1.0e-10 THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  PROC run_attn_tests = () INT:
+  BEGIN
+    BOOL all :=
+      test_causal_mask_lower_tri() AND
+      test_softmax_rows_sum_one() AND
+      test_masked_positions_zero() AND
+      test_sdp_output_shape() AND
+      test_project_identity();
+    IF all THEN 0 ELSE -1 FI
+  END;
+
+END ! MODULE attn_core
