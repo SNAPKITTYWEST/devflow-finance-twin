@@ -1,18 +1,19 @@
 {
-  "timestamp": "2026-09-10T17:47:08Z",
+  "timestamp": "2026-09-10T17:53:05Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "96e55b0f2063da69d653df7257fdf95f6a7ef865",
-  "commit_after": "45deaab1955b8925faf01fdfa027e7e322e41572",
+  "commit_before": "6387c0074f799190bcbae112afec80ac3b98c9f6",
+  "commit_after": "1d403a62f9a7c17435b1e27eaf12e20ef76cc5c2",
   "files_added": [
-    "datalog-engine/datalog/meta_circular_evaluator.dl",
-    "datalog-engine/datalog/pure_ancestor_ar.dl",
-    "datalog-engine/datalog/pure_datalog_ar.dl",
-    "datalog-engine/datalog/souffle_ancestor.dl",
-    "datalog-engine/datalog/souffle_engine.dl",
-    "datalog-engine/datalog/souffle_meta_eval.dl",
-    "datalog-engine/datalog/souffle_negation.dl",
-    "datalog-engine/datalog/souffle_typed_ancestor.dl"
+    "ada/ada/memory_manager.adb",
+    "ada/ada/memory_manager.ads",
+    "src/ada/memory_manager.gpr",
+    "src/cuda/cuda_softmax_masked.cu",
+    "ptx/ptx_inverted_softmax.ptx",
+    "src/cuda/verify_softmax_fd.cu",
+    "scripts/scripts/build_all.sh",
+    "scripts/scripts/prove_memory_manager.sh",
+    "scripts/scripts/synthesize_ptx.sh"
   ],
   "files_modified": [
 
@@ -28,6 +29,6 @@
 
   ],
   "sha256": [
-    {"file": "datalog/pure_ancestor_ar.dl", "source_hash": "1094d8dc4be8ad8a42acb1eadcd35444ad94d64bcb0aa3fb46914eb012040aaa", "destination_hash": "1094d8dc4be8ad8a42acb1eadcd35444ad94d64bcb0aa3fb46914eb012040aaa", "status": "COPIED"},    {"file": "datalog/souffle_negation.dl", "source_hash": "b52d8c00d2e9665905ee1372e4cd30613904c2c1cd8dd5868663a39662aea351", "destination_hash": "b52d8c00d2e9665905ee1372e4cd30613904c2c1cd8dd5868663a39662aea351", "status": "COPIED"},    {"file": "datalog/souffle_engine.dl", "source_hash": "c0f6c935c8a9b367daf1e89795603804cfe26624dc2970c3a9ae321b5ca30e97", "destination_hash": "c0f6c935c8a9b367daf1e89795603804cfe26624dc2970c3a9ae321b5ca30e97", "status": "COPIED"},    {"file": "datalog/souffle_meta_eval.dl", "source_hash": "11a568706a98880432f7e11bf0cd8c14a2450baac51c84901a3211e03f27e795", "destination_hash": "11a568706a98880432f7e11bf0cd8c14a2450baac51c84901a3211e03f27e795", "status": "COPIED"},    {"file": "datalog/souffle_ancestor.dl", "source_hash": "c0f6c935c8a9b367daf1e89795603804cfe26624dc2970c3a9ae321b5ca30e97", "destination_hash": "c0f6c935c8a9b367daf1e89795603804cfe26624dc2970c3a9ae321b5ca30e97", "status": "COPIED"},    {"file": "datalog/meta_circular_evaluator.dl", "source_hash": "e2c79434fddb9d41f27a43615e915e1db7402951824d3099b182a488f179988d", "destination_hash": "e2c79434fddb9d41f27a43615e915e1db7402951824d3099b182a488f179988d", "status": "COPIED"},    {"file": "datalog/souffle_typed_ancestor.dl", "source_hash": "172ac118f1f045ad54ff03f16840f206ace9f0508306e617d9984b361d3d5643", "destination_hash": "172ac118f1f045ad54ff03f16840f206ace9f0508306e617d9984b361d3d5643", "status": "COPIED"},    {"file": "datalog/pure_datalog_ar.dl", "source_hash": "836f0e1ff53715bf629f54a9af92f813afa6b12b01e813b091f29f3b9da947a3", "destination_hash": "836f0e1ff53715bf629f54a9af92f813afa6b12b01e813b091f29f3b9da947a3", "status": "COPIED"}
+    {"file": "cuda/ptx_inverted_softmax.ptx", "source_hash": "823c68c0927092e70b319ad629bbf40820e4cb7d7039ea17f909534f4232e287", "destination_hash": "823c68c0927092e70b319ad629bbf40820e4cb7d7039ea17f909534f4232e287", "status": "COPIED"},    {"file": "scripts/build_all.sh", "source_hash": "01dbf10caa6f8e3c5c7b3b267f414d623472ff5ab5da0bb903ac77e7ad806966", "destination_hash": "01dbf10caa6f8e3c5c7b3b267f414d623472ff5ab5da0bb903ac77e7ad806966", "status": "COPIED"},    {"file": "cuda/verify_softmax_fd.cu", "source_hash": "21e75cbcd03b108152bb266c72dfe1d576d1270b298d6d6be2ba89a03c80fd32", "destination_hash": "21e75cbcd03b108152bb266c72dfe1d576d1270b298d6d6be2ba89a03c80fd32", "status": "COPIED"},    {"file": "cuda/cuda_softmax_masked.cu", "source_hash": "111e55071c9b70a9377cfeefa563422f4f90bde9d8b139dfd61253fb2e5d46d4", "destination_hash": "111e55071c9b70a9377cfeefa563422f4f90bde9d8b139dfd61253fb2e5d46d4", "status": "COPIED"},    {"file": "scripts/synthesize_ptx.sh", "source_hash": "e14a8882d10fb175c9eb47f16fccca877a5bab4ecb2d4c247c54a08b2770725d", "destination_hash": "e14a8882d10fb175c9eb47f16fccca877a5bab4ecb2d4c247c54a08b2770725d", "status": "COPIED"},    {"file": "scripts/prove_memory_manager.sh", "source_hash": "918d39b981439bb96e1404f15c8722058ff0025b547eed340466b0a337f26e7e", "destination_hash": "918d39b981439bb96e1404f15c8722058ff0025b547eed340466b0a337f26e7e", "status": "COPIED"},    {"file": "ada/memory_manager.adb", "source_hash": "361f5888f42476c02d8ac4d9530fc75de8377aeb4144601af2379b341f805508", "destination_hash": "361f5888f42476c02d8ac4d9530fc75de8377aeb4144601af2379b341f805508", "status": "COPIED"},    {"file": "ada/memory_manager.ads", "source_hash": "814fa85fa3e09cf830d53fd785e3ae09602ff3932aeac8096bd8e1d7c36d6a73", "destination_hash": "814fa85fa3e09cf830d53fd785e3ae09602ff3932aeac8096bd8e1d7c36d6a73", "status": "COPIED"},    {"file": "ada/memory_manager.gpr", "source_hash": "500994d2c123ff83101238a4b9097ff5356c16abeb88fe4e4c2d6cb2b68fb2bd", "destination_hash": "500994d2c123ff83101238a4b9097ff5356c16abeb88fe4e4c2d6cb2b68fb2bd", "status": "COPIED"}
   ]
 }

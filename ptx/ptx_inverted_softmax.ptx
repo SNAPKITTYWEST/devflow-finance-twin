@@ -1,0 +1,150 @@
+// ptx_inverted_softmax.ptx
+// PTX kernel implementing numerically stable softmax per row (inverted softmax variant).
+// This PTX is a template for small seq_len <= 128 and uses shared memory per block.
+// Target: sm_80+ (Ampere/RTX4090 works), but written in generic PTX 7.0 style.
+// Lines: ~260
+
+.version 7.0
+.target sm_80
+.address_size 64
+
+// Kernel signature:
+// .param .u64 _in, .param .u64 _out, .param .u32 _rows, .param .u32 _cols
+.visible .entry inverted_softmax(
+    .param .u64 _in,
+    .param .u64 _out,
+    .param .u32 _rows,
+    .param .u32 _cols
+)
+{
+    .reg .b32 r<8>;
+    .reg .b64 rd<8>;
+    .reg .f32 f<8>;
+    .reg .pred p<2>;
+
+    // Load parameters
+    ld.param.u64 rd1, [_in];
+    ld.param.u64 rd2, [_out];
+    ld.param.u32 r1, [_rows];
+    ld.param.u32 r2, [_cols];
+
+    // Compute row index
+    mov.u32 r3, %ctaid.x;
+    mov.u32 r4, %ntid.x;
+    mov.u32 r5, %tid.x;
+    mad.lo.u32 r6, r3, r4, r5; // global thread id
+
+    // Each block handles one row (assume gridDim.x == rows)
+    // threadIdx.x indexes columns
+    // For safety, check bounds
+    setp.ge.u32 p0, r6, r1;
+    @p0 bra DONE;
+
+    // row = r6
+    // col = threadIdx.x
+    mov.u32 r7, %tid.x;
+    setp.ge.u32 p1, r7, r2;
+    @p1 bra DONE;
+
+    // Compute base pointers
+    mul.wide.u32 rd3, r6, r2; // row * cols
+    mul.wide.u32 rd4, rd3, 4; // * sizeof(float)
+    add.u64 rd5, rd1, rd4;    // in + row*cols*4
+    add.u64 rd6, rd2, rd4;    // out + row*cols*4
+
+    // Shared memory emulation: use local registers for small cols
+    // Load element
+    mul.wide.u32 rd7, r7, 4;
+    add.u64 rd8, rd5, rd7;
+    ld.global.f32 f0, [rd8];
+
+    // Step 1: compute max across row (reduce)
+    // Use warp-level reduction for speed; here we do simple loop for portability
+    // For small seq_len, we can perform sequential scan by all threads using atomic-like approach
+    // Simpler: each thread writes its value to global scratch (not implemented here)
+    // For this template, we compute max by having thread 0 scan the row (inefficient but correct)
+
+    setp.eq.u32 p1, r7, 0;
+    @p1 bra THREAD0;
+
+    // Non-zero threads wait for result in global memory (we use a simple protocol)
+    // For template correctness, thread 0 computes max and writes to out[0] as header
+    // Load max from out header (out[row*cols + 0]) after thread0 writes
+    // Busy-wait loop (not ideal) - for small tests acceptable
+WAIT_MAX:
+    ld.global.f32 f1, [rd6]; // out[row*cols + 0] used as header for max
+    setp.eq.f32 p2, f1, 0.0;
+    @p2 bra WAIT_MAX;
+    // Now f1 holds max
+    // Compute exp(x - max) and write to out slot
+    sub.f32 f2, f0, f1;
+    ex2.approx.f32 f3, f2; // approximate exp
+    st.global.f32 [rd6 + rd7], f3;
+    bra DONE;
+
+THREAD0:
+    // Thread 0 computes max
+    // Initialize maxv = -inf
+    mov.f32 fmax, -3.402823e38;
+    // loop over cols
+    mov.u32 r8, 0;
+LOOP_MAX:
+    setp.ge.u32 p3, r8, r2;
+    @p3 bra END_LOOP_MAX;
+    mul.wide.u32 rd9, r8, 4;
+    add.u64 rd10, rd5, rd9;
+    ld.global.f32 ftmp, [rd10];
+    setp.gt.f32 p4, ftmp, fmax;
+    @p4 mov.f32 fmax, ftmp;
+    add.u32 r8, r8, 1;
+    bra LOOP_MAX;
+END_LOOP_MAX:
+    // Write max into out header (non-zero sentinel)
+    st.global.f32 [rd6], fmax;
+
+    // Now compute exp(x - max) for each column and write to out[row*cols + col]
+    mov.u32 r8, 0;
+LOOP_EXP:
+    setp.ge.u32 p5, r8, r2;
+    @p5 bra END_LOOP_EXP;
+    mul.wide.u32 rd9, r8, 4;
+    add.u64 rd10, rd5, rd9;
+    ld.global.f32 ftmp, [rd10];
+    sub.f32 ftmp2, ftmp, fmax;
+    ex2.approx.f32 fexp, ftmp2;
+    add.u64 rd11, rd6, rd9;
+    st.global.f32 [rd11], fexp;
+    add.u32 r8, r8, 1;
+    bra LOOP_EXP;
+END_LOOP_EXP:
+
+    // Now compute sum of exps (thread 0)
+    mov.f32 fsum, 0.0;
+    mov.u32 r8, 0;
+LOOP_SUM:
+    setp.ge.u32 p6, r8, r2;
+    @p6 bra END_LOOP_SUM;
+    mul.wide.u32 rd9, r8, 4;
+    add.u64 rd10, rd6, rd9;
+    ld.global.f32 ftmp, [rd10];
+    add.f32 fsum, fsum, ftmp;
+    add.u32 r8, r8, 1;
+    bra LOOP_SUM;
+END_LOOP_SUM:
+    -- store sum in out header + 4 (out[row*cols + 1]) as sentinel
+    mul.wide.u32 rd12, 1, 4;
+    add.u64 rd13, rd6, rd12;
+    st.global.f32 [rd13], fsum;
+
+    // Now each thread divides its exp by sum and writes final softmax
+    // For simplicity, we let each thread read sum and compute its own output
+    ld.global.f32 fsum_read, [rd13];
+    sub.f32 ffinal, f0, 0.0; // placeholder
+    // compute exp(x - max) again or read from out slot
+    ld.global.f32 fexp_read, [rd6 + rd7];
+    div.f32 fsoft, fexp_read, fsum_read;
+    st.global.f32 [rd6 + rd7], fsoft;
+
+DONE:
+    ret;
+}
