@@ -11,6 +11,7 @@ pub mod cbmc_binary_semantics;
 pub mod crux;
 pub mod qa5;
 pub mod assert_q;
+pub mod eclipse_parlog;
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::fmt;
@@ -800,6 +801,113 @@ mod tests {
         rs.assert_q(constr);
         assert!(count.load(Ordering::SeqCst) > 0);
         clear_watchers();
+    }
+
+    // --- Eclipse-Parlog Fused Kernel Tests ---
+
+    #[test]
+    fn eclipse_domain_intersect() {
+        use eclipse_parlog::domain::{Domain, DomainStore};
+        let a = Domain::Range(1, 5);
+        let b = Domain::Range(3, 8);
+        assert_eq!(a.intersect(&b), Some(Domain::Range(3, 5)));
+    }
+
+    #[test]
+    fn eclipse_arithmetic_eval() {
+        use eclipse_parlog::domain::DomainStore;
+        use eclipse_parlog::arithmetic::{Constraint, eval_constraint, EvalResult};
+        let mut store = DomainStore::new();
+        store.set_value("x", 5);
+        assert_eq!(eval_constraint(&Constraint::eq("x", 5), &store), EvalResult::Entailed);
+        assert_eq!(eval_constraint(&Constraint::eq("x", 3), &store), EvalResult::Failed);
+        assert_eq!(eval_constraint(&Constraint::lt("x", "y"), &store), EvalResult::Unknown);
+    }
+
+    #[test]
+    fn eclipse_suspension() {
+        use eclipse_parlog::domain::{Domain, DomainStore};
+        use eclipse_parlog::suspension::{SuspensionStore, propagate_store};
+        use eclipse_parlog::arithmetic::Constraint;
+        let mut ss = SuspensionStore::new();
+        let mut ds = DomainStore::new();
+        ds.set_domain("x", Domain::Range(1, 10));
+        ss.suspend(Constraint::eq("x", 5), 1, vec!["x".into()]);
+        ds.set_value("x", 5);
+        propagate_store(&mut ss, &mut ds);
+        assert_eq!(ss.active_count(), 0);
+    }
+
+    #[test]
+    fn eclipse_globals_alldifferent() {
+        use eclipse_parlog::domain::DomainStore;
+        use eclipse_parlog::globals::alldifferent;
+        let mut store = DomainStore::new();
+        store.set_value("a", 1);
+        store.set_value("b", 2);
+        store.set_value("c", 3);
+        assert!(alldifferent(&mut store, &["a", "b", "c"]));
+        store.set_value("c", 1);
+        assert!(!alldifferent(&mut store, &["a", "b", "c"]));
+    }
+
+    #[test]
+    fn eclipse_search() {
+        use eclipse_parlog::domain::{Domain, DomainStore};
+        use eclipse_parlog::search::{search_vars, SearchStrategy, SearchResult};
+        let mut store = DomainStore::new();
+        store.set_domain("x", Domain::Range(1, 3));
+        let result = search_vars(&mut store, &SearchStrategy::Complete, 100);
+        assert!(matches!(result, SearchResult::Sat(_)));
+    }
+
+    #[test]
+    fn eclipse_parlog_engine() {
+        use eclipse_parlog::parlog::{ParlogEngine, Mode, GuardedClause, committed_or};
+        let mut engine = ParlogEngine::new();
+        engine.declare_mode("parent/2", vec![Mode::Input, Mode::Output]);
+        engine.add_guarded(GuardedClause::new("h1", "", "body1", vec![]));
+        engine.add_guarded(GuardedClause::new("h2", "guard2", "body2", vec![]));
+        let clause = engine.call_guarded("h2");
+        assert!(clause.is_some());
+    }
+
+    // --- QA5 Racket Morph Tests ---
+
+    #[test]
+    fn qa5_racket_clause() {
+        use qa5::clause::{make_clause, Literal, LitArg};
+        use qa5::racket_morph::convert_clause;
+        let c = make_clause(
+            vec![Literal::pos("p", vec![LitArg::Var("x".into())])],
+            Some(vec![1, 2]),
+        );
+        let rc = convert_clause(&c);
+        assert_eq!(rc.id, c.id);
+        assert_eq!(rc.parents, vec![1, 2]);
+    }
+
+    #[test]
+    fn qa5_racket_bindings() {
+        use qa5::racket_morph::{RacketBindings, RacketTerm};
+        let mut b = RacketBindings::new();
+        let old = b.trail_len();
+        b.bind("x", RacketTerm::const_("5"));
+        assert_eq!(b.deref(&RacketTerm::var("x")), RacketTerm::const_("5"));
+        b.undo_to(old);
+        assert_eq!(b.deref(&RacketTerm::var("x")), RacketTerm::var("x"));
+    }
+
+    #[test]
+    fn qa5_proof_trace() {
+        use qa5::racket_morph::{ProofTrace};
+        use qa5::clause::{make_clause, Substitution};
+        let mut trace = ProofTrace::new();
+        let c = make_clause(vec![], Some(vec![1, 2]));
+        trace.add_step(&c, &Substitution::new());
+        trace.mark_empty(c.id);
+        let explanation = trace.explain();
+        assert!(explanation.contains("PROOF"));
     }
 }
 
