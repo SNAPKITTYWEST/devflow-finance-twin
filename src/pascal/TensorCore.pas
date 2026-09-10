@@ -1,371 +1,1169 @@
-{ TensorCore.pas – Tensor primitives: shape management, allocation, matmul, transpose, add, scale, random init
-  Line count: 250
-  Dependency: none (uses Math, SysUtils only)
-}
-
 unit TensorCore;
+
+{$mode objfpc}{$H+}
 
 interface
 
 uses
-  SysUtils, Math;
+  SysUtils,
+  Math;
 
 const
-  EPSILON = 1e-7;
+  TENSORCORE_LINE_BUDGET = 250;
 
 type
-  TVector = array of Single;
-  TMatrix = array of TVector;
-  TTensor = array of TMatrix;
+  TFloatArray = array of Double;
+  TIntArray = array of Integer;
 
-  { Shape descriptor for arbitrary tensors }
-  TShape = record
-    Rank: Integer;
-    Dims: array [0..3] of Integer;
-    procedure Init(D0, D1, D2, D3: Integer);
-    function TotalSize: Integer;
-    function ToString: string;
+  { Explicit tensor record.
+    Data is row-major and Shape contains each dimension. }
+  TTensor = record
+    Data: TFloatArray;
+    Shape: TIntArray;
   end;
 
-  { Tensor record: contains data and shape metadata }
-  TTensorData = record
-    Data: TVector;
-    Shape: TShape;
-    procedure Allocate(const AShape: TShape);
-    procedure Fill(Value: Single);
-    function Get(const Indices: array of Integer): Single;
-    procedure Set(const Indices: array of Integer; Value: Single);
-    procedure Copy(const Source: TTensorData);
-  end;
+function TensorCreate(const Shape: array of Integer): TTensor;
+function TensorScalar(const Value: Double): TTensor;
+function TensorVector(const Values: array of Double): TTensor;
+function TensorMatrix(const Rows, Cols: Integer): TTensor;
 
-  { Core operations on tensors }
-  TensorOps = class
-  public
-    { Initialization }
-    class procedure Zeros(var T: TTensorData; const AShape: TShape);
-    class procedure Ones(var T: TTensorData; const AShape: TShape);
-    class procedure RandomUniform(var T: TTensorData; const AShape: TShape; Min, Max: Single);
-    class procedure RandomNormal(var T: TTensorData; const AShape: TShape; Mean, StdDev: Single);
-    class procedure XavierInit(var T: TTensorData; const AShape: TShape);
+function TensorRank(const T: TTensor): Integer;
+function TensorSize(const T: TTensor): Integer;
+function TensorDim(const T: TTensor; const Axis: Integer): Integer;
 
-    { Arithmetic }
-    class procedure Add(var Result: TTensorData; const A, B: TTensorData);
-    class procedure Scale(var T: TTensorData; Factor: Single);
-    class procedure Multiply(var Result: TTensorData; const A, B: TTensorData); { element-wise }
-    class procedure AddScaled(var Result: TTensorData; const A, B: TTensorData; Scale: Single);
+procedure TensorFill(var T: TTensor; const Value: Double);
+procedure TensorZeros(var T: TTensor);
+procedure TensorOnes(var T: TTensor);
 
-    { Linear algebra }
-    class procedure MatMul(var Result: TTensorData; const A, B: TTensorData);
-    class procedure Transpose(var Result: TTensorData; const T: TTensorData);
-    class procedure TransposeBatched(var Result: TTensorData; const T: TTensorData);
+function TensorClone(const T: TTensor): TTensor;
+function TensorGet(const T: TTensor; const Index: Integer): Double;
+procedure TensorSet(var T: TTensor; const Index: Integer; const Value: Double);
 
-    { Reductions }
-    class function Sum(const T: TTensorData): Single;
-    class procedure ReduceMean(var Result: TTensorData; const T: TTensorData; Axis: Integer);
-    class procedure ReduceVar(var Result: TTensorData; const T: TTensorData; Axis: Integer);
+function TensorOffset2D(
+  const T: TTensor;
+  const Row, Col: Integer
+): Integer;
 
-    { I/O }
-    class procedure SaveBinary(const Filename: string; const T: TTensorData);
-    class procedure LoadBinary(var T: TTensorData; const Filename: string);
-  end;
+function TensorOffset3D(
+  const T: TTensor;
+  const A, B, C: Integer
+): Integer;
+
+function TensorGet2D(
+  const T: TTensor;
+  const Row, Col: Integer
+): Double;
+
+procedure TensorSet2D(
+  var T: TTensor;
+  const Row, Col: Integer;
+  const Value: Double
+);
+
+function TensorGet3D(
+  const T: TTensor;
+  const A, B, C: Integer
+): Double;
+
+procedure TensorSet3D(
+  var T: TTensor;
+  const A, B, C: Integer;
+  const Value: Double
+);
+
+function TensorAdd(
+  const A, B: TTensor
+): TTensor;
+
+function TensorSub(
+  const A, B: TTensor
+): TTensor;
+
+function TensorScale(
+  const A: TTensor;
+  const S: Double
+): TTensor;
+
+function TensorHadamard(
+  const A, B: TTensor
+): TTensor;
+
+function TensorAddInPlace(
+  var A: TTensor;
+  const B: TTensor
+): Boolean;
+
+function TensorScaleInPlace(
+  var A: TTensor;
+  const S: Double
+): Boolean;
+
+function TensorMatMul(
+  const A, B: TTensor
+): TTensor;
+
+function TensorTranspose2D(
+  const A: TTensor
+): TTensor;
+
+function TensorTranspose(
+  const A: TTensor;
+  const Axis0, Axis1: Integer
+): TTensor;
+
+function TensorReshape(
+  const A: TTensor;
+  const NewShape: array of Integer
+): TTensor;
+
+function TensorFlatten(
+  const A: TTensor
+): TTensor;
+
+function TensorDot(
+  const A, B: TTensor
+): Double;
+
+function TensorSum(
+  const A: TTensor
+): Double;
+
+function TensorMean(
+  const A: TTensor
+): Double;
+
+function TensorMax(
+  const A: TTensor
+): Double;
+
+function TensorArgMax(
+  const A: TTensor
+): Integer;
+
+procedure TensorRandomSeed(
+  const Seed: Integer
+);
+
+function TensorRandomUniform(
+  const Shape: array of Integer;
+  const MinValue, MaxValue: Double
+): TTensor;
+
+function TensorRandomNormal(
+  const Shape: array of Integer;
+  const Mean, StdDev: Double
+): TTensor;
+
+function TensorXavierUniform(
+  const Rows, Cols: Integer
+): TTensor;
+
+function TensorXavierNormal(
+  const Rows, Cols: Integer
+): TTensor;
+
+function TensorIsFinite(
+  const A: TTensor
+): Boolean;
+
+function TensorMaxAbs(
+  const A: TTensor
+): Double;
+
+function TensorL2Norm(
+  const A: TTensor
+): Double;
+
+function TensorSameShape(
+  const A, B: TTensor
+): Boolean;
+
+function TensorShapeString(
+  const A: TTensor
+): string;
+
+procedure TensorSave(
+  const FileName: string;
+  const A: TTensor
+);
+
+function TensorLoad(
+  const FileName: string
+): TTensor;
+
+procedure TensorAssert(
+  const Condition: Boolean;
+  const Message: string
+);
 
 implementation
 
-{ TShape }
-procedure TShape.Init(D0, D1, D2, D3: Integer);
+function ProductOfShape(
+  const Shape: array of Integer
+): Integer;
+var
+  I: Integer;
 begin
-  Rank := 0;
-  if D0 > 0 then begin Dims[0] := D0; Rank := 1; end;
-  if D1 > 0 then begin Dims[1] := D1; Rank := 2; end;
-  if D2 > 0 then begin Dims[2] := D2; Rank := 3; end;
-  if D3 > 0 then begin Dims[3] := D3; Rank := 4; end;
-end;
-
-function TShape.TotalSize: Integer;
-var i: Integer;
-begin
-  if Rank = 0 then Exit(0);
   Result := 1;
-  for i := 0 to Rank - 1 do
-    Result := Result * Dims[i];
+  for I := Low(Shape) to High(Shape) do
+  begin
+    if Shape[I] <= 0 then
+      raise EArgumentException.Create(
+        'Tensor dimensions must be positive'
+      );
+    Result := Result * Shape[I];
+  end;
 end;
 
-function TShape.ToString: string;
-var i: Integer;
+function ProductOfShapeArray(
+  const Shape: TIntArray
+): Integer;
+var
+  I: Integer;
+begin
+  Result := 1;
+  for I := Low(Shape) to High(Shape) do
+  begin
+    if Shape[I] <= 0 then
+      raise EArgumentException.Create(
+        'Tensor dimensions must be positive'
+      );
+    Result := Result * Shape[I];
+  end;
+end;
+
+procedure CheckSameShape(
+  const A, B: TTensor
+);
+begin
+  if not TensorSameShape(A, B) then
+    raise EArgumentException.Create(
+      'Tensor shape mismatch: ' +
+      TensorShapeString(A) +
+      ' versus ' +
+      TensorShapeString(B)
+    );
+end;
+
+procedure Check2D(
+  const T: TTensor;
+  const Name: string
+);
+begin
+  if TensorRank(T) <> 2 then
+    raise EArgumentException.Create(
+      Name + ' must be rank 2'
+    );
+end;
+
+function TensorCreate(
+  const Shape: array of Integer
+): TTensor;
+var
+  I: Integer;
+begin
+  SetLength(Result.Shape, Length(Shape));
+
+  for I := Low(Shape) to High(Shape) do
+    Result.Shape[I] := Shape[I];
+
+  SetLength(
+    Result.Data,
+    ProductOfShape(Shape)
+  );
+
+  TensorZeros(Result);
+end;
+
+function TensorScalar(
+  const Value: Double
+): TTensor;
+begin
+  Result := TensorCreate([1]);
+  Result.Data[0] := Value;
+end;
+
+function TensorVector(
+  const Values: array of Double
+): TTensor;
+var
+  I: Integer;
+begin
+  Result := TensorCreate([Length(Values)]);
+
+  for I := Low(Values) to High(Values) do
+    Result.Data[I] := Values[I];
+end;
+
+function TensorMatrix(
+  const Rows, Cols: Integer
+): TTensor;
+begin
+  Result := TensorCreate([Rows, Cols]);
+end;
+
+function TensorRank(
+  const T: TTensor
+): Integer;
+begin
+  Result := Length(T.Shape);
+end;
+
+function TensorSize(
+  const T: TTensor
+): Integer;
+begin
+  Result := Length(T.Data);
+end;
+
+function TensorDim(
+  const T: TTensor;
+  const Axis: Integer
+): Integer;
+begin
+  if (Axis < 0) or (Axis >= TensorRank(T)) then
+    raise EArgumentOutOfRangeException.Create(
+      'Tensor axis out of range'
+    );
+
+  Result := T.Shape[Axis];
+end;
+
+procedure TensorFill(
+  var T: TTensor;
+  const Value: Double
+);
+var
+  I: Integer;
+begin
+  for I := 0 to High(T.Data) do
+    T.Data[I] := Value;
+end;
+
+procedure TensorZeros(
+  var T: TTensor
+);
+begin
+  TensorFill(T, 0.0);
+end;
+
+procedure TensorOnes(
+  var T: TTensor
+);
+begin
+  TensorFill(T, 1.0);
+end;
+
+function TensorClone(
+  const T: TTensor
+): TTensor;
+begin
+  Result.Shape := Copy(
+    T.Shape,
+    0,
+    Length(T.Shape)
+  );
+
+  Result.Data := Copy(
+    T.Data,
+    0,
+    Length(T.Data)
+  );
+end;
+
+function TensorGet(
+  const T: TTensor;
+  const Index: Integer
+): Double;
+begin
+  if (Index < 0) or
+     (Index >= Length(T.Data)) then
+    raise EArgumentOutOfRangeException.Create(
+      'Tensor data index out of range'
+    );
+
+  Result := T.Data[Index];
+end;
+
+procedure TensorSet(
+  var T: TTensor;
+  const Index: Integer;
+  const Value: Double
+);
+begin
+  if (Index < 0) or
+     (Index >= Length(T.Data)) then
+    raise EArgumentOutOfRangeException.Create(
+      'Tensor data index out of range'
+    );
+
+  T.Data[Index] := Value;
+end;
+
+function TensorOffset2D(
+  const T: TTensor;
+  const Row, Col: Integer
+): Integer;
+begin
+  Check2D(T, 'Tensor');
+
+  if (Row < 0) or
+     (Row >= T.Shape[0]) or
+     (Col < 0) or
+     (Col >= T.Shape[1]) then
+    raise EArgumentOutOfRangeException.Create(
+      '2D tensor index out of range'
+    );
+
+  Result :=
+    Row * T.Shape[1] +
+    Col;
+end;
+
+function TensorOffset3D(
+  const T: TTensor;
+  const A, B, C: Integer
+): Integer;
+begin
+  if TensorRank(T) <> 3 then
+    raise EArgumentException.Create(
+      'Tensor must be rank 3'
+    );
+
+  if (A < 0) or
+     (A >= T.Shape[0]) or
+     (B < 0) or
+     (B >= T.Shape[1]) or
+     (C < 0) or
+     (C >= T.Shape[2]) then
+    raise EArgumentOutOfRangeException.Create(
+      '3D tensor index out of range'
+    );
+
+  Result :=
+    (A * T.Shape[1] * T.Shape[2]) +
+    (B * T.Shape[2]) +
+    C;
+end;
+
+function TensorGet2D(
+  const T: TTensor;
+  const Row, Col: Integer
+): Double;
+begin
+  Result := T.Data[
+    TensorOffset2D(T, Row, Col)
+  ];
+end;
+
+procedure TensorSet2D(
+  var T: TTensor;
+  const Row, Col: Integer;
+  const Value: Double
+);
+begin
+  T.Data[
+    TensorOffset2D(T, Row, Col)
+  ] := Value;
+end;
+
+function TensorGet3D(
+  const T: TTensor;
+  const A, B, C: Integer
+): Double;
+begin
+  Result := T.Data[
+    TensorOffset3D(T, A, B, C)
+  ];
+end;
+
+procedure TensorSet3D(
+  var T: TTensor;
+  const A, B, C: Integer;
+  const Value: Double
+);
+begin
+  T.Data[
+    TensorOffset3D(T, A, B, C)
+  ] := Value;
+end;
+
+function TensorAdd(
+  const A, B: TTensor
+): TTensor;
+var
+  I: Integer;
+begin
+  CheckSameShape(A, B);
+  Result := TensorClone(A);
+
+  for I := 0 to High(Result.Data) do
+    Result.Data[I] :=
+      A.Data[I] +
+      B.Data[I];
+end;
+
+function TensorSub(
+  const A, B: TTensor
+): TTensor;
+var
+  I: Integer;
+begin
+  CheckSameShape(A, B);
+  Result := TensorClone(A);
+
+  for I := 0 to High(Result.Data) do
+    Result.Data[I] :=
+      A.Data[I] -
+      B.Data[I];
+end;
+
+function TensorScale(
+  const A: TTensor;
+  const S: Double
+): TTensor;
+var
+  I: Integer;
+begin
+  Result := TensorClone(A);
+
+  for I := 0 to High(Result.Data) do
+    Result.Data[I] :=
+      A.Data[I] * S;
+end;
+
+function TensorHadamard(
+  const A, B: TTensor
+): TTensor;
+var
+  I: Integer;
+begin
+  CheckSameShape(A, B);
+  Result := TensorClone(A);
+
+  for I := 0 to High(Result.Data) do
+    Result.Data[I] :=
+      A.Data[I] *
+      B.Data[I];
+end;
+
+function TensorAddInPlace(
+  var A: TTensor;
+  const B: TTensor
+): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+
+  if not TensorSameShape(A, B) then
+    Exit;
+
+  for I := 0 to High(A.Data) do
+    A.Data[I] :=
+      A.Data[I] +
+      B.Data[I];
+
+  Result := True;
+end;
+
+function TensorScaleInPlace(
+  var A: TTensor;
+  const S: Double
+): Boolean;
+var
+  I: Integer;
+begin
+  for I := 0 to High(A.Data) do
+    A.Data[I] :=
+      A.Data[I] * S;
+
+  Result := True;
+end;
+
+function TensorMatMul(
+  const A, B: TTensor
+): TTensor;
+var
+  M, K, N: Integer;
+  I, J, P: Integer;
+  Sum: Double;
+begin
+  Check2D(A, 'A');
+  Check2D(B, 'B');
+
+  M := A.Shape[0];
+  K := A.Shape[1];
+
+  if B.Shape[0] <> K then
+    raise EArgumentException.Create(
+      'MatMul inner dimensions do not match'
+    );
+
+  N := B.Shape[1];
+
+  Result := TensorMatrix(M, N);
+
+  for I := 0 to M - 1 do
+    for J := 0 to N - 1 do
+    begin
+      Sum := 0.0;
+
+      for P := 0 to K - 1 do
+        Sum := Sum +
+          A.Data[I * K + P] *
+          B.Data[P * N + J];
+
+      Result.Data[I * N + J] :=
+        Sum;
+    end;
+end;
+
+function TensorTranspose2D(
+  const A: TTensor
+): TTensor;
+var
+  I, J: Integer;
+begin
+  Check2D(A, 'Tensor');
+
+  Result :=
+    TensorMatrix(
+      A.Shape[1],
+      A.Shape[0]
+    );
+
+  for I := 0 to A.Shape[0] - 1 do
+    for J := 0 to A.Shape[1] - 1 do
+      Result.Data[
+        J * A.Shape[0] + I
+      ] :=
+        A.Data[
+          I * A.Shape[1] + J
+        ];
+end;
+
+function TensorTranspose(
+  const A: TTensor;
+  const Axis0, Axis1: Integer
+): TTensor;
+var
+  R, I, J, K: Integer;
+  NewShape: TIntArray;
+  SourceIndex, TargetIndex: Integer;
+  StrideSource, StrideTarget: TIntArray;
+begin
+  R := TensorRank(A);
+
+  if (Axis0 < 0) or
+     (Axis0 >= R) or
+     (Axis1 < 0) or
+     (Axis1 >= R) then
+    raise EArgumentOutOfRangeException.Create(
+      'Transpose axis out of range'
+    );
+
+  NewShape :=
+    Copy(A.Shape, 0, R);
+
+  NewShape[Axis0] := A.Shape[Axis1];
+  NewShape[Axis1] := A.Shape[Axis0];
+
+  Result := TensorCreate(NewShape);
+
+  SetLength(
+    StrideSource,
+    R
+  );
+
+  SetLength(
+    StrideTarget,
+    R
+  );
+
+  StrideSource[R - 1] := 1;
+  StrideTarget[R - 1] := 1;
+
+  for I := R - 2 downto 0 do
+  begin
+    StrideSource[I] :=
+      StrideSource[I + 1] *
+      A.Shape[I + 1];
+
+    StrideTarget[I] :=
+      StrideTarget[I + 1] *
+      Result.Shape[I + 1];
+  end;
+
+  for I := 0 to TensorSize(A) - 1 do
+  begin
+    SourceIndex := I;
+    TargetIndex := 0;
+
+    for J := 0 to R - 1 do
+    begin
+      K := SourceIndex div StrideSource[J];
+      SourceIndex :=
+        SourceIndex mod StrideSource[J];
+
+      if J = Axis0 then
+        TargetIndex :=
+          TargetIndex +
+          K * StrideTarget[Axis1]
+      else if J = Axis1 then
+        TargetIndex :=
+          TargetIndex +
+          K * StrideTarget[Axis0]
+      else
+        TargetIndex :=
+          TargetIndex +
+          K * StrideTarget[J];
+    end;
+
+    Result.Data[TargetIndex] :=
+      A.Data[I];
+  end;
+end;
+
+function TensorReshape(
+  const A: TTensor;
+  const NewShape: array of Integer
+): TTensor;
+var
+  NewSize: Integer;
+begin
+  NewSize :=
+    ProductOfShape(NewShape);
+
+  if NewSize <> TensorSize(A) then
+    raise EArgumentException.Create(
+      'Reshape changes tensor element count'
+    );
+
+  Result.Shape :=
+    Copy(
+      NewShape,
+      0,
+      Length(NewShape)
+    );
+
+  Result.Data :=
+    Copy(
+      A.Data,
+      0,
+      Length(A.Data)
+    );
+end;
+
+function TensorFlatten(
+  const A: TTensor
+): TTensor;
+begin
+  Result :=
+    TensorReshape(
+      A,
+      [TensorSize(A)]
+    );
+end;
+
+function TensorDot(
+  const A, B: TTensor
+): Double;
+var
+  I: Integer;
+begin
+  CheckSameShape(A, B);
+
+  Result := 0.0;
+
+  for I := 0 to High(A.Data) do
+    Result :=
+      Result +
+      A.Data[I] *
+      B.Data[I];
+end;
+
+function TensorSum(
+  const A: TTensor
+): Double;
+var
+  I: Integer;
+begin
+  Result := 0.0;
+
+  for I := 0 to High(A.Data) do
+    Result :=
+      Result + A.Data[I];
+end;
+
+function TensorMean(
+  const A: TTensor
+): Double;
+begin
+  if TensorSize(A) = 0 then
+    raise EArgumentException.Create(
+      'Mean of empty tensor'
+    );
+
+  Result :=
+    TensorSum(A) /
+    TensorSize(A);
+end;
+
+function TensorMax(
+  const A: TTensor
+): Double;
+var
+  I: Integer;
+begin
+  if TensorSize(A) = 0 then
+    raise EArgumentException.Create(
+      'Maximum of empty tensor'
+    );
+
+  Result := A.Data[0];
+
+  for I := 1 to High(A.Data) do
+    if A.Data[I] > Result then
+      Result := A.Data[I];
+end;
+
+function TensorArgMax(
+  const A: TTensor
+): Integer;
+var
+  I: Integer;
+begin
+  if TensorSize(A) = 0 then
+    raise EArgumentException.Create(
+      'ArgMax of empty tensor'
+    );
+
+  Result := 0;
+
+  for I := 1 to High(A.Data) do
+    if A.Data[I] > A.Data[Result] then
+      Result := I;
+end;
+
+procedure TensorRandomSeed(
+  const Seed: Integer
+);
+begin
+  RandSeed := Seed;
+end;
+
+function RandomUnit: Double;
+begin
+  Result := Random;
+end;
+
+function RandomGaussian: Double;
+var
+  U1, U2: Double;
+begin
+  U1 := RandomUnit;
+
+  if U1 <= 1E-12 then
+    U1 := 1E-12;
+
+  U2 := RandomUnit;
+
+  Result :=
+    Sqrt(
+      -2.0 * Ln(U1)
+    ) *
+    Cos(
+      2.0 * Pi * U2
+    );
+end;
+
+function TensorRandomUniform(
+  const Shape: array of Integer;
+  const MinValue, MaxValue: Double
+): TTensor;
+var
+  I: Integer;
+begin
+  Result :=
+    TensorCreate(Shape);
+
+  for I := 0 to High(Result.Data) do
+    Result.Data[I] :=
+      MinValue +
+      RandomUnit *
+      (MaxValue - MinValue);
+end;
+
+function TensorRandomNormal(
+  const Shape: array of Integer;
+  const Mean, StdDev: Double
+): TTensor;
+var
+  I: Integer;
+begin
+  Result :=
+    TensorCreate(Shape);
+
+  for I := 0 to High(Result.Data) do
+    Result.Data[I] :=
+      Mean +
+      StdDev *
+      RandomGaussian;
+end;
+
+function TensorXavierUniform(
+  const Rows, Cols: Integer
+): TTensor;
+var
+  Limit: Double;
+begin
+  Limit :=
+    Sqrt(
+      6.0 /
+      (Rows + Cols)
+    );
+
+  Result :=
+    TensorRandomUniform(
+      [Rows, Cols],
+      -Limit,
+      Limit
+    );
+end;
+
+function TensorXavierNormal(
+  const Rows, Cols: Integer
+): TTensor;
+var
+  StdDev: Double;
+begin
+  StdDev :=
+    Sqrt(
+      2.0 /
+      (Rows + Cols)
+    );
+
+  Result :=
+    TensorRandomNormal(
+      [Rows, Cols],
+      0.0,
+      StdDev
+    );
+end;
+
+function TensorIsFinite(
+  const A: TTensor
+): Boolean;
+var
+  I: Integer;
+begin
+  Result := True;
+
+  for I := 0 to High(A.Data) do
+    if IsNan(A.Data[I]) or
+       IsInfinite(A.Data[I]) then
+      Exit(False);
+end;
+
+function TensorMaxAbs(
+  const A: TTensor
+): Double;
+var
+  I: Integer;
+  V: Double;
+begin
+  Result := 0.0;
+
+  for I := 0 to High(A.Data) do
+  begin
+    V := Abs(A.Data[I]);
+
+    if V > Result then
+      Result := V;
+  end;
+end;
+
+function TensorL2Norm(
+  const A: TTensor
+): Double;
+var
+  I: Integer;
+  SumSquares: Double;
+begin
+  SumSquares := 0.0;
+
+  for I := 0 to High(A.Data) do
+    SumSquares :=
+      SumSquares +
+      A.Data[I] *
+      A.Data[I];
+
+  Result := Sqrt(SumSquares);
+end;
+
+function TensorSameShape(
+  const A, B: TTensor
+): Boolean;
+var
+  I: Integer;
+begin
+  Result :=
+    TensorRank(A) =
+    TensorRank(B);
+
+  if not Result then
+    Exit;
+
+  for I := 0 to TensorRank(A) - 1 do
+    if A.Shape[I] <>
+       B.Shape[I] then
+      Exit(False);
+end;
+
+function TensorShapeString(
+  const A: TTensor
+): string;
+var
+  I: Integer;
 begin
   Result := '[';
-  for i := 0 to Rank - 1 do begin
-    Result := Result + IntToStr(Dims[i]);
-    if i < Rank - 1 then Result := Result + ', ';
+
+  for I := 0 to High(A.Shape) do
+  begin
+    if I > 0 then
+      Result := Result + 'x';
+
+    Result :=
+      Result +
+      IntToStr(A.Shape[I]);
   end;
+
   Result := Result + ']';
 end;
 
-{ TTensorData }
-procedure TTensorData.Allocate(const AShape: TShape);
-begin
-  Shape := AShape;
-  SetLength(Data, Shape.TotalSize);
-  FillChar(Data[0], Length(Data) * SizeOf(Single), 0);
-end;
-
-procedure TTensorData.Fill(Value: Single);
-var i: Integer;
-begin
-  for i := 0 to Length(Data) - 1 do
-    Data[i] := Value;
-end;
-
-function TTensorData.Get(const Indices: array of Integer): Single;
-var Offset, i, Stride: Integer;
-begin
-  Offset := 0;
-  Stride := 1;
-  for i := Length(Indices) - 1 downto 0 do begin
-    Offset := Offset + Indices[i] * Stride;
-    if i > 0 then Stride := Stride * Shape.Dims[i];
-  end;
-  Result := Data[Offset];
-end;
-
-procedure TTensorData.Set(const Indices: array of Integer; Value: Single);
-var Offset, i, Stride: Integer;
-begin
-  Offset := 0;
-  Stride := 1;
-  for i := Length(Indices) - 1 downto 0 do begin
-    Offset := Offset + Indices[i] * Stride;
-    if i > 0 then Stride := Stride * Shape.Dims[i];
-  end;
-  Data[Offset] := Value;
-end;
-
-procedure TTensorData.Copy(const Source: TTensorData);
-begin
-  Allocate(Source.Shape);
-  Move(Source.Data[0], Data[0], Length(Data) * SizeOf(Single));
-end;
-
-{ TensorOps }
-class procedure TensorOps.Zeros(var T: TTensorData; const AShape: TShape);
-begin
-  T.Allocate(AShape);
-  T.Fill(0);
-end;
-
-class procedure TensorOps.Ones(var T: TTensorData; const AShape: TShape);
-begin
-  T.Allocate(AShape);
-  T.Fill(1);
-end;
-
-class procedure TensorOps.RandomUniform(var T: TTensorData; const AShape: TShape; Min, Max: Single);
-var i: Integer;
-begin
-  T.Allocate(AShape);
-  for i := 0 to Length(T.Data) - 1 do
-    T.Data[i] := Min + (Max - Min) * Random;
-end;
-
-class procedure TensorOps.RandomNormal(var T: TTensorData; const AShape: TShape; Mean, StdDev: Single);
-var i, n: Integer; u1, u2: Single;
-begin
-  T.Allocate(AShape);
-  n := Length(T.Data);
-  i := 0;
-  while i < n do begin
-    u1 := Random;
-    u2 := Random;
-    if i + 1 < n then begin
-      T.Data[i] := Mean + StdDev * Sqrt(-2 * Ln(u1)) * Cos(2 * Pi * u2);
-      T.Data[i + 1] := Mean + StdDev * Sqrt(-2 * Ln(u1)) * Sin(2 * Pi * u2);
-      Inc(i, 2);
-    end else begin
-      T.Data[i] := Mean + StdDev * Sqrt(-2 * Ln(u1)) * Cos(2 * Pi * u2);
-      Inc(i);
-    end;
-  end;
-end;
-
-class procedure TensorOps.XavierInit(var T: TTensorData; const AShape: TShape);
-var FanIn, FanOut, Limit: Single;
-begin
-  if AShape.Rank < 2 then raise Exception.Create('Xavier init requires rank >= 2');
-  FanIn := AShape.Dims[1];
-  FanOut := AShape.Dims[0];
-  Limit := Sqrt(6.0 / (FanIn + FanOut));
-  RandomUniform(T, AShape, -Limit, Limit);
-end;
-
-class procedure TensorOps.Add(var Result: TTensorData; const A, B: TTensorData);
-var i: Integer;
-begin
-  if A.Shape.TotalSize <> B.Shape.TotalSize then
-    raise Exception.Create('Shape mismatch in Add');
-  Result.Allocate(A.Shape);
-  for i := 0 to Length(A.Data) - 1 do
-    Result.Data[i] := A.Data[i] + B.Data[i];
-end;
-
-class procedure TensorOps.Scale(var T: TTensorData; Factor: Single);
-var i: Integer;
-begin
-  for i := 0 to Length(T.Data) - 1 do
-    T.Data[i] := T.Data[i] * Factor;
-end;
-
-class procedure TensorOps.Multiply(var Result: TTensorData; const A, B: TTensorData);
-var i: Integer;
-begin
-  if A.Shape.TotalSize <> B.Shape.TotalSize then
-    raise Exception.Create('Shape mismatch in Multiply');
-  Result.Allocate(A.Shape);
-  for i := 0 to Length(A.Data) - 1 do
-    Result.Data[i] := A.Data[i] * B.Data[i];
-end;
-
-class procedure TensorOps.AddScaled(var Result: TTensorData; const A, B: TTensorData; Scale: Single);
-var i: Integer;
-begin
-  if A.Shape.TotalSize <> B.Shape.TotalSize then
-    raise Exception.Create('Shape mismatch in AddScaled');
-  if Result.Shape.TotalSize <> A.Shape.TotalSize then
-    Result.Allocate(A.Shape);
-  for i := 0 to Length(A.Data) - 1 do
-    Result.Data[i] := A.Data[i] + Scale * B.Data[i];
-end;
-
-class procedure TensorOps.MatMul(var Result: TTensorData; const A, B: TTensorData);
+procedure TensorSave(
+  const FileName: string;
+  const A: TTensor
+);
 var
-  M, N, K: Integer;
-  i, j, k: Integer;
-  Sum: Single;
-  ARow, BCol: Integer;
-  ResShape: TShape;
+  F: TFileStream;
+  Rank: Integer;
+  DataCount: Integer;
 begin
-  if A.Shape.Rank <> 2 or B.Shape.Rank <> 2 then
-    raise Exception.Create('MatMul requires 2D tensors');
-  if A.Shape.Dims[1] <> B.Shape.Dims[0] then
-    raise Exception.Create('Incompatible dimensions for MatMul');
+  F :=
+    TFileStream.Create(
+      FileName,
+      fmCreate
+    );
 
-  M := A.Shape.Dims[0];
-  K := A.Shape.Dims[1];
-  N := B.Shape.Dims[1];
+  try
+    Rank := TensorRank(A);
+    DataCount := TensorSize(A);
 
-  ResShape.Init(M, N, 0, 0);
-  Result.Allocate(ResShape);
+    F.WriteBuffer(
+      Rank,
+      SizeOf(Rank)
+    );
 
-  for i := 0 to M - 1 do begin
-    for j := 0 to N - 1 do begin
-      Sum := 0;
-      for k := 0 to K - 1 do begin
-        ARow := i * K + k;
-        BCol := k * N + j;
-        Sum := Sum + A.Data[ARow] * B.Data[BCol];
-      end;
-      Result.Data[i * N + j] := Sum;
-    end;
+    if Rank > 0 then
+      F.WriteBuffer(
+        A.Shape[0],
+        Rank * SizeOf(Integer)
+      );
+
+    F.WriteBuffer(
+      DataCount,
+      SizeOf(DataCount)
+    );
+
+    if DataCount > 0 then
+      F.WriteBuffer(
+        A.Data[0],
+        DataCount * SizeOf(Double)
+      );
+  finally
+    F.Free;
   end;
 end;
 
-class procedure TensorOps.Transpose(var Result: TTensorData; const T: TTensorData);
+function TensorLoad(
+  const FileName: string
+): TTensor;
 var
-  M, N, i, j: Integer;
-  ResShape: TShape;
+  F: TFileStream;
+  Rank: Integer;
+  DataCount: Integer;
+  I: Integer;
 begin
-  if T.Shape.Rank <> 2 then
-    raise Exception.Create('Transpose requires 2D tensor');
-  M := T.Shape.Dims[0];
-  N := T.Shape.Dims[1];
-  ResShape.Init(N, M, 0, 0);
-  Result.Allocate(ResShape);
-  for i := 0 to M - 1 do
-    for j := 0 to N - 1 do
-      Result.Data[j * M + i] := T.Data[i * N + j];
-end;
+  F :=
+    TFileStream.Create(
+      FileName,
+      fmOpenRead or fmShareDenyWrite
+    );
 
-class procedure TensorOps.TransposeBatched(var Result: TTensorData; const T: TTensorData);
-{ Transpose last two dims of 3D+ tensor }
-var B, M, N, b, i, j: Integer; ResShape: TShape;
-begin
-  if T.Shape.Rank < 3 then raise Exception.Create('TransposeBatched requires rank >= 3');
-  B := T.Shape.Dims[0];
-  M := T.Shape.Dims[1];
-  N := T.Shape.Dims[2];
-  ResShape.Init(B, N, M, 0);
-  Result.Allocate(ResShape);
-  for b := 0 to B - 1 do
-    for i := 0 to M - 1 do
-      for j := 0 to N - 1 do
-        Result.Data[b * N * M + j * M + i] := T.Data[b * M * N + i * N + j];
-end;
+  try
+    F.ReadBuffer(
+      Rank,
+      SizeOf(Rank)
+    );
 
-class function TensorOps.Sum(const T: TTensorData): Single;
-var i: Integer;
-begin
-  Result := 0;
-  for i := 0 to Length(T.Data) - 1 do
-    Result := Result + T.Data[i];
-end;
+    if Rank < 0 then
+      raise EInvalidData.Create(
+        'Invalid tensor rank'
+      );
 
-class procedure TensorOps.ReduceMean(var Result: TTensorData; const T: TTensorData; Axis: Integer);
-var OutShape: TShape; OutSize, InAxisSize, i, j, k: Integer;
-begin
-  if Axis >= T.Shape.Rank then
-    raise Exception.Create('Axis out of bounds in ReduceMean');
-  OutShape := T.Shape;
-  InAxisSize := T.Shape.Dims[Axis];
-  OutShape.Dims[Axis] := 1;
-  Result.Allocate(OutShape);
-  Result.Fill(0);
-  OutSize := OutShape.TotalSize;
+    SetLength(
+      Result.Shape,
+      Rank
+    );
 
-  for i := 0 to Length(T.Data) - 1 do begin
-    Result.Data[i mod OutSize] := Result.Data[i mod OutSize] + T.Data[i] / InAxisSize;
+    if Rank > 0 then
+      F.ReadBuffer(
+        Result.Shape[0],
+        Rank * SizeOf(Integer)
+      );
+
+    for I := 0 to Rank - 1 do
+      if Result.Shape[I] <= 0 then
+        raise EInvalidData.Create(
+          'Invalid tensor dimension'
+        );
+
+    F.ReadBuffer(
+      DataCount,
+      SizeOf(DataCount)
+    );
+
+    if DataCount <> ProductOfShapeArray(Result.Shape) then
+      raise EInvalidData.Create(
+        'Tensor data count does not match shape'
+      );
+
+    SetLength(
+      Result.Data,
+      DataCount
+    );
+
+    if DataCount > 0 then
+      F.ReadBuffer(
+        Result.Data[0],
+        DataCount * SizeOf(Double)
+      );
+  finally
+    F.Free;
   end;
 end;
 
-class procedure TensorOps.ReduceVar(var Result: TTensorData; const T: TTensorData; Axis: Integer);
-{ Variance: E[(x - mean)^2] }
-var Mean: TTensorData; i: Integer;
+procedure TensorAssert(
+  const Condition: Boolean;
+  const Message: string
+);
 begin
-  ReduceMean(Mean, T, Axis);
-  Result.Allocate(Mean.Shape);
-  Result.Fill(0);
-  for i := 0 to Length(T.Data) - 1 do
-    Result.Data[i mod Length(Result.Data)] :=
-      Result.Data[i mod Length(Result.Data)] +
-      Sqr(T.Data[i] - Mean.Data[i mod Length(Result.Data)]) / T.Shape.Dims[Axis];
-end;
-
-class procedure TensorOps.SaveBinary(const Filename: string; const T: TTensorData);
-var F: File; i: Integer;
-begin
-  AssignFile(F, Filename);
-  Rewrite(F, 1);
-  BlockWrite(F, T.Shape.Rank, SizeOf(Integer));
-  for i := 0 to 3 do
-    BlockWrite(F, T.Shape.Dims[i], SizeOf(Integer));
-  i := Length(T.Data);
-  BlockWrite(F, i, SizeOf(Integer));
-  if i > 0 then
-    BlockWrite(F, T.Data[0], i * SizeOf(Single));
-  CloseFile(F);
-end;
-
-class procedure TensorOps.LoadBinary(var T: TTensorData; const Filename: string);
-var F: File; i, Size: Integer;
-begin
-  AssignFile(F, Filename);
-  Reset(F, 1);
-  BlockRead(F, T.Shape.Rank, SizeOf(Integer));
-  for i := 0 to 3 do
-    BlockRead(F, T.Shape.Dims[i], SizeOf(Integer));
-  BlockRead(F, Size, SizeOf(Integer));
-  T.Allocate(T.Shape);
-  if Size > 0 then
-    BlockRead(F, T.Data[0], Size * SizeOf(Single));
-  CloseFile(F);
+  if not Condition then
+    raise EAssertionFailed.Create(
+      Message
+    );
 end;
 
 end.
