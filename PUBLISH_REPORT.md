@@ -1,29 +1,25 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T17:53:07Z
+**Timestamp:** 2026-09-10T17:56:52Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 9 |
-| Files Added | 9 |
+| Files Discovered | 5 |
+| Files Added | 5 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 0 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `ada/ada/memory_manager.adb`
-- `ada/ada/memory_manager.ads`
-- `src/ada/memory_manager.gpr`
-- `src/cuda/cuda_softmax_masked.cu`
-- `ptx/ptx_inverted_softmax.ptx`
-- `src/cuda/verify_softmax_fd.cu`
-- `scripts/scripts/build_all.sh`
-- `scripts/scripts/prove_memory_manager.sh`
-- `scripts/scripts/synthesize_ptx.sh`
+- `src/cuda/cuda_shim.c`
+- `src/cuda/vector_add.cu`
+- `src/pascal/gpu_host.pas`
+- `ptx/micro_kernel.ptx`
+- `scripts/scripts/build.sh`
 
 ## Files Unchanged
 _None_

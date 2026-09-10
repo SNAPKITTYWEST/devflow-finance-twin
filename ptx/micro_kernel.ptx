@@ -1,0 +1,49 @@
+// micro_kernel.ptx
+// Minimal PTX kernel template (compute capability >= 6.0)
+// This PTX implements the same micro-op as the CUDA kernel above.
+// You can load this PTX at runtime via the driver API if desired.
+
+.version 7.0
+.target sm_70
+.address_size 64
+
+.visible .entry micro_op_ptx(
+    .param .u64 _a,
+    .param .u64 _b,
+    .param .u64 _c,
+    .param .u32 _n
+)
+{
+    .reg .pred %p<2>;
+    .reg .b32 %r<6>;
+    .reg .b64 %rd<6>;
+
+    ld.param.u64 %rd1, [_a];
+    ld.param.u64 %rd2, [_b];
+    ld.param.u64 %rd3, [_c];
+    ld.param.u32 %r1, [_n];
+
+    mov.u32 %r2, %ctaid.x;
+    mov.u32 %r3, %ntid.x;
+    mov.u32 %r4, %tid.x;
+    mad.lo.u32 %r5, %r2, %r3, %r4; // idx
+
+    setp.ge.u32 %p1, %r5, %r1;
+    @%p1 bra DONE;
+
+    mul.wide.u32 %rd4, %r5, 4;
+    add.u64 %rd5, %rd1, %rd4;
+    ld.global.u32 %r6, [%rd5];
+    add.u64 %rd5, %rd2, %rd4;
+    ld.global.u32 %r0, [%rd5];
+
+    xor.b32 %r6, %r6, %r0;
+    and.b32 %r0, %r6, %r0;
+    add.u32 %r6, %r6, %r0;
+
+    add.u64 %rd5, %rd3, %rd4;
+    st.global.u32 [%rd5], %r6;
+
+DONE:
+    ret;
+}

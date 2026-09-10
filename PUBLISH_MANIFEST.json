@@ -1,19 +1,15 @@
 {
-  "timestamp": "2026-09-10T17:53:05Z",
+  "timestamp": "2026-09-10T17:56:51Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "6387c0074f799190bcbae112afec80ac3b98c9f6",
-  "commit_after": "1d403a62f9a7c17435b1e27eaf12e20ef76cc5c2",
+  "commit_before": "e9590e99f1fa67f50a2d0c091b59e58ee96e3e8b",
+  "commit_after": "fdfee26929274c090c9754b422156eb9615ded7d",
   "files_added": [
-    "ada/ada/memory_manager.adb",
-    "ada/ada/memory_manager.ads",
-    "src/ada/memory_manager.gpr",
-    "src/cuda/cuda_softmax_masked.cu",
-    "ptx/ptx_inverted_softmax.ptx",
-    "src/cuda/verify_softmax_fd.cu",
-    "scripts/scripts/build_all.sh",
-    "scripts/scripts/prove_memory_manager.sh",
-    "scripts/scripts/synthesize_ptx.sh"
+    "src/cuda/cuda_shim.c",
+    "src/cuda/vector_add.cu",
+    "src/pascal/gpu_host.pas",
+    "ptx/micro_kernel.ptx",
+    "scripts/scripts/build.sh"
   ],
   "files_modified": [
 
@@ -29,6 +25,6 @@
 
   ],
   "sha256": [
-    {"file": "cuda/ptx_inverted_softmax.ptx", "source_hash": "823c68c0927092e70b319ad629bbf40820e4cb7d7039ea17f909534f4232e287", "destination_hash": "823c68c0927092e70b319ad629bbf40820e4cb7d7039ea17f909534f4232e287", "status": "COPIED"},    {"file": "scripts/build_all.sh", "source_hash": "01dbf10caa6f8e3c5c7b3b267f414d623472ff5ab5da0bb903ac77e7ad806966", "destination_hash": "01dbf10caa6f8e3c5c7b3b267f414d623472ff5ab5da0bb903ac77e7ad806966", "status": "COPIED"},    {"file": "cuda/verify_softmax_fd.cu", "source_hash": "21e75cbcd03b108152bb266c72dfe1d576d1270b298d6d6be2ba89a03c80fd32", "destination_hash": "21e75cbcd03b108152bb266c72dfe1d576d1270b298d6d6be2ba89a03c80fd32", "status": "COPIED"},    {"file": "cuda/cuda_softmax_masked.cu", "source_hash": "111e55071c9b70a9377cfeefa563422f4f90bde9d8b139dfd61253fb2e5d46d4", "destination_hash": "111e55071c9b70a9377cfeefa563422f4f90bde9d8b139dfd61253fb2e5d46d4", "status": "COPIED"},    {"file": "scripts/synthesize_ptx.sh", "source_hash": "e14a8882d10fb175c9eb47f16fccca877a5bab4ecb2d4c247c54a08b2770725d", "destination_hash": "e14a8882d10fb175c9eb47f16fccca877a5bab4ecb2d4c247c54a08b2770725d", "status": "COPIED"},    {"file": "scripts/prove_memory_manager.sh", "source_hash": "918d39b981439bb96e1404f15c8722058ff0025b547eed340466b0a337f26e7e", "destination_hash": "918d39b981439bb96e1404f15c8722058ff0025b547eed340466b0a337f26e7e", "status": "COPIED"},    {"file": "ada/memory_manager.adb", "source_hash": "361f5888f42476c02d8ac4d9530fc75de8377aeb4144601af2379b341f805508", "destination_hash": "361f5888f42476c02d8ac4d9530fc75de8377aeb4144601af2379b341f805508", "status": "COPIED"},    {"file": "ada/memory_manager.ads", "source_hash": "814fa85fa3e09cf830d53fd785e3ae09602ff3932aeac8096bd8e1d7c36d6a73", "destination_hash": "814fa85fa3e09cf830d53fd785e3ae09602ff3932aeac8096bd8e1d7c36d6a73", "status": "COPIED"},    {"file": "ada/memory_manager.gpr", "source_hash": "500994d2c123ff83101238a4b9097ff5356c16abeb88fe4e4c2d6cb2b68fb2bd", "destination_hash": "500994d2c123ff83101238a4b9097ff5356c16abeb88fe4e4c2d6cb2b68fb2bd", "status": "COPIED"}
+    {"file": "ptx/micro_kernel.ptx", "source_hash": "09926a7519fd8a075993ab95c25e8784fec7734cac135e3ab77c68b40913cab3", "destination_hash": "09926a7519fd8a075993ab95c25e8784fec7734cac135e3ab77c68b40913cab3", "status": "COPIED"},    {"file": "pascal/gpu_host.pas", "source_hash": "e2ad5407222062bae3b82f7d55eb41d1d37dacbae8652a203319f989573b0403", "destination_hash": "e2ad5407222062bae3b82f7d55eb41d1d37dacbae8652a203319f989573b0403", "status": "COPIED"},    {"file": "cuda/cuda_shim.c", "source_hash": "66694c851d647d5c9e140d8434a22b9193174e0442a63df7be46839d794e0205", "destination_hash": "66694c851d647d5c9e140d8434a22b9193174e0442a63df7be46839d794e0205", "status": "COPIED"},    {"file": "cuda/vector_add.cu", "source_hash": "d8f0c474d0711095182ab1304e958a20a5356778ac7cdf3aa5f0cf804ad4ba3f", "destination_hash": "d8f0c474d0711095182ab1304e958a20a5356778ac7cdf3aa5f0cf804ad4ba3f", "status": "COPIED"},    {"file": "scripts/build.sh", "source_hash": "4c408971ef22530346170ee34a5b8d99e3d693d08f38ae52b845fa8bc6375baa", "destination_hash": "4c408971ef22530346170ee34a5b8d99e3d693d08f38ae52b845fa8bc6375baa", "status": "COPIED"}
   ]
 }
