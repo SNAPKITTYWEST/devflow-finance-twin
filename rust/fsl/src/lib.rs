@@ -9,6 +9,8 @@
 pub mod cbmc;
 pub mod cbmc_binary_semantics;
 pub mod crux;
+pub mod qa5;
+pub mod assert_q;
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::fmt;
@@ -667,6 +669,138 @@ mod tests {
         assert!(lean4.contains("theorem"));
         assert!(lean4.contains("by"));
     }
+
+    // --- QA5 Reactive Prover Tests ---
+
+    #[test]
+    fn qa5_socrates_prove() {
+        use qa5::prover::{socrates_demo, ProofResult};
+        let result = socrates_demo();
+        match result {
+            ProofResult::Proved { empty_clause, answers } => {
+                assert!(empty_clause.lits.is_empty());
+                assert!(!answers.is_empty());
+            }
+            ProofResult::Failed { reason } => panic!("Expected proof: {}", reason),
+        }
+    }
+
+    #[test]
+    fn qa5_resolve_basic() {
+        use qa5::clause::{Literal, LitArg, make_clause};
+        use qa5::resolution::resolve;
+        let c1 = make_clause(
+            vec![
+                Literal::neg("man", vec![LitArg::Var("x".into())]),
+                Literal::pos("mortal", vec![LitArg::Var("x".into())]),
+            ],
+            None,
+        );
+        let c2 = make_clause(
+            vec![Literal::pos("man", vec![LitArg::Sym("socrates".into())])],
+            None,
+        );
+        let resolvents = resolve(&c1, &c2);
+        assert_eq!(resolvents.len(), 1);
+        assert_eq!(resolvents[0].lits[0].pred, "mortal");
+    }
+
+    #[test]
+    fn qa5_unification() {
+        use qa5::unification::unify;
+        use qa5::clause::Substitution;
+        use qa5::clause::LitArg;
+        let mut s = Substitution::new();
+        assert!(unify(&LitArg::Var("x".into()), &LitArg::Num(42), &mut s));
+        assert_eq!(s.get("x"), Some(&LitArg::Num(42)));
+    }
+
+    #[test]
+    fn qa5_reactive_observer() {
+        use qa5::reactive::{add_observer, notify_observers, clear_observers, ReactiveEvent};
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use std::sync::Arc;
+        clear_observers();
+        let count = Arc::new(AtomicUsize::new(0));
+        let c = count.clone();
+        add_observer(move |_e| { c.fetch_add(1, Ordering::SeqCst); });
+        notify_observers(&ReactiveEvent::ProofStart);
+        notify_observers(&ReactiveEvent::NewClause(1));
+        assert_eq!(count.load(Ordering::SeqCst), 2);
+        clear_observers();
+    }
+
+    // --- Assert-Q Constraint DSL Tests ---
+
+    #[test]
+    fn assert_q_formula_construction() {
+        use assert_q::formula::{feq, fand, fnot, FormulaArg, pretty};
+        let f = feq(FormulaArg::var("x"), FormulaArg::num(1));
+        assert_eq!(f.op, assert_q::formula::FormulaOp::Eq);
+        let combined = fand(vec![
+            feq(FormulaArg::var("a"), FormulaArg::num(1)),
+            feq(FormulaArg::var("b"), FormulaArg::num(2)),
+        ]);
+        let p = pretty(&combined);
+        assert!(p.contains("∧"));
+    }
+
+    #[test]
+    fn assert_q_store_domain() {
+        use assert_q::constraint::{ConstraintStore, Domain, make_constraint};
+        use assert_q::formula::{feq, FormulaArg};
+        let mut store = ConstraintStore::new();
+        store.set_domain("x", Domain::Range(1, 10));
+        store.set_value("x", 5);
+        assert_eq!(store.get_value("x"), Some(5));
+    }
+
+    #[test]
+    fn assert_q_propagation() {
+        use assert_q::constraint::{ConstraintStore, Domain, make_constraint, ConstraintStatus};
+        use assert_q::formula::{feq, FormulaArg};
+        use assert_q::propagation::propagate;
+        let mut store = ConstraintStore::new();
+        store.set_domain("x", Domain::Range(1, 10));
+        store.set_value("x", 5);
+        let c = make_constraint(feq(FormulaArg::var("x"), FormulaArg::num(5)), 0, "test");
+        store.insert(c);
+        propagate(&mut store);
+        let c_id = store.constraints.keys().next().copied().unwrap();
+        assert_eq!(store.constraints[&c_id].status, ConstraintStatus::Entailed);
+    }
+
+    #[test]
+    fn assert_q_solver() {
+        use assert_q::constraint::{ConstraintStore, Domain, make_constraint};
+        use assert_q::formula::{feq, flt, FormulaArg};
+        use assert_q::solver::{solve, SatResult};
+        let mut store = ConstraintStore::new();
+        store.set_domain("x", Domain::Range(1, 10));
+        let c = make_constraint(feq(FormulaArg::var("x"), FormulaArg::num(3)), 0, "test");
+        store.insert(c);
+        let result = solve(&mut store, 100);
+        assert_eq!(result, SatResult::Sat(vec![("x".into(), 3)]));
+    }
+
+    #[test]
+    fn assert_q_reactive() {
+        use assert_q::reactive_store::{ReactiveStore, watch, clear_watchers};
+        use assert_q::constraint::{make_constraint, Domain};
+        use assert_q::formula::{feq, FormulaArg};
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use std::sync::Arc;
+        clear_watchers();
+        let count = Arc::new(AtomicUsize::new(0));
+        let c = count.clone();
+        watch("x", move |_| { c.fetch_add(1, Ordering::SeqCst); });
+        let mut rs = ReactiveStore::new();
+        rs.store.set_domain("x", Domain::Range(1, 10));
+        let constr = make_constraint(feq(FormulaArg::var("x"), FormulaArg::num(5)), 0, "test");
+        rs.assert_q(constr);
+        assert!(count.load(Ordering::SeqCst) > 0);
+        clear_watchers();
+    }
 }
 
 // End of dense FSL kernel
@@ -679,4 +813,6 @@ mod tests {
 //   Kani hooks          ~80  (expandable)
 //   Reconstruction      ~80
 //   Driver + tests      ~100
+//   QA5 Reactive Prover ~700
+//   Assert-Q DSL        ~700
 // Total core ≈ 1200+ lines when fully expanded with real parsing / bitblasting.
