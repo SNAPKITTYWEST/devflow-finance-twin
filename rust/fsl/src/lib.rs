@@ -13,6 +13,7 @@ pub mod qa5;
 pub mod assert_q;
 pub mod eclipse_parlog;
 pub mod datalog;
+pub mod jitter_machine;
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::fmt;
@@ -909,6 +910,52 @@ mod tests {
         trace.mark_empty(c.id);
         let explanation = trace.explain();
         assert!(explanation.contains("PROOF"));
+    }
+
+    // --- Recursive Jitter Machine Tests ---
+
+    #[test]
+    fn jitter_kernel_halt() {
+        use jitter_machine::{Kernel, KernelConfig, pack, Opcodes, Flags};
+        let code = vec![pack(Opcodes::HALT, 0, 0, 0)];
+        let mut k = Kernel::with_code(KernelConfig::default(), code);
+        k.run(100);
+        assert!(k.flags & Flags::HALT != 0);
+    }
+
+    #[test]
+    fn jitter_add_fuse() {
+        use jitter_machine::{Kernel, KernelConfig, pack, Opcodes, Flags};
+        let code = vec![
+            pack(Opcodes::LOADK, 0, 0, 2),
+            pack(Opcodes::LOADK, 1, 0, 3),
+            pack(Opcodes::ADD, 2, 0, 1),
+            pack(Opcodes::LOADK, 3, 0, 5),
+            pack(Opcodes::ASSERT, 2, 3, 0),
+            pack(Opcodes::FUSE, 0, 0, 0),
+            pack(Opcodes::HALT, 0, 0, 0),
+        ];
+        let mut k = Kernel::with_code(KernelConfig { n: 4, ..Default::default() }, code);
+        k.run(100);
+        assert_eq!(k.state[2], 5);
+        assert!(k.flags & Flags::FUSED != 0);
+        assert!(k.flags & Flags::HALT != 0);
+    }
+
+    #[test]
+    fn jitter_jz_skip() {
+        use jitter_machine::{Kernel, KernelConfig, pack, Opcodes, Flags};
+        let code = vec![
+            pack(Opcodes::LOADK, 0, 0, 0),
+            pack(Opcodes::JZ, 0, 0, 2),
+            pack(Opcodes::LOADK, 1, 0, 99),
+            pack(Opcodes::HALT, 0, 0, 0),
+            pack(Opcodes::LOADK, 1, 0, 42),
+            pack(Opcodes::HALT, 0, 0, 0),
+        ];
+        let mut k = Kernel::with_code(KernelConfig { n: 2, ..Default::default() }, code);
+        k.run(100);
+        assert_eq!(k.state[1], 42);
     }
 }
 
