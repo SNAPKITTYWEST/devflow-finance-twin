@@ -12,8 +12,6 @@ pub mod crux;
 pub mod qa5;
 pub mod assert_q;
 pub mod eclipse_parlog;
-pub mod datalog;
-pub mod jitter_machine;
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::fmt;
