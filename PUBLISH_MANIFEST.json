@@ -1,14 +1,18 @@
 {
-  "timestamp": "2026-09-10T18:12:31Z",
+  "timestamp": "2026-09-10T18:19:19Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "7f2672966ce0bce8ffb84e56c5d6ff180f9fd70c",
-  "commit_after": "25d35395bf2ad8b4a5c6c7c56f0262920f5b1aa3",
+  "commit_before": "20edbbc31f1c60c8a88cb5e590412de4b02c31c9",
+  "commit_after": "a50de32b304c42331c13b5da55317b93737f8e68",
   "files_added": [
-    "apl/apl/06a76100741e52c56f5e9c588bd0f572.apl",
-    "apl/apl/transformer.apl",
-    "src/bqn/transformer.bqn",
-    "src/python/jax_transformer_harness.py"
+    "src/pascal/Activations.pas",
+    "src/pascal/Attention.pas",
+    "src/pascal/JacobianCore.pas",
+    "src/pascal/Main.pas",
+    "src/pascal/Model.pas",
+    "src/pascal/TensorCore.pas",
+    "src/pascal/Training.pas",
+    "src/pascal/TransformerBlock.pas"
   ],
   "files_modified": [
 
@@ -24,6 +28,6 @@
 
   ],
   "sha256": [
-    {"file": "apl/transformer.apl", "source_hash": "a99e010dd4962e38dc9e260d4f82b5d496fd79ab00ad77bc7b4f499974f42f38", "destination_hash": "a99e010dd4962e38dc9e260d4f82b5d496fd79ab00ad77bc7b4f499974f42f38", "status": "COPIED"},    {"file": "bqn/transformer.bqn", "source_hash": "9bf1cd90e7864e3a1cedc39e33e816fdbd7649607981904eef93e6d9b395201d", "destination_hash": "9bf1cd90e7864e3a1cedc39e33e816fdbd7649607981904eef93e6d9b395201d", "status": "COPIED"},    {"file": "python/jax_transformer_harness.py", "source_hash": "560607466b61f51fbf1ce4c08deefae76fd4b3b66cfee4e8665405506aa3066c", "destination_hash": "560607466b61f51fbf1ce4c08deefae76fd4b3b66cfee4e8665405506aa3066c", "status": "COPIED"},    {"file": "apl/06a76100741e52c56f5e9c588bd0f572.apl", "source_hash": "a99e010dd4962e38dc9e260d4f82b5d496fd79ab00ad77bc7b4f499974f42f38", "destination_hash": "a99e010dd4962e38dc9e260d4f82b5d496fd79ab00ad77bc7b4f499974f42f38", "status": "COPIED"}
+    {"file": "pascal/TensorCore.pas", "source_hash": "ab94064708a9744591fc615d72277ec0a9c4b7d79fc9bdec59a66ce59a1915c8", "destination_hash": "ab94064708a9744591fc615d72277ec0a9c4b7d79fc9bdec59a66ce59a1915c8", "status": "COPIED"},    {"file": "pascal/Model.pas", "source_hash": "9795a2d1dc626ac713df127db6fb7404da7c70adad40695cbbfc1d458eb49980", "destination_hash": "9795a2d1dc626ac713df127db6fb7404da7c70adad40695cbbfc1d458eb49980", "status": "COPIED"},    {"file": "pascal/Training.pas", "source_hash": "5623adbd1e31809e67304f56c79e2c6299fee9cc3a9dbb9f3c7704bcb4332bd3", "destination_hash": "5623adbd1e31809e67304f56c79e2c6299fee9cc3a9dbb9f3c7704bcb4332bd3", "status": "COPIED"},    {"file": "pascal/Main.pas", "source_hash": "7e4d4e2b58b1e25c2ce9a220798750c36383079a8586d2625223fa9182fd6c5d", "destination_hash": "7e4d4e2b58b1e25c2ce9a220798750c36383079a8586d2625223fa9182fd6c5d", "status": "COPIED"},    {"file": "pascal/TransformerBlock.pas", "source_hash": "680c5f6263b2db8517ef88ef49371face87f8ee5380edac53a0e9a3e118139a4", "destination_hash": "680c5f6263b2db8517ef88ef49371face87f8ee5380edac53a0e9a3e118139a4", "status": "COPIED"},    {"file": "pascal/JacobianCore.pas", "source_hash": "b6c0309b4b1f7a6794a1d88081da21de7edb78d840b340a5ada805100cf2e0f3", "destination_hash": "b6c0309b4b1f7a6794a1d88081da21de7edb78d840b340a5ada805100cf2e0f3", "status": "COPIED"},    {"file": "pascal/Activations.pas", "source_hash": "fd97a03a1e212431e7dd90ebac01086eab05b4694215212d9d3f8b0852cd100b", "destination_hash": "fd97a03a1e212431e7dd90ebac01086eab05b4694215212d9d3f8b0852cd100b", "status": "COPIED"},    {"file": "pascal/Attention.pas", "source_hash": "2d64ebe49c36634384df246aed2868ea16d55392142c0e9f0aed83bd5a6e79e6", "destination_hash": "2d64ebe49c36634384df246aed2868ea16d55392142c0e9f0aed83bd5a6e79e6", "status": "COPIED"}
   ]
 }
