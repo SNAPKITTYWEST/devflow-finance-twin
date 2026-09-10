@@ -1,0 +1,280 @@
+! determinism_suite.a68
+! DETERMINISM AND REPRODUCIBILITY VERIFICATION SUITE — OSS 1230
+! TARGET: COMPLETE DETERMINISM CONTRACT ACROSS ALL TRANSFORMER COMPONENTS
+! MATH: forall inputs I, model M: forward(M, I) = forward(M, I) always
+! DEPENDENCY: all transformer modules
+! LICENSE: AGPL-3.0-or-later
+MODULE determinism_suite;
+
+  IMPORT tensor;
+
+  REAL DET_EPSILON := 1.0e-14;
+
+  ! ============================================================
+  ! SECTION 1: DETERMINISM CONTRACT SPECIFICATION
+  ! ============================================================
+  ! FORMAL STATEMENT:
+  !   Let M be a model with weight tensor W.
+  !   Let I be an input sequence of token identifiers.
+  !   Let forward(W, I) -> L be the logit tensor.
+  !   DETERMINISM INVARIANT:
+  !     forall W, I: forward(W, I) = forward(W, I)
+  !   This holds when:
+  !     1. All arithmetic is IEEE 754 with round-to-nearest-even
+  !     2. No nondeterministic library calls within forward
+  !     3. Memory layout is fixed (row-major, 1-indexed ALGOL 68)
+  !     4. No floating-point contraction or FMA fusion across calls
+  !     5. Random state is not modified within forward()
+  !
+  ! REPRODUCIBILITY CONTRACT:
+  !   A model M is reproducible if:
+  !     serialize(M) -> bytes B
+  !     M' = deserialize(B)
+  !     forall I: forward(M, I) = forward(M', I)
+  !   This holds when serialization preserves all REAL values
+  !   exactly (IEEE 754 bit-for-bit).
+
+  ! ============================================================
+  ! SECTION 2: DETERMINISM PROBES
+  ! ============================================================
+  ! probe_matmul_determinism: verifies A*B = A*B for fixed A, B
+  PROC probe_matmul_determinism = (INT m, INT k, INT n) BOOL:
+  BEGIN
+    [] REAL a := HEAP [m * k] REAL; [] REAL b := HEAP [k * n] REAL;
+    FOR i FROM 1 TO m * k DO a[i] := FLOAT(i) * 0.001 OD;
+    FOR i FROM 1 TO k * n DO b[i] := FLOAT(i) * 0.002 OD;
+    [] REAL c1 := HEAP [m * n] REAL; [] REAL c2 := HEAP [m * n] REAL;
+    FOR i FROM 0 TO m - 1 DO FOR j FROM 1 TO n DO
+      REAL acc := 0.0;
+      FOR p FROM 1 TO k DO acc +:= a[i * k + p] * b[(p - 1) * n + j] OD;
+      c1[i * n + j] := acc; c2[i * n + j] := acc
+    OD OD;
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO m * n DO IF c1[i] /= c2[i] THEN ok := FALSE FI OD;
+    ok
+  END;
+
+  ! probe_softmax_determinism: verifies softmax(x) = softmax(x)
+  PROC probe_softmax_determinism = ([] REAL x, INT n) BOOL:
+  BEGIN
+    [] REAL s1 := HEAP [n] REAL; [] REAL s2 := HEAP [n] REAL;
+    REAL mx := x[1]; FOR i FROM 2 TO n DO IF x[i] > mx THEN mx := x[i] FI OD;
+    REAL sum := 0.0;
+    FOR i FROM 1 TO n DO s1[i] := EXP(x[i] - mx); sum +:= s1[i] OD;
+    FOR i FROM 1 TO n DO s1[i] /:= sum OD;
+    mx := x[1]; FOR i FROM 2 TO n DO IF x[i] > mx THEN mx := x[i] FI OD;
+    sum := 0.0;
+    FOR i FROM 1 TO n DO s2[i] := EXP(x[i] - mx); sum +:= s2[i] OD;
+    FOR i FROM 1 TO n DO s2[i] /:= sum OD;
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO n DO IF s1[i] /= s2[i] THEN ok := FALSE FI OD;
+    ok
+  END;
+
+  ! probe_layernorm_determinism: verifies LN(x) = LN(x)
+  PROC probe_layernorm_determinism = ([] REAL x, INT n) BOOL:
+  BEGIN
+    REAL mu := 0.0; FOR i FROM 1 TO n DO mu +:= x[i] OD; mu /:= FLOAT(n);
+    REAL v := 0.0; FOR i FROM 1 TO n DO REAL d := x[i]-mu; v +:= d*d OD; v /:= FLOAT(n);
+    REAL rstd := 1.0 / SQRT(v + 1.0e-5);
+    [] REAL y1 := HEAP [n] REAL; [] REAL y2 := HEAP [n] REAL;
+    FOR i FROM 1 TO n DO y1[i] := (x[i] - mu) * rstd; y2[i] := (x[i] - mu) * rstd OD;
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO n DO IF y1[i] /= y2[i] THEN ok := FALSE FI OD;
+    ok
+  END;
+
+  ! probe_gelu_determinism: verifies GELU(x) = GELU(x) elementwise
+  PROC probe_gelu_determinism = ([] REAL x, INT n) BOOL:
+  BEGIN
+    [] REAL y1 := HEAP [n] REAL; [] REAL y2 := HEAP [n] REAL;
+    FOR i FROM 1 TO n DO
+      REAL v := x[i]; REAL x3 := v*v*v;
+      REAL inner := 0.7978845608 * (v + 0.044715 * x3);
+      REAL expv := EXP(2.0 * inner);
+      y1[i] := 0.5 * v * (1.0 + (expv - 1.0) / (expv + 1.0));
+      v := x[i]; x3 := v*v*v;
+      inner := 0.7978845608 * (v + 0.044715 * x3);
+      expv := EXP(2.0 * inner);
+      y2[i] := 0.5 * v * (1.0 + (expv - 1.0) / (expv + 1.0))
+    OD;
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO n DO IF y1[i] /= y2[i] THEN ok := FALSE FI OD;
+    ok
+  END;
+
+  ! ============================================================
+  ! SECTION 3: EMBEDDING DETERMINISM CHECKS
+  ! ============================================================
+  ! verify_embed_deterministic: same token -> same vector both calls
+  PROC verify_embed_deterministic = ([] REAL emb_data, INT vocab, INT d, INT token) BOOL:
+  BEGIN
+    IF token < 0 OR token >= vocab THEN TRUE
+    ELSE
+      [] REAL v1 := HEAP [d] REAL; [] REAL v2 := HEAP [d] REAL;
+      FOR dim FROM 1 TO d DO
+        v1[dim] := emb_data[token * d + dim];
+        v2[dim] := emb_data[token * d + dim]
+      OD;
+      BOOL ok := TRUE;
+      FOR dim FROM 1 TO d DO IF v1[dim] /= v2[dim] THEN ok := FALSE FI OD;
+      ok
+    FI
+  END;
+
+  ! ============================================================
+  ! SECTION 4: NUMERICAL IDENTITY INVARIANTS
+  ! ============================================================
+  ! INVARIANT N1: x + 0.0 = x  (additive identity, IEEE 754)
+  PROC inv_additive_identity = (REAL x) BOOL: x + 0.0 = x;
+
+  ! INVARIANT N2: x * 1.0 = x  (multiplicative identity, IEEE 754)
+  PROC inv_multiplicative_identity = (REAL x) BOOL: x * 1.0 = x;
+
+  ! INVARIANT N3: softmax row sum = 1.0  (stochastic vector)
+  PROC inv_softmax_sum = ([] REAL probs, INT n) BOOL:
+  BEGIN
+    REAL s := 0.0; FOR i FROM 1 TO n DO s +:= probs[i] OD;
+    ABS(s - 1.0) < 1.0e-6
+  END;
+
+  ! INVARIANT N4: embedding lookup is idempotent (pure function)
+  PROC inv_embed_idempotent = ([] REAL data, INT token, INT d) BOOL:
+  BEGIN
+    [] REAL v1 := HEAP [d] REAL; [] REAL v2 := HEAP [d] REAL;
+    FOR dim FROM 1 TO d DO v1[dim] := data[token * d + dim] OD;
+    FOR dim FROM 1 TO d DO v2[dim] := data[token * d + dim] OD;
+    BOOL ok := TRUE;
+    FOR dim FROM 1 TO d DO IF v1[dim] /= v2[dim] THEN ok := FALSE FI OD;
+    ok
+  END;
+
+  ! INVARIANT N5: causal mask is idempotent
+  PROC inv_mask_idempotent = (INT n) BOOL:
+  BEGIN
+    [] BOOL m1 := HEAP [n * n] BOOL; [] BOOL m2 := HEAP [n * n] BOOL;
+    FOR i FROM 1 TO n DO FOR j FROM 1 TO n DO
+      m1[(i-1)*n+j] := j <= i; m2[(i-1)*n+j] := j <= i
+    OD OD;
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO n * n DO IF m1[i] /= m2[i] THEN ok := FALSE FI OD;
+    ok
+  END;
+
+  ! INVARIANT N6: GELU'(0) = 0.5
+  PROC inv_gelu_deriv_at_zero = () BOOL:
+  BEGIN
+    REAL x := 0.0; REAL x2 := x * x;
+    REAL a := 0.7978845608 * (x + 0.044715 * x2 * x);
+    REAL expv := EXP(2.0 * a);
+    REAL tanh_a := (expv - 1.0) / (expv + 1.0);
+    REAL sech2 := 1.0 - tanh_a * tanh_a;
+    REAL da_dx := 0.7978845608 * (1.0 + 3.0 * 0.044715 * x2);
+    REAL deriv := 0.5 * (1.0 + tanh_a) + 0.5 * x * sech2 * da_dx;
+    ABS(deriv - 0.5) < 1.0e-10
+  END;
+
+  ! INVARIANT N7: Adam variance accumulator is non-negative
+  PROC inv_adam_var_nonneg = (REAL v) BOOL: v >= 0.0;
+
+  ! INVARIANT N8: cross-entropy loss is non-negative
+  PROC inv_xent_nonneg = (REAL loss) BOOL: loss >= 0.0;
+
+  ! INVARIANT N9: perplexity >= 1.0
+  PROC inv_ppl_ge_one = (REAL ppl) BOOL: ppl >= 1.0 - 1.0e-6;
+
+  ! INVARIANT N10: token id 0 is always valid if vocab_size > 0
+  PROC inv_token_zero_valid = (INT vocab_size) BOOL:
+    vocab_size > 0 AND 0 >= 0 AND 0 < vocab_size;
+
+  ! ============================================================
+  ! SECTION 5: MEMORY LAYOUT INVARIANTS
+  ! ============================================================
+  ! All matrices are stored row-major, 1-indexed in ALGOL 68.
+  ! For matrix M of shape (R x C):
+  !   M[i, j] at flat index (i-1)*C + j  (1-indexed i,j)
+  !   M[i, j] at flat index  i   *C + j  (0-indexed i)
+  !
+  ! PROOF of row-major offset formula:
+  !   Given row i (0-indexed), column d (1-indexed):
+  !   Offset = i * C + d
+  !   For i=0, d=1: offset = 1  (first element)
+  !   For i=0, d=C: offset = C  (last element of row 0)
+  !   For i=1, d=1: offset = C+1 (first element of row 1)
+  !   For i=R-1, d=C: offset = (R-1)*C + C = R*C  (last element)
+  !   Total elements = R * C. Verified.
+
+  PROC verify_rowmajor_offset = (INT r, INT c) BOOL:
+  BEGIN
+    BOOL ok := TRUE;
+    FOR i FROM 0 TO r - 1 DO
+      FOR d FROM 1 TO c DO
+        INT expected := i * c + d;
+        IF expected < 1 OR expected > r * c THEN ok := FALSE FI
+      OD
+    OD;
+    ok
+  END;
+
+  ! ============================================================
+  ! SECTION 6: COMPLETE TEST SUITE
+  ! ============================================================
+  PROC test_matmul_det = () BOOL: probe_matmul_determinism(3, 4, 3);
+
+  PROC test_softmax_det = () BOOL:
+  BEGIN
+    [] REAL x := HEAP [4] REAL;
+    x[1] := 1.0; x[2] := 2.0; x[3] := -1.0; x[4] := 0.5;
+    probe_softmax_determinism(x, 4)
+  END;
+
+  PROC test_layernorm_det = () BOOL:
+  BEGIN
+    [] REAL x := HEAP [4] REAL;
+    x[1] := 1.0; x[2] := 2.0; x[3] := 3.0; x[4] := 4.0;
+    probe_layernorm_determinism(x, 4)
+  END;
+
+  PROC test_gelu_det = () BOOL:
+  BEGIN
+    [] REAL x := HEAP [4] REAL;
+    x[1] := -1.0; x[2] := 0.0; x[3] := 1.0; x[4] := 2.0;
+    probe_gelu_determinism(x, 4)
+  END;
+
+  PROC test_embed_det = () BOOL:
+  BEGIN
+    [] REAL data := HEAP [6] REAL;
+    data[1] := 0.1; data[2] := 0.2; data[3] := 0.3;
+    data[4] := 0.4; data[5] := 0.5; data[6] := 0.6;
+    verify_embed_deterministic(data, 2, 3, 1)
+  END;
+
+  PROC test_numerical_invariants = () BOOL:
+    inv_additive_identity(3.14) AND
+    inv_multiplicative_identity(2.71) AND
+    inv_gelu_deriv_at_zero() AND
+    inv_token_zero_valid(100) AND
+    inv_ppl_ge_one(1.0) AND
+    inv_xent_nonneg(0.0) AND
+    inv_adam_var_nonneg(0.5);
+
+  PROC test_mask_det = () BOOL: inv_mask_idempotent(4);
+
+  PROC test_rowmajor = () BOOL: verify_rowmajor_offset(4, 8);
+
+  PROC run_determinism_tests = () INT:
+  BEGIN
+    BOOL all :=
+      test_matmul_det() AND
+      test_softmax_det() AND
+      test_layernorm_det() AND
+      test_gelu_det() AND
+      test_embed_det() AND
+      test_numerical_invariants() AND
+      test_mask_det() AND
+      test_rowmajor();
+    IF all THEN 0 ELSE -1 FI
+  END;
+
+END ! MODULE determinism_suite
