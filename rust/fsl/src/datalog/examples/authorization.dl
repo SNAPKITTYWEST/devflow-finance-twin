@@ -1,0 +1,18 @@
+% Authorization example from Ahmad's Datalog Engine spec
+% Organizational access control policy
+
+% --- Role assignments ---
+role(w1, analyst).
+role(w2, admin).
+role(w3, engineer).
+
+% --- Permission definitions ---
+permitted(analyst, analyze_code).
+permitted(analyst, read_logs).
+permitted(admin, manage_users).
+permitted(admin, deploy_code).
+permitted(engineer, write_code).
+permitted(engineer, review_code).
+
+% --- Rule: an agent is authorized for a task if they have a role that is permitted ---
+authorized(A, T) :- role(A, R), permitted(R, T).
