@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T23:00:49Z
+**Timestamp:** 2026-09-10T23:02:42Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/benchmark.a68`
+- `src/invariant_registry.a68`
 
 ## Files Unchanged
 _None_
