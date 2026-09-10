@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T19:18:28Z
+**Timestamp:** 2026-09-10T19:20:31Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/vsm2500_h100_sass_bridge.cu`
+- `src/vsm2500_isa_kernel.cu`
 
 ## Files Unchanged
 _None_
