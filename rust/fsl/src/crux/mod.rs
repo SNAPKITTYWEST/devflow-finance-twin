@@ -10,10 +10,12 @@ pub mod omega;
 pub mod z3_backend;
 pub mod sas_backend;
 pub mod lean_backend;
+pub mod lean_monad_stack;
 pub mod pcc;
 pub mod pipeline;
 
 pub use ast::*;
 pub use russian::parse_russian;
 pub use omega::OmegaSmasher;
+pub use lean_monad_stack::{MVarId, FVarId, TacticState, TacticContext, TacticConfig};
 pub use pipeline::{run_crux_pipeline, CruxResult};

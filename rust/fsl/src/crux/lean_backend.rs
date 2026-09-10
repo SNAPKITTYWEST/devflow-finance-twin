@@ -243,3 +243,120 @@ pub enum LeanResult {
 // End of Lean 4 backend (~200 lines)
 // Covers: goal construction, tactic macro expansion,
 // concrete decide, Lean 4 term/sort/tactic serialization.
+
+// =============================================================================
+// Lean 4 Tactic Infrastructure (from Monad Stack Grammar)
+// =============================================================================
+
+use crate::crux::lean_monad_stack::{
+    MVarId, FVarId, TacticState, TacticContext, TacticConfig,
+    TransparencyMode, NewGoals, TacticLocation, RecGoal, RecTacticState,
+    MacroScope, HygienicName,
+};
+
+// ---------------------------------------------------------------------------
+// 4. TacticM goal management operations
+// ---------------------------------------------------------------------------
+
+pub fn tactic_get_goals(state: &TacticState) -> Vec<MVarId> {
+    state.goals.clone()
+}
+
+pub fn tactic_set_goals(state: &mut TacticState, goals: Vec<MVarId>) {
+    state.goals = goals;
+}
+
+pub fn tactic_get_main_goal(state: &TacticState) -> Option<MVarId> {
+    state.goals.first().cloned()
+}
+
+pub fn tactic_replace_main_goal(state: &mut TacticState, new_goals: Vec<MVarId>) {
+    if !state.goals.is_empty() {
+        state.goals.remove(0);
+        let old_goals = state.goals.clone();
+        state.goals = new_goals.into_iter().chain(old_goals).collect();
+    }
+}
+
+pub fn tactic_done(state: &TacticState) -> bool {
+    state.goals.is_empty()
+}
+
+pub fn tactic_prune_solved(state: &mut TacticState) {
+    // In real Lean 4 this checks if mvar is assigned; here we keep all
+}
+
+// ---------------------------------------------------------------------------
+// 5. Tactic combinators (pure Rust, matching Lean 4 semantics)
+// ---------------------------------------------------------------------------
+
+pub fn tactic_try<F, T>(f: F) -> Option<T>
+where F: FnOnce() -> Option<T>
+{
+    f()
+}
+
+pub fn tactic_first<T>(tactics: &[Box<dyn Fn() -> Option<T>>]) -> Option<T> {
+    for t in tactics {
+        if let Some(result) = t() {
+            return Some(result);
+        }
+    }
+    None
+}
+
+pub fn tactic_repeat(tactic: &dyn Fn() -> bool, max_iter: usize) -> usize {
+    let mut count = 0;
+    for _ in 0..max_iter {
+        if !tactic() { break; }
+        count += 1;
+    }
+    count
+}
+
+// ---------------------------------------------------------------------------
+// 6. Recursive goal stack operations
+// ---------------------------------------------------------------------------
+
+pub fn push_focus(state: &mut RecTacticState, goal: MVarId) {
+    state.focus_path.push(goal);
+    state.depth += 1;
+}
+
+pub fn pop_focus(state: &mut RecTacticState) {
+    state.focus_path.pop();
+    if state.depth > 0 { state.depth -= 1; }
+}
+
+pub fn current_depth(state: &RecTacticState) -> usize {
+    state.depth
+}
+
+pub fn make_rec_goal(
+    id: MVarId,
+    parent: Option<MVarId>,
+    layer: usize,
+    tag: String,
+) -> RecGoal {
+    RecGoal { id, parent, children: vec![], layer, tag }
+}
+
+// ---------------------------------------------------------------------------
+// 7. Macro hygiene helpers
+// ---------------------------------------------------------------------------
+
+pub fn add_macro_scope(base: String, scope: MacroScope) -> HygienicName {
+    HygienicName { base, scopes: vec![scope] }
+}
+
+pub fn erase_macro_scopes(hname: &HygienicName) -> String {
+    hname.base.clone()
+}
+
+pub fn has_macro_scopes(hname: &HygienicName) -> bool {
+    !hname.scopes.is_empty()
+}
+
+// End of Lean 4 Tactic Infrastructure (~100 lines appended)
+// Covers: goal management, combinators, recursive goal stack,
+// macro hygiene helpers.
