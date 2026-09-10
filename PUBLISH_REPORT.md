@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T23:04:44Z
+**Timestamp:** 2026-09-10T23:18:10Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/oss1230_manifest.a68`
+- `src/transformer_pascal_200.pas`
 
 ## Files Unchanged
 _None_
