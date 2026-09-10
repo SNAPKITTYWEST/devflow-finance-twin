@@ -1,0 +1,152 @@
+! activ.a68
+! Approx lines: 200
+MODULE activ;
+
+  IMPORT tensor;
+
+  MODE REALARR = [] REAL;
+  MODE Tensor = tensor.Tensor;
+
+  PROC max = (REF REALARR a) REAL:
+    BEGIN
+      REAL m := a[1];
+      FOR i FROM 2 TO UPB a DO IF a[i] > m THEN m := a[i] FI OD;
+      m
+    END;
+
+  PROC softmax = (Tensor x) Tensor:
+    BEGIN
+      ! x is (batch x seq_len) or (seq_len) flattened as 2D
+      INT rows := x.shape[1]; INT cols := x.shape[2];
+      INT dims[2] := (rows, cols);
+      Tensor out := tensor.tensor_new(2, dims);
+      FOR i FROM 1 TO rows DO
+        REAL maxv := x.data[(i-1)*cols + 1];
+        FOR j FROM 2 TO cols DO
+          IF x.data[(i-1)*cols + j] > maxv THEN maxv := x.data[(i-1)*cols + j] FI
+        OD;
+        REAL sum := 0.0;
+        FOR j FROM 1 TO cols DO
+          REAL e := EXP(x.data[(i-1)*cols + j] - maxv);
+          out.data[(i-1)*cols + j] := e;
+          sum := sum + e
+        OD;
+        FOR j FROM 1 TO cols DO out.data[(i-1)*cols + j] := out.data[(i-1)*cols + j] / sum OD
+      OD;
+      out
+    END;
+
+  PROC softmax_jacobian = (Tensor s) REF REALARR:
+    BEGIN
+      ! s: (1 x n) or (batch x n) but we compute per-row jacobian and return flattened 2D blocks concatenated
+      INT rows := s.shape[1]; INT n := s.shape[2];
+      INT total_blocks := rows;
+      INT out_rows := total_blocks * n;
+      INT out_cols := n;
+      REF REALARR J := HEAP [out_rows * out_cols]REAL;
+      FOR b FROM 1 TO rows DO
+        ! For row b, jacobian Jb[i,j] = s_i*(delta_ij - s_j)
+        FOR i FROM 1 TO n DO
+          FOR j FROM 1 TO n DO
+            REAL sij := s.data[(b-1)*n + i];
+            REAL sjj := s.data[(b-1)*n + j];
+            REAL val := sij * ( (i = j) - sjj );
+            J[(b-1)*n*n + (i-1)*n + j] := val
+          OD
+        OD
+      OD;
+      REF J
+    END;
+
+  PROC gelu = (Tensor x) Tensor:
+    BEGIN
+      ! Approximate GELU with tanh version
+      INT rows := x.shape[1]; INT cols := x.shape[2];
+      INT dims[2] := (rows, cols);
+      Tensor out := tensor.tensor_new(2, dims);
+      FOR i FROM 1 TO rows DO
+        FOR j FROM 1 TO cols DO
+          REAL v := x.data[(i-1)*cols + j];
+          REAL c := 0.044715;
+          REAL t := v * (1.0 + c * v * v);
+          REAL y := 0.5 * v * (1.0 + TANH(0.7978845608 * t));
+          out.data[(i-1)*cols + j] := y
+        OD
+      OD;
+      out
+    END;
+
+  PROC gelu_jacobian = (Tensor x) REF REALARR:
+    BEGIN
+      ! Compute derivative elementwise: d/dx gelu(x) = 0.5*(1 + tanh(a)) + 0.5*x*(1 - tanh(a)^2)*(da/dx)
+      INT rows := x.shape[1]; INT cols := x.shape[2];
+      REF REALARR J := HEAP [rows*cols]REAL;
+      FOR i FROM 1 TO rows DO
+        FOR j FROM 1 TO cols DO
+          REAL v := x.data[(i-1)*cols + j];
+          REAL c := 0.044715;
+          REAL a := 0.7978845608 * (v + c * v * v * v);
+          REAL t := TANH(a);
+          REAL dt_da := 1.0 - t*t;
+          REAL da_dv := 0.7978845608 * (1.0 + 3.0*c*v*v);
+          REAL deriv := 0.5*(1.0 + t) + 0.5*v*dt_da*da_dv;
+          J[(i-1)*cols + j] := deriv
+        OD
+      OD;
+      REF J
+    END;
+
+  PROC layernorm = (Tensor x, REAL eps) Tensor:
+    BEGIN
+      INT rows := x.shape[1]; INT cols := x.shape[2];
+      INT dims[2] := (rows, cols);
+      Tensor out := tensor.tensor_new(2, dims);
+      FOR i FROM 1 TO rows DO
+        REAL mean := 0.0;
+        FOR j FROM 1 TO cols DO mean := mean + x.data[(i-1)*cols + j] OD;
+        mean := mean / cols;
+        REAL var := 0.0;
+        FOR j FROM 1 TO cols DO
+          REAL d := x.data[(i-1)*cols + j] - mean;
+          var := var + d*d
+        OD;
+        var := var / cols;
+        REAL denom := SQRT(var + eps);
+        FOR j FROM 1 TO cols DO out.data[(i-1)*cols + j] := (x.data[(i-1)*cols + j] - mean) / denom OD
+      OD;
+      out
+    END;
+
+  PROC layernorm_jacobian = (Tensor x, REAL eps) REF REALARR:
+    BEGIN
+      ! For each row compute Jacobian matrix (cols x cols) and return flattened blocks
+      INT rows := x.shape[1]; INT n := x.shape[2];
+      REF REALARR J := HEAP [rows * n * n]REAL;
+      FOR b FROM 1 TO rows DO
+        REAL mean := 0.0;
+        FOR i FROM 1 TO n DO mean := mean + x.data[(b-1)*n + i] OD;
+        mean := mean / n;
+        REAL var := 0.0;
+        FOR i FROM 1 TO n DO
+          REAL d := x.data[(b-1)*n + i] - mean;
+          var := var + d*d
+        OD;
+        var := var / n;
+        REAL denom := SQRT(var + eps);
+        ! derivative: y_i = (x_i - mu)/denom
+        ! d y_i / d x_j = (delta_ij - 1/n)/denom - (x_i - mu)*(x_j - mu)/(n*(var+eps)^(3/2))
+        FOR i FROM 1 TO n DO
+          FOR j FROM 1 TO n DO
+            REAL delta := (i = j);
+            REAL xi := x.data[(b-1)*n + i];
+            REAL xj := x.data[(b-1)*n + j];
+            REAL term1 := (delta - 1.0/n) / denom;
+            REAL term2 := (xi - mean)*(xj - mean) / (n * (var + eps) * denom);
+            J[(b-1)*n*n + (i-1)*n + j] := term1 - term2
+          OD
+        OD
+      OD;
+      REF J
+    END;
+
+END ! MODULE activ

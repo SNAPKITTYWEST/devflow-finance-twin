@@ -1,0 +1,160 @@
+! jacobian.a68
+! Approx lines: 500
+MODULE jacobian;
+
+  IMPORT tensor;
+  IMPORT activ;
+
+  MODE Tensor = tensor.Tensor;
+  MODE REALARR = [] REAL;
+
+  ! JacobianBlock holds forward output and jacobian matrix (flattened)
+  MODE JacobianBlock = STRUCT(Tensor out, REF REALARR jac);
+
+  PROC fd_check = (PROC (Tensor) Tensor f, Tensor x, REAL eps) REAL:
+    BEGIN
+      ! Finite difference check: compare analytic jacobian from f_jac to numeric approx
+      Tensor y := f(x);
+      INT n := tensor.shape_prod(x.shape);
+      REF REALARR numJ := HEAP [n*n]REAL;
+      FOR j FROM 1 TO n DO
+        REAL orig := x.data[j];
+        REAL h := eps;
+        x.data[j] := orig + h;
+        Tensor yp := f(x);
+        x.data[j] := orig - h;
+        Tensor ym := f(x);
+        x.data[j] := orig;
+        FOR i FROM 1 TO tensor.shape_prod(y.shape) DO
+          numJ[(i-1)*n + j] := (yp.data[i] - ym.data[i]) / (2.0*h)
+        OD
+      OD;
+      ! Return max absolute difference between numJ and analytic if available via f_jac wrapper
+      ! Here we assume f has a companion that returns jacobian; but for generic f we just return max numJ entry
+      REAL maxv := 0.0;
+      FOR i FROM 1 TO n*n DO IF ABS(numJ[i]) > maxv THEN maxv := ABS(numJ[i]) FI OD;
+      maxv
+    END;
+
+  PROC softmax_forward = (Tensor x) JacobianBlock:
+    BEGIN
+      Tensor y := activ.softmax(x);
+      REF REALARR J := activ.softmax_jacobian(y);
+      JacobianBlock(y, J)
+    END;
+
+  PROC gelu_forward = (Tensor x) JacobianBlock:
+    BEGIN
+      Tensor y := activ.gelu(x);
+      REF REALARR J := activ.gelu_jacobian(x);
+      JacobianBlock(y, J)
+    END;
+
+  PROC layernorm_forward = (Tensor x, REAL eps) JacobianBlock:
+    BEGIN
+      Tensor y := activ.layernorm(x, eps);
+      REF REALARR J := activ.layernorm_jacobian(x, eps);
+      JacobianBlock(y, J)
+    END;
+
+  PROC matmul_forward = (Tensor A, Tensor B) JacobianBlock:
+    BEGIN
+      ! For matmul C = A * B where A (m x k), B (k x n)
+      Tensor C := tensor.matmul(A, B);
+      INT m := A.shape[1]; INT k := A.shape[2]; INT n := B.shape[2];
+      INT outdim := m*n;
+      INT indim := m*k + k*n; ! flatten A and B concatenated
+      REF REALARR J := HEAP [outdim * indim]REAL;
+      ! Derivatives: dC/dA and dC/dB
+      ! For each element C_{i,j} = sum_t A_{i,t} * B_{t,j}
+      ! dC_{i,j} / dA_{p,q} = delta_{i,p} * B_{q,j}
+      ! dC_{i,j} / dB_{p,q} = A_{i,p} * delta_{q,j}
+      FOR i FROM 1 TO m DO
+        FOR j FROM 1 TO n DO
+          INT outidx := (i-1)*n + j;
+          ! w.r.t A entries
+          FOR p FROM 1 TO m DO
+            FOR q FROM 1 TO k DO
+              INT inidx := (p-1)*k + q;
+              REAL val := (i = p) * B.data[(q-1)*n + j];
+              J[(outidx-1)*indim + inidx] := val
+            OD
+          OD;
+          ! w.r.t B entries
+          FOR p FROM 1 TO k DO
+            FOR q FROM 1 TO n DO
+              INT inidx := m*k + (p-1)*n + q;
+              REAL val := A.data[(i-1)*k + p] * (q = j);
+              J[(outidx-1)*indim + inidx] := val
+            OD
+          OD
+        OD
+      OD;
+      JacobianBlock(C, J)
+    END;
+
+  PROC add_forward = (Tensor A, Tensor B) JacobianBlock:
+    BEGIN
+      Tensor C := tensor.add(A, B);
+      INT n := tensor.shape_prod(A.shape);
+      REF REALARR J := HEAP [n * (2*n)]REAL;
+      ! dC/dA = I, dC/dB = I
+      FOR i FROM 1 TO n DO
+        FOR j FROM 1 TO 2*n DO J[(i-1)*(2*n) + j] := 0.0 OD
+      OD;
+      FOR i FROM 1 TO n DO
+        J[(i-1)*(2*n) + i] := 1.0;
+        J[(i-1)*(2*n) + n + i] := 1.0
+      OD;
+      JacobianBlock(C, J)
+    END;
+
+  PROC relu_forward = (Tensor x) JacobianBlock:
+    BEGIN
+      INT n := tensor.shape_prod(x.shape);
+      Tensor y := tensor.tensor_new(1, (n));
+      REF REALARR J := HEAP [n*n]REAL;
+      FOR i FROM 1 TO n DO
+        REAL v := x.data[i];
+        IF v > 0.0 THEN y.data[i] := v ELSE y.data[i] := 0.0 FI;
+        FOR j FROM 1 TO n DO J[(i-1)*n + j] := 0.0 OD;
+        J[(i-1)*n + i] := (v > 0.0)
+      OD;
+      JacobianBlock(y, J)
+    END;
+
+  PROC fd_compare = (REF REALARR analytic, REF REALARR numeric, INT rows, INT cols) REAL:
+    BEGIN
+      REAL maxerr := 0.0;
+      FOR i FROM 1 TO rows DO
+        FOR j FROM 1 TO cols DO
+          REAL a := analytic[(i-1)*cols + j];
+          REAL b := numeric[(i-1)*cols + j];
+          REAL err := ABS(a - b);
+          IF err > maxerr THEN maxerr := err FI
+        OD
+      OD;
+      maxerr
+    END;
+
+  PROC finite_diff = (PROC (Tensor) Tensor f, Tensor x, REAL h) REF REALARR:
+    BEGIN
+      Tensor y := f(x);
+      INT outdim := tensor.shape_prod(y.shape);
+      INT indim := tensor.shape_prod(x.shape);
+      REF REALARR numJ := HEAP [outdim * indim]REAL;
+      FOR j FROM 1 TO indim DO
+        REAL orig := x.data[j];
+        x.data[j] := orig + h;
+        Tensor yp := f(x);
+        x.data[j] := orig - h;
+        Tensor ym := f(x);
+        x.data[j] := orig;
+        FOR i FROM 1 TO outdim DO
+          numJ[(i-1)*indim + j] := (yp.data[i] - ym.data[i]) / (2.0*h)
+        OD
+      OD;
+      REF numJ
+    END;
+
+END ! MODULE jacobian

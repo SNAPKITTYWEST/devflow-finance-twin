@@ -1,0 +1,99 @@
+! model.a68
+! Approx lines: 250
+MODULE model;
+
+  IMPORT tensor;
+  IMPORT activ;
+  IMPORT jacobian;
+  IMPORT attention;
+
+  MODE Tensor = tensor.Tensor;
+
+  INT vocab_size := 128;
+  INT d_model := 32;
+  INT n_heads := 2;
+  INT n_layers := 2;
+  INT d_ff := 64;
+  INT max_seq_len := 16;
+
+  ! Simple parameter container
+  MODE Params = STRUCT(
+    Tensor token_emb, Tensor pos_emb,
+    Tensor Wq, Tensor Wk, Tensor Wv, Tensor Wo,
+    Tensor W1, Tensor W2
+  );
+
+  PROC init_params = () Params:
+    BEGIN
+      INT dims1[2] := (vocab_size, d_model);
+      INT dims2[2] := (max_seq_len, d_model);
+      Params p;
+      p.token_emb := tensor.randn(2, dims1, 0.0, 0.02);
+      p.pos_emb := tensor.randn(2, dims2, 0.0, 0.02);
+      INT dimsW[2] := (d_model, d_model);
+      p.Wq := tensor.randn(2, dimsW, 0.0, 0.02);
+      p.Wk := tensor.randn(2, dimsW, 0.0, 0.02);
+      p.Wv := tensor.randn(2, dimsW, 0.0, 0.02);
+      p.Wo := tensor.randn(2, dimsW, 0.0, 0.02);
+      INT dimsFF1[2] := (d_model, d_ff);
+      INT dimsFF2[2] := (d_ff, d_model);
+      p.W1 := tensor.randn(2, dimsFF1, 0.0, 0.02);
+      p.W2 := tensor.randn(2, dimsFF2, 0.0, 0.02);
+      p
+    END;
+
+  PROC embed_tokens = (Params p, INT tokens[], INT seq_len) Tensor:
+    BEGIN
+      ! tokens: length seq_len, values 1..vocab_size
+      INT dims[2] := (1, seq_len * d_model);
+      Tensor out := tensor.tensor_new(2, (1, seq_len*d_model));
+      FOR i FROM 1 TO seq_len DO
+        INT t := tokens[i];
+        FOR d FROM 1 TO d_model DO
+          out.data[(i-1)*d_model + d] := p.token_emb.data[(t-1)*d_model + d] + p.pos_emb.data[(i-1)*d_model + d]
+        OD
+      OD;
+      ! reshape to (seq_len x d_model) as (batch_seq x d_model)
+      INT dims2[2] := (seq_len, d_model);
+      Tensor resh := tensor.tensor_new(2, dims2);
+      FOR i FROM 1 TO seq_len DO
+        FOR d FROM 1 TO d_model DO
+          resh.data[(i-1)*d_model + d] := out.data[(i-1)*d_model + d]
+        OD
+      OD;
+      resh
+    END;
+
+  PROC transformer_block = (Params p, Tensor x) Tensor:
+    BEGIN
+      ! x: (seq_len x d_model)
+      ! Self-attention
+      Tensor Q := tensor.matmul(x, p.Wq);
+      Tensor K := tensor.matmul(x, p.Wk);
+      Tensor V := tensor.matmul(x, p.Wv);
+      Tensor attn_out := attention.attention_forward(Q, K, V, n_heads, x.shape[1]);
+      ! residual + layernorm
+      Tensor res1 := tensor.add(x, attn_out);
+      Tensor ln1 := activ.layernorm(res1, 1e-5);
+      ! MLP
+      Tensor ff1 := tensor.matmul(ln1, p.W1);
+      Tensor ff1_act := activ.gelu(ff1);
+      Tensor ff2 := tensor.matmul(ff1_act, p.W2);
+      Tensor res2 := tensor.add(ln1, ff2);
+      Tensor ln2 := activ.layernorm(res2, 1e-5);
+      ln2
+    END;
+
+  PROC model_forward = (Params p, INT tokens[], INT seq_len) Tensor:
+    BEGIN
+      Tensor x := embed_tokens(p, tokens, seq_len);
+      FOR l FROM 1 TO n_layers DO
+        x := transformer_block(p, x)
+      OD;
+      ! final projection to vocab logits: x (seq_len x d_model) * token_emb^T (d_model x vocab)
+      Tensor embT := tensor.transpose2(p.token_emb);
+      Tensor logits := tensor.matmul(x, embT);
+      logits
+    END;
+
+END ! MODULE model

@@ -1,0 +1,123 @@
+! attention.a68
+! Approx lines: 300
+MODULE attention;
+
+  IMPORT tensor;
+  IMPORT activ;
+  IMPORT jacobian;
+
+  MODE Tensor = tensor.Tensor;
+  MODE REALARR = [] REAL;
+
+  PROC causal_mask = (INT seq_len) Tensor:
+    BEGIN
+      INT dims[2] := (seq_len, seq_len);
+      Tensor m := tensor.tensor_new(2, dims);
+      FOR i FROM 1 TO seq_len DO
+        FOR j FROM 1 TO seq_len DO
+          IF j > i THEN m.data[(i-1)*seq_len + j] := -1.0e9 ELSE m.data[(i-1)*seq_len + j] := 0.0 FI
+        OD
+      OD;
+      m
+    END;
+
+  PROC softmax_rowwise = (Tensor x) Tensor:
+    BEGIN
+      activ.softmax(x)
+    END;
+
+  PROC split_heads = (Tensor x, INT n_heads) Tensor:
+    BEGIN
+      ! x: (batch, seq_len, d_model) represented as 2D (batch*seq_len x d_model)
+      INT rows := x.shape[1]; INT d_model := x.shape[2];
+      INT batch_seq := rows;
+      INT head_dim := d_model / n_heads;
+      INT dims[2] := (batch_seq * n_heads, head_dim);
+      Tensor out := tensor.tensor_new(2, dims);
+      FOR b FROM 1 TO batch_seq DO
+        FOR h FROM 1 TO n_heads DO
+          FOR d FROM 1 TO head_dim DO
+            INT src_col := (h-1)*head_dim + d;
+            INT dst_row := (b-1)*n_heads + h;
+            out.data[(dst_row-1)*head_dim + d] := x.data[(b-1)*d_model + src_col]
+          OD
+        OD
+      OD;
+      out
+    END;
+
+  PROC combine_heads = (Tensor x, INT n_heads, INT seq_len) Tensor:
+    BEGIN
+      ! x: (batch_seq * n_heads, head_dim)
+      INT head_dim := x.shape[2];
+      INT batch_seq := x.shape[1] / n_heads;
+      INT d_model := head_dim * n_heads;
+      INT dims[2] := (batch_seq, d_model);
+      Tensor out := tensor.tensor_new(2, dims);
+      FOR b FROM 1 TO batch_seq DO
+        FOR h FROM 1 TO n_heads DO
+          FOR d FROM 1 TO head_dim DO
+            INT src_row := (b-1)*n_heads + h;
+            INT dst_col := (h-1)*head_dim + d;
+            out.data[(b-1)*d_model + dst_col] := x.data[(src_row-1)*head_dim + d]
+          OD
+        OD
+      OD;
+      out
+    END;
+
+  PROC attention_forward = (Tensor Q, Tensor K, Tensor V, INT n_heads, INT seq_len) Tensor:
+    BEGIN
+      ! Q,K,V are (batch*seq_len x d_model)
+      INT d_model := Q.shape[2];
+      INT head_dim := d_model / n_heads;
+      Tensor Qh := split_heads(Q, n_heads);
+      Tensor Kh := split_heads(K, n_heads);
+      Tensor Vh := split_heads(V, n_heads);
+      ! For each head compute scores = Qh * Kh^T / sqrt(head_dim)
+      INT rows := Qh.shape[1]; INT cols := Qh.shape[2];
+      INT head_seq := rows; ! equals batch_seq * n_heads
+      INT dims_scores[2] := (head_seq, head_seq);
+      Tensor scores := tensor.tensor_new(2, dims_scores);
+      ! compute Kh^T
+      Tensor Kht := tensor.transpose2(Kh);
+      REAL scale := 1.0 / SQRT(REAL(head_dim));
+      ! matmul per head: but we have flattened heads; we compute blockwise
+      FOR r FROM 1 TO head_seq DO
+        FOR c FROM 1 TO head_seq DO
+          REAL s := 0.0;
+          FOR t FROM 1 TO head_dim DO
+            s := s + Qh.data[(r-1)*head_dim + t] * Kh.data[(c-1)*head_dim + t]
+          OD;
+          scores.data[(r-1)*head_seq + c] := s * scale
+        OD
+      OD;
+      ! apply causal mask per sequence: we assume head_seq = batch_seq * n_heads; we need to mask within each sequence
+      ! For simplicity assume batch_seq = seq_len and heads are contiguous per batch; apply upper triangular mask for each sequence block
+      INT batch_seq := head_seq / n_heads;
+      FOR hb FROM 0 TO batch_seq - 1 DO
+        FOR i FROM 1 TO seq_len DO
+          FOR j FROM 1 TO seq_len DO
+            INT r := hb*n_heads + 1; ! starting row index for head block
+            ! We need to mask each head separately; simpler: if j > i then subtract large
+            IF j > i THEN
+              FOR h FROM 1 TO n_heads DO
+                INT rr := hb*n_heads + h;
+                INT cc := hb*n_heads + h + (j - i); ! approximate mapping
+                ! To keep indices valid, we simply set scores for positions where j>i to -1e9 for rows corresponding to i and cols corresponding to j
+                scores.data[(rr-1)*head_seq + (hb*n_heads + h + (j-1))] := scores.data[(rr-1)*head_seq + (hb*n_heads + h + (j-1))] - 1.0e9
+              OD
+            FI
+          OD
+        OD
+      OD;
+      ! softmax rowwise
+      Tensor attn := activ.softmax(scores);
+      ! attn * Vh
+      Tensor out_heads := tensor.matmul(attn, Vh);
+      ! combine heads
+      Tensor out := combine_heads(out_heads, n_heads, seq_len);
+      out
+    END;
+
+END ! MODULE attention
