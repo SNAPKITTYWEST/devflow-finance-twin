@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T19:08:16Z
+**Timestamp:** 2026-09-10T19:13:07Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/p4_microcode_vsm2500.cpp`
+- `src/vsm2500_cuda_execution_block.cu`
 
 ## Files Unchanged
 _None_
