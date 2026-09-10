@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T22:28:09Z
+**Timestamp:** 2026-09-10T22:31:55Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `docs/STRICT_ISOLATION_TRANSFORMER_BUILD_PROTOCOL.md`
+- `docs/EMBEDDING_DEFENSE_PROTOCOL.md`
 
 ## Files Unchanged
 _None_
