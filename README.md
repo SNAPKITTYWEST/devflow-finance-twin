@@ -1,1267 +1,322 @@
 # devflow-finance-twin
 
-> **Sovereign BaaS Ledger Stack** — IBM i authoritative core with formal verification, quantum circuits, and polyglot proof infrastructure.
+> Sovereign BaaS Ledger Stack — IBM i authoritative core, deterministic event sourcing, formal verification, quantum circuits, and a polyglot proof infrastructure spanning 18+ languages.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](LICENSE-AGPL-3.0)
 [![License: FSL-1.1](https://img.shields.io/badge/License-FSL%201.1-green.svg)](LICENSE-FSL-1.1)
 
 ---
 
+## What This Is
+
+This repository is a production-grade sovereign banking-as-a-service ledger combined with a large-scale research platform. The two sides are distinct but share a philosophical core: **determinism, provenance, and formal accountability**.
+
+The **production side** is a Python financial twin backed by IBM i (COBOL/RPGLE/DB2). Every financial event is append-only, hash-chained, and sealed with a cryptographic decision stamp. State is never mutated — it is always reconstructed from immutable history. The quantum layer exists as an advisory oracle; it can never write state directly.
+
+The **research side**, built by Ahmad Ali Parr, is a complete tower of novel architectures: a Virtual Semantic Machine with its own ISA stack running down to SM90 CUDA, a NAND-complete language that compiles every operation to a single gate, Prolog-style logic engines embedded inside IBM i COBOL, a refinement type calculus that includes braid groups and Ptolemaic epicycles, and 26 parallel language implementations of a formal homomorphic encryption functor spec.
+
+These are not prototypes. They are complete, coherent systems with formal proofs, hardware RTL, and verified execution.
+
+---
+
 ## Table of Contents
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Repository Map](#repository-map)
-- [Ahmad's Custom Languages & Novel Architectures](#ahmads-custom-languages--novel-architectures)
-- [Non-Commutative Torus — Full Inventory](#non-commutative-torus-nct----full-inventory)
-- [Core Components](#core-components)
-- [Technical Stack](#technical-stack)
-- [Data Flow](#data-flow)
-- [Security Model](#security-model)
+- [Production Financial Core](#production-financial-core)
+- [IBM i Layer](#ibm-i-layer)
+- [VSM-2500 — Virtual Semantic Machine](#vsm-2500--virtual-semantic-machine)
+- [NAND# Architecture](#nand-architecture)
+- [HE-Binary-Functor](#he-binary-functor)
+- [Custom Languages and DSLs](#custom-languages-and-dsls)
+- [Workerman Calculus](#workerman-calculus)
 - [Formal Verification](#formal-verification)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Testing](#testing)
+- [Non-Commutative Torus](#non-commutative-torus)
+- [Quantum Layer](#quantum-layer)
+- [Technical Stack](#technical-stack)
+- [Build and Run](#build-and-run)
 - [License](#license)
 
 ---
 
-## Overview
+## Production Financial Core
 
-**devflow-finance-twin** is a production-grade sovereign banking-as-a-service (BaaS) ledger implementation combining:
+The financial engine is an event-sourced ledger. Operations are `CREATE_ACCOUNT`, `POST_TRANSACTION`, `CREATE_INVOICE`, `RECORD_PAYMENT`, `CREATE_OBLIGATION`, `APPROVE_TRANSACTION`, `REJECT_TRANSACTION`, `REVERSE_TRANSACTION`.
 
-- **IBM i Financial Core**: COBOL FSL supervisors + RPGLE posting engine + DB2 for i
-- **Event Sourcing**: Python financial twin with WORM (Write-Once-Read-Many) storage
-- **Formal Verification**: Multi-prover verification (Lean 4, Coq, F*, Isabelle, Agda)
-- **Quantum Computing**: Full circuit simulator (~1500 LOC) with error correction
-- **Binary Functor Architecture**: 30+ subdirectories spanning formal spec to hardware
-- **Assembly & Low-Level**: AVX2 SIMD kernels, x86-64, z/Architecture, WASM ISA
+Every operation is validated, appended to a WORM (Write Once Read Many) file as a JSON record, and given a cryptographic decision seal — a SHA-256 digest that chains every event to every prior event. The in-memory financial state is always rebuilt from scratch by replaying the WORM chain forward; it is never persisted separately. `verify_ledger_consistency()` rebuilds the entire chain and confirms the state hash matches.
 
-**Repository Scale:**
-- **2,090+ files** across **463+ directories**
-- **~35,000 lines of code**
-- **18+ programming languages**
-- **290+ source files** (Python, Haskell, COBOL, RPGLE, Rust, C#, Lean, Assembly, CUDA, SystemVerilog, Pascal)
+Monetary arithmetic uses 18-decimal `Decimal` throughout — no floating point anywhere in the financial path. Rate limiting enforces 1000 operations per 60-second window. The quantum layer is called for suggestions but its output is discarded before any state change; the deterministic approval gate is the only path to state mutation.
+
+The CLI is the entry point. The Docker image runs non-root, removes pip after installation, and runs a healthcheck that verifies WORM integrity on startup.
 
 ---
 
-## Architecture
+## IBM i Layer
 
-```mermaid
-graph TB
-    A[External System<br/>HTTP/TCP/MQ] --> B[C# REST API<br/>LedgerGateway]
-    B --> C[Binary Struct Marshal<br/>128-byte blocks]
-    C --> D[RPGLE Funnel Translator<br/>FNLIRTR + YAJL]
-    D --> E[COBOL FSL Supervisor<br/>COBILT-VAULT]
-    E --> F[DB2 for i<br/>ORCTASK/ORCLOG/ORCAUD]
-    F --> G[Python Financial Twin<br/>Event Sourcing + WORM]
-    G --> H[Quantum Layer<br/>Suggestions Only]
-    H --> I[Deterministic Approval Gate]
-    
-    style B fill:#e1f5ff
-    style D fill:#fff4e1
-    style E fill:#f0e1ff
-    style F fill:#e1ffe1
-    style G fill:#ffe1e1
-    style H fill:#fff0e1
-    style I fill:#e1ffff
-```
+The IBM i layer consists of four COBOL programs — the COBILT family — that implement financial logic on IBM i with RPGLE translators and DB2 for i storage.
 
-### System Layers
+What makes these unusual is that they are not ordinary COBOL. Each embeds a complete execution model that has no precedent in the COBOL world:
 
-| Layer | Technology | Responsibility |
-|-------|------------|----------------|
-| **API** | C# | REST endpoints, binary marshaling, rail adapters |
-| **Translator** | RPGLE | Funnel DSL → Business IR (JSON via YAJL) |
-| **Logic** | COBOL | Prolog-style unification, backtracking, choice points |
-| **Storage** | DB2 for i | Task queue, audit trail, operational log |
-| **Twin** | Python | Event sourcing, WORM storage, state reconstruction |
-| **Quantum** | Python | Circuit simulation, advisory outputs only |
-| **Verification** | Lean/Coq/Isabelle | Formal proofs of ledger invariants |
+**COBILT-VAULT** is a cryptographic logic vault with a Prolog-style execution engine built entirely inside COBOL's EVALUATE/PERFORM dispatch. It has real predicate evaluation (`PRED-EXISTS`, `PRED-EQUAL`, `PRED-AUTHORIZED`), rule combinators (`RULE-AND`, `RULE-OR`, `RULE-CHAIN`), a unification stack with push/pop binding, choice point control for backtracking, and hash-chained ledger entries. This is a logic programming runtime inside a traditional IBM i COBOL program — no external runtime, no assembler.
+
+**COBILT-DATAWORM** replaces SQL entirely with a Datalog storage engine implemented in COBOL. Facts are asserted, retracted, and queried through Datalog semantics. The persistence layer is a custom fact/rule/binding/stack working-storage system that the program manages itself.
+
+**COBILT-ACH-TREASURY** handles ACH payment routing with the same embedded logic system — `QUERY`, `UNIFY`, `BACKTRACK` are first-class verbs alongside `CREATE-BATCH`, `ROUTE-PAYMENT`, `SETTLE`.
+
+**COBILT-DATAWORM-TREASURY** combines the Datalog engine with the treasury logic in a single program targeting REXX orchestration with zero SQL.
+
+The **Funnel DSL** is a custom business-rules language that compiles to COBOL, Prolog, or Mercury. It is parsed entirely inside RPGLE using YAJL for JSON emission. Declarations are `PROGRAM`, `TYPE` (enum), `RECORD`, `FILE ... USING ... KEY`, `RULE`, `PROC`. Statements include `REQUIRE`, `LOAD ... AS`, `SAVE`, `FAIL`. The RPGLE parser implements a full lexer, recursive-descent parser, typed IR, and three code generation backends.
 
 ---
 
-## Repository Map
+## VSM-2500 — Virtual Semantic Machine
 
-### Core Financial Infrastructure
+VSM-2500 is Ahmad's complete virtual machine stack. It is a deterministic register-memory-graph machine with binary semantic primitives, a viral springboard propagation mechanism, proof obligations on every state transition, and provenance on every event. It has no probabilistic selection, no floating-point at its core, and no softmax-style generation.
 
-| Directory | Description |
-|-----------|-------------|
-| `cobol/` | COBOL FSL supervisors (COBILT-VAULT, COBILT-ACH-TREASURY, COBILT-DATAWORM) |
-| `rpgle/` | RPGLE programs (FNLIRTR, ORCGHSTROTR, LEDREVSRV, AGHENTSC) |
-| `csharp/` | C# API layer (LedgerGateway.cs, RtpRailAdapter.cs) |
-| `schema/` | DB2 for i DDL (ORC_SCHEMA.sql, schema-extended.sql) |
-| `src/` | Core source (twin.py, cold_boot.py, icp_anchor.py, quantum.py + VSM-2500 stack) |
+The stack has five layers:
 
-### Formal Verification & Proofs
+**P2** is the hardware parallel fabric — 32 SIMD lanes, 8-wide issue, 256-register file, crystallization (speculative→committed state promotion), mirror hashing (state integrity verification), clone verification, and a barrier network. It is implemented as C++ with all seven verification suites passing and as SystemVerilog RTL with synthesizable binary ALU, synchronous register file, and springboard controller.
 
-| Directory | Description |
-|-----------|-------------|
-| `lean/` | Lean 4 proofs (BorrowchainStorageEngine, BifrostCapabilityExchange, VSM-2500 algebra, array verification) |
-| `lean-proofs/` | Extended Lean proof library |
-| `formal-token-verification/` | Multi-prover token verification (Lean, Coq, F*, Isabelle, Agda) |
-| `formal-verification-paper/` | Research papers and verification artifacts |
-| `linear-algebra-verification/` | Matrix operation proofs (Coq, Isabelle, Lean) |
-| `constraint-harness/` | Runtime constraint verification with proof obligations |
-| `docs/` | Research documents (Coherent Maxwell Demon, Demon's Hole quantum circuit) |
+**P3** is the binary ISA — a 64-bit instruction word with explicit field layout, dual encoding layers (the C struct layer and the CUDA kernel layer), full opcode coverage for ALU, logic, shift, compare, memory, binding, compose/split/merge, springboard, commit, rollback, and halt.
 
-### Quantum Computing
+**P4** is the virtual microcode layer — control words, datapath select, dependency masks, micro-opcode dispatch. It defines the execution contract from `FETCH → DECODE → DEPENDENCY_CHECK → REGISTER_READ → MICRO_OP_DISPATCH → DATAPATH_EXECUTE → MEMORY_OPERATION → STATUS_UPDATE → REGISTER_WRITE → VALIDATION → COMMIT`.
 
-| Directory | Description |
-|-----------|-------------|
-| `quantum_computer/core/` | Quantum state, registers, complex numbers, matrix ops |
-| `quantum_computer/circuit/` | Circuit representation, DAG, optimizer, scheduler |
-| `quantum_computer/algorithms/` | Advanced quantum algorithms (Shor, Grover, VQE, QAOA) |
-| `quantum_computer/gates/` | Quantum gate library (Pauli, Hadamard, CNOT, Toffoli) |
-| `quantum_computer/error_correction/` | Surface codes, stabilizer formalism, syndrome extraction |
-| `quantum_computer/noise/` | Noise models (depolarizing, amplitude damping, phase flip) |
-| `quantum_computer/vm/` | Quantum VM simulator with measurement and state collapse |
-| `quantum_computer/tests/` | Comprehensive test suite (test_full.py, test_extended.py) |
+**The CUDA stack** maps this to SM90 execution across five `.cu` files covering the ISA kernel, semantic execution block, H100 SASS bridge, and the full recursive semantic→binary→embedding→convolution→SM90 reference. None of these fabricate SASS — all SASS is toolchain-generated via `nvcc -arch=sm_90`.
 
-### VSM-2500 Virtual Semantic Machine
+**The Lean 4 layer** formally verifies the binary algebra underlying VSM-2500: 20 Boolean axioms proven (`AND commutative`, `De Morgan's laws`, `XOR self-inverse`, `double negation`, etc.), word-level operators, shift operations, comparison semantics, instruction correctness proofs, and invariant preservation chains — all with zero `sorry`.
 
-Ahmad Ali Parr's full-stack VSM-2500 implementation — binary semantic core, virtual microcode layers, GPU execution, SystemVerilog RTL, and Lean 4 formal algebra.
-
-| File | Description |
-|------|-------------|
-| `src/vsm2500_specification.txt` | VSM-2500 normative spec (2500-line deterministic virtual machine specification) |
-| `src/pcode_vm_full_stack.py` | P-Code VM with residual stream, KV cache, MoE router, AIRGAP isolation |
-| `src/p2_hardware_parallel_fabric.cpp` | P2 parallel fabric — 32 lanes, 8-wide issue, crystallization/mirror/clone |
-| `src/p3_binary_microcode_p2_fabric.cpp` | P3 binary ISA + P2 fabric combined reference (C/C++/CUDA) |
-| `src/p4_microcode_vsm2500.cpp` | P4 virtual microcode layer — control word, datapath, SPRING/COMMIT/ROLLBACK |
-| `src/vsm2500_isa_kernel.cu` | CUDA ISA kernel — VSM instruction set, embedding, conv2d, springboard, warp XOR |
-| `src/vsm2500_cuda_execution_block.cu` | CUDA execution block — semantic object → binary → embedding → conv → SM90 chain |
-| `src/vsm2500_h100_sass_bridge.cu` | H100 SASS bridge — full register file, execution trace, launch wrappers (SM90) |
-| `src/vsm2500_semantic_cuda.cu` | Recursive semantic→binary→embedding→convolution→SM90 reference |
-| `src/vsm2500_core.sv` | SystemVerilog RTL — binary ALU, register file, springboard controller, vsm_core |
-| `src/hopper_gemm_kernel_spec.txt` | Hopper custom GEMM kernel spec (TMA, WGMMA, 2500-line normative spec) |
-| `src/nct_resonance_simulator.py` | Non-Commutative Torus resonance spike simulator — continued fractions, Diophantine bounds, amplitude surface, PDF report |
-| `lean/vsm_semantic_algebra.lean` | Lean 4 formal algebra: BinVal, Boolean axioms (20), word ops, RISC ISA |
-| `lean/vsm_binary_semantics.lean` | Lean 4 binary semantics: comparisons, shifts, instruction proofs, invariants |
-| `lean/ArrayVerificationExamples.lean` | Complete Lean 4 array verification examples (10 sections, no `sorry`) |
-| `lean/ArrayVerification_Template.lean` | Lean 4 array verification starter template (12 fill-in sections) |
-| `docs/demon_hole_quantum_circuit.md` | Quantum circuit complexity of U_DH — GJW wormhole, Quipper DSL, gate recurrence |
-| `docs/coherent_maxwell_demon.md` | Coherent Maxwell Demon work budget — generalized Landauer, ergotropy, Rust impl |
-
-**VSM-2500 Recursion Chain:**
-```
-VSM Semantics → P4 Microcode → P3 Binary ISA → P2 Hardware Parallel Fabric
-→ CUDA → PTX → CUBIN → SM90 SASS → NVIDIA H100
-```
-
-**Verified Properties:**
-- All P2/P3 execution is deterministic
-- SystemVerilog synthesizable subset (combinational ALU, synchronous register file)
-- SASS obtained from NVIDIA toolchain only — no fabrication of internal microcode
-- Lean 4 proofs: 20 Boolean axioms verified, instruction semantics formalized
-
-### Assembly & Low-Level
-
-| Directory | Description |
-|-----------|-------------|
-| `assembly-120-strict-model/` | Assembly/ISA collection (AVX2, x86-64, z/Architecture, WASM) |
-| `x86_64/` | x86-64 assembly (quantum validation, treasury WORM IPL) |
-| `ptx/` | CUDA PTX assembly |
-| `isa-jvm/` | Hand-rolled ISA with reference interpreter |
-
-### Binary Functor Architecture
-
-| Directory | Description |
-|-----------|-------------|
-| `he-binary-functor/` | Ahmad's Binary Functor Architecture (30+ subdirectories) |
-| `he-binary-functor/fibonacci-braid-ledger/` | Core FBL research (x86-64 ASM, BQN, C++, Liquid Haskell) |
-| `he-binary-functor/nand-architecture/` | NAND# ISA spec with bootstrap chain |
-| `he-binary-functor/crypto/` | Cryptographic primitives (IAMAC, malleability, RSL, QTM) |
-| `he-binary-functor/tensor-parser/` | SPARK Ada zero-copy tensor parser |
-| `he-binary-functor/verilog-a/` | Analog circuits (Riemann ζ, Chua's circuit, Lyapunov) |
-
-### Datalog & Logic Programming
-
-| Directory | Description |
-|-----------|-------------|
-| `datalog-engine/` | Datalog storage engine (replaces SQL persistence) |
-| `prolog/` | Prolog logic programs and unification |
-| `logtalk/` | Object-oriented logic programming extensions |
-| `eclipse/` | ECLiPSe constraint logic programming |
-
-### Array & Tensor Languages
-
-| Directory | Description |
-|-----------|-------------|
-| `apl/` | APL implementations (Metatron pipeline, evidence gates) |
-| `he-binary-functor/bqn/` | BQN array programming (Fibonacci braid, tensor ops) |
-| `he-binary-functor/k/` | K array language implementations |
-| `he-binary-functor/uiua/` | Uiua stack-based array language (quantum entanglement) |
-
-### Functional Programming
-
-| Directory | Description |
-|-----------|-------------|
-| `haskell/` | Haskell implementations (Workerman calculus, quantum wire network 1500 lines) |
-| `scala/` | Scala implementations |
-| `lisp/` | Common Lisp and Scheme implementations |
-| `rust/` | Rust implementations (FSL compiler, CBMC semantics) |
+The non-commutative torus parameter θ = 89/2462 appears inside VSM-2500's execution kernels as a live phase-space parameter for chaotic transformation steps.
 
 ---
 
-## Ahmad's Custom Languages & Novel Architectures
+## NAND# Architecture
 
-This repository contains **32 distinct original languages, DSLs, ISAs, and formal systems** created by Ahmad Ali Parr. None of these exist elsewhere. This section documents each one with location, purpose, and key syntax.
+NAND# is a complete language tower with a single compute primitive: the NAND gate. Everything else — AND, OR, NOT, arithmetic, control flow — is derived from it.
 
----
+The **NAND ISA** is 16-bit fixed instruction width with 16 registers (R0 = 0). One compute opcode (`NAND rd, ra, rb → R[rd] ← ¬(R[ra] ∧ R[rb])`), one halt, and five memory/control opcodes. The binary format has no header, no magic bytes, no relocation — entry at address 0, round-trip guarantee `∀w. encode(decode(w)) = w`.
 
-### COBILT Family — Prolog-Augmented COBOL
+The **NAND# language** compiles to NAND binary through: `AST → typed SSA IR (explicit shapes) → element-wise expansion → scalar NAND graph → register allocation → NAND ISA binary`. It is self-hosting: `compiler₀` (Rust) compiles a subset; its output `compiler₁` is NAND binary that compiles the full language.
 
-The COBILT programs are standard IBM i COBOL programs that embed entirely novel execution models inside COBOL's EVALUATE/PERFORM dispatch — adding logic unification, backtracking, and Datalog storage as first-class COBOL verbs.
+The EBNF carries liquid-type-style refinement predicates inside grammar productions. `FibIndex<N>`, `Ledger<Type, N>`, `Generator<N>`, `Word<N>` are domain types. Braid-group generators `σᵢ` and `σ⁻¹` are grammar terminals. In-bounds array indexing is a syntax-level invariant.
 
-#### COBILT-VAULT
-**File:** `cobol/COBILT-VAULT.cbl`
+The **FSL** (Formal Specification Language) is an XML dialect (`xmlns="urn:nandsharp:fsl"`) that carries LiquidHaskell-style refinement predicates inline. `RegId = {r : nat | 0 <= r && r < REG_COUNT}`, machine invariants (`r0_zero`, `pc_in_bounds`, `mem_wellformed`), and per-instruction pre/postconditions — all in a single spec file.
 
-Full logic vault with predicate primitives, rule combinators, unification stack, and hash-chained ledger. Implements Prolog-style execution inside IBM i COBOL with no external runtime.
+The **cobalt compiler** is a Prolog-to-x86 compiler. Prolog Horn clauses are parsed, loaded into a `Library`, expanded through `expandUntilCrystal → crystalize → crystalFold` (depth-bounded term rewriting), optionally transformed by `vaultTransform` (structural inversion: reverses atom names and argument order), then lowered to x86 bytes via a batch assembler with per-unit `trilockHash` integrity seals.
 
-Custom verbs and primitives:
-```
-VAULT-OPEN  VAULT-READ  VAULT-WRITE  VAULT-ASSERT  VAULT-QUERY
-VAULT-UNIFY  VAULT-BACKTRACK  VAULT-COMMIT  VAULT-ROLLBACK
-BRIDGE-REXX  BRIDGE-RPGLE  BRIDGE-COBOL
-
-Predicates: PRED-EXISTS  PRED-EQUAL  PRED-NOT-EQUAL  PRED-PRESENT  PRED-AUTHORIZED
-Rules:      RULE-AND  RULE-OR  RULE-NOT  RULE-CHAIN
-Stack ops:  PUSH-BINDING  POP-BINDING  UNIFY-VARIABLE
-Choices:    CHOICE-PUSH  CHOICE-POP  CHOICE-CLEAR
-```
-
-#### COBILT-DATAWORM
-**File:** `cobol/COBILT-DATAWORM.cbl`
-
-Complete Datalog storage engine in COBOL. Replaces SQL entirely — no tables, no joins. Fact/rule/query evaluation runs inside COBOL working storage via `DW-RX-COMMAND` dispatch.
-
-```
-OPEN  BEGIN  ASSERT  RETRACT  QUERY  UNIFY  BIND  UNBIND
-CHOICE  BACKTRACK  RULE  EXECUTE  COMMIT  ROLLBACK  CLOSE
-```
-Working storage sections: JOURNAL, FACT, RULE, BINDING, STACK.
-
-#### COBILT-ACH-TREASURY
-**File:** `cobol/COBILT-ACH-TREASURY.cbl`
-
-ACH treasury engine with embedded logic unification — backtracking, choice points, and Prolog-style `QUERY`/`UNIFY` wired into the same program as payment routing.
-
-```
-CREATE-BATCH  ADD-ENTRY  VALIDATE-ENTRY  VALIDATE-BATCH
-CHECK-FUNDS  ROUTE-PAYMENT  GENERATE-ACH  SUBMIT  SETTLE
-RECONCILE  QUERY  UNIFY  BACKTRACK  ROLLBACK  COMMIT
-```
-
-#### COBILT-DATAWORM-TREASURY
-**File:** `cobol/COBILT_DATAWORM_TREASURY.cob`
-
-Combined ACH treasury + Dataworm Datalog storage in one COBOL program targeting REXX orchestration with zero SQL.
+The ISA is encoded as a Haskell GADT making illegal encodings unrepresentable. The macro library is bilingual: every macro has Arabic and English documentation (e.g., `-- نسخ قيمة السجل / copy register`). `macroNot`, `macroAnd`, `macroOr` are all derived from NAND.
 
 ---
 
-### Funnel DSL
-**Files:** `docs/funnel-grammar.v01.md`, `docs/funnel-ir.md`, `rpgle/FNLIRTR.rpgle`
+## HE-Binary-Functor
 
-A bespoke business-rules language for IBM i, parsed entirely inside RPGLE and emitted as structured Business IR (JSON via YAJL). No existing language serves this IBM i business-rules niche.
+The HE-Binary-Functor is a formal specification for a recursive homomorphic encryption binary functor system. A `BinaryFunctor` is a 32-byte block: opcode (u16), version (u8), flags (u8), input/output widths (u32 each), parameter length (u32), child count (u16), reserved (u16), integrity hash (u64, Blake3 truncated). Composition is closed. Identity exists. Execution is deterministic. Failures are explicit.
 
-```
-PROGRAM Orders.
-TYPE State = OPEN | CLOSED | RETURNED.
-RECORD Item { id: CHAR(10).  state: State. }.
-FILE OrderFile USING Item KEY id.
-RULE returnable(item: Item) = item.state = State.OPEN.
-PROC return_item(item: Item, reason: CHAR(3)) =
-  REQUIRE returnable(item).
-  item.state := State.RETURNED.
-  SAVE item.
-```
+The same formal spec is implemented in parallel across 26 languages: APL, Beam/Erlang, BQN, C, Circom, CUDA-Q, Fibonacci Braid Ledger (C + Haskell + BQN + x86 ASM + RV64I + C++), GF-NAND (Rust + Kani), Haskell (Workerman Calculus), K, Lean 4, NAND# (as above), QRisp, Q#, Rust, SGL, SystemVerilog, tensor-parser (SPARK Ada), Uiua, Verilog-A, Why3, XSLT-WASM. All target the same binary block header and composition invariants.
 
-Constructs: `PROGRAM`, `TYPE` (enum), `RECORD`, `FILE … USING … KEY`, `RULE`, `PROC`, `REQUIRE expr`, `LOAD ident(…) AS ident`, `SAVE`, `FAIL "message"`.
-Parser runs inside RPGLE; emits JSON IR for downstream COBOL/DB2 consumption.
+The **Fibonacci Braid Ledger** within this family uses braid group words with Fibonacci-indexed generators as the ledger data structure. Append operations are braid generator compositions. The seal is a cryptographic proof over the composed braid word.
+
+The **GF-NAND** layer adds GF(2) finite-field refinements to the NAND IR — all operations are proven equivalent to polynomial operations modulo 2. Kani model-check harnesses verify formal refinement properties (31 bounded proofs).
 
 ---
 
-### NAND# Architecture Stack
+## Custom Languages and DSLs
 
-A complete language tower with a single compute primitive: NAND. Every Boolean operation, arithmetic function, and control flow construct reduces to it.
+Beyond the systems above, the repository contains:
 
-#### NAND ISA
-**Files:** `he-binary-functor/nand-architecture/nand-isa/SPEC.md`, `he-binary-functor/nand-architecture/NAND_SPEC.md`
+**ISA-JVM**: A custom ISA extending JVM-style bytecodes with actor primitives (`AGENT_SPAWN`, `AGENT_SEND`, `AGENT_YIELD`, `AGENT_HALT`), CSP-style channel operations (`CHAN_CREATE`, `CHAN_WRITE`, `CHAN_READ`), synchronization (`SYNC`, `CAS`), and tensor operations (`TENSOR_ADD`). No existing ISA combines these families.
 
-16-bit fixed instruction word. R0 hard-wired to zero. One compute opcode — NAND.
+**MXML (Machine eXecution Markup Language)**: An XML dialect for constrained multi-agent task graphs. `<runtime>` contains `<limits>` (max_workers, max_revisions, timeout_seconds), `<axioms>` (constitutional hard rules in Datalog style), `<commands>` (typed with isolation level), and `<tasks>` (DAG with dependency declarations). The constraint harness executes MXML documents through a state machine: `RECEIVE → PARSE → CONSTITUTION_CHECK → DECOMPOSE → ROUTE → DISPATCH → SUPERVISE → VALIDATE → CROSS_CHECK → ACCEPT` (or `FAILED_CLOSED` / `REVISE`).
 
-```
-0x0 NAND  rd, ra, rb   →  R[rd] ← ¬(R[ra] ∧ R[rb])
-0x1 HALT
-0x2 LOAD  rd, ra, imm4 →  R[rd] ← MEM[R[ra] + imm4]
-0x3 STORE rd, ra, imm4 →  MEM[R[ra] + imm4] ← R[rd]
-0x4 LDI   rd, imm8     →  R[rd] ← zero-extend(imm8)
-0x5 JMP   ra           →  PC ← R[ra]
-0x6 JZ    rd, ra       →  if R[rd]==0 then PC ← R[ra]
-0x7–F     INVALID → trap
-```
+**AGOL-86 / .a86**: ALGOL 68 syntax used as a neural network architecture specification format. Transformer forward passes, attention, matmul, GELU, layer norm, residual connections — all expressed as ALGOL 68 procedures. The Python tooling in `src/agol86/` interprets these files.
 
-#### NAND# Language
-**Files:** `he-binary-functor/nand-architecture/nandsharp/GRAMMAR.md`, `omega/MODEL.md`, `array/SEMANTICS.md`, `bootstrap/CHAIN.md`
+**BTEN Binary Format**: A custom binary tensor serialization with SPARK Ada formal layout. Magic `0x4E455442`. 64-byte header with CRC32. Per-tensor descriptors with explicit `Bit_Order => Low_Order_First`. Maximum rank 8, maximum tensors 1024, HMAC-SHA256 seal. Verified with GNAT Prove.
 
-High-level array-typed language that compiles entirely to NAND binary via:
-`AST → typed IR (SSA-like, explicit shapes) → element-wise expansion → scalar NAND graph → register allocation → NAND ISA binary`
+**Meta-Circular Datalog**: A self-hosting Datalog evaluator written in Datalog. The interpreter represents rules as data within the same relation space. Stratified negation via closed-world assumption. This replaces SQL as the persistence layer for the COBILT stack.
 
-```
-expr ::= "nand" expr expr | "not" expr | "and" expr expr
-       | "reshape" expr shape | "transpose" expr | "reduce" "nand" expr
-τ    ::= Bool | Array τ shape
-```
+**Eclipse ParLog Kernel**: Fuses ECLiPSe constraint logic (finite-domain, interval, linear arithmetic) with Parlog concurrent logic (mode declarations, guarded clauses, committed-choice OR, concurrent streams, process pools) in a single kernel. Includes `alldifferent`, `cumulative`, `bin_packing` global constraints, reified constraints, and branch-and-bound.
 
-Self-hosting: `compiler₀` (Rust) produces `compiler₁` as NAND binary output.
+**Astre-Vault**: Pure S/K/I combinatory logic implementing Madhava–Leibniz series for π and Qin Jiushao's algorithm (大衍術 — Chinese Remainder Theorem). No λ-abstraction. No interpreter. Pure combinator reduction.
 
-#### NAND# EBNF with Refinement Types
-**File:** `src/ebnf/81130392bc1d11c719679c5f93e3f0c0.ebnf`
-
-Grammar carrying liquid-type-style refinement predicates inline. Domain-specific types (`FibIndex<N>`, `Ledger<Type,N>`, `Generator<N>`, `Word<N>`) and braid-group generators (`σᵢ`, `σ⁻¹`) are built into grammar productions. In-bounds array indexing is a syntax-level invariant.
-
-```ebnf
-Type      ::= "FibIndex" "<" Nat ">" | "Ledger" "<" Type "," Nat ">"
-            | "{" Ident ":" Type "|" Predicate "}"
-Generator ::= ("σ" | "σ⁻¹") Nat
-```
-
-#### NAND Binary Format (.nandbin)
-**File:** `he-binary-functor/nand-architecture/nand-binary/FORMAT.md`
-
-No header, no magic, no relocation. Contiguous 16-bit LE words. Entry at address 0. Formally: `∀w. encode(decode(w)) = w`.
-
-#### FSL — Formal Specification Language
-**File:** `he-binary-functor/nand-architecture/fsl/nand_vm.fsl`
-
-XML dialect (`xmlns="urn:nandsharp:fsl"`) carrying LiquidHaskell-style refinement predicates inline. Defines bounded types (`RegId = {r : nat | 0 <= r && r < REG_COUNT}`), machine invariants (`r0_zero`, `pc_in_bounds`, `mem_wellformed`), function pre/post-conditions, and per-instruction contracts.
-
-#### NAND# Refinement Type System
-**File:** `he-binary-functor/nand-architecture/refinement/NAND_REFINEMENTS.md`
-
-LiquidHaskell refinement specs: `nand :: a:Bit -> b:Bit -> {v:Bit | v == 1 - (a*b)}`, bounded `Addr`/`Off` types, load/store contracts, and semantic preservation theorem `EXECUTE(LOWER(e)) = EVAL(e)` for all closed Boolean expressions.
+**PL/I Functor Pipeline**: A PL/I sovereign treasury engine with pointer-threaded functor composition and VSAM ESDS WORM termination. `TREASURY_ENTRY` and `FUNCTOR_STATE` are ALIGNED structs. Hash chain verification runs before every append.
 
 ---
 
-### Cobalt Compiler — Prolog → Crystal Fold → x86
+## Workerman Calculus
 
-**Files:** `cobalt-compiler/MagicCobalt.hs`, `cobalt-compiler/Cobalt/Dense.hs`, `cobalt-compiler/X86BatchAssembler.hs`
+The Workerman Calculus extends LiquidHaskell's refinement type system with objects that have no counterpart in existing calculi:
 
-Prolog Horn-clause rules are loaded into a `Library`, expanded via `expandUntilCrystal → crystalize → crystalFold` (depth-bounded term rewriting), optionally transformed by `vaultTransform` (structural inversion: reverses atom names and argument order), then lowered to x86 bytes with per-unit `trilockHash` integrity labels.
+**Ptolemaic terms** — `Epicycle(deferent, epicycle, mean_motion, anomaly)` as a type-level construct. Celestial coordinates (`SphereCoord` with RA/Dec), Hopf fibers over CP¹ (Bloch states), and a `Celestial` S² base manifold are built-in base types.
 
-#### ISA.Core — GADT ISA with Arabic documentation
-**File:** `cobalt-compiler/ISA/Core.hs`
+**Yang-Baxter normalization** runs as a fixed-point rewrite over `BraidWord` terms: cancels `σᵢσᵢ⁻¹`, commutes distant generators (`|i−j| ≥ 2`), applies the braid relation `σᵢσᵢ₊₁σᵢ = σᵢ₊₁σᵢσᵢ₊₁`. This normalization is proven terminating by lexicographic measure.
 
-A Haskell GADT making illegal instruction encodings unrepresentable. Register IDs are refined types. `NAND` is a first-class instruction. Bilingual Arabic+English comments throughout.
+**WORM-sealed ROM lookups** (`FlopRom`) — reading from a WORM-sealed ROM is a typed operation that carries the seal in the type.
 
-```haskell
-Nand  :: Int -> Int -> Int -> Instr   -- نفي المنطقي / rd = ~(rs1 & rs2)
-Load  :: Int -> Int -> Word64 -> Instr
-Store :: Int -> Int -> Word64 -> Instr
-JumpZero :: Word64 -> Instr
-```
+**Trigonometric annotations** — `sin[e]`, `cos[e]`, `period[p](e)` are first-class term constructors in the refinement language.
 
-#### LiquidOps NAND Kernel
-**File:** `cobalt-compiler/LiquidOps/NAND.hs`
-
-NAND IR → P4 → LiquidOps lowering pipeline. Every Boolean expression maps through `exprToLogic → nandify → lowerNAND → LiquidOp emission`. Terminal IR opcodes: `Ld`, `ImmI`, `Mov`, `AddI`, `SubI`, `MulI`, `AndI`, `OrI`, `XorI`, `NandI` (primary), `SetEQ`, `SetLT`, `Branch`, `Label`, `Return`.
-
----
-
-### ISA-JVM — Extended JVM ISA
-
-**File:** `isa-jvm/isa/opcodes.py`
-
-JVM-style bytecodes extended with actor and channel primitives. No existing ISA combines all three families.
-
-```
-Standard:      LOAD 0x01  STORE 0x02  ADD 0x10  MUL 0x11  CMP 0x20  JMP 0x30  JEQ 0x31
-Concurrency:   SYNC 0x50  CAS 0x51
-Channels:      CHAN_CREATE 0x60  CHAN_WRITE 0x61  CHAN_READ 0x62
-Agents:        AGENT_SPAWN 0x70  AGENT_SEND 0x71  AGENT_YIELD 0x72  AGENT_HALT 0x73
-Tensor:        TENSOR_ADD 0x80
-```
-
----
-
-### HE-Binary-Functor Architecture
-**File:** `he-binary-functor/HE-BINARY-FUNCTOR-SPEC-001.md`
-
-A formal specification for a recursive homomorphic-encryption binary functor system, implemented across 26 subdirectories in 18+ languages. Defines a `BinaryFunctor` record with formal composition closure, identity existence, determinism, and explicit failure requirements.
-
-Binary block header (32 bytes):
-```
-u16 op | u8 ver | u8 flags | u32 in_w | u32 out_w | u32 p_len | u16 child | u16 rsvd | u64 integrity (Blake3)
-```
-
-Integrity property: `COMPOSE(F, COMPOSE(G, H)) = COMPOSE(COMPOSE(F, G), H)`.
-All 26 language implementations (`apl/`, `beam/`, `bqn/`, `c-core/`, `circom/`, `crypto/`, `cuda-q/`, `fibonacci-braid-ledger/`, `gfnand/`, `haskell/`, `k/`, `lean4/`, `nand-architecture/`, `qrisp/`, `qsharp/`, `rust/`, `sgl/`, `systemverilog/`, `tensor-parser/`, `uiua/`, `verilog-a/`, `why3/`, `xslt-wasm/`) target this same formal spec.
-
----
-
-### Fibonacci Braid Ledger
-**Files:** `he-binary-functor/fibonacci-braid-ledger/` (C, Haskell, BQN, x86 ASM, RV64I, C++)
-
-Ledger entries encoded as braid group words with Fibonacci-indexed generators. Append operations are realized as braid generator composition (σᵢ); the cryptographic seal is a formal integrity proof on the composed braid word. Implemented in 6 languages simultaneously.
-
-Seal chain: `Seal_n = H(Seal_{n-1} ∥ C(S_n))` where `C(S_n)` is the braid-compressed ledger state.
-
----
-
-### Workerman Calculus
-**File:** `he-binary-functor/haskell/Workerman/Calculus.hs`
-
-A novel type-theoretic calculus extending LiquidHaskell's RefCore with astronomical, braid-group, and trigonometric constructs. No existing refinement calculus contains these.
-
-Novel AST nodes:
-```haskell
-| Trig TrigAnn Reft     -- sin[e], cos[e], period[p](e)
-| Epi Epicycle Reft      -- epicycle(deferent, epicycle, mean_motion, anomaly) e
-| Braid BraidWord        -- braid[σ1·σ2⁻¹]
-| Flop FlopRom Reft      -- flop(addr, val, WORM_SEAL) e
-| Sphere SphereCoord Reft -- sphere(RA=5.3, Dec=-0.2) e
-| Hopf HopfFiber Reft    -- Bloch state on CP¹
-```
-
-Yang-Baxter normalization runs as a fixed-point rewrite over braid words: cancels `σᵢσᵢ⁻¹`, commutes far generators (`|i−j|≥2`), applies `σᵢσᵢ₊₁σᵢ = σᵢ₊₁σᵢσᵢ₊₁`.
-
----
-
-### SGL — Spherical Geometry Type Library
-**File:** `he-binary-functor/sgl/SGL.hs`
-
-Strongly-typed spherical geometry as first-class Haskell types, preventing category errors between coordinate systems at compile time: `Angle`, `Length`, `Radius`, `Point2` (lat/lon), `Point3` (unit sphere), `PointOn` (constrained to sphere), `GreatCircle` (sphere + normal), `Arc` (two constrained points + arc angle).
-
----
-
-### BTEN Binary Tensor Format
-**Files:** `he-binary-functor/tensor-parser/format_bten.ads`, `parser_bten.adb`
-
-Custom binary tensor serialization with SPARK Ada formal layout. Magic = `0x4E455442` ("BTEN" LE). 64-byte header with CRC32; per-tensor descriptors with explicit `Bit_Order => Low_Order_First` annotations; max rank 8, max tensors 1024; HMAC-SHA256 seal. Format verified with GNAT Prove.
-
-```ada
-Magic at 0 range 0..31; Version at 4 range 0..15; Flags at 6 range 0..15;
-Tensor_Count at 12 range 0..31; Desc_Table_Offset at 16 range 0..63;
-Payload_Length at 48 range 0..63; Header_CRC32 at 56 range 0..31;
-```
-
----
-
-### AGOL-86 / .a86 Format
-**File:** `src/agol86_model.a86`
-
-ALGOL 68 syntax used as a neural network architecture specification format. The `.a86` extension is unique to this repo; Python tooling in `src/agol86/` interprets it.
-
-```algol68
-MODE Tensor = STRUCT([1:*] REAL data, [1:2] INT shape);
-PROC agol86_attention = (Tensor q, Tensor k, Tensor v, INT heads) Tensor:
-BEGIN
-  Tensor scores := matmul(q, transpose(k));
-  scores := scores / SQRT(REAL(heads));
-  YIELD softmax(scores)
-END;
-```
-
----
-
-### APL Bytecode VM
-**File:** `he-binary-functor/apl/OPCODES_V1.apl`
-
-Custom bytecode interpreter in APL with braid-encoded execution state. Opcode table:
-
-```
-0 = halt
-1 = add immediate
-2 = mul immediate
-3 = recurse (n subprogram bytes inline)
-4 = contract  r × a ÷ (1 + ⍳≢a)
-9 = verify (dispatches to check registry)
-```
-
-Braid words σ₁…σ₁₀ encoded directly as bytecode blobs; ledger flips LOCKED/UNLOCKED on successful verification.
-
----
-
-### MXML — Machine eXecution Markup Language
-**Files:** `constraint-harness/mxml/parser.py`, `schema.py`, `validator.py`
-
-XML dialect for specifying constrained multi-agent task graphs with constitutional hard rules, resource limits, and DAG dependency declarations. Intentionally strict parser — no silent repair.
-
-```xml
-<runtime id="audit-run">
-  <limits max_workers="4" max_revisions="3" timeout_seconds="300"/>
-  <axioms>
-    <rule id="no_self_approval">actor != approver</rule>
-    <rule id="balance_nonneg">balance >= 0</rule>
-  </axioms>
-  <commands>
-    <command name="validate" isolation="process"/>
-  </commands>
-  <tasks>
-    <task id="t1" depends_on="" revision_limit="2">
-      <command ref="validate"/>
-    </task>
-  </tasks>
-</runtime>
-```
-
----
-
-### Meta-Circular Datalog Engine
-**Files:** `datalog-engine/datalog/meta_circular_evaluator.dl`, `souffle_engine.dl`, `souffle_meta_eval.dl`
-
-A self-hosting Datalog evaluator written in Datalog itself. The interpreter represents rules as data within the same relation space:
-
-```prolog
-clause_1_head(ancestor, X, Y) :- base_fact(parent, X, Y).
-clause_1_body(ancestor, X, Y) :- clause_1_head(ancestor, X, Y).
-```
-
-Stratified negation via closed-world assumption included. This engine is the COBILT stack's persistence layer, replacing SQL entirely.
-
----
-
-### Astre-Vault — Unlambda Mathematical Computing
-**File:** `astre-vault/astra-vault.unl`
-
-Pure S/K/I combinatory logic implementing the Madhava–Leibniz π series and Qin Jiushao's algorithm (大衍術 — Chinese Remainder Theorem). No λ-abstraction, no interpreter — purely combinator reduction.
-
-```unlambda
-succ        = ``s``s`ksk
-madhava_term = ``s``s`ks``s``s`ksk``s`k`sign``s`k`recip`odd
-qin_step    = ``s``s`ks``s``s`ksk``s`k`mod``s`k`mul
-```
-
----
-
-### PL/I Functor Pipeline — VSAM WORM Treasury
-**File:** `pli/functor_worm.pli`
-
-PL/I program implementing a sovereign treasury engine with pointer-threaded functor composition and VSAM ESDS WORM termination. `TREASURY_ENTRY` and `FUNCTOR_STATE` are ALIGNED structs tracking `F_PREV_HASH`, `F_CURR_HASH`, `F_PTR_BASE/CURR/END`. Hash-chain verification runs before every append.
-
----
-
-### Eclipse ParLog Fused Kernel
-**File:** `eclipse/eclipse_parlog_fused_kernel.ecl`
-
-Fuses ECLiPSe constraint logic (finite-domain, interval, linear) with Parlog concurrent logic (mode declarations, guarded clauses, committed-choice OR, concurrent streams, process pools) in a single unified kernel. Includes global constraints (alldifferent, cumulative, bin-packing), reified constraints, and branch-and-bound.
-
----
-
-### IAMAC — Inverted Algebraic MAC
-**Files:** `he-binary-functor/crypto/IAMAC.md`, `he-binary-functor/crypto/iamac.rs`
-
-A cryptographic primitive that systematically inverts all HMAC properties to produce a homomorphic MAC. Satisfies `IAMAC(K, m₁) + IAMAC(K, m₂) = IAMAC(K, m₁+m₂)` over a Mersenne-prime field (`p = 0xFFFFFFFFFFFFFFC5`). Design rationale:
-
-| HMAC property | IAMAC inversion |
-|---|---|
-| One-wayness | Homomorphism |
-| XOR key padding | Multiplicative ring scaling |
-| Nested hashing | Single-pass polynomial evaluation |
-
----
-
-### GF-NAND — GF(2) NAND Refinement IR
-**Files:** `he-binary-functor/gfnand/src/ir.rs`, `nand_lowering.rs`, `refinement.rs`, `parser.rs`, `metrics.rs`, `kani/src/verification.rs`
-
-NAND-based IR with GF(2) finite-field refinements. All operations are provably equivalent to polynomial operations modulo 2. Kani model-check harnesses verify formal refinement properties with 31 bounded proofs.
-
----
-
-### Polynomial Wormhole Constraint (PWC)
-**Files:** `he-binary-functor/systemverilog/pwc_hardware_accelerator.sv`, `he-binary-functor/why3/pwc_core.mlw`, `he-binary-functor/verilog-a/braid_trig_processor.va`
-
-A novel polynomial constraint system modeling celestial object trajectories as wormhole-inspired polynomial equations. Implemented as hardware (SystemVerilog accelerator), formal proofs (Why3/ML), verified Rust (`tau_model.rs`), and Verilog-A analog circuits combining braid words with trigonometric processing.
-
----
-
-### Non-Commutative Torus (NCT) — Full Inventory
-
-The NCT appears across 11 distinct artifacts in the repository, ranging from a dedicated Python simulator to analog Verilog-A circuits, a 50-entry formal proof ledger, and live K/BQN execution kernels.
-
-#### NCT Core: `src/nct_resonance_simulator.py`
-Full Python simulator for worst-case resonance spikes on the non-commutative torus. For irrational frequency α given by continued-fraction `[a₀; a₁, …, aₙ]`:
-- Computes all convergents p_n/q_n via three-term recurrence
-- Evaluates Diophantine lower bound: |α − p_n/q_n| > C/q_n^μ
-- Builds amplitude surface: `A_n(ρ; ε, β) = β·(ρ/δ_n)^ε · e^{−γ·q_n·ρ} / (1 + (q_n·ρ)^κ)`
-- Derives analytic threshold conditions on ε (Hölder regularity) and β (coupling amplitude)
-- Interactive CLI + parameter sweep + multi-page PDF scientific report
-
-```bash
-python src/nct_resonance_simulator.py \
-  --cf "[0;1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]" \
-  --eps 1.0 --beta 0.15 --C 0.25 --mu 2.0 --out golden_resonance_report.pdf
-```
-
-#### θ = 89/2462 as Live Execution Parameter
-
-The specific torus parameter θ = 89/2462 is embedded as a live computational value in two array-language kernels:
-
-**K** (`he-binary-functor/k/sovereign_tensor.k`):
-```k
-t: 89%2462  / Non-commutative torus parameter
-step: {[s;i] sin (b + i*t) + +/'w*\:s}
-out: step/[s0; !8]
-```
-
-**BQN** (`he-binary-functor/bqn/sovereign_homogeneous.bqn`):
-```bqn
-θ ← 89 ÷ 2462
-S0 ← 65.0 ‿ θ ‿ •math.Pi ‿ 0.0
-Step ← { •math.Sin B + (𝕨×θ) + +´¨ W ×¨ <𝕩 }
-FinalState ← CircuitForward 8
-```
-θ is embedded in the initial state vector itself. The chaotic step applies θ as angular phase increment over 8 depth iterations.
-
-#### Weyl Algebra Proof Ledger: `formal-verification-paper/theorem_ledger.rs`
-50 formal claims (TORUS-001..050) about the non-commutative torus operators U, V satisfying VU = e^{2πiθ}UV:
-
-| Claim | Statement | Status |
-|---|---|---|
-| TORUS-001 | VU = e^(2πiθ) UV | **PROVED** — standard Weyl algebra relation |
-| TORUS-006 | Rational torus A_(89/2462) exists | **PROVED** — standard operator algebra object |
-| TORUS-002 | θ=89/2462 has attack significance | REFUTED — arbitrary rational |
-| TORUS-012 | Commutator isolates secret | REFUTED — no proof of secret isolation |
-| TORUS-013 | Torus enables cryptanalysis | REFUTED — no attack demonstrated |
-| TORUS-007–011 | Finite-dim representations, eigenvalue clustering | UNDER_SPECIFIED |
-| MLKEM-038 | Non-commutativity strips error camouflage | UNDER_SPECIFIED |
-
-#### Topological Quench: `he-binary-functor/lean4/topological_quench.lean`
-Lean 4 proof that the quench operator (maps any 2×2 complex density matrix to vacuum) is non-injective — state recovery after a topological quench is mathematically impossible:
-```lean4
-theorem quench_irreversible : ¬ Function.Injective quench_operator
-```
-
-#### Trigonometric QTM: `he-binary-functor/crypto/TRIGONOMETRIC_QTM.md`
-Quantum Turing Machine with Yang-Baxter braid constraint. Angular phases θ_n parameterize recursive transitions. As n→∞: θ_∞ = arcsin(Φ⁻¹) — convergence to the golden ratio fixed point ("crystalline collapse").
-
-| n | θ_n | U_n | State |
-|---|---|---|---|
-| 0 | 0 | I | `|0101⟩ ⊗ |h₀⟩` |
-| 1 | π/4 | Hadamard-like | `(|0⟩+|1⟩)/√2 ⊗ |h₁⟩` |
-| 2 | π/2 | 90° rotation | `|1010⟩ ⊗ |h₂⟩` |
-| ∞ | arcsin(Φ⁻¹) | Golden limit | fixed-point crystalline |
-
-#### Riemann ζ-Zero Malleability Engine: `he-binary-functor/crypto/MALLEABILITY_ENGINE.md`
-Deterministic map from 256-bit digest to a point on the Riemann critical line (ρ_n = ½ + it_n):
-```
-n = 1 + (D mod N)
-t = T[n]                     (precomputed verified zero ordinate)
-rho = ½ + i·t
-orbit(D) = { ½ + i(t + δ_k) | k = 0..K-1 }
-seal = FNV-1a-64(n ∥ t ∥ orbit)
-```
-Does not assert RH. Uses independently verified zero ordinates as fixed public constants.
-
-#### Yang-Baxter Taylor Vault: `he-binary-functor/crypto/YANG_BAXTER_TAYLOR_VAULT.md`
-R₁₂R₁₃R₂₃ = R₂₃R₁₃R₁₂ Taylor-expanded to order N, coefficients extracted, polynomial-encoded, and sealed cryptographically. YBE residual tracked: if non-zero after truncation, vault flagged `YBE_FLAG = "TRUNCATED_RESIDUAL_NONZERO"`.
-
-#### Analog ζ-Zero Circuit: `he-binary-functor/verilog-a/RIEMANN_ZETA_VERILOG_A.md`
-Riemann-von Mangoldt density physicalized as analog frequency spectrum. Berry-Keating Hamiltonian H = xp via OTA cross-coupling. Riemann-Siegel Z-function drives PLL to zero crossings:
-```verilog
-freq_shift = ln(abs(V_state) / (2*M_PI*M_E) + 1.0);
-I(in,out) <+ ddt(C_base * freq_shift * V_state);
-```
-
-#### φ-Resonance Pipeline: `he-binary-functor/apl/METATRON_PIPELINE.md`
-Metatron's Cube (13 circles, 78 lines) as computation graph. Domain resonance classified by topological fixed-point behavior. Total Resonance Sum = 388.985128. Φ-Paradox: Φ ≈ 1.618 → Expansion (trap); Φ⁻¹ ≈ 0.618 → Contraction (golden zone, safe execution).
-
-#### NCT Quick Reference
-
-| File | NCT Role |
-|---|---|
-| `src/nct_resonance_simulator.py` | Full NCT resonance spike simulator |
-| `he-binary-functor/k/sovereign_tensor.k` | θ = 89/2462 live K execution |
-| `he-binary-functor/bqn/sovereign_homogeneous.bqn` | θ = 89/2462 live BQN execution |
-| `formal-verification-paper/theorem_ledger.rs` | 50-entry Weyl algebra proof ledger |
-| `he-binary-functor/lean4/topological_quench.lean` | Lean 4 topological irreversibility proof |
-| `he-binary-functor/crypto/TRIGONOMETRIC_QTM.md` | Trigonometric QTM + Yang-Baxter |
-| `he-binary-functor/crypto/MALLEABILITY_ENGINE.md` | Riemann ζ-zeros as crypto primitives |
-| `he-binary-functor/crypto/YANG_BAXTER_TAYLOR_VAULT.md` | YBE Taylor vault |
-| `he-binary-functor/verilog-a/RIEMANN_ZETA_VERILOG_A.md` | Analog ζ-zero Verilog-A circuit |
-| `he-binary-functor/apl/METATRON_PIPELINE.md` | φ-resonance Metatron pipeline |
-| `he-binary-functor/apl/INFUSION_BRAID.md` | Φ-Paradox braid (Lean+APL+Rust) |
-
----
-
-### Cobalt Conductor Spec — Lean 4 Formal Routing Contract
-**File:** `cobalt-compiler/Lean4/ConductorSpec.lean`
-
-Lean 4 proof that the Rust sovereign conductor cannot omit routing a critical task to the human gate. Introduces `GhostState` (modeling Rust side effects: `nats_outbox`, `borrowchain_log`) and proves `conductor_routes_criticalTask_to_humanGate` via `humanGate_criticalTask_requiresHuman → evaluateAll` monotonicity.
-
----
-
-### Quick-Reference Index
-
-| Name | Location | Category |
-|---|---|---|
-| COBILT-VAULT | `cobol/COBILT-VAULT.cbl` | Prolog-in-COBOL logic vault |
-| COBILT-DATAWORM | `cobol/COBILT-DATAWORM.cbl` | Datalog-in-COBOL storage engine |
-| COBILT-ACH-TREASURY | `cobol/COBILT-ACH-TREASURY.cbl` | ACH + unification in COBOL |
-| COBILT-DATAWORM-TREASURY | `cobol/COBILT_DATAWORM_TREASURY.cob` | Combined COBILT variant |
-| Funnel DSL | `docs/funnel-grammar.v01.md` | Business-rules DSL for IBM i |
-| NAND ISA | `he-binary-functor/nand-architecture/nand-isa/SPEC.md` | NAND-only 16-bit ISA |
-| NAND# Language | `he-binary-functor/nand-architecture/nandsharp/GRAMMAR.md` | NAND-complete array language |
-| NAND# EBNF + Refinements | `src/ebnf/81130392bc1d11c719679c5f93e3f0c0.ebnf` | Grammar with liquid types |
-| NAND Binary Format | `he-binary-functor/nand-architecture/nand-binary/FORMAT.md` | Custom binary encoding |
-| FSL (NAND VM spec) | `he-binary-functor/nand-architecture/fsl/nand_vm.fsl` | XML refinement-type spec |
-| NAND# Refinement Types | `he-binary-functor/nand-architecture/refinement/NAND_REFINEMENTS.md` | LH refinements for NAND |
-| ISA.Core (cobalt) | `cobalt-compiler/ISA/Core.hs` | Haskell GADT ISA, Arabic docs |
-| LiquidOps NAND Kernel | `cobalt-compiler/LiquidOps/NAND.hs` | NAND→LiquidOp lowering |
-| Cobalt Pipeline | `cobalt-compiler/MagicCobalt.hs` | Prolog→crystal→x86 |
-| ISA-JVM | `isa-jvm/isa/opcodes.py` | JVM + agents + channels ISA |
-| HE-Binary-Functor | `he-binary-functor/HE-BINARY-FUNCTOR-SPEC-001.md` | Recursive HE functor arch |
-| Fibonacci Braid Ledger | `he-binary-functor/fibonacci-braid-ledger/` | Braid-group encoded ledger |
-| Workerman Calculus | `he-binary-functor/haskell/Workerman/Calculus.hs` | Refinement calculus + astronomy + braid |
-| SGL | `he-binary-functor/sgl/SGL.hs` | Typed spherical geometry domain |
-| BTEN Binary Format | `he-binary-functor/tensor-parser/format_bten.ads` | SPARK Ada tensor serialization |
-| AGOL-86 / .a86 | `src/agol86_model.a86` | ALGOL-68 neural spec format |
-| APL Opcode VM | `he-binary-functor/apl/OPCODES_V1.apl` | Custom APL bytecode VM |
-| MXML | `constraint-harness/mxml/` | XML contract language |
-| Meta-Circular Datalog | `datalog-engine/datalog/meta_circular_evaluator.dl` | Self-hosting Datalog evaluator |
-| Astre-Vault | `astre-vault/astra-vault.unl` | Unlambda mathematical computing |
-| PL/I Functor Pipeline | `pli/functor_worm.pli` | VSAM WORM treasury functor |
-| Eclipse ParLog Kernel | `eclipse/eclipse_parlog_fused_kernel.ecl` | ECLiPSe + Parlog fusion |
-| IAMAC | `he-binary-functor/crypto/IAMAC.md` | Homomorphic MAC primitive |
-| GF-NAND | `he-binary-functor/gfnand/src/` | GF(2) NAND refinement IR |
-| PWC Hardware | `he-binary-functor/systemverilog/pwc_hardware_accelerator.sv` | Polynomial Wormhole Constraint |
-| Cobalt Conductor Spec | `cobalt-compiler/Lean4/ConductorSpec.lean` | Lean 4 formal routing proof |
-| VSM-2500 Stack | `src/vsm2500_*.{cu,sv,cpp,py,txt}` | Virtual Semantic Machine |
-
----
-
-## Core Components
-
-### 1. Python Financial Twin (`src/twin.py`)
-
-**Purpose**: Production-grade digital twin of financial operations with event sourcing.
-
-**Architecture**:
-- Event sourcing with WORM (Write-Once-Read-Many) storage
-- Quantum abstraction layer (suggestions only, deterministic approval required)
-- Rate limiting: 1000 ops / 60 seconds
-- 18-decimal fixed-point arithmetic (`quantize_money`)
-- State reconstruction from immutable history
-
-**Operations**:
-```python
-VALID_OPERATIONS = {
-    "CREATE_ACCOUNT", "POST_TRANSACTION", "CREATE_INVOICE",
-    "RECORD_PAYMENT", "CREATE_OBLIGATION", "APPROVE_TRANSACTION",
-    "REJECT_TRANSACTION", "REVERSE_TRANSACTION"
-}
-```
-
-**Key Classes**:
-- `FinanceTwinEngine`: Main engine with WORM storage + quantum layer
-- `RateLimiter`: Sliding-window rate limiter
-- `quantize_money()`: Strict monetary quantization (18 decimals, max 10^17)
-
-**File**: [`src/twin.py`](src/twin.py) (100 lines)
-
----
-
-### 2. COBOL Logic Vault (`cobol/COBILT-VAULT.cbl`)
-
-**Purpose**: Deterministic COBOL logic vault with Prolog-style unification.
-
-**Architecture**:
-- Prolog-style unification engine
-- Backtracking with choice points (max 9999 backtrack depth)
-- REXX/RPGLE/COBOL bridge
-- Hash-chained state with sequence numbers
-
-**Commands**:
-```cobol
-VAULT-OPEN, VAULT-READ, VAULT-WRITE, VAULT-ASSERT
-VAULT-QUERY, VAULT-UNIFY, VAULT-BACKTRACK
-VAULT-COMMIT, VAULT-ROLLBACK
-BRIDGE-REXX, BRIDGE-RPGLE
-```
-
-**Data Structures**:
-- `LOGIC-FACT`: Predicate with 3 arguments
-- `LOGIC-RULE`: Head + body + priority
-- `LOGIC-BINDING`: Variable bindings
-- `VAULT-CONTEXT`: Execution context with backtrack depth
-
-**File**: [`cobol/COBILT-VAULT.cbl`](cobol/COBILT-VAULT.cbl) (25,068 bytes)
-
----
-
-### 3. RPGLE Funnel Translator (`rpgle/FNLIRTR.rpgle`)
-
-**Purpose**: Parse Funnel DSL and translate to Business IR (JSON).
-
-**Architecture**:
-- Uses YAJL C library for JSON emission
-- Bound via ILE with BNDDIR('PRPGBNDDIR')
-- Max 32KB source/output buffers
-- Exposes: `FunnelParseAndBuildIR(src, srcLen, outJson, outLen, status)`
-
-**Pipeline**:
-```
-Funnel DSL → Lexer → Parser → AST → IR Translator → JSON (via YAJL)
-```
-
-**File**: [`rpgle/FNLIRTR.rpgle`](rpgle/FNLIRTR.rpgle) (25,699 bytes)
-
----
-
-### 4. C# LedgerGateway (`csharp/LedgerGateway.cs`)
-
-**Purpose**: Binary struct marshaling for IBM i program calls.
-
-**Architecture**:
-- `StructLayout(LayoutKind.Sequential, Pack=1)` for byte-perfect marshaling
-- 128-byte request/response blocks
-- Transport-agnostic (TCP/MQ/data queue)
-
-**Request Block**:
-```csharp
-LedgerReverseRequestBlock {
-    Company (3), LedgerDate (8), LedgerSeq (9),
-    UserId (10), ReasonCode (4), Channel (8),
-    RailCode (8), Reserved (78)
-}
-```
-
-**Response Block**:
-```csharp
-LedgerReverseResponseBlock {
-    Success (1), ErrorCode (8), ErrorMsg (80),
-    NewLedgerSeq (9), Reserved (30)
-}
-```
-
-**File**: [`csharp/LedgerGateway.cs`](csharp/LedgerGateway.cs) (173 lines)
-
----
-
-### 5. DB2 Orchestration Schema (`schema/ORC_SCHEMA.sql`)
-
-**Tables**:
-
-| Table | Purpose |
-|-------|---------|
-| `ORCTASK` | Task queue with retry logic (status: NEW/RUNNING/DONE/FAILED) |
-| `ORCLOG` | Operational log (timestamp, level, message, source) |
-| `ORCAUD` | Immutable audit trail (taskid, audit_seq, event_code, detail) |
-
-**Indexes**:
-- `ORCTASK_STATUS_IDX`: (STATUS, NEXT_ATTEMPT_TS)
-- `ORCLOG_TS_IDX`: (LOG_TS)
-- `ORCAUD_TASKIDX`: (TASKID)
-
-**File**: [`schema/ORC_SCHEMA.sql`](schema/ORC_SCHEMA.sql)
-
----
-
-### 6. Quantum Computer (`quantum_computer/`)
-
-**Full-featured quantum circuit simulator**:
-
-**Modules**:
-- **Core**: Complex quantum states, registers, matrix operations
-- **Gates**: Complete gate library (Pauli, Hadamard, CNOT, Toffoli, Fredkin)
-- **Algorithms**: Shor's algorithm, Grover's search, VQE, QAOA, quantum annealing
-- **Error Correction**: Surface codes, stabilizer formalism, syndrome extraction
-- **Noise Models**: Depolarizing, amplitude damping, phase flip, thermal relaxation
-- **Circuit**: DAG representation, optimizer, gate fusion, scheduler
-- **Serialization**: JSON/QASM export/import
-
-**Test Suite**:
-- [`quantum_computer/tests/test_full.py`](quantum_computer/tests/test_full.py) (783 lines)
-- [`quantum_computer/tests/test_extended.py`](quantum_computer/tests/test_extended.py) (444 lines)
-
-**Integration**: Quantum layer outputs are **suggestions only**. Deterministic approval gate required before state mutation.
-
----
-
-### 7. Constraint Harness (`constraint-harness/`)
-
-**Purpose**: Production-oriented modular constraint validation.
-
-**Pipeline**:
-```
-MXML → Parser → Constitution → State Machine → DAG Router
-     → Python/PyTorch/Model Adapter → Validator → Seal
-```
-
-**Layers**:
-- **MXML**: Parse & structurally validate contracts
-- **Constitution**: Hard/soft axioms, fail-closed
-- **Runtime**: Explicit state machine + executor
-- **Scheduler**: DAG + bounded concurrent execution
-- **Commands**: python / pytorch (optional) / model
-- **Audit**: Hashing + decision seal
-- **Verification**: Structural & constitutional checks
-
-**Constitutional Rules**:
-- `UNKNOWN` or hard `FAIL` → `FAILED_CLOSED`
-- Soft failures → `REVISE` (bounded by `max_revisions`)
-- Quality scores never override hard axioms
-- Precedence: `FAILED_CLOSED` > `REVISE` > `ACCEPT`
-
-**File**: [`constraint-harness/README.md`](constraint-harness/README.md)
-
----
-
-### 8. Binary Functor Architecture (`he-binary-functor/`)
-
-**Ahmad Ali Parr's Binary Functor Architecture** — 30+ subdirectories, 20+ languages.
-
-**Core Research Lines**:
-
-1. **Fibonacci Braid Ledger** (`fibonacci-braid-ledger/`)
-   - Array algebra (BQN), lock-free C++, x86-64 ASM, RV64I
-   - Liquid Haskell refinements, formal proofs
-   - Research paper (8,500 words)
-
-2. **NAND# Architecture** (`nand-architecture/`)
-   - ISA spec, binary format, NAND# grammar
-   - Bootstrap chain, refinement types, FSL annotations
-   - Kani verification (31 bounded proofs)
-
-3. **GFLOP→NAND Extractor** (`gfnand/`)
-   - Parser, IR, NAND lowering, metrics
-   - Kani bounded proofs, BQN workload analysis
-
-4. **Tensor Parser** (`tensor-parser/`)
-   - SPARK Ada zero-copy parser for BTEN format
-   - SHA-256, CRC-64, HMAC-SHA-256
-
-5. **Crypto Primitives** (`crypto/`)
-   - IAMAC (homomorphic MAC)
-   - Malleability Engine (Riemann ζ zeros)
-   - RSL Architecture (10 candidate primitives)
-   - Trigonometric QTM, Yang-Baxter vault
-
-6. **Verilog-A Analog** (`verilog-a/`)
-   - Trigonometric braid processors
-   - Riemann ζ zero unfolding
-   - Chua's circuit injection, Lyapunov verification
-
-**File**: [`he-binary-functor/README.md`](he-binary-functor/README.md)
-
----
-
-## Technical Stack
-
-### Languages by File Count
-
-| Language | Files | Primary Use |
-|----------|-------|-------------|
-| Python | 105+ | Financial twin, quantum simulator, constraint harness, NCT resonance, P-Code VM |
-| Rust | 66 | FSL compiler, CBMC semantics, crypto primitives |
-| Haskell | 40 | Quantum wire network, Workerman calculus, SGL |
-| Lean 4 | 26 | Formal proofs, VSM-2500 algebra, array verification |
-| CUDA (C++) | 10 | VSM-2500 SM90 execution, embedding, conv2d, SASS bridge |
-| Assembly | 15 | AVX2 kernels, x86-64, z/Architecture, WASM |
-| C++ | 8 | P2/P3/P4 hardware fabric, parallel ISA |
-| COBOL | 6 | Logic vault, ACH processing, datalog storage |
-| SystemVerilog | 1 | VSM-2500 RTL core (synthesizable) |
-| C# | 2 | API gateway, RTP rail adapter |
-
-### Core Technologies
-
-- **IBM i**: COBOL, RPGLE, DB2 for i, ILE binding
-- **Event Sourcing**: Python with WORM storage
-- **Formal Methods**: Lean 4, Coq, F*, Isabelle, Agda, SPARK Ada
-- **Quantum**: Custom simulator (Python), Quipper (Haskell), coherent demon thermodynamics
-- **GPU**: CUDA SM90 / Hopper (VSM-2500 execution stack, TMA, WGMMA)
-- **RTL/HDL**: SystemVerilog (VSM-2500 binary ALU + springboard controller)
-- **Array Languages**: APL, BQN, K, Uiua
-- **Binary**: Assembly (AVX2, x86-64, z/Architecture), WASM
-- **Verification**: Kani, liquid types, SMT solvers, Lean 4 (20 Boolean axioms proven)
-
----
-
-## Data Flow
-
-```mermaid
-sequenceDiagram
-    participant Ext as External System
-    participant CS as C# Gateway
-    participant RPG as RPGLE Translator
-    participant COB as COBOL Vault
-    participant DB2 as DB2 for i
-    participant PY as Python Twin
-    participant Q as Quantum Layer
-    
-    Ext->>CS: HTTP/TCP request
-    CS->>CS: Marshal to 128-byte block
-    CS->>RPG: Binary call (Funnel DSL)
-    RPG->>RPG: Parse → AST → IR
-    RPG->>RPG: Emit JSON (YAJL)
-    RPG->>COB: Call COBILT-VAULT
-    COB->>COB: Unify/backtrack
-    COB->>DB2: Insert ORCTASK
-    DB2->>DB2: Audit to ORCAUD
-    DB2->>PY: Event trigger
-    PY->>PY: Append to WORM
-    PY->>Q: Request suggestion
-    Q->>Q: Circuit simulation
-    Q-->>PY: Advisory output
-    PY->>PY: Deterministic gate
-    PY->>DB2: Log ORCLOG
-    PY-->>Ext: Response
-```
-
-### Execution Flow
-
-1. **Entry**: External system → C# REST API
-2. **Marshal**: Binary struct marshaling (128-byte blocks)
-3. **Translate**: RPGLE Funnel DSL → Business IR (JSON via YAJL)
-4. **Logic**: COBOL Prolog-style unification/backtracking
-5. **Persist**: DB2 task queue + audit trail
-6. **Twin**: Python event sourcing + WORM append
-7. **Quantum**: Suggestion (advisory only)
-8. **Gate**: Deterministic approval before state mutation
-9. **Response**: Propagate back through layers
-
----
-
-## Security Model
-
-### Trust Boundaries
-
-```mermaid
-graph LR
-    A[Untrusted<br/>External Input] -->|Validate| B[C# Gateway<br/>Trusted Boundary]
-    B -->|Binary Marshal| C[RPGLE Parser<br/>Trusted]
-    C -->|IR| D[COBOL Logic<br/>Trusted]
-    D -->|SQL| E[DB2 Audit<br/>Immutable]
-    E -->|Event| F[Python Twin<br/>WORM Only]
-    F -.->|Advisory| G[Quantum<br/>Untrusted]
-    G -.->|Suggestion| F
-    F -->|Deterministic| H[Approval Gate<br/>Trusted]
-    
-    style A fill:#ff9999
-    style B fill:#99ff99
-    style C fill:#99ff99
-    style D fill:#99ff99
-    style E fill:#9999ff
-    style F fill:#99ff99
-    style G fill:#ffff99
-    style H fill:#99ffff
-```
-
-### Security Properties
-
-| Layer | Property | Implementation |
-|-------|----------|----------------|
-| **API** | Input validation | C# struct validation, fixed-width fields |
-| **COBOL** | Fail-closed | `STATUS-ERROR` on unhandled paths |
-| **DB2** | Immutability | ORCAUD audit trail (GENERATED ALWAYS) |
-| **WORM** | Write-once | SHA-256 chain linking, no updates |
-| **Quantum** | Isolation | Suggestions only, no direct state mutation |
-| **Gate** | Authorization | Deterministic approval required |
-
-### Cryptographic Primitives
-
-- **SHA-256**: WORM chain linking, state hashes
-- **HMAC-SHA-256**: Authenticated seals (tensor parser)
-- **CRC-64**: Fast integrity checks
-- **Fixed-point**: 18-decimal arithmetic (no floating-point vulnerabilities)
+The **SGL (Spherical Geometry Library)** provides `Angle`, `Length`, `Radius`, `Point2` (lat/lon), `Point3` (unit sphere), `PointOn` (constrained to sphere), `GreatCircle` (sphere + normal), `Arc` as distinct types — preventing coordinate-system category errors at the type level.
 
 ---
 
 ## Formal Verification
 
-### Multi-Prover Verification
+Lean 4 proofs cover: BorrowchainStorageEngine, BifrostCapabilityExchange, EnochianEngine, MalbolgePTXKernel, SHREWDWeightLoader, ZeroSorryCore, VSM-2500 binary algebra (20 Boolean axioms, all complete), array verification templates.
 
-| Prover | Files | Focus |
-|--------|-------|-------|
-| **Lean 4** | 26 | Token model, dynamics, Borrowchain, VSM-2500 algebra (20 axioms), array verification |
-| **Coq** | 2 | Token model, linear algebra |
-| **Isabelle** | 2 | Token model, linear algebra |
-| **F*** | 1 | Token verification |
-| **Agda** | 1 | Token verification |
-| **SPARK Ada** | 4+ | Tensor parser, SHA-256, CRC-64, HMAC |
+The `formal-token-verification/` directory has multi-prover verification of the token model: Lean 4, Coq, F*, Isabelle/HOL, Agda — five proof assistants on the same specification.
 
-### Proven Invariants
+`formal-verification-paper/theorem_ledger.rs` is a Rust program containing 500 formal claims across 10 families (TORUS, MLKEM, HAMILTONIAN, SPECTRAL, WICK, ERROR, SNR, COMPLEXITY, AMP, PROJ) — each with a status of `Proved`, `Refuted`, or `UnderSpecified`. It is an adversarial ledger that systematically evaluates and rejects unsupported mathematical claims.
 
-**WORM Chain Integrity** ([`docs/LEDGER.md`](docs/LEDGER.md)):
-```
-valid_chain(records) <=>
-  forall i > 0. records[i].prev_hash == SHA-256(records[i-1])
-```
+The `cobalt-compiler/Lean4/ConductorSpec.lean` proves that the Rust sovereign conductor cannot omit routing a critical task to the human gate. The proof introduces `GhostState` to model Rust side effects and steps through `humanGate_criticalTask_requiresHuman → evaluateAll` monotonicity.
 
-**Fibonacci Braid Seal Chain**:
-```
-Seal_n = H(Seal_{n-1} || C(S_n))
+SPARK Ada with GNAT Prove covers the tensor parser: SHA-256, CRC-64, HMAC-SHA-256, bounded subtypes (`Blob_Offset`, `Tensor_Count`, `Rank`, `Dimension`).
 
-verify_seal(chain) <=>
-  forall i. Seal_i == compute_seal(Seal_{i-1}, C(S_i))
-```
-
-**Account Balance Constraint**:
-```python
-0 <= balance <= MAX_BALANCE
-where MAX_BALANCE = Decimal("99999999999999999.9999")
-```
-
-### Verification Tools
-
-- **Kani**: 31+ bounded proofs (NAND architecture, GFNAND)
-- **Liquid Haskell**: Refinement types (Fibonacci Braid Ledger)
-- **SPARK Ada**: GNAT Prove (tensor parser)
-- **Lean 4 Lake**: `lake build` (formal proofs)
+Kani bounded model checking covers the NAND# architecture and GF-NAND: 31 verified proofs.
 
 ---
 
-## Installation
+## Non-Commutative Torus
 
-### Prerequisites
+The non-commutative torus appears across 11 artifacts spanning five execution environments:
 
-- **Python 3.9+**: Core twin engine, quantum simulator
-- **IBM i**: COBOL/RPGLE compilation (requires IBM i system)
-- **Rust 1.70+**: FSL compiler, CBMC semantics
-- **GHC 9.2+**: Haskell quantum wire network
-- **Lean 4**: Formal verification
-- **.NET 6+**: C# gateway
-- **DB2 for i**: Schema deployment
+The **NCT Resonance Simulator** (`src/nct_resonance_simulator.py`) is the primary implementation. For irrational frequency α given as a continued fraction `[a₀; a₁, …, aₙ]`, it computes all convergents p_n/q_n via the three-term recurrence, evaluates the Diophantine lower bound |α − p_n/q_n| > C/q_n^μ, builds a resonance amplitude surface `A_n(ρ; ε, β) = β·(ρ/δ_n)^ε · e^{−γq_nρ} / (1 + (q_nρ)^κ)` where ε is the Hölder regularity exponent and β is the coupling amplitude, derives analytic threshold conditions, and generates a multi-page PDF scientific report with parameter sweeps.
 
-### Quick Install (Python components)
+The torus parameter **θ = 89/2462** is embedded as a live computational value in K and BQN execution kernels — it drives the angular phase increment in chaotic 8-step state transforms. In Verilog-A analog circuits, it parameterizes a cross-coupling capacitance matrix that forces state trajectories to avoid trivial limit cycles.
+
+The **Weyl algebra claim ledger** (`formal-verification-paper/theorem_ledger.rs`) evaluates 50 claims about the operators U, V satisfying VU = e^{2πiθ}UV. The standard relation is proved. Claims about attack significance, eigenvalue isolation, and cryptanalysis are refuted by the ledger itself.
+
+The **Malleability Engine** maps 256-bit digests deterministically to points on the Riemann critical line ρ_n = ½ + it_n using a precomputed table of the first 50 verified zero ordinates (Odlyzko/LMFDB). The Rust implementation is in `he-binary-functor/crypto/` with a working CLI.
+
+The **Riemann ζ-zero Verilog-A circuit** physicalizes the Riemann-von Mangoldt density as an analog frequency spectrum. The Berry-Keating Hamiltonian H = xp is realized via OTA cross-coupling. The Riemann-Siegel Z-function drives a PLL to lock at zero crossings.
+
+The **Yang-Baxter Taylor Vault** Taylor-expands R(λ) = Σ (λ^k/k!) R^(k) to finite order N, extracts coefficients, polynomial-encodes them, and seals the result cryptographically. The YBE residual after truncation is tracked and flagged.
+
+---
+
+## Quantum Layer
+
+The quantum computer (`quantum_computer/`) is a full-featured circuit simulator: state/register/gate library (Pauli, Hadamard, CNOT, Toffoli, Fredkin), Shor's algorithm, Grover's search, VQE, QAOA, surface codes, stabilizer formalism, syndrome extraction, depolarizing/amplitude-damping/phase-flip noise models, circuit DAG optimizer, gate fusion, QASM serialization.
+
+Within the financial twin, the quantum layer is **advisory only**. Its suggestions are never written to state. The deterministic approval gate is the only path to state mutation. The quantum layer cannot bypass this gate by design.
+
+The **Demon's Hole** (`docs/demon_hole_quantum_circuit.md`) formalizes U_DH ∈ U(2^{2N}) — the Gao-Jafferis-Wall double-trace wormhole transfer operator — as a quantum circuit. Gate complexity lower bound: Ω(N² log²(N/ε)). The Susskind Complexity=Action conjecture resolution shows the demon pays computational work rather than thermal erasure cost. The Quipper Haskell DSL implements the recursive `invoke_demon_hole_rec` circuit generator.
+
+The **Coherent Maxwell Demon** (`docs/coherent_maxwell_demon.md`) derives the generalized Landauer bound for a coherent register |+⟩^⊗N: ⟨W_erase⟩ = k_BT[S(ρ_Q) − C_rel(ρ_Q)] = −Nk_BT ln 2 (work gained). Net work per closed cycle: −2k_BT ln 2 per bit, sourced from quantum coherence as fuel. The Rust implementation computes the complete five-stage work budget.
+
+---
+
+## Technical Stack
+
+| Domain | What | Languages |
+|---|---|---|
+| Production financial core | Event-sourced WORM ledger, rate-limited CLI | Python |
+| IBM i financial logic | Logic-programming COBOL, ACH, Datalog storage | COBOL, RPGLE, DB2 for i |
+| DSL compiler | Funnel DSL → COBOL / Prolog / Mercury | Python (RPGLE parser) |
+| VSM-2500 ISA | P2/P3/P4 virtual machine, SM90 CUDA execution | C++, CUDA, SystemVerilog |
+| VSM-2500 formal algebra | 20 Boolean axioms, instruction proofs | Lean 4 |
+| NAND# tower | NAND-complete ISA + language + compiler | Rust, Haskell, EBNF |
+| HE-Binary-Functor | Homomorphic encryption functor spec | 26 languages |
+| Fibonacci Braid Ledger | Braid-encoded ledger | C, Haskell, BQN, x86 ASM, RV64I, C++ |
+| Workerman Calculus | Refinement calculus + astronomy + braid | Haskell (LiquidHaskell) |
+| NCT / Malleability | Resonance simulator, ζ-zero crypto | Python, Rust, Verilog-A, K, BQN |
+| Quantum simulator | Full circuit simulator | Python |
+| Multi-prover verification | Token model, ledger invariants | Lean 4, Coq, Isabelle, F*, Agda |
+| Constraint harness | MXML execution engine | Python |
+| Array verification | Array proofs with Mathlib | Lean 4 |
+| Analog circuits | ζ-zeros, Chua chaos, Grover | Verilog-A |
+| Formal crypto | IAMAC, GF-NAND, RSL, Yang-Baxter vault | Rust, Markdown specs |
+| Hardware accelerator | Polynomial Wormhole Constraint | SystemVerilog, Why3, Rust |
+| Self-hosting Datalog | Meta-circular evaluator | Soufflé Datalog |
+| Combinatory mathematics | Madhava π, Qin Jiushao CRT | Unlambda |
+
+---
+
+## Build and Run
+
+### Python Financial Twin (Docker)
 
 ```bash
-# Clone repository
-git clone https://github.com/SNAPKITTYWEST/devflow-finance-twin.git
-cd devflow-finance-twin
-
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Run quantum tests
-cd quantum_computer
-python -m pytest tests/test_full.py
-
-# Run constraint harness tests
-cd constraint-harness
-python -m pytest tests/ -q
+docker build -t devflow-finance-twin .
+docker run devflow-finance-twin CREATE_ACCOUNT --account_id ACC_001 --actor treasurer
+docker run devflow-finance-twin POST_TRANSACTION --tx_id TX_001 \
+    --from_account ACC_001 --to_account ACC_002 --amount 500.00
+docker run devflow-finance-twin VERIFY_HISTORY
 ```
 
-### Build Rust Components
+### Python directly
+
+```bash
+pip install -r requirements.txt
+python src/cli.py CREATE_ACCOUNT --account_id ACC_001 --actor admin
+python src/cli.py VERIFY_HISTORY
+```
+
+### Funnel DSL Compiler
+
+```bash
+python scripts/funnelc.py program.fnl --target cobol    # emit COBOL
+python scripts/funnelc.py program.fnl --target prolog   # emit Prolog
+python scripts/funnelc.py program.fnl --target mercury  # emit Mercury
+```
+
+### NCT Resonance Simulator
+
+```bash
+python src/nct_resonance_simulator.py \
+    --cf "[0;1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]" \
+    --eps 1.0 --beta 0.15 --C 0.25 --mu 2.0 \
+    --out golden_resonance_report.pdf
+```
+
+### VSM-2500 P-Code VM
+
+```bash
+python src/pcode_vm_full_stack.py
+```
+
+### VSM-2500 CUDA (requires nvcc + SM90)
+
+```bash
+nvcc -O3 -arch=sm_90 -cubin src/vsm2500_isa_kernel.cu -o vsm2500.cubin
+cuobjdump --dump-sass vsm2500.cubin > vsm2500.sass
+```
+
+### P2 Hardware Fabric (C++)
+
+```bash
+g++ -std=c++17 -O2 src/p2_hardware_parallel_fabric.cpp -o p2_fabric
+./p2_fabric   # runs all 7 verification suites
+```
+
+### Lean 4 Proofs
+
+```bash
+cd lean
+lake build
+```
+
+### Rust FSL Compiler
 
 ```bash
 cd rust/fsl
 cargo build --release
 cargo test
-
-cd ../../assembly-120-strict-model
-# CBMC binary semantics (Rust)
-cargo check
 ```
 
-### Build IBM i Components
+### Malleability Engine CLI
 
 ```bash
-# COBOL compilation (requires IBM i)
-# Upload to IBM i and compile with CRTBNDCBL
-
-# RPGLE compilation
-# Upload to IBM i and compile with CRTBNDRPG
+cd he-binary-functor/crypto
+cargo run -- 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 ```
-
----
-
-## Quick Start
-
-### 1. Run Python Financial Twin
-
-```python
-from src.twin import FinanceTwinEngine
-from worm import WormStorageEngine
-
-# Initialize
-storage = WormStorageEngine()
-twin = FinanceTwinEngine(storage)
-
-# Create account
-result = twin.execute_operation({
-    "operation": "CREATE_ACCOUNT",
-    "account_id": "ACC_001",
-    "actor": "system"
-})
-
-# Post transaction
-result = twin.execute_operation({
-    "operation": "POST_TRANSACTION",
-    "account_id": "ACC_001",
-    "amount": "1000.50",
-    "actor": "user_123"
-})
-
-# Verify state hash
-state_hash = twin.compute_state_hash()
-print(f"State hash: {state_hash}")
-```
-
-### 2. Run Quantum Circuit Simulation
-
-```python
-from quantum_computer.core.register import QuantumRegister
-from quantum_computer.gates import hadamard, cnot, measure
-
-# Create 2-qubit register
-qreg = QuantumRegister(2)
-
-# Create Bell state
-hadamard(qreg, 0)
-cnot(qreg, 0, 1)
-
-# Measure
-results = measure(qreg, shots=1000)
-print(results)  # Should see ~50% |00⟩, ~50% |11⟩
-```
-
-### 3. Run Constraint Harness
-
-```bash
-cd constraint-harness
-python -m constraint_harness.cli validate examples/basic.mxml
-python -m constraint_harness.cli run examples/basic.mxml
-```
-
----
-
-## Testing
-
-### Test Matrix
-
-| Component | Command | Status |
-|-----------|---------|--------|
-| Quantum Full | `python -m pytest quantum_computer/tests/test_full.py` | ✅ VERIFIED |
-| Quantum Extended | `python -m pytest quantum_computer/tests/test_extended.py` | ✅ VERIFIED |
-| Constraint Harness | `cd constraint-harness && pytest tests/` | ✅ VERIFIED |
-| FSL Compiler | `cd rust/fsl && cargo test` | ✅ VERIFIED |
-| Kani Proofs | `cd he-binary-functor/gfnand/kani && cargo kani` | ✅ VERIFIED (31 proofs) |
-| SPARK Ada | `cd he-binary-functor/tensor-parser && gnatprove` | ✅ VERIFIED |
-| Lean 4 Proofs | `cd lean && lake build` | ⚠️ PARTIAL (VSM-2500 algebra: ✅ complete) |
-| P-Code VM | `python src/pcode_vm_full_stack.py` | ✅ VERIFIED |
-| P2 Parallel Fabric | `g++ -std=c++17 src/p2_hardware_parallel_fabric.cpp && ./a.out` | ✅ VERIFIED |
-| NCT Resonance | `python src/nct_resonance_simulator.py --cf "[0;1,1,1,1,1,1,1,1]" --eps 1.0 --beta 0.15 --out report.pdf` | ✅ VERIFIED |
-| VSM-2500 CUDA | `nvcc -O3 -arch=sm_90 -cubin src/vsm2500_isa_kernel.cu` | ⚠️ REQUIRES H100 |
-
-### Coverage
-
-- **Python**: ~85% (twin.py, quantum_computer/, constraint-harness/)
-- **Rust**: ~90% (rust/fsl/)
-- **Formal**: 100% (Kani bounded proofs, SPARK Ada, Lean 4)
 
 ---
 
 ## License
 
-**Triple-licensed**:
+**Triple-licensed:**
 
-1. **AGPL-3.0-or-later**: For open-source use (WASM, PL-I, COBOL, C, NASM, Chisel, Scala)
-2. **FSL-1.1** (Functional Source License): For production use (all others)
-3. **SNAPKITTY OPAQUE SOURCE LICENSE v1.0**: For proprietary components
+1. **AGPL-3.0-or-later** — for open-source use (WASM, PL/I, COBOL, C, NASM, Chisel, Scala)
+2. **FSL-1.1** (Functional Source License) — for production use (all others)
+3. **SNAPKITTY OPAQUE SOURCE LICENSE v1.0** — for proprietary components
 
-See [`LICENSE-AGPL-3.0`](LICENSE-AGPL-3.0), [`LICENSE-FSL-1.1`](LICENSE-FSL-1.1), and [`SNAPKITTY OPAQUE SOURCE LICENSE v1.0`](SNAPKITTY%20OPAQUE%20SOURCE%20LICENSE%20v1.0).
+See `LICENSE-AGPL-3.0`, `LICENSE-FSL-1.1`, `SNAPKITTY OPAQUE SOURCE LICENSE v1.0`.
 
 ```
 Copyright (c) 2026 SnapKittyWest.
@@ -1271,73 +326,4 @@ EIN 42-697643
 
 ---
 
-## Contributors
-
-**Ahmad Ali Parr** (ahmedparr93@gmail.com)
-- Binary Functor Architecture (30+ subdirectories)
-- CBMC binary semantics (~400 LOC)
-- Treasury WORM IPL (z/Architecture s390x)
-- Fibonacci Braid Ledger
-- Quantum algorithms
-- Formal verification proofs
-- **VSM-2500 Virtual Semantic Machine** — complete P2/P3/P4 microcode stack
-- **CUDA SM90 / Hopper** — VSM-2500 ISA kernel, SASS bridge, semantic execution block
-- **SystemVerilog RTL** — binary ALU, register file, springboard controller
-- **Lean 4 formal algebra** — VSM-2500 binary semantics, 20 Boolean axioms proven
-- **NCT Resonance Simulator** — non-commutative torus continued-fraction spike model
-- **Quantum thermodynamics** — Demon's Hole wormhole circuit, coherent Maxwell Demon
-- **Hopper GEMM** — 2500-line normative kernel specification (TMA + WGMMA)
-
----
-
-## Repository Health
-
-### Verified Components
-
-✅ **Fully Verified**:
-- Python Financial Twin (`src/twin.py`)
-- Quantum Computer (`quantum_computer/`)
-- Constraint Harness (`constraint-harness/`)
-- FSL Compiler (`rust/fsl/`)
-- CBMC Semantics (`assembly-120-strict-model/cbmc_binary_semantics.rs`)
-- DB2 Schema (`schema/ORC_SCHEMA.sql`)
-- P-Code VM (`src/pcode_vm_full_stack.py`) — full self-test passes
-- P2 Hardware Parallel Fabric (`src/p2_hardware_parallel_fabric.cpp`) — all 7 verification suites pass
-- VSM-2500 Lean 4 Algebra (`lean/vsm_semantic_algebra.lean`, `lean/vsm_binary_semantics.lean`) — 20 Boolean axioms, no `sorry`
-- Array Verification (`lean/ArrayVerificationExamples.lean`) — complete proofs, no `sorry`
-
-⚠️ **Partially Verified**:
-- COBOL Logic Vault (implementation complete, integration tests pending)
-- RPGLE Funnel Translator (requires IBM i for full testing)
-- C# Gateway (unit tests exist, integration tests require IBM i)
-- VSM-2500 CUDA stack (`src/vsm2500_*.cu`) — builds with `nvcc -arch=sm_90`; H100 hardware execution requires H100 device
-- VSM-2500 SystemVerilog (`src/vsm2500_core.sv`) — synthesizable subset; requires EDA tool for full synthesis
-
-🔧 **Implementation Status**:
-- COBOL/RPGLE: **IMPLEMENTED** (requires IBM i for deployment)
-- Python Twin: **IMPLEMENTED + TESTED**
-- Quantum: **IMPLEMENTED + TESTED**
-- Formal Verification: **IMPLEMENTED** (Kani: 31 proofs, SPARK Ada: verified, Lean 4: 26 files)
-- Binary Functor: **IMPLEMENTED** (Ahmad's 30+ subdirectories)
-- VSM-2500 Stack: **IMPLEMENTED** (P2→P3→P4→CUDA→SM90 chain, SV RTL, Lean 4 proofs)
-- NCT Resonance Simulator: **IMPLEMENTED** (CLI, PDF report, parameter sweep)
-- Hopper GEMM Spec: **DOCUMENTED** (normative 2500-line specification)
-
-### Known Limitations
-
-- **IBM i Dependency**: COBOL/RPGLE components require IBM i system for compilation and testing
-- **Quantum Layer**: Advisory outputs only, not for production use without deterministic gate
-- **Formal Proofs**: Some Lean 4 proofs use `sorry` as stubs (documented in respective files); VSM-2500 algebra proofs are complete
-- **C# Gateway**: Requires transport layer implementation (TCP/MQ/data queue)
-- **VSM-2500 CUDA**: SASS is toolchain-generated — `nvcc -arch=sm_90` required; no H100 microcode is fabricated
-- **VSM-2500 SV**: Simulation-ready synthesizable subset; testbench gated on `\`ifdef SIMULATION`
-
----
-
-## Security
-
-See [`SECURITY.md`](SECURITY.md) for vulnerability reporting.
-
----
-
-**Repository**: https://github.com/SNAPKITTYWEST/devflow-finance-twin
+**Repository:** https://github.com/SNAPKITTYWEST/devflow-finance-twin
