@@ -6,6 +6,9 @@
 
 #![allow(dead_code, unused_imports, unused_variables)]
 
+pub mod cbmc;
+pub mod cbmc_binary_semantics;
+
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::fmt;
 use std::sync::Arc;
