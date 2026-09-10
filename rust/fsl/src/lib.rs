@@ -8,6 +8,7 @@
 
 pub mod cbmc;
 pub mod cbmc_binary_semantics;
+pub mod crux;
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::fmt;
@@ -550,6 +551,121 @@ mod tests {
         let src = "assert_eq!(x, 42);";
         let report = run_fsl_pipeline(src);
         assert!(report.contains("SAT") || report.contains("UNKNOWN") || report.contains("UNSAT"));
+    }
+
+    #[test]
+    fn crux_ast_sort_roundtrip() {
+        use crux::ast::*;
+        let s = Sort::Arrow(Box::new(Sort::BitVec(32)), Box::new(Sort::Bool));
+        assert_eq!(format!("{}", s), "BitVec 32 → Bool");
+    }
+
+    #[test]
+    fn crux_russian_parse_equality() {
+        use crux::ast::RussianForm;
+        use crux::ast::Term;
+        let result = crux::russian::parse_russian("равенство(x, y)");
+        assert!(result.is_ok());
+        match result.unwrap() {
+            RussianForm::Ravnostvo(a, b) => {
+                assert_eq!(a, Term::Var("x".into()));
+                assert_eq!(b, Term::Var("y".into()));
+            }
+            _ => panic!("expected Ravnostvo"),
+        }
+    }
+
+    #[test]
+    fn crux_russian_parse_sila() {
+        let result = crux::russian::parse_russian("сила(S0, равенство(x, y))");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn crux_russian_parse_formula() {
+        use crux::ast::{Formula, Term};
+        let result = crux::russian::parse_formula("x = y");
+        assert!(result.is_ok(), "parse failed: {:?}", result.err());
+        match result.unwrap() {
+            Formula::Eq(a, b) => {
+                assert_eq!(a, Term::Var("x".into()));
+                assert_eq!(b, Term::Var("y".into()));
+            }
+            other => panic!("expected Eq, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn crux_russian_parse_forall() {
+        let result = crux::russian::parse_formula("∀ x : Int . x = x");
+        assert!(result.is_ok(), "parse failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn crux_russian_parse_term_binop() {
+        let result = crux::russian::parse_term("x + y * z");
+        assert!(result.is_ok());
+        // Should parse as x + (y * z) due to precedence
+    }
+
+    #[test]
+    fn crux_z3_smtlib_generation() {
+        use crux::z3_backend::Z3Solver;
+        use crux::ast::*;
+        let solver = Z3Solver::new();
+        let state = State::S0;
+        let formula = Formula::Eq(Term::Var("x".into()), Term::Var("y".into()));
+        let query = solver.build_query(&state, &formula);
+        // Query should have DeclareConst, Assert, CheckSat, GetModel
+        assert!(query.commands.len() >= 4);
+    }
+
+    #[test]
+    fn crux_omega_macro_definitions() {
+        let macros = crux::omega::omega_macro_definitions();
+        assert!(macros.len() >= 10);
+        let names: Vec<_> = macros.iter().map(|(n, _)| *n).collect();
+        assert!(names.contains(&"sila_auto"));
+        assert!(names.contains(&"omega_smash"));
+        assert!(names.contains(&"crux_close"));
+    }
+
+    #[test]
+    fn crux_pipeline_direct() {
+        use crux::ast::*;
+        use crux::pipeline::run_crux_direct;
+        let result = run_crux_direct(
+            State::S0,
+            Formula::Eq(Term::Const(Literal::Number(42)), Term::Const(Literal::Number(42))),
+            Backend::Kani(crux::ast::KaniMIR {
+                name: "test".into(), params: vec![],
+                return_sort: Sort::Bool, body: vec![],
+            }),
+        );
+        // 42 = 42 should be decidable
+        assert!(result == crux::pipeline::CruxResult::Proved || result == crux::pipeline::CruxResult::Unknown);
+    }
+
+    #[test]
+    fn crux_pcc_derivation_valid() {
+        use crux::ast::*;
+        use crux::pcc::SilaDerivation;
+        let d = SilaDerivation::axiom(
+            State::S0,
+            Formula::Atomic(Atomic::True),
+        );
+        assert!(d.is_valid());
+    }
+
+    #[test]
+    fn crux_lean_goal_serialization() {
+        use crux::lean_backend::LeanProver;
+        use crux::ast::*;
+        let prover = LeanProver::new();
+        let goal = prover.build_goal(&State::S0, &Formula::Eq(Term::Var("x".into()), Term::Var("y".into())));
+        let lean4 = prover.goal_to_lean4(&goal);
+        assert!(lean4.contains("theorem"));
+        assert!(lean4.contains("by"));
     }
 }
 
