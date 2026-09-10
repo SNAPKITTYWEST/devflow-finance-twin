@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T18:51:53Z
+**Timestamp:** 2026-09-10T19:06:10Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/p2_hardware_parallel_fabric.cpp`
+- `src/p3_binary_microcode_p2_fabric.cpp`
 
 ## Files Unchanged
 _None_
