@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T22:31:55Z
+**Timestamp:** 2026-09-10T22:39:05Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `docs/EMBEDDING_DEFENSE_PROTOCOL.md`
+- `src/embedding.a68`
 
 ## Files Unchanged
 _None_
