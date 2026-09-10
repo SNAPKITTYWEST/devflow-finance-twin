@@ -1,11 +1,15 @@
 {
-  "timestamp": "2026-09-10T19:24:16Z",
+  "timestamp": "2026-09-10T19:30:49Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "8d76cf1b1d9698ffcec50e81e323c2cd927a6b91",
-  "commit_after": "68426cd0c751552ed90a454367beb64130361af9",
+  "commit_before": "286b4b1120c56e09a9626068226f7eab1da41d80",
+  "commit_after": "0d2c1a7462b27b49ef11bde6894c332d9dfe0745",
   "files_added": [
-    "src/vsm2500_core.sv"
+    "src/hopper_gemm_kernel_spec.txt",
+    "src/vsm2500_semantic_cuda.cu",
+    "src/vsm2500_specification.txt",
+    "lean/vsm_binary_semantics.lean",
+    "lean/vsm_semantic_algebra.lean"
   ],
   "files_modified": [
 
@@ -21,6 +25,6 @@
 
   ],
   "sha256": [
-    {"file": "vsm2500_core.sv", "source_hash": "52344d0fb3d34049e34a37c83f5f2fd6c7302abdc5ec6594070345a548722e85", "destination_hash": "52344d0fb3d34049e34a37c83f5f2fd6c7302abdc5ec6594070345a548722e85", "status": "COPIED"}
+    {"file": "vsm2500_specification.txt", "source_hash": "1bd4ec2a3d320e999b8e21325be8905f4573101bb8e01d73b3c50ba38224e4f6", "destination_hash": "1bd4ec2a3d320e999b8e21325be8905f4573101bb8e01d73b3c50ba38224e4f6", "status": "COPIED"},    {"file": "vsm2500_semantic_cuda.cu", "source_hash": "2248d767d44cf15f9a72fe34bf5eb3c41451d410163f53ab94f6017c67b4fd16", "destination_hash": "2248d767d44cf15f9a72fe34bf5eb3c41451d410163f53ab94f6017c67b4fd16", "status": "COPIED"},    {"file": "vsm_binary_semantics.lean", "source_hash": "1fe02dd1e2b31cadfca4c9a991d642f0a7d1ae185f78ceb64ff6353e5a23e19a", "destination_hash": "1fe02dd1e2b31cadfca4c9a991d642f0a7d1ae185f78ceb64ff6353e5a23e19a", "status": "COPIED"},    {"file": "hopper_gemm_kernel_spec.txt", "source_hash": "173b6b3c421a7669fef9f1e653b9f0b2a12a80a2619d30b3366de4de1c001748", "destination_hash": "173b6b3c421a7669fef9f1e653b9f0b2a12a80a2619d30b3366de4de1c001748", "status": "COPIED"},    {"file": "vsm_semantic_algebra.lean", "source_hash": "e1822cae8b53f606ea5cda5edac8bf288aac4228678e42f2ab1a41a05a331649", "destination_hash": "e1822cae8b53f606ea5cda5edac8bf288aac4228678e42f2ab1a41a05a331649", "status": "COPIED"}
   ]
 }
