@@ -1,21 +1,24 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T18:09:39Z
+**Timestamp:** 2026-09-10T18:12:33Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 1 |
-| Files Added | 1 |
+| Files Discovered | 4 |
+| Files Added | 4 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 0 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/ebnf/81130392bc1d11c719679c5f93e3f0c0.ebnf`
+- `apl/apl/06a76100741e52c56f5e9c588bd0f572.apl`
+- `apl/apl/transformer.apl`
+- `src/bqn/transformer.bqn`
+- `src/python/jax_transformer_harness.py`
 
 ## Files Unchanged
 _None_
