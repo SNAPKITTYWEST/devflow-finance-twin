@@ -12,6 +12,7 @@
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Repository Map](#repository-map)
+- [Ahmad's Custom Languages & Novel Architectures](#ahmads-custom-languages--novel-architectures)
 - [Core Components](#core-components)
 - [Technical Stack](#technical-stack)
 - [Data Flow](#data-flow)
@@ -199,6 +200,424 @@ VSM Semantics → P4 Microcode → P3 Binary ISA → P2 Hardware Parallel Fabric
 | `scala/` | Scala implementations |
 | `lisp/` | Common Lisp and Scheme implementations |
 | `rust/` | Rust implementations (FSL compiler, CBMC semantics) |
+
+---
+
+## Ahmad's Custom Languages & Novel Architectures
+
+This repository contains **32 distinct original languages, DSLs, ISAs, and formal systems** created by Ahmad Ali Parr. None of these exist elsewhere. This section documents each one with location, purpose, and key syntax.
+
+---
+
+### COBILT Family — Prolog-Augmented COBOL
+
+The COBILT programs are standard IBM i COBOL programs that embed entirely novel execution models inside COBOL's EVALUATE/PERFORM dispatch — adding logic unification, backtracking, and Datalog storage as first-class COBOL verbs.
+
+#### COBILT-VAULT
+**File:** `cobol/COBILT-VAULT.cbl`
+
+Full logic vault with predicate primitives, rule combinators, unification stack, and hash-chained ledger. Implements Prolog-style execution inside IBM i COBOL with no external runtime.
+
+Custom verbs and primitives:
+```
+VAULT-OPEN  VAULT-READ  VAULT-WRITE  VAULT-ASSERT  VAULT-QUERY
+VAULT-UNIFY  VAULT-BACKTRACK  VAULT-COMMIT  VAULT-ROLLBACK
+BRIDGE-REXX  BRIDGE-RPGLE  BRIDGE-COBOL
+
+Predicates: PRED-EXISTS  PRED-EQUAL  PRED-NOT-EQUAL  PRED-PRESENT  PRED-AUTHORIZED
+Rules:      RULE-AND  RULE-OR  RULE-NOT  RULE-CHAIN
+Stack ops:  PUSH-BINDING  POP-BINDING  UNIFY-VARIABLE
+Choices:    CHOICE-PUSH  CHOICE-POP  CHOICE-CLEAR
+```
+
+#### COBILT-DATAWORM
+**File:** `cobol/COBILT-DATAWORM.cbl`
+
+Complete Datalog storage engine in COBOL. Replaces SQL entirely — no tables, no joins. Fact/rule/query evaluation runs inside COBOL working storage via `DW-RX-COMMAND` dispatch.
+
+```
+OPEN  BEGIN  ASSERT  RETRACT  QUERY  UNIFY  BIND  UNBIND
+CHOICE  BACKTRACK  RULE  EXECUTE  COMMIT  ROLLBACK  CLOSE
+```
+Working storage sections: JOURNAL, FACT, RULE, BINDING, STACK.
+
+#### COBILT-ACH-TREASURY
+**File:** `cobol/COBILT-ACH-TREASURY.cbl`
+
+ACH treasury engine with embedded logic unification — backtracking, choice points, and Prolog-style `QUERY`/`UNIFY` wired into the same program as payment routing.
+
+```
+CREATE-BATCH  ADD-ENTRY  VALIDATE-ENTRY  VALIDATE-BATCH
+CHECK-FUNDS  ROUTE-PAYMENT  GENERATE-ACH  SUBMIT  SETTLE
+RECONCILE  QUERY  UNIFY  BACKTRACK  ROLLBACK  COMMIT
+```
+
+#### COBILT-DATAWORM-TREASURY
+**File:** `cobol/COBILT_DATAWORM_TREASURY.cob`
+
+Combined ACH treasury + Dataworm Datalog storage in one COBOL program targeting REXX orchestration with zero SQL.
+
+---
+
+### Funnel DSL
+**Files:** `docs/funnel-grammar.v01.md`, `docs/funnel-ir.md`, `rpgle/FNLIRTR.rpgle`
+
+A bespoke business-rules language for IBM i, parsed entirely inside RPGLE and emitted as structured Business IR (JSON via YAJL). No existing language serves this IBM i business-rules niche.
+
+```
+PROGRAM Orders.
+TYPE State = OPEN | CLOSED | RETURNED.
+RECORD Item { id: CHAR(10).  state: State. }.
+FILE OrderFile USING Item KEY id.
+RULE returnable(item: Item) = item.state = State.OPEN.
+PROC return_item(item: Item, reason: CHAR(3)) =
+  REQUIRE returnable(item).
+  item.state := State.RETURNED.
+  SAVE item.
+```
+
+Constructs: `PROGRAM`, `TYPE` (enum), `RECORD`, `FILE … USING … KEY`, `RULE`, `PROC`, `REQUIRE expr`, `LOAD ident(…) AS ident`, `SAVE`, `FAIL "message"`.
+Parser runs inside RPGLE; emits JSON IR for downstream COBOL/DB2 consumption.
+
+---
+
+### NAND# Architecture Stack
+
+A complete language tower with a single compute primitive: NAND. Every Boolean operation, arithmetic function, and control flow construct reduces to it.
+
+#### NAND ISA
+**Files:** `he-binary-functor/nand-architecture/nand-isa/SPEC.md`, `he-binary-functor/nand-architecture/NAND_SPEC.md`
+
+16-bit fixed instruction word. R0 hard-wired to zero. One compute opcode — NAND.
+
+```
+0x0 NAND  rd, ra, rb   →  R[rd] ← ¬(R[ra] ∧ R[rb])
+0x1 HALT
+0x2 LOAD  rd, ra, imm4 →  R[rd] ← MEM[R[ra] + imm4]
+0x3 STORE rd, ra, imm4 →  MEM[R[ra] + imm4] ← R[rd]
+0x4 LDI   rd, imm8     →  R[rd] ← zero-extend(imm8)
+0x5 JMP   ra           →  PC ← R[ra]
+0x6 JZ    rd, ra       →  if R[rd]==0 then PC ← R[ra]
+0x7–F     INVALID → trap
+```
+
+#### NAND# Language
+**Files:** `he-binary-functor/nand-architecture/nandsharp/GRAMMAR.md`, `omega/MODEL.md`, `array/SEMANTICS.md`, `bootstrap/CHAIN.md`
+
+High-level array-typed language that compiles entirely to NAND binary via:
+`AST → typed IR (SSA-like, explicit shapes) → element-wise expansion → scalar NAND graph → register allocation → NAND ISA binary`
+
+```
+expr ::= "nand" expr expr | "not" expr | "and" expr expr
+       | "reshape" expr shape | "transpose" expr | "reduce" "nand" expr
+τ    ::= Bool | Array τ shape
+```
+
+Self-hosting: `compiler₀` (Rust) produces `compiler₁` as NAND binary output.
+
+#### NAND# EBNF with Refinement Types
+**File:** `src/ebnf/81130392bc1d11c719679c5f93e3f0c0.ebnf`
+
+Grammar carrying liquid-type-style refinement predicates inline. Domain-specific types (`FibIndex<N>`, `Ledger<Type,N>`, `Generator<N>`, `Word<N>`) and braid-group generators (`σᵢ`, `σ⁻¹`) are built into grammar productions. In-bounds array indexing is a syntax-level invariant.
+
+```ebnf
+Type      ::= "FibIndex" "<" Nat ">" | "Ledger" "<" Type "," Nat ">"
+            | "{" Ident ":" Type "|" Predicate "}"
+Generator ::= ("σ" | "σ⁻¹") Nat
+```
+
+#### NAND Binary Format (.nandbin)
+**File:** `he-binary-functor/nand-architecture/nand-binary/FORMAT.md`
+
+No header, no magic, no relocation. Contiguous 16-bit LE words. Entry at address 0. Formally: `∀w. encode(decode(w)) = w`.
+
+#### FSL — Formal Specification Language
+**File:** `he-binary-functor/nand-architecture/fsl/nand_vm.fsl`
+
+XML dialect (`xmlns="urn:nandsharp:fsl"`) carrying LiquidHaskell-style refinement predicates inline. Defines bounded types (`RegId = {r : nat | 0 <= r && r < REG_COUNT}`), machine invariants (`r0_zero`, `pc_in_bounds`, `mem_wellformed`), function pre/post-conditions, and per-instruction contracts.
+
+#### NAND# Refinement Type System
+**File:** `he-binary-functor/nand-architecture/refinement/NAND_REFINEMENTS.md`
+
+LiquidHaskell refinement specs: `nand :: a:Bit -> b:Bit -> {v:Bit | v == 1 - (a*b)}`, bounded `Addr`/`Off` types, load/store contracts, and semantic preservation theorem `EXECUTE(LOWER(e)) = EVAL(e)` for all closed Boolean expressions.
+
+---
+
+### Cobalt Compiler — Prolog → Crystal Fold → x86
+
+**Files:** `cobalt-compiler/MagicCobalt.hs`, `cobalt-compiler/Cobalt/Dense.hs`, `cobalt-compiler/X86BatchAssembler.hs`
+
+Prolog Horn-clause rules are loaded into a `Library`, expanded via `expandUntilCrystal → crystalize → crystalFold` (depth-bounded term rewriting), optionally transformed by `vaultTransform` (structural inversion: reverses atom names and argument order), then lowered to x86 bytes with per-unit `trilockHash` integrity labels.
+
+#### ISA.Core — GADT ISA with Arabic documentation
+**File:** `cobalt-compiler/ISA/Core.hs`
+
+A Haskell GADT making illegal instruction encodings unrepresentable. Register IDs are refined types. `NAND` is a first-class instruction. Bilingual Arabic+English comments throughout.
+
+```haskell
+Nand  :: Int -> Int -> Int -> Instr   -- نفي المنطقي / rd = ~(rs1 & rs2)
+Load  :: Int -> Int -> Word64 -> Instr
+Store :: Int -> Int -> Word64 -> Instr
+JumpZero :: Word64 -> Instr
+```
+
+#### LiquidOps NAND Kernel
+**File:** `cobalt-compiler/LiquidOps/NAND.hs`
+
+NAND IR → P4 → LiquidOps lowering pipeline. Every Boolean expression maps through `exprToLogic → nandify → lowerNAND → LiquidOp emission`. Terminal IR opcodes: `Ld`, `ImmI`, `Mov`, `AddI`, `SubI`, `MulI`, `AndI`, `OrI`, `XorI`, `NandI` (primary), `SetEQ`, `SetLT`, `Branch`, `Label`, `Return`.
+
+---
+
+### ISA-JVM — Extended JVM ISA
+
+**File:** `isa-jvm/isa/opcodes.py`
+
+JVM-style bytecodes extended with actor and channel primitives. No existing ISA combines all three families.
+
+```
+Standard:      LOAD 0x01  STORE 0x02  ADD 0x10  MUL 0x11  CMP 0x20  JMP 0x30  JEQ 0x31
+Concurrency:   SYNC 0x50  CAS 0x51
+Channels:      CHAN_CREATE 0x60  CHAN_WRITE 0x61  CHAN_READ 0x62
+Agents:        AGENT_SPAWN 0x70  AGENT_SEND 0x71  AGENT_YIELD 0x72  AGENT_HALT 0x73
+Tensor:        TENSOR_ADD 0x80
+```
+
+---
+
+### HE-Binary-Functor Architecture
+**File:** `he-binary-functor/HE-BINARY-FUNCTOR-SPEC-001.md`
+
+A formal specification for a recursive homomorphic-encryption binary functor system, implemented across 26 subdirectories in 18+ languages. Defines a `BinaryFunctor` record with formal composition closure, identity existence, determinism, and explicit failure requirements.
+
+Binary block header (32 bytes):
+```
+u16 op | u8 ver | u8 flags | u32 in_w | u32 out_w | u32 p_len | u16 child | u16 rsvd | u64 integrity (Blake3)
+```
+
+Integrity property: `COMPOSE(F, COMPOSE(G, H)) = COMPOSE(COMPOSE(F, G), H)`.
+All 26 language implementations (`apl/`, `beam/`, `bqn/`, `c-core/`, `circom/`, `crypto/`, `cuda-q/`, `fibonacci-braid-ledger/`, `gfnand/`, `haskell/`, `k/`, `lean4/`, `nand-architecture/`, `qrisp/`, `qsharp/`, `rust/`, `sgl/`, `systemverilog/`, `tensor-parser/`, `uiua/`, `verilog-a/`, `why3/`, `xslt-wasm/`) target this same formal spec.
+
+---
+
+### Fibonacci Braid Ledger
+**Files:** `he-binary-functor/fibonacci-braid-ledger/` (C, Haskell, BQN, x86 ASM, RV64I, C++)
+
+Ledger entries encoded as braid group words with Fibonacci-indexed generators. Append operations are realized as braid generator composition (σᵢ); the cryptographic seal is a formal integrity proof on the composed braid word. Implemented in 6 languages simultaneously.
+
+Seal chain: `Seal_n = H(Seal_{n-1} ∥ C(S_n))` where `C(S_n)` is the braid-compressed ledger state.
+
+---
+
+### Workerman Calculus
+**File:** `he-binary-functor/haskell/Workerman/Calculus.hs`
+
+A novel type-theoretic calculus extending LiquidHaskell's RefCore with astronomical, braid-group, and trigonometric constructs. No existing refinement calculus contains these.
+
+Novel AST nodes:
+```haskell
+| Trig TrigAnn Reft     -- sin[e], cos[e], period[p](e)
+| Epi Epicycle Reft      -- epicycle(deferent, epicycle, mean_motion, anomaly) e
+| Braid BraidWord        -- braid[σ1·σ2⁻¹]
+| Flop FlopRom Reft      -- flop(addr, val, WORM_SEAL) e
+| Sphere SphereCoord Reft -- sphere(RA=5.3, Dec=-0.2) e
+| Hopf HopfFiber Reft    -- Bloch state on CP¹
+```
+
+Yang-Baxter normalization runs as a fixed-point rewrite over braid words: cancels `σᵢσᵢ⁻¹`, commutes far generators (`|i−j|≥2`), applies `σᵢσᵢ₊₁σᵢ = σᵢ₊₁σᵢσᵢ₊₁`.
+
+---
+
+### SGL — Spherical Geometry Type Library
+**File:** `he-binary-functor/sgl/SGL.hs`
+
+Strongly-typed spherical geometry as first-class Haskell types, preventing category errors between coordinate systems at compile time: `Angle`, `Length`, `Radius`, `Point2` (lat/lon), `Point3` (unit sphere), `PointOn` (constrained to sphere), `GreatCircle` (sphere + normal), `Arc` (two constrained points + arc angle).
+
+---
+
+### BTEN Binary Tensor Format
+**Files:** `he-binary-functor/tensor-parser/format_bten.ads`, `parser_bten.adb`
+
+Custom binary tensor serialization with SPARK Ada formal layout. Magic = `0x4E455442` ("BTEN" LE). 64-byte header with CRC32; per-tensor descriptors with explicit `Bit_Order => Low_Order_First` annotations; max rank 8, max tensors 1024; HMAC-SHA256 seal. Format verified with GNAT Prove.
+
+```ada
+Magic at 0 range 0..31; Version at 4 range 0..15; Flags at 6 range 0..15;
+Tensor_Count at 12 range 0..31; Desc_Table_Offset at 16 range 0..63;
+Payload_Length at 48 range 0..63; Header_CRC32 at 56 range 0..31;
+```
+
+---
+
+### AGOL-86 / .a86 Format
+**File:** `src/agol86_model.a86`
+
+ALGOL 68 syntax used as a neural network architecture specification format. The `.a86` extension is unique to this repo; Python tooling in `src/agol86/` interprets it.
+
+```algol68
+MODE Tensor = STRUCT([1:*] REAL data, [1:2] INT shape);
+PROC agol86_attention = (Tensor q, Tensor k, Tensor v, INT heads) Tensor:
+BEGIN
+  Tensor scores := matmul(q, transpose(k));
+  scores := scores / SQRT(REAL(heads));
+  YIELD softmax(scores)
+END;
+```
+
+---
+
+### APL Bytecode VM
+**File:** `he-binary-functor/apl/OPCODES_V1.apl`
+
+Custom bytecode interpreter in APL with braid-encoded execution state. Opcode table:
+
+```
+0 = halt
+1 = add immediate
+2 = mul immediate
+3 = recurse (n subprogram bytes inline)
+4 = contract  r × a ÷ (1 + ⍳≢a)
+9 = verify (dispatches to check registry)
+```
+
+Braid words σ₁…σ₁₀ encoded directly as bytecode blobs; ledger flips LOCKED/UNLOCKED on successful verification.
+
+---
+
+### MXML — Machine eXecution Markup Language
+**Files:** `constraint-harness/mxml/parser.py`, `schema.py`, `validator.py`
+
+XML dialect for specifying constrained multi-agent task graphs with constitutional hard rules, resource limits, and DAG dependency declarations. Intentionally strict parser — no silent repair.
+
+```xml
+<runtime id="audit-run">
+  <limits max_workers="4" max_revisions="3" timeout_seconds="300"/>
+  <axioms>
+    <rule id="no_self_approval">actor != approver</rule>
+    <rule id="balance_nonneg">balance >= 0</rule>
+  </axioms>
+  <commands>
+    <command name="validate" isolation="process"/>
+  </commands>
+  <tasks>
+    <task id="t1" depends_on="" revision_limit="2">
+      <command ref="validate"/>
+    </task>
+  </tasks>
+</runtime>
+```
+
+---
+
+### Meta-Circular Datalog Engine
+**Files:** `datalog-engine/datalog/meta_circular_evaluator.dl`, `souffle_engine.dl`, `souffle_meta_eval.dl`
+
+A self-hosting Datalog evaluator written in Datalog itself. The interpreter represents rules as data within the same relation space:
+
+```prolog
+clause_1_head(ancestor, X, Y) :- base_fact(parent, X, Y).
+clause_1_body(ancestor, X, Y) :- clause_1_head(ancestor, X, Y).
+```
+
+Stratified negation via closed-world assumption included. This engine is the COBILT stack's persistence layer, replacing SQL entirely.
+
+---
+
+### Astre-Vault — Unlambda Mathematical Computing
+**File:** `astre-vault/astra-vault.unl`
+
+Pure S/K/I combinatory logic implementing the Madhava–Leibniz π series and Qin Jiushao's algorithm (大衍術 — Chinese Remainder Theorem). No λ-abstraction, no interpreter — purely combinator reduction.
+
+```unlambda
+succ        = ``s``s`ksk
+madhava_term = ``s``s`ks``s``s`ksk``s`k`sign``s`k`recip`odd
+qin_step    = ``s``s`ks``s``s`ksk``s`k`mod``s`k`mul
+```
+
+---
+
+### PL/I Functor Pipeline — VSAM WORM Treasury
+**File:** `pli/functor_worm.pli`
+
+PL/I program implementing a sovereign treasury engine with pointer-threaded functor composition and VSAM ESDS WORM termination. `TREASURY_ENTRY` and `FUNCTOR_STATE` are ALIGNED structs tracking `F_PREV_HASH`, `F_CURR_HASH`, `F_PTR_BASE/CURR/END`. Hash-chain verification runs before every append.
+
+---
+
+### Eclipse ParLog Fused Kernel
+**File:** `eclipse/eclipse_parlog_fused_kernel.ecl`
+
+Fuses ECLiPSe constraint logic (finite-domain, interval, linear) with Parlog concurrent logic (mode declarations, guarded clauses, committed-choice OR, concurrent streams, process pools) in a single unified kernel. Includes global constraints (alldifferent, cumulative, bin-packing), reified constraints, and branch-and-bound.
+
+---
+
+### IAMAC — Inverted Algebraic MAC
+**Files:** `he-binary-functor/crypto/IAMAC.md`, `he-binary-functor/crypto/iamac.rs`
+
+A cryptographic primitive that systematically inverts all HMAC properties to produce a homomorphic MAC. Satisfies `IAMAC(K, m₁) + IAMAC(K, m₂) = IAMAC(K, m₁+m₂)` over a Mersenne-prime field (`p = 0xFFFFFFFFFFFFFFC5`). Design rationale:
+
+| HMAC property | IAMAC inversion |
+|---|---|
+| One-wayness | Homomorphism |
+| XOR key padding | Multiplicative ring scaling |
+| Nested hashing | Single-pass polynomial evaluation |
+
+---
+
+### GF-NAND — GF(2) NAND Refinement IR
+**Files:** `he-binary-functor/gfnand/src/ir.rs`, `nand_lowering.rs`, `refinement.rs`, `parser.rs`, `metrics.rs`, `kani/src/verification.rs`
+
+NAND-based IR with GF(2) finite-field refinements. All operations are provably equivalent to polynomial operations modulo 2. Kani model-check harnesses verify formal refinement properties with 31 bounded proofs.
+
+---
+
+### Polynomial Wormhole Constraint (PWC)
+**Files:** `he-binary-functor/systemverilog/pwc_hardware_accelerator.sv`, `he-binary-functor/why3/pwc_core.mlw`, `he-binary-functor/verilog-a/braid_trig_processor.va`
+
+A novel polynomial constraint system modeling celestial object trajectories as wormhole-inspired polynomial equations. Implemented as hardware (SystemVerilog accelerator), formal proofs (Why3/ML), verified Rust (`tau_model.rs`), and Verilog-A analog circuits combining braid words with trigonometric processing.
+
+---
+
+### Cobalt Conductor Spec — Lean 4 Formal Routing Contract
+**File:** `cobalt-compiler/Lean4/ConductorSpec.lean`
+
+Lean 4 proof that the Rust sovereign conductor cannot omit routing a critical task to the human gate. Introduces `GhostState` (modeling Rust side effects: `nats_outbox`, `borrowchain_log`) and proves `conductor_routes_criticalTask_to_humanGate` via `humanGate_criticalTask_requiresHuman → evaluateAll` monotonicity.
+
+---
+
+### Quick-Reference Index
+
+| Name | Location | Category |
+|---|---|---|
+| COBILT-VAULT | `cobol/COBILT-VAULT.cbl` | Prolog-in-COBOL logic vault |
+| COBILT-DATAWORM | `cobol/COBILT-DATAWORM.cbl` | Datalog-in-COBOL storage engine |
+| COBILT-ACH-TREASURY | `cobol/COBILT-ACH-TREASURY.cbl` | ACH + unification in COBOL |
+| COBILT-DATAWORM-TREASURY | `cobol/COBILT_DATAWORM_TREASURY.cob` | Combined COBILT variant |
+| Funnel DSL | `docs/funnel-grammar.v01.md` | Business-rules DSL for IBM i |
+| NAND ISA | `he-binary-functor/nand-architecture/nand-isa/SPEC.md` | NAND-only 16-bit ISA |
+| NAND# Language | `he-binary-functor/nand-architecture/nandsharp/GRAMMAR.md` | NAND-complete array language |
+| NAND# EBNF + Refinements | `src/ebnf/81130392bc1d11c719679c5f93e3f0c0.ebnf` | Grammar with liquid types |
+| NAND Binary Format | `he-binary-functor/nand-architecture/nand-binary/FORMAT.md` | Custom binary encoding |
+| FSL (NAND VM spec) | `he-binary-functor/nand-architecture/fsl/nand_vm.fsl` | XML refinement-type spec |
+| NAND# Refinement Types | `he-binary-functor/nand-architecture/refinement/NAND_REFINEMENTS.md` | LH refinements for NAND |
+| ISA.Core (cobalt) | `cobalt-compiler/ISA/Core.hs` | Haskell GADT ISA, Arabic docs |
+| LiquidOps NAND Kernel | `cobalt-compiler/LiquidOps/NAND.hs` | NAND→LiquidOp lowering |
+| Cobalt Pipeline | `cobalt-compiler/MagicCobalt.hs` | Prolog→crystal→x86 |
+| ISA-JVM | `isa-jvm/isa/opcodes.py` | JVM + agents + channels ISA |
+| HE-Binary-Functor | `he-binary-functor/HE-BINARY-FUNCTOR-SPEC-001.md` | Recursive HE functor arch |
+| Fibonacci Braid Ledger | `he-binary-functor/fibonacci-braid-ledger/` | Braid-group encoded ledger |
+| Workerman Calculus | `he-binary-functor/haskell/Workerman/Calculus.hs` | Refinement calculus + astronomy + braid |
+| SGL | `he-binary-functor/sgl/SGL.hs` | Typed spherical geometry domain |
+| BTEN Binary Format | `he-binary-functor/tensor-parser/format_bten.ads` | SPARK Ada tensor serialization |
+| AGOL-86 / .a86 | `src/agol86_model.a86` | ALGOL-68 neural spec format |
+| APL Opcode VM | `he-binary-functor/apl/OPCODES_V1.apl` | Custom APL bytecode VM |
+| MXML | `constraint-harness/mxml/` | XML contract language |
+| Meta-Circular Datalog | `datalog-engine/datalog/meta_circular_evaluator.dl` | Self-hosting Datalog evaluator |
+| Astre-Vault | `astre-vault/astra-vault.unl` | Unlambda mathematical computing |
+| PL/I Functor Pipeline | `pli/functor_worm.pli` | VSAM WORM treasury functor |
+| Eclipse ParLog Kernel | `eclipse/eclipse_parlog_fused_kernel.ecl` | ECLiPSe + Parlog fusion |
+| IAMAC | `he-binary-functor/crypto/IAMAC.md` | Homomorphic MAC primitive |
+| GF-NAND | `he-binary-functor/gfnand/src/` | GF(2) NAND refinement IR |
+| PWC Hardware | `he-binary-functor/systemverilog/pwc_hardware_accelerator.sv` | Polynomial Wormhole Constraint |
+| Cobalt Conductor Spec | `cobalt-compiler/Lean4/ConductorSpec.lean` | Lean 4 formal routing proof |
+| VSM-2500 Stack | `src/vsm2500_*.{cu,sv,cpp,py,txt}` | Virtual Semantic Machine |
 
 ---
 
