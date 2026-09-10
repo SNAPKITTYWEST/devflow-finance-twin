@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T18:48:56Z
+**Timestamp:** 2026-09-10T18:51:53Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/pcode_vm_full_stack.py`
+- `src/p2_hardware_parallel_fabric.cpp`
 
 ## Files Unchanged
 _None_
