@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T19:13:07Z
+**Timestamp:** 2026-09-10T19:18:28Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/vsm2500_cuda_execution_block.cu`
+- `src/vsm2500_h100_sass_bridge.cu`
 
 ## Files Unchanged
 _None_
