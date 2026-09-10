@@ -1,25 +1,22 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T19:34:21Z
+**Timestamp:** 2026-09-10T21:58:17Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 5 |
-| Files Added | 5 |
+| Files Discovered | 2 |
+| Files Added | 2 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 0 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `lean/ArrayVerificationExamples.lean`
-- `lean/ArrayVerification_Template.lean`
-- `docs/coherent_maxwell_demon.md`
-- `docs/demon_hole_quantum_circuit.md`
-- `src/nct_resonance_simulator.py`
+- `docs/ACHRTRN_OPERATOR_RUNBOOK.md`
+- `docs/REPOSITORY_FINANCIAL_COMPLIANCE_EXAMINATION.md`
 
 ## Files Unchanged
 _None_
