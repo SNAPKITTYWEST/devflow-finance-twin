@@ -1,12 +1,11 @@
 {
-  "timestamp": "2026-09-10T18:32:05Z",
+  "timestamp": "2026-09-10T18:48:55Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "344639009b997e0f676f133beec08f825eb5f832",
-  "commit_after": "d726dcb680c013c011e303ab9f318b8c7aea54c4",
+  "commit_before": "4efb45870483e20531905ba5be9ae0d14c126c9c",
+  "commit_after": "4c7b527bd47b1ce6db6b430c603f860fb62b6ebc",
   "files_added": [
-    "src/omega_jax_pivot.py",
-    "src/p2_fabric.cpp"
+    "src/pcode_vm_full_stack.py"
   ],
   "files_modified": [
 
@@ -22,6 +21,6 @@
 
   ],
   "sha256": [
-    {"file": "p2_fabric.cpp", "source_hash": "9a5d79d4eb00a0ce56e7fa77c0d149f08e0187e982c9a17790c28be1904eb415", "destination_hash": "9a5d79d4eb00a0ce56e7fa77c0d149f08e0187e982c9a17790c28be1904eb415", "status": "COPIED"},    {"file": "omega_jax_pivot.py", "source_hash": "78a1bcebeeacd0ac580b9e5cb552ed4c794d1d1fbcab63f3d2ae504b3af1f650", "destination_hash": "78a1bcebeeacd0ac580b9e5cb552ed4c794d1d1fbcab63f3d2ae504b3af1f650", "status": "COPIED"}
+    {"file": "pcode_vm_full_stack.py", "source_hash": "3b9c22944fcbf7f4cc3ae918193fe7404ed32a54d120417355cab0595397bce6", "destination_hash": "3b9c22944fcbf7f4cc3ae918193fe7404ed32a54d120417355cab0595397bce6", "status": "COPIED"}
   ]
 }

@@ -1,22 +1,21 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T18:32:06Z
+**Timestamp:** 2026-09-10T18:48:56Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 2 |
-| Files Added | 2 |
+| Files Discovered | 1 |
+| Files Added | 1 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 0 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/omega_jax_pivot.py`
-- `src/p2_fabric.cpp`
+- `src/pcode_vm_full_stack.py`
 
 ## Files Unchanged
 _None_
