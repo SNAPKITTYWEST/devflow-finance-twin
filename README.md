@@ -13,6 +13,7 @@
 - [Architecture](#architecture)
 - [Repository Map](#repository-map)
 - [Ahmad's Custom Languages & Novel Architectures](#ahmads-custom-languages--novel-architectures)
+- [Non-Commutative Torus — Full Inventory](#non-commutative-torus-nct----full-inventory)
 - [Core Components](#core-components)
 - [Technical Stack](#technical-stack)
 - [Data Flow](#data-flow)
@@ -134,7 +135,7 @@ Ahmad Ali Parr's full-stack VSM-2500 implementation — binary semantic core, vi
 | `src/vsm2500_semantic_cuda.cu` | Recursive semantic→binary→embedding→convolution→SM90 reference |
 | `src/vsm2500_core.sv` | SystemVerilog RTL — binary ALU, register file, springboard controller, vsm_core |
 | `src/hopper_gemm_kernel_spec.txt` | Hopper custom GEMM kernel spec (TMA, WGMMA, 2500-line normative spec) |
-| `src/nct_resonance_simulator.py` | Non-Commutative Torus resonance spike simulator (continued fractions, PDF report) |
+| `src/nct_resonance_simulator.py` | Non-Commutative Torus resonance spike simulator — continued fractions, Diophantine bounds, amplitude surface, PDF report |
 | `lean/vsm_semantic_algebra.lean` | Lean 4 formal algebra: BinVal, Boolean axioms (20), word ops, RISC ISA |
 | `lean/vsm_binary_semantics.lean` | Lean 4 binary semantics: comparisons, shifts, instruction proofs, invariants |
 | `lean/ArrayVerificationExamples.lean` | Complete Lean 4 array verification examples (10 sections, no `sorry`) |
@@ -572,6 +573,115 @@ NAND-based IR with GF(2) finite-field refinements. All operations are provably e
 **Files:** `he-binary-functor/systemverilog/pwc_hardware_accelerator.sv`, `he-binary-functor/why3/pwc_core.mlw`, `he-binary-functor/verilog-a/braid_trig_processor.va`
 
 A novel polynomial constraint system modeling celestial object trajectories as wormhole-inspired polynomial equations. Implemented as hardware (SystemVerilog accelerator), formal proofs (Why3/ML), verified Rust (`tau_model.rs`), and Verilog-A analog circuits combining braid words with trigonometric processing.
+
+---
+
+### Non-Commutative Torus (NCT) — Full Inventory
+
+The NCT appears across 11 distinct artifacts in the repository, ranging from a dedicated Python simulator to analog Verilog-A circuits, a 50-entry formal proof ledger, and live K/BQN execution kernels.
+
+#### NCT Core: `src/nct_resonance_simulator.py`
+Full Python simulator for worst-case resonance spikes on the non-commutative torus. For irrational frequency α given by continued-fraction `[a₀; a₁, …, aₙ]`:
+- Computes all convergents p_n/q_n via three-term recurrence
+- Evaluates Diophantine lower bound: |α − p_n/q_n| > C/q_n^μ
+- Builds amplitude surface: `A_n(ρ; ε, β) = β·(ρ/δ_n)^ε · e^{−γ·q_n·ρ} / (1 + (q_n·ρ)^κ)`
+- Derives analytic threshold conditions on ε (Hölder regularity) and β (coupling amplitude)
+- Interactive CLI + parameter sweep + multi-page PDF scientific report
+
+```bash
+python src/nct_resonance_simulator.py \
+  --cf "[0;1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]" \
+  --eps 1.0 --beta 0.15 --C 0.25 --mu 2.0 --out golden_resonance_report.pdf
+```
+
+#### θ = 89/2462 as Live Execution Parameter
+
+The specific torus parameter θ = 89/2462 is embedded as a live computational value in two array-language kernels:
+
+**K** (`he-binary-functor/k/sovereign_tensor.k`):
+```k
+t: 89%2462  / Non-commutative torus parameter
+step: {[s;i] sin (b + i*t) + +/'w*\:s}
+out: step/[s0; !8]
+```
+
+**BQN** (`he-binary-functor/bqn/sovereign_homogeneous.bqn`):
+```bqn
+θ ← 89 ÷ 2462
+S0 ← 65.0 ‿ θ ‿ •math.Pi ‿ 0.0
+Step ← { •math.Sin B + (𝕨×θ) + +´¨ W ×¨ <𝕩 }
+FinalState ← CircuitForward 8
+```
+θ is embedded in the initial state vector itself. The chaotic step applies θ as angular phase increment over 8 depth iterations.
+
+#### Weyl Algebra Proof Ledger: `formal-verification-paper/theorem_ledger.rs`
+50 formal claims (TORUS-001..050) about the non-commutative torus operators U, V satisfying VU = e^{2πiθ}UV:
+
+| Claim | Statement | Status |
+|---|---|---|
+| TORUS-001 | VU = e^(2πiθ) UV | **PROVED** — standard Weyl algebra relation |
+| TORUS-006 | Rational torus A_(89/2462) exists | **PROVED** — standard operator algebra object |
+| TORUS-002 | θ=89/2462 has attack significance | REFUTED — arbitrary rational |
+| TORUS-012 | Commutator isolates secret | REFUTED — no proof of secret isolation |
+| TORUS-013 | Torus enables cryptanalysis | REFUTED — no attack demonstrated |
+| TORUS-007–011 | Finite-dim representations, eigenvalue clustering | UNDER_SPECIFIED |
+| MLKEM-038 | Non-commutativity strips error camouflage | UNDER_SPECIFIED |
+
+#### Topological Quench: `he-binary-functor/lean4/topological_quench.lean`
+Lean 4 proof that the quench operator (maps any 2×2 complex density matrix to vacuum) is non-injective — state recovery after a topological quench is mathematically impossible:
+```lean4
+theorem quench_irreversible : ¬ Function.Injective quench_operator
+```
+
+#### Trigonometric QTM: `he-binary-functor/crypto/TRIGONOMETRIC_QTM.md`
+Quantum Turing Machine with Yang-Baxter braid constraint. Angular phases θ_n parameterize recursive transitions. As n→∞: θ_∞ = arcsin(Φ⁻¹) — convergence to the golden ratio fixed point ("crystalline collapse").
+
+| n | θ_n | U_n | State |
+|---|---|---|---|
+| 0 | 0 | I | `|0101⟩ ⊗ |h₀⟩` |
+| 1 | π/4 | Hadamard-like | `(|0⟩+|1⟩)/√2 ⊗ |h₁⟩` |
+| 2 | π/2 | 90° rotation | `|1010⟩ ⊗ |h₂⟩` |
+| ∞ | arcsin(Φ⁻¹) | Golden limit | fixed-point crystalline |
+
+#### Riemann ζ-Zero Malleability Engine: `he-binary-functor/crypto/MALLEABILITY_ENGINE.md`
+Deterministic map from 256-bit digest to a point on the Riemann critical line (ρ_n = ½ + it_n):
+```
+n = 1 + (D mod N)
+t = T[n]                     (precomputed verified zero ordinate)
+rho = ½ + i·t
+orbit(D) = { ½ + i(t + δ_k) | k = 0..K-1 }
+seal = FNV-1a-64(n ∥ t ∥ orbit)
+```
+Does not assert RH. Uses independently verified zero ordinates as fixed public constants.
+
+#### Yang-Baxter Taylor Vault: `he-binary-functor/crypto/YANG_BAXTER_TAYLOR_VAULT.md`
+R₁₂R₁₃R₂₃ = R₂₃R₁₃R₁₂ Taylor-expanded to order N, coefficients extracted, polynomial-encoded, and sealed cryptographically. YBE residual tracked: if non-zero after truncation, vault flagged `YBE_FLAG = "TRUNCATED_RESIDUAL_NONZERO"`.
+
+#### Analog ζ-Zero Circuit: `he-binary-functor/verilog-a/RIEMANN_ZETA_VERILOG_A.md`
+Riemann-von Mangoldt density physicalized as analog frequency spectrum. Berry-Keating Hamiltonian H = xp via OTA cross-coupling. Riemann-Siegel Z-function drives PLL to zero crossings:
+```verilog
+freq_shift = ln(abs(V_state) / (2*M_PI*M_E) + 1.0);
+I(in,out) <+ ddt(C_base * freq_shift * V_state);
+```
+
+#### φ-Resonance Pipeline: `he-binary-functor/apl/METATRON_PIPELINE.md`
+Metatron's Cube (13 circles, 78 lines) as computation graph. Domain resonance classified by topological fixed-point behavior. Total Resonance Sum = 388.985128. Φ-Paradox: Φ ≈ 1.618 → Expansion (trap); Φ⁻¹ ≈ 0.618 → Contraction (golden zone, safe execution).
+
+#### NCT Quick Reference
+
+| File | NCT Role |
+|---|---|
+| `src/nct_resonance_simulator.py` | Full NCT resonance spike simulator |
+| `he-binary-functor/k/sovereign_tensor.k` | θ = 89/2462 live K execution |
+| `he-binary-functor/bqn/sovereign_homogeneous.bqn` | θ = 89/2462 live BQN execution |
+| `formal-verification-paper/theorem_ledger.rs` | 50-entry Weyl algebra proof ledger |
+| `he-binary-functor/lean4/topological_quench.lean` | Lean 4 topological irreversibility proof |
+| `he-binary-functor/crypto/TRIGONOMETRIC_QTM.md` | Trigonometric QTM + Yang-Baxter |
+| `he-binary-functor/crypto/MALLEABILITY_ENGINE.md` | Riemann ζ-zeros as crypto primitives |
+| `he-binary-functor/crypto/YANG_BAXTER_TAYLOR_VAULT.md` | YBE Taylor vault |
+| `he-binary-functor/verilog-a/RIEMANN_ZETA_VERILOG_A.md` | Analog ζ-zero Verilog-A circuit |
+| `he-binary-functor/apl/METATRON_PIPELINE.md` | φ-resonance Metatron pipeline |
+| `he-binary-functor/apl/INFUSION_BRAID.md` | Φ-Paradox braid (Lean+APL+Rust) |
 
 ---
 
