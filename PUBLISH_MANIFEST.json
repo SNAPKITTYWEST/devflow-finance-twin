@@ -1,25 +1,19 @@
 {
-  "timestamp": "2026-09-10T18:03:36Z",
+  "timestamp": "2026-09-10T18:06:17Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "1d5c5eab0441248ec8b73f54fbd147a6fe03b339",
-  "commit_after": "cd056306630fb4dca697e07376dad46a5ed0b9b6",
+  "commit_before": "90b0ebc889a6179099736aaa3288b6f8471b6d6b",
+  "commit_after": "5eb29546bb5703d1502ffc078be1ad2ff0894064",
   "files_added": [
-    "src/a68/activ.a68",
-    "src/a68/attention.a68",
-    "src/a68/jacobian.a68",
-    "src/a68/main.a68",
-    "src/a68/model.a68"
+    "src/a68/tensor.a68",
+    "src/python/astra_hardened_ingestion.py"
   ],
   "files_modified": [
 
   ],
   "files_moved": [],
   "files_unchanged": [
-    "cuda/cuda_shim.c -> src/cuda/cuda_shim.c [IDENTICAL]",
-    "cuda/vector_add.cu -> src/cuda/vector_add.cu [IDENTICAL]",
-    "pascal/gpu_host.pas -> src/pascal/gpu_host.pas [IDENTICAL]",
-    "ptx/micro_kernel.ptx -> ptx/micro_kernel.ptx [IDENTICAL]"
+
   ],
   "files_conflicted": [
 
@@ -28,6 +22,6 @@
 
   ],
   "sha256": [
-    {"file": "ptx/micro_kernel.ptx", "source_hash": "b7067ff968e18b6bc90ca3c30b30d1281638d68c72e243d196d3bb34bdf2ff16", "destination_hash": "b7067ff968e18b6bc90ca3c30b30d1281638d68c72e243d196d3bb34bdf2ff16", "status": "UNCHANGED"},    {"file": "a68/attention.a68", "source_hash": "99f647456276cf0e6412f7cb7d0618b1c0ad1e2778c95feae1d0dff6b84ed0ff", "destination_hash": "99f647456276cf0e6412f7cb7d0618b1c0ad1e2778c95feae1d0dff6b84ed0ff", "status": "COPIED"},    {"file": "pascal/gpu_host.pas", "source_hash": "7b905929fe09f0ae169b7ba3136ccccb8f24356baced626be3457f15964f2400", "destination_hash": "7b905929fe09f0ae169b7ba3136ccccb8f24356baced626be3457f15964f2400", "status": "UNCHANGED"},    {"file": "cuda/cuda_shim.c", "source_hash": "d7865d852ee9398c45da19654269db6d158d7bd2ab1eb7a7415287fe3cefe601", "destination_hash": "d7865d852ee9398c45da19654269db6d158d7bd2ab1eb7a7415287fe3cefe601", "status": "UNCHANGED"},    {"file": "a68/activ.a68", "source_hash": "a6c841f6c21e02b09a669ceb7e3c6dd1ba6960c01c43e14a4a9147dc7fd87189", "destination_hash": "a6c841f6c21e02b09a669ceb7e3c6dd1ba6960c01c43e14a4a9147dc7fd87189", "status": "COPIED"},    {"file": "cuda/vector_add.cu", "source_hash": "4b1b50e0352213346fec76e7c2fb22b4cadab2053ec801451b69ff9b436d6531", "destination_hash": "4b1b50e0352213346fec76e7c2fb22b4cadab2053ec801451b69ff9b436d6531", "status": "UNCHANGED"},    {"file": "a68/jacobian.a68", "source_hash": "76ad36be9a8cb4240a8cd6f9efffcbd074b650c537f2d246d298d79987dff741", "destination_hash": "76ad36be9a8cb4240a8cd6f9efffcbd074b650c537f2d246d298d79987dff741", "status": "COPIED"},    {"file": "a68/model.a68", "source_hash": "4413d8827030061199aac7aa904df85ddb6b8fe3ca02c88ca8b594c7f24b96cb", "destination_hash": "4413d8827030061199aac7aa904df85ddb6b8fe3ca02c88ca8b594c7f24b96cb", "status": "COPIED"},    {"file": "a68/main.a68", "source_hash": "91322936f9eb183cce0d32378d6a42e17b4c06fe8e3939bd023a5f9b67b0ebf5", "destination_hash": "91322936f9eb183cce0d32378d6a42e17b4c06fe8e3939bd023a5f9b67b0ebf5", "status": "COPIED"}
+    {"file": "python/astra_hardened_ingestion.py", "source_hash": "f0647a493ce0d5a2690647b70bc7e7f0f28eac69acb8ab56f6ddff3ad47ab6dd", "destination_hash": "f0647a493ce0d5a2690647b70bc7e7f0f28eac69acb8ab56f6ddff3ad47ab6dd", "status": "COPIED"},    {"file": "a68/tensor.a68", "source_hash": "8fa71f2422e8841e433bb2f4902b7b3fc0ba701cc3c8ee0df67aec7ab509c472", "destination_hash": "8fa71f2422e8841e433bb2f4902b7b3fc0ba701cc3c8ee0df67aec7ab509c472", "status": "COPIED"}
   ]
 }
