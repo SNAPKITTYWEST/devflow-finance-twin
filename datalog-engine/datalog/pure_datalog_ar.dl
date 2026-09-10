@@ -1,0 +1,123 @@
+// pure_datalog_ar.souffle
+
+.type Name = symbol
+.type Number = number
+
+// ============================================================
+// EDB
+// ============================================================
+
+.decl parent(x:Name, y:Name)
+
+parent("alice", "bob").
+parent("bob", "carol").
+parent("alice", "dave").
+parent("eve", "alice").
+
+// ============================================================
+// IDB
+// ============================================================
+
+.decl ancestor(x:Name, y:Name)
+
+ancestor(X, Y) :-
+    parent(X, Y).
+
+ancestor(X, Y) :-
+    parent(X, Z),
+    ancestor(Z, Y).
+
+// ============================================================
+// Stratified negation
+// ============================================================
+
+.decl blocked(x:Name, y:Name)
+
+blocked("alice", "dave").
+
+.decl allowed_ancestor(x:Name, y:Name)
+
+allowed_ancestor(X, Y) :-
+    ancestor(X, Y),
+    !blocked(X, Y).
+
+// ============================================================
+// Queries
+// ============================================================
+
+// ?- ancestor("alice", Who).
+
+.decl query_alice(Who:Name)
+
+query_alice(Who) :-
+    ancestor("alice", Who).
+
+// ?- ancestor(Who, "carol").
+
+.decl query_carol(Who:Name)
+
+query_carol(Who) :-
+    ancestor(Who, "carol").
+
+// ?- allowed_ancestor("alice", Who).
+
+.decl query_allowed_alice(Who:Name)
+
+query_allowed_alice(Who) :-
+    allowed_ancestor("alice", Who).
+
+// ============================================================
+// Numeric Datalog
+// ============================================================
+
+.decl edge(x:Number, y:Number)
+
+edge(1, 2).
+edge(2, 3).
+edge(3, 4).
+edge(1, 5).
+
+.decl reachable(x:Number, y:Number)
+
+reachable(X, Y) :-
+    edge(X, Y).
+
+reachable(X, Y) :-
+    edge(X, Z),
+    reachable(Z, Y).
+
+.decl query_reachable_from_one(y:Number)
+
+query_reachable_from_one(Y) :-
+    reachable(1, Y).
+
+// ============================================================
+// Generic copies of derived relations
+// ============================================================
+
+.decl all_ancestors(x:Name, y:Name)
+
+all_ancestors(X, Y) :-
+    ancestor(X, Y).
+
+.decl all_allowed_ancestors(x:Name, y:Name)
+
+all_allowed_ancestors(X, Y) :-
+    allowed_ancestor(X, Y).
+
+// ============================================================
+// Outputs
+// ============================================================
+
+.output parent
+.output ancestor
+.output blocked
+.output allowed_ancestor
+.output query_alice
+.output query_carol
+.output query_allowed_alice
+.output edge
+.output reachable
+.output query_reachable_from_one
+.output all_ancestors
+.output all_allowed_ancestors

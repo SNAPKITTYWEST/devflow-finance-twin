@@ -1,0 +1,19 @@
+.type Predicate <: symbol
+.type Term <: symbol
+
+.decl base_fact(p: Predicate, arg1: Term, arg2: Term)
+.decl rule_head(rule_id: number, p: Predicate, v1: Term, v2: Term)
+.decl rule_body(rule_id: number, step: number, p: Predicate, v1: Term, v2: Term)
+.decl eval(p: Predicate, val1: Term, val2: Term)
+.output eval
+
+// Base case: Facts are immediately true in the evaluation
+eval(P, V1, V2) :- base_fact(P, V1, V2).
+
+// Recursive step: Unification over binary relations
+eval(HeadPred, Val1, Val2) :-
+    rule_head(RuleId, HeadPred, Var1, Var2),
+    rule_body(RuleId, 1, BodyPred, Var1, Z),
+    rule_body(RuleId, 2, TailPred, Z, Var2),
+    eval(BodyPred, Val1, ValZ),
+    eval(TailPred, ValZ, Val2).

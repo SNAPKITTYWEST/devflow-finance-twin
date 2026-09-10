@@ -1,0 +1,19 @@
+// Type declarations for formal bounds
+.type Person <: symbol
+
+// Extensional Database (EDB) declarations
+.decl parent(x: Person, y: Person)
+
+// Intensional Database (IDB) declarations
+.decl ancestor(x: Person, y: Person)
+.output ancestor
+
+// EDB Facts
+parent("alice", "bob").
+parent("bob", "carol").
+parent("alice", "dave").
+parent("eve", "alice").
+
+// IDB Rules (Bottom-up semi-naive evaluation handled natively)
+ancestor(X, Y) :- parent(X, Y).
+ancestor(X, Y) :- parent(X, Z), ancestor(Z, Y).

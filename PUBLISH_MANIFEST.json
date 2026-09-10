@@ -1,11 +1,18 @@
 {
-  "timestamp": "2026-09-10T17:44:24Z",
+  "timestamp": "2026-09-10T17:47:08Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "4e4b6de0765cdc60a97cbba1ffb5483e9f74b95f",
-  "commit_after": "8483b2bf18d519adcc08d0241e4265d28c6e09ea",
+  "commit_before": "96e55b0f2063da69d653df7257fdf95f6a7ef865",
+  "commit_after": "45deaab1955b8925faf01fdfa027e7e322e41572",
   "files_added": [
-    "src/souffle_symbolic_agent.py"
+    "datalog-engine/datalog/meta_circular_evaluator.dl",
+    "datalog-engine/datalog/pure_ancestor_ar.dl",
+    "datalog-engine/datalog/pure_datalog_ar.dl",
+    "datalog-engine/datalog/souffle_ancestor.dl",
+    "datalog-engine/datalog/souffle_engine.dl",
+    "datalog-engine/datalog/souffle_meta_eval.dl",
+    "datalog-engine/datalog/souffle_negation.dl",
+    "datalog-engine/datalog/souffle_typed_ancestor.dl"
   ],
   "files_modified": [
 
@@ -21,6 +28,6 @@
 
   ],
   "sha256": [
-    {"file": "souffle_symbolic_agent.py", "source_hash": "341c38f38876bf04b98abc7b355534baa9c489b57c49d55510b508425b82eda4", "destination_hash": "341c38f38876bf04b98abc7b355534baa9c489b57c49d55510b508425b82eda4", "status": "COPIED"}
+    {"file": "datalog/pure_ancestor_ar.dl", "source_hash": "1094d8dc4be8ad8a42acb1eadcd35444ad94d64bcb0aa3fb46914eb012040aaa", "destination_hash": "1094d8dc4be8ad8a42acb1eadcd35444ad94d64bcb0aa3fb46914eb012040aaa", "status": "COPIED"},    {"file": "datalog/souffle_negation.dl", "source_hash": "b52d8c00d2e9665905ee1372e4cd30613904c2c1cd8dd5868663a39662aea351", "destination_hash": "b52d8c00d2e9665905ee1372e4cd30613904c2c1cd8dd5868663a39662aea351", "status": "COPIED"},    {"file": "datalog/souffle_engine.dl", "source_hash": "c0f6c935c8a9b367daf1e89795603804cfe26624dc2970c3a9ae321b5ca30e97", "destination_hash": "c0f6c935c8a9b367daf1e89795603804cfe26624dc2970c3a9ae321b5ca30e97", "status": "COPIED"},    {"file": "datalog/souffle_meta_eval.dl", "source_hash": "11a568706a98880432f7e11bf0cd8c14a2450baac51c84901a3211e03f27e795", "destination_hash": "11a568706a98880432f7e11bf0cd8c14a2450baac51c84901a3211e03f27e795", "status": "COPIED"},    {"file": "datalog/souffle_ancestor.dl", "source_hash": "c0f6c935c8a9b367daf1e89795603804cfe26624dc2970c3a9ae321b5ca30e97", "destination_hash": "c0f6c935c8a9b367daf1e89795603804cfe26624dc2970c3a9ae321b5ca30e97", "status": "COPIED"},    {"file": "datalog/meta_circular_evaluator.dl", "source_hash": "e2c79434fddb9d41f27a43615e915e1db7402951824d3099b182a488f179988d", "destination_hash": "e2c79434fddb9d41f27a43615e915e1db7402951824d3099b182a488f179988d", "status": "COPIED"},    {"file": "datalog/souffle_typed_ancestor.dl", "source_hash": "172ac118f1f045ad54ff03f16840f206ace9f0508306e617d9984b361d3d5643", "destination_hash": "172ac118f1f045ad54ff03f16840f206ace9f0508306e617d9984b361d3d5643", "status": "COPIED"},    {"file": "datalog/pure_datalog_ar.dl", "source_hash": "836f0e1ff53715bf629f54a9af92f813afa6b12b01e813b091f29f3b9da947a3", "destination_hash": "836f0e1ff53715bf629f54a9af92f813afa6b12b01e813b091f29f3b9da947a3", "status": "COPIED"}
   ]
 }

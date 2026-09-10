@@ -1,0 +1,45 @@
+% =====================================================================
+% Meta-Circular Datalog Evaluator in Pure Datalog
+% =====================================================================
+
+% --- 1. EDB (Base Facts Storage) ---
+% We store base facts dynamically using the relation `base_fact/3`
+% where arg1 = predicate name, arg2 = left term, arg3 = right term.
+base_fact(parent, alice, bob).
+base_fact(parent, bob, carol).
+base_fact(parent, alice, dave).
+base_fact(parent, eve, alice).
+
+% --- 2. IDB Rule Declarations (Represented as Relations) ---
+% Base case for recursion: ancestor(X, Y) :- parent(X, Y).
+clause_1_head(ancestor, X, Y) :- base_fact(parent, X, Y).
+
+% Inductive step: ancestor(X, Y) :- parent(X, Z), ancestor(Z, Y).
+clause_2_head(ancestor, X, Y) :-
+    base_fact(parent, X, Z),
+    ancestor(Z, Y).
+
+% --- 3. Unified Derivation Store (Fixpoint Accumulator) ---
+% Initial derivation merges EDB facts into the IDB space.
+ancestor(X, Y) :- clause_1_head(ancestor, X, Y).
+ancestor(X, Y) :- clause_2_head(ancestor, X, Y).
+
+% =====================================================================
+% Stratified Negation Extension (Handling `not` via Closed-World Assumption)
+% =====================================================================
+
+% Define a relation to isolate nodes with no incoming parents (source nodes)
+has_parent(X) :- base_fact(_, _, X).
+root_node(X) :- base_fact(_, X, _), not has_parent(X).
+
+% =====================================================================
+% Query Execution Interface
+% =====================================================================
+
+% Target Query 1: Find all descendants reachable from alice
+% ?- ancestor(alice, Who).
+query_1(Who) :- ancestor(alice, Who).
+
+% Target Query 2: Find all ancestors of carol
+% ?- ancestor(Who, carol).
+query_2(Who) :- ancestor(Who, carol).
