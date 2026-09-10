@@ -1,22 +1,21 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T21:58:17Z
+**Timestamp:** 2026-09-10T22:11:04Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 2 |
-| Files Added | 2 |
+| Files Discovered | 1 |
+| Files Added | 1 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 0 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `docs/ACHRTRN_OPERATOR_RUNBOOK.md`
-- `docs/REPOSITORY_FINANCIAL_COMPLIANCE_EXAMINATION.md`
+- `src/jit_webllm_toy_transformer.js`
 
 ## Files Unchanged
 _None_
