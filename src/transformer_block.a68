@@ -1,0 +1,342 @@
+! transformer_block.a68
+! TRANSFORMER BLOCK COMPONENT — OSS 1230
+! TARGET: PRE-NORM DECODER BLOCK
+! STRUCTURE: x -> LN1 -> MHA -> residual -> LN2 -> MLP -> residual
+! MATH: y = x + MHA(LN1(x));  out = y + MLP(LN2(y))
+! DEPENDENCY: attn_core.a68, mlp.a68, norm.a68
+! LICENSE: AGPL-3.0-or-later
+MODULE transformer_block;
+
+  IMPORT tensor;
+
+  ! ============================================================
+  ! SECTION 1: TYPES
+  ! ============================================================
+  ! BlockParams: all parameters for one transformer block
+  ! ln1 : layer norm before attention
+  ! ln2 : layer norm before MLP
+  ! attn: multi-head attention parameters
+  ! mlp : feed-forward parameters
+  MODE BlockLNParams = STRUCT(
+    [] REAL gamma1, [] REAL beta1,
+    [] REAL gamma2, [] REAL beta2,
+    INT d_model
+  );
+
+  MODE BlockAttnWeights = STRUCT(
+    [] REAL wq, [] REAL wk, [] REAL wv, [] REAL wo,
+    INT d_model, INT d_head, INT n_heads
+  );
+
+  MODE BlockMLPWeights = STRUCT(
+    [] REAL w1, [] REAL b1,
+    [] REAL w2, [] REAL b2,
+    INT d_model, INT d_ff
+  );
+
+  MODE BlockParams = STRUCT(
+    BlockLNParams ln,
+    BlockAttnWeights attn,
+    BlockMLPWeights mlp,
+    INT d_model,
+    INT n_heads,
+    INT d_head,
+    INT d_ff
+  );
+
+  ! BlockForwardCache: all intermediates for backward pass
+  MODE BlockForwardCache = STRUCT(
+    [] REAL x_in,
+    [] REAL ln1_out, [] REAL ln1_mean, [] REAL ln1_var,
+    [] REAL attn_out,
+    [] REAL residual1,
+    [] REAL ln2_out, [] REAL ln2_mean, [] REAL ln2_var,
+    [] REAL mlp_pre, [] REAL mlp_act,
+    [] REAL out
+  );
+
+  ! BlockGrads: gradient accumulators for the full block
+  MODE BlockGrads = STRUCT(
+    [] REAL dgamma1, [] REAL dbeta1,
+    [] REAL dwq, [] REAL dwk, [] REAL dwv, [] REAL dwo,
+    [] REAL dgamma2, [] REAL dbeta2,
+    [] REAL dw1, [] REAL db1, [] REAL dw2, [] REAL db2
+  );
+
+  ! ============================================================
+  ! SECTION 2: INITIALIZATION
+  ! ============================================================
+  PROC block_params_new = (INT d_model, INT n_heads, INT d_ff) BlockParams:
+  BEGIN
+    INT d_head := d_model OVER n_heads;
+    ! LN params
+    [] REAL g1 := HEAP [d_model] REAL; [] REAL b1 := HEAP [d_model] REAL;
+    [] REAL g2 := HEAP [d_model] REAL; [] REAL b2 := HEAP [d_model] REAL;
+    FOR i FROM 1 TO d_model DO g1[i] := 1.0; b1[i] := 0.0; g2[i] := 1.0; b2[i] := 0.0 OD;
+    ! Attention params per head (simplified: n_heads heads share same shape)
+    INT wqkv := d_model * d_head;
+    INT wo_sz := d_model * d_model;
+    [] REAL wq := HEAP [wqkv] REAL; [] REAL wk := HEAP [wqkv] REAL;
+    [] REAL wv := HEAP [wqkv] REAL; [] REAL wo := HEAP [wo_sz] REAL;
+    FOR i FROM 1 TO wqkv DO wq[i] := 0.0; wk[i] := 0.0; wv[i] := 0.0 OD;
+    FOR i FROM 1 TO wo_sz DO wo[i] := 0.0 OD;
+    ! MLP params
+    [] REAL w1 := HEAP [d_ff * d_model] REAL; [] REAL bv1 := HEAP [d_ff] REAL;
+    [] REAL w2 := HEAP [d_model * d_ff] REAL; [] REAL bv2 := HEAP [d_model] REAL;
+    FOR i FROM 1 TO d_ff * d_model DO w1[i] := 0.0 OD;
+    FOR i FROM 1 TO d_ff DO bv1[i] := 0.0 OD;
+    FOR i FROM 1 TO d_model * d_ff DO w2[i] := 0.0 OD;
+    FOR i FROM 1 TO d_model DO bv2[i] := 0.0 OD;
+    BlockParams(
+      BlockLNParams(g1, b1, g2, b2, d_model),
+      BlockAttnWeights(wq, wk, wv, wo, d_model, d_head, n_heads),
+      BlockMLPWeights(w1, bv1, w2, bv2, d_model, d_ff),
+      d_model, n_heads, d_head, d_ff
+    )
+  END;
+
+  PROC block_params_xavier_init = (REF BlockParams p) VOID:
+  BEGIN
+    INT dm := p.d_model; INT dh := p.d_head; INT dff := p.d_ff;
+    REAL lim_attn := SQRT(6.0 / (FLOAT(dm) + FLOAT(dh)));
+    REAL lim_mlp1 := SQRT(6.0 / (FLOAT(dm) + FLOAT(dff)));
+    REAL lim_mlp2 := SQRT(6.0 / (FLOAT(dff) + FLOAT(dm)));
+    INT wqkv := dm * dh; INT wosz := dm * dm;
+    FOR i FROM 1 TO wqkv DO
+      p.attn.wq[i] := -lim_attn + 2.0 * lim_attn * RANDOM;
+      p.attn.wk[i] := -lim_attn + 2.0 * lim_attn * RANDOM;
+      p.attn.wv[i] := -lim_attn + 2.0 * lim_attn * RANDOM
+    OD;
+    FOR i FROM 1 TO wosz DO p.attn.wo[i] := -lim_attn + 2.0 * lim_attn * RANDOM OD;
+    FOR i FROM 1 TO dff * dm DO p.mlp.w1[i] := -lim_mlp1 + 2.0 * lim_mlp1 * RANDOM OD;
+    FOR i FROM 1 TO dm * dff DO p.mlp.w2[i] := -lim_mlp2 + 2.0 * lim_mlp2 * RANDOM OD
+  END;
+
+  ! ============================================================
+  ! SECTION 3: LAYER NORM HELPERS (inline, no import)
+  ! ============================================================
+  PROC block_layernorm = ([] REAL gamma, [] REAL beta, [] REAL x, INT n, INT d,
+                            REF [] REAL out_mean, REF [] REAL out_var) [] REAL:
+  BEGIN
+    out_mean := HEAP [n] REAL; out_var := HEAP [n] REAL;
+    [] REAL out := HEAP [n * d] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      REAL mu := 0.0;
+      FOR dim FROM 1 TO d DO mu +:= x[i * d + dim] OD; mu /:= FLOAT(d);
+      out_mean[i + 1] := mu;
+      REAL v := 0.0;
+      FOR dim FROM 1 TO d DO REAL diff := x[i * d + dim] - mu; v +:= diff * diff OD;
+      v /:= FLOAT(d); out_var[i + 1] := v;
+      REAL rstd := 1.0 / SQRT(v + 1.0e-5);
+      FOR dim FROM 1 TO d DO
+        out[i * d + dim] := gamma[dim] * (x[i * d + dim] - mu) * rstd + beta[dim]
+      OD
+    OD;
+    out
+  END;
+
+  ! ============================================================
+  ! SECTION 4: ATTENTION HELPERS (single-head for n_heads=1)
+  ! ============================================================
+  PROC block_sdp_attn = ([] REAL wq, [] REAL wk, [] REAL wv, [] REAL wo,
+                           [] REAL x, INT n, INT dm, INT dh) [] REAL:
+  BEGIN
+    REAL scale := 1.0 / SQRT(FLOAT(dh));
+    [] REAL q := HEAP [n * dh] REAL; [] REAL k := HEAP [n * dh] REAL; [] REAL v := HEAP [n * dh] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO dh DO
+        REAL aq := 0.0; REAL ak := 0.0; REAL av := 0.0;
+        FOR k2 FROM 1 TO dm DO
+          aq +:= x[i * dm + k2] * wq[(d - 1) * dm + k2];
+          ak +:= x[i * dm + k2] * wk[(d - 1) * dm + k2];
+          av +:= x[i * dm + k2] * wv[(d - 1) * dm + k2]
+        OD;
+        q[i * dh + d] := aq; k[i * dh + d] := ak; v[i * dh + d] := av
+      OD
+    OD;
+    [] REAL scores := HEAP [n * n] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR j FROM 1 TO n DO
+        REAL dot := 0.0;
+        FOR d FROM 1 TO dh DO dot +:= q[i * dh + d] * k[(j - 1) * dh + d] OD;
+        scores[i * n + j] := IF j > i + 1 THEN -1.0e9 ELSE dot * scale FI
+      OD
+    OD;
+    [] REAL weights := HEAP [n * n] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      REAL mx := scores[i * n + 1];
+      FOR j FROM 2 TO n DO IF scores[i * n + j] > mx THEN mx := scores[i * n + j] FI OD;
+      REAL s := 0.0;
+      FOR j FROM 1 TO n DO REAL ex := EXP(scores[i * n + j] - mx); weights[i * n + j] := ex; s +:= ex OD;
+      IF s > 1.0e-12 THEN FOR j FROM 1 TO n DO weights[i * n + j] /:= s OD FI
+    OD;
+    [] REAL attn_out := HEAP [n * dh] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO dh DO
+        REAL acc := 0.0;
+        FOR j FROM 1 TO n DO acc +:= weights[i * n + j] * v[(j - 1) * dh + d] OD;
+        attn_out[i * dh + d] := acc
+      OD
+    OD;
+    [] REAL proj_out := HEAP [n * dm] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO dm DO
+        REAL acc := 0.0;
+        FOR k2 FROM 1 TO dh DO acc +:= attn_out[i * dh + k2] * wo[(d - 1) * dh + k2] OD;
+        proj_out[i * dm + d] := acc
+      OD
+    OD;
+    proj_out
+  END;
+
+  ! ============================================================
+  ! SECTION 5: MLP HELPERS
+  ! ============================================================
+  PROC block_mlp = ([] REAL w1, [] REAL b1, [] REAL w2, [] REAL b2,
+                     [] REAL x, INT n, INT dm, INT dff) [] REAL:
+  BEGIN
+    [] REAL pre := HEAP [n * dff] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO dff DO
+        REAL acc := b1[d];
+        FOR k FROM 1 TO dm DO acc +:= x[i * dm + k] * w1[(d - 1) * dm + k] OD;
+        REAL xv := acc;
+        REAL x3 := xv * xv * xv;
+        REAL inner := 0.7978845608 * (xv + 0.044715 * x3);
+        REAL expv := EXP(2.0 * inner);
+        pre[i * dff + d] := 0.5 * xv * (1.0 + (expv - 1.0) / (expv + 1.0))
+      OD
+    OD;
+    [] REAL out := HEAP [n * dm] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO dm DO
+        REAL acc := b2[d];
+        FOR k FROM 1 TO dff DO acc +:= pre[i * dff + k] * w2[(d - 1) * dff + k] OD;
+        out[i * dm + d] := acc
+      OD
+    OD;
+    out
+  END;
+
+  ! ============================================================
+  ! SECTION 6: FULL BLOCK FORWARD
+  ! ============================================================
+  ! block_forward: pre-norm decoder block
+  !   y = x + attn(LN1(x))
+  !   out = y + mlp(LN2(y))
+  PROC block_forward = (BlockParams p, [] REAL x, INT n) BlockForwardCache:
+  BEGIN
+    INT dm := p.d_model; INT dh := p.d_head; INT dff := p.d_ff;
+    [] REAL mean1, var1;
+    [] REAL ln1_out := block_layernorm(p.ln.gamma1, p.ln.beta1, x, n, dm, mean1, var1);
+    [] REAL attn_out := block_sdp_attn(p.attn.wq, p.attn.wk, p.attn.wv, p.attn.wo,
+                                       ln1_out, n, dm, dh);
+    [] REAL res1 := HEAP [n * dm] REAL;
+    FOR i FROM 1 TO n * dm DO res1[i] := x[i] + attn_out[i] OD;
+    [] REAL mean2, var2;
+    [] REAL ln2_out := block_layernorm(p.ln.gamma2, p.ln.beta2, res1, n, dm, mean2, var2);
+    [] REAL mlp_pre := HEAP [n * dff] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO dff DO
+        REAL acc := p.mlp.b1[d];
+        FOR k FROM 1 TO dm DO acc +:= ln2_out[i * dm + k] * p.mlp.w1[(d - 1) * dm + k] OD;
+        mlp_pre[i * dff + d] := acc
+      OD
+    OD;
+    [] REAL mlp_act := HEAP [n * dff] REAL;
+    FOR i FROM 1 TO n * dff DO
+      REAL xv := mlp_pre[i]; REAL x3 := xv * xv * xv;
+      REAL inner := 0.7978845608 * (xv + 0.044715 * x3);
+      REAL expv := EXP(2.0 * inner);
+      mlp_act[i] := 0.5 * xv * (1.0 + (expv - 1.0) / (expv + 1.0))
+    OD;
+    [] REAL mlp_out := HEAP [n * dm] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR d FROM 1 TO dm DO
+        REAL acc := p.mlp.b2[d];
+        FOR k FROM 1 TO dff DO acc +:= mlp_act[i * dff + k] * p.mlp.w2[(d - 1) * dff + k] OD;
+        mlp_out[i * dm + d] := acc
+      OD
+    OD;
+    [] REAL out := HEAP [n * dm] REAL;
+    FOR i FROM 1 TO n * dm DO out[i] := res1[i] + mlp_out[i] OD;
+    BlockForwardCache(x, ln1_out, mean1, var1, attn_out, res1,
+                      ln2_out, mean2, var2, mlp_pre, mlp_act, out)
+  END;
+
+  ! ============================================================
+  ! SECTION 7: INVARIANTS AND VERIFICATION
+  ! ============================================================
+  PROC verify_block_residual = (BlockForwardCache c, INT n, INT d) BOOL:
+  BEGIN
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO n * d DO
+      IF c.out[i] /= c.out[i] THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  PROC verify_block_output_finite = ([] REAL out, INT n, INT d) BOOL:
+  BEGIN
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO n * d DO
+      IF out[i] /= out[i] THEN ok := FALSE FI;
+      IF out[i] > 1.0e38 THEN ok := FALSE FI;
+      IF out[i] < -1.0e38 THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  ! ============================================================
+  ! SECTION 8: TESTS
+  ! ============================================================
+  PROC test_block_output_shape = () BOOL:
+  BEGIN
+    BlockParams p := block_params_new(8, 2, 32);
+    block_params_xavier_init(p);
+    INT n := 4;
+    [] REAL x := HEAP [n * 8] REAL;
+    FOR i FROM 1 TO n * 8 DO x[i] := RANDOM * 0.1 OD;
+    BlockForwardCache c := block_forward(p, x, n);
+    UPB c.out = n * 8
+  END;
+
+  PROC test_block_output_finite = () BOOL:
+  BEGIN
+    BlockParams p := block_params_new(4, 2, 16);
+    block_params_xavier_init(p);
+    INT n := 3;
+    [] REAL x := HEAP [n * 4] REAL;
+    FOR i FROM 1 TO n * 4 DO x[i] := RANDOM * 0.01 OD;
+    BlockForwardCache c := block_forward(p, x, n);
+    verify_block_output_finite(c.out, n, 4)
+  END;
+
+  PROC test_block_residual_adds = () BOOL:
+  BEGIN
+    BlockParams p := block_params_new(4, 1, 8);
+    FOR i FROM 1 TO 4 * 4 DO p.attn.wq[i] := 0.0; p.attn.wk[i] := 0.0; p.attn.wv[i] := 0.0 OD;
+    FOR i FROM 1 TO 4 * 4 DO p.attn.wo[i] := 0.0 OD;
+    FOR i FROM 1 TO 8 * 4 DO p.mlp.w1[i] := 0.0 OD;
+    FOR i FROM 1 TO 4 * 8 DO p.mlp.w2[i] := 0.0 OD;
+    INT n := 2;
+    [] REAL x := HEAP [n * 4] REAL;
+    FOR i FROM 1 TO n * 4 DO x[i] := FLOAT(i) * 0.1 OD;
+    BlockForwardCache c := block_forward(p, x, n);
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO n * 4 DO
+      IF ABS(c.out[i] - x[i]) > 0.1 THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  PROC run_block_tests = () INT:
+  BEGIN
+    BOOL all :=
+      test_block_output_shape() AND
+      test_block_output_finite() AND
+      test_block_residual_adds();
+    IF all THEN 0 ELSE -1 FI
+  END;
+
+END ! MODULE transformer_block

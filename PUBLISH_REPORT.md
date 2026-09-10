@@ -1,25 +1,22 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T22:50:21Z
+**Timestamp:** 2026-09-10T22:53:03Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 5 |
-| Files Added | 5 |
+| Files Discovered | 2 |
+| Files Added | 2 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 0 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/attn_core.a68`
-- `src/mlp.a68`
-- `src/norm.a68`
-- `src/output_head.a68`
-- `src/pos_enc.a68`
+- `src/transformer_block.a68`
+- `src/transformer_model.a68`
 
 ## Files Unchanged
 _None_
