@@ -1,0 +1,317 @@
+! optimizer.a68
+! OPTIMIZER AND TRAINING LOOP — OSS 1230
+! TARGET: ADAM OPTIMIZER + SGD + GRADIENT CLIPPING + LR SCHEDULE
+! MATH: Adam: m_t = b1*m_{t-1} + (1-b1)*g; v_t = b2*v_{t-1} + (1-b2)*g^2
+!             theta -= lr * m_t_hat / (sqrt(v_t_hat) + eps)
+! DEPENDENCY: transformer_model.a68
+! LICENSE: AGPL-3.0-or-later
+MODULE optimizer;
+
+  IMPORT tensor;
+
+  ! ============================================================
+  ! SECTION 1: CONSTANTS
+  ! ============================================================
+  REAL ADAM_B1       := 0.9;
+  REAL ADAM_B2       := 0.999;
+  REAL ADAM_EPS      := 1.0e-8;
+  REAL ADAM_LR_DEF   := 1.0e-3;
+  REAL GRAD_CLIP_DEF := 1.0;
+  REAL LR_WARMUP_MIN := 1.0e-8;
+
+  ! ============================================================
+  ! SECTION 2: TYPES
+  ! ============================================================
+  ! AdamState: per-parameter first and second moment estimates
+  MODE AdamParam = STRUCT(
+    [] REAL m,
+    [] REAL v,
+    INT size,
+    INT t
+  );
+
+  ! OptimizerConfig: hyperparameters for training
+  MODE OptimizerConfig = STRUCT(
+    REAL lr,
+    REAL beta1,
+    REAL beta2,
+    REAL epsilon,
+    REAL grad_clip,
+    INT warmup_steps,
+    INT total_steps,
+    BOOL use_warmup,
+    BOOL use_cosine_decay
+  );
+
+  ! TrainingState: global training counters and loss history
+  MODE TrainingState = STRUCT(
+    INT global_step,
+    REAL running_loss,
+    REAL best_loss,
+    INT patience_count,
+    INT patience_max,
+    BOOL converged
+  );
+
+  ! ============================================================
+  ! SECTION 3: ADAM PARAMETER STATE
+  ! ============================================================
+  PROC adam_param_new = (INT size) AdamParam:
+  BEGIN
+    [] REAL m := HEAP [size] REAL;
+    [] REAL v := HEAP [size] REAL;
+    FOR i FROM 1 TO size DO m[i] := 0.0; v[i] := 0.0 OD;
+    AdamParam(m, v, size, 0)
+  END;
+
+  PROC adam_param_zero = (REF AdamParam p) VOID:
+  BEGIN
+    FOR i FROM 1 TO p.size DO p.m[i] := 0.0; p.v[i] := 0.0 OD;
+    p.t := 0
+  END;
+
+  ! ============================================================
+  ! SECTION 4: LEARNING RATE SCHEDULE
+  ! ============================================================
+  ! lr_warmup_cosine: linear warmup + cosine decay
+  ! During warmup (step < warmup): lr scales linearly from LR_WARMUP_MIN to base_lr
+  ! After warmup: lr follows cosine decay from base_lr to 0
+  PROC lr_schedule = (OptimizerConfig cfg, INT step) REAL:
+  BEGIN
+    IF NOT cfg.use_warmup AND NOT cfg.use_cosine_decay THEN
+      cfg.lr
+    ELIF cfg.use_warmup AND step < cfg.warmup_steps THEN
+      LR_WARMUP_MIN + (cfg.lr - LR_WARMUP_MIN) * FLOAT(step) / FLOAT(cfg.warmup_steps)
+    ELIF cfg.use_cosine_decay THEN
+      REAL progress := FLOAT(step - cfg.warmup_steps) /
+                       FLOAT(cfg.total_steps - cfg.warmup_steps MAX 1);
+      cfg.lr * 0.5 * (1.0 + COS(3.14159265 * progress MIN 1.0))
+    ELSE
+      cfg.lr
+    FI
+  END;
+
+  ! ============================================================
+  ! SECTION 5: GRADIENT CLIPPING
+  ! ============================================================
+  ! clip_grad_norm: scales gradient if its global L2 norm exceeds max_norm
+  ! Input:  grads : [] REAL (flat gradient vector), max_norm : REAL
+  ! Output: REAL (the actual gradient norm before clipping)
+  ! Post:   if norm > max_norm, all grads scaled by max_norm/norm
+  PROC clip_grad_norm = (REF [] REAL grads, INT len, REAL max_norm) REAL:
+  BEGIN
+    REAL norm_sq := 0.0;
+    FOR i FROM 1 TO len DO norm_sq +:= grads[i] * grads[i] OD;
+    REAL norm := SQRT(norm_sq);
+    IF norm > max_norm AND norm > 1.0e-12 THEN
+      REAL scale := max_norm / norm;
+      FOR i FROM 1 TO len DO grads[i] *:= scale OD
+    FI;
+    norm
+  END;
+
+  ! ============================================================
+  ! SECTION 6: ADAM UPDATE FOR ONE PARAMETER TENSOR
+  ! ============================================================
+  ! adam_step_param: applies Adam update to one parameter array
+  ! Input:  param : REF [] REAL (parameter to update)
+  !         grad  : [] REAL (gradient)
+  !         state : REF AdamParam (first/second moment state)
+  !         lr    : REAL (current learning rate)
+  !         cfg   : OptimizerConfig
+  ! Output: VOID (mutates param and state in place)
+  ! Mathematical operation (per element i):
+  !   m_t[i] = beta1 * m_{t-1}[i] + (1 - beta1) * grad[i]
+  !   v_t[i] = beta2 * v_{t-1}[i] + (1 - beta2) * grad[i]^2
+  !   m_hat[i] = m_t[i] / (1 - beta1^t)
+  !   v_hat[i] = v_t[i] / (1 - beta2^t)
+  !   param[i] -= lr * m_hat[i] / (sqrt(v_hat[i]) + eps)
+  PROC adam_step_param = (REF [] REAL param, [] REAL grad,
+                           REF AdamParam state, REAL lr,
+                           OptimizerConfig cfg) VOID:
+  BEGIN
+    state.t +:= 1;
+    REAL b1_t := 1.0 - cfg.beta1 ^ state.t;
+    REAL b2_t := 1.0 - cfg.beta2 ^ state.t;
+    FOR i FROM 1 TO state.size DO
+      state.m[i] := cfg.beta1 * state.m[i] + (1.0 - cfg.beta1) * grad[i];
+      state.v[i] := cfg.beta2 * state.v[i] + (1.0 - cfg.beta2) * grad[i] * grad[i];
+      REAL m_hat := state.m[i] / b1_t;
+      REAL v_hat := state.v[i] / b2_t;
+      param[i] -:= lr * m_hat / (SQRT(v_hat) + cfg.epsilon)
+    OD
+  END;
+
+  ! ============================================================
+  ! SECTION 7: SGD WITH MOMENTUM (ALTERNATIVE)
+  ! ============================================================
+  ! sgd_momentum_step: Nesterov-style SGD with momentum
+  ! v_t = momentum * v_{t-1} + (1 - momentum) * grad
+  ! param -= lr * v_t
+  PROC sgd_momentum_step = (REF [] REAL param, [] REAL grad,
+                              REF [] REAL velocity, INT size,
+                              REAL lr, REAL momentum) VOID:
+  BEGIN
+    FOR i FROM 1 TO size DO
+      velocity[i] := momentum * velocity[i] + (1.0 - momentum) * grad[i];
+      param[i] -:= lr * velocity[i]
+    OD
+  END;
+
+  ! ============================================================
+  ! SECTION 8: TRAINING LOOP PRIMITIVES
+  ! ============================================================
+  PROC training_state_new = () TrainingState:
+    TrainingState(0, 0.0, 1.0e38, 0, 10, FALSE);
+
+  PROC training_update_loss = (REF TrainingState s, REAL loss) VOID:
+  BEGIN
+    s.global_step +:= 1;
+    REAL alpha := 0.99;
+    IF s.global_step = 1 THEN
+      s.running_loss := loss
+    ELSE
+      s.running_loss := alpha * s.running_loss + (1.0 - alpha) * loss
+    FI;
+    IF loss < s.best_loss THEN
+      s.best_loss := loss;
+      s.patience_count := 0
+    ELSE
+      s.patience_count +:= 1;
+      IF s.patience_count >= s.patience_max THEN s.converged := TRUE FI
+    FI
+  END;
+
+  PROC training_should_stop = (TrainingState s, INT max_steps) BOOL:
+    s.converged OR s.global_step >= max_steps;
+
+  ! ============================================================
+  ! SECTION 9: NUMERICAL HEALTH CHECK FOR GRADIENTS
+  ! ============================================================
+  ! check_grad_health: returns FALSE if any gradient is NaN or Inf
+  PROC check_grad_health = ([] REAL grad, INT len) BOOL:
+  BEGIN
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO len DO
+      IF grad[i] /= grad[i] THEN ok := FALSE FI;
+      IF grad[i] > 1.0e38 THEN ok := FALSE FI;
+      IF grad[i] < -1.0e38 THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  ! ============================================================
+  ! SECTION 10: VERIFICATION AND PROPERTIES
+  ! ============================================================
+  ! prop_adam_monotone_variance: v_t >= 0 always (since g^2 >= 0)
+  PROC prop_adam_variance_nonneg = (AdamParam state) BOOL:
+  BEGIN
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO state.size DO IF state.v[i] < 0.0 THEN ok := FALSE FI OD;
+    ok
+  END;
+
+  ! prop_lr_warmup_monotone: lr increases from step 0 to warmup_steps
+  PROC prop_lr_warmup_monotone = (OptimizerConfig cfg) BOOL:
+  BEGIN
+    IF NOT cfg.use_warmup THEN TRUE
+    ELSE
+      BOOL ok := TRUE;
+      REAL prev := lr_schedule(cfg, 0);
+      FOR step FROM 1 TO cfg.warmup_steps DO
+        REAL curr := lr_schedule(cfg, step);
+        IF curr < prev - 1.0e-10 THEN ok := FALSE FI;
+        prev := curr
+      OD;
+      ok
+    FI
+  END;
+
+  ! prop_clip_reduces_norm: after clipping, norm <= max_norm
+  PROC prop_clip_reduces_norm = ([] REAL grad, INT len, REAL max_norm) BOOL:
+  BEGIN
+    [] REAL g := HEAP [len] REAL;
+    FOR i FROM 1 TO len DO g[i] := grad[i] OD;
+    clip_grad_norm(g, len, max_norm);
+    REAL norm_sq := 0.0;
+    FOR i FROM 1 TO len DO norm_sq +:= g[i] * g[i] OD;
+    SQRT(norm_sq) <= max_norm + 1.0e-6
+  END;
+
+  ! ============================================================
+  ! SECTION 11: TESTS
+  ! ============================================================
+  PROC test_adam_decreases_loss = () BOOL:
+  BEGIN
+    ! Simple quadratic: f(x) = x^2, df/dx = 2x
+    ! Optimal: x = 0. Start at x = 1.0.
+    [] REAL param := HEAP [1] REAL; param[1] := 1.0;
+    AdamParam state := adam_param_new(1);
+    OptimizerConfig cfg := OptimizerConfig(
+      0.01, ADAM_B1, ADAM_B2, ADAM_EPS, GRAD_CLIP_DEF, 0, 100, FALSE, FALSE
+    );
+    FOR step FROM 1 TO 100 DO
+      [] REAL grad := HEAP [1] REAL; grad[1] := 2.0 * param[1];
+      adam_step_param(param, grad, state, cfg.lr, cfg)
+    OD;
+    ABS(param[1]) < 0.01
+  END;
+
+  PROC test_lr_warmup = () BOOL:
+  BEGIN
+    OptimizerConfig cfg := OptimizerConfig(
+      0.001, ADAM_B1, ADAM_B2, ADAM_EPS, 1.0, 100, 1000, TRUE, FALSE
+    );
+    REAL lr_0 := lr_schedule(cfg, 0);
+    REAL lr_50 := lr_schedule(cfg, 50);
+    REAL lr_100 := lr_schedule(cfg, 100);
+    lr_0 < lr_50 AND lr_50 < lr_100
+  END;
+
+  PROC test_grad_clip = () BOOL:
+  BEGIN
+    [] REAL grad := HEAP [4] REAL;
+    grad[1] := 10.0; grad[2] := 10.0; grad[3] := 10.0; grad[4] := 10.0;
+    clip_grad_norm(grad, 4, 1.0);
+    REAL norm_sq := 0.0;
+    FOR i FROM 1 TO 4 DO norm_sq +:= grad[i] * grad[i] OD;
+    SQRT(norm_sq) <= 1.0 + 1.0e-6
+  END;
+
+  PROC test_adam_variance_nonneg = () BOOL:
+  BEGIN
+    [] REAL param := HEAP [3] REAL;
+    FOR i FROM 1 TO 3 DO param[i] := RANDOM OD;
+    AdamParam state := adam_param_new(3);
+    OptimizerConfig cfg := OptimizerConfig(
+      0.001, ADAM_B1, ADAM_B2, ADAM_EPS, 1.0, 0, 100, FALSE, FALSE
+    );
+    FOR step FROM 1 TO 5 DO
+      [] REAL grad := HEAP [3] REAL;
+      FOR i FROM 1 TO 3 DO grad[i] := RANDOM - 0.5 OD;
+      adam_step_param(param, grad, state, cfg.lr, cfg)
+    OD;
+    prop_adam_variance_nonneg(state)
+  END;
+
+  PROC test_training_state_counts = () BOOL:
+  BEGIN
+    TrainingState s := training_state_new();
+    training_update_loss(s, 2.0);
+    training_update_loss(s, 1.5);
+    training_update_loss(s, 1.0);
+    s.global_step = 3 AND s.best_loss < 2.0
+  END;
+
+  PROC run_optimizer_tests = () INT:
+  BEGIN
+    BOOL all :=
+      test_adam_decreases_loss() AND
+      test_lr_warmup() AND
+      test_grad_clip() AND
+      test_adam_variance_nonneg() AND
+      test_training_state_counts();
+    IF all THEN 0 ELSE -1 FI
+  END;
+
+END ! MODULE optimizer

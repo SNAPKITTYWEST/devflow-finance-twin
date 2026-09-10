@@ -1,22 +1,23 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T22:53:03Z
+**Timestamp:** 2026-09-10T22:56:46Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 2 |
-| Files Added | 2 |
+| Files Discovered | 3 |
+| Files Added | 3 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 0 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/transformer_block.a68`
-- `src/transformer_model.a68`
+- `src/inference.a68`
+- `src/optimizer.a68`
+- `src/serialization.a68`
 
 ## Files Unchanged
 _None_
