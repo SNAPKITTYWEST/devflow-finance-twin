@@ -1,6 +1,0 @@
-; Memory load/store
-    LOAD_IMM R0, 100
-    LOAD_IMM R1, 7
-    STORE R0, R1
-    LOAD R2, R0
-    HALT

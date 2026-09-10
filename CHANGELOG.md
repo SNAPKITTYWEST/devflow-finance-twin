@@ -44,7 +44,7 @@ All notable changes to Devflow Finance Twin are documented here.
 - FBL Research Paper (~8500 words)
 - Tensor parser test fixtures (9 .bten files)
 - FBL binary test fixtures (6 .bten files)
-- `Sovereign_Harmony.pdf` — formal spec
+- `docs/Sovereign_Harmony.pdf` — formal spec
 - `assets/sovharmony.gif` — animated banner
 
 ## [v1.1.0] — 2026-09-05

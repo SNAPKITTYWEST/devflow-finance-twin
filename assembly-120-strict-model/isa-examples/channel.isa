@@ -1,7 +1,0 @@
-; Channel create / write / read
-    LOAD_IMM R1, 4
-    CHAN_CREATE R0, 4
-    LOAD_IMM R2, 99
-    CHAN_WRITE R0, R2
-    CHAN_READ R3, R0
-    HALT

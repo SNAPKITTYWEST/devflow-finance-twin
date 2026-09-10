@@ -22,3 +22,6 @@ lib/
 *.a
 generated/
 data/
+
+# Rust build output
+target/
