@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-10T22:59:37Z
+**Timestamp:** 2026-09-10T23:00:49Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/determinism_suite.a68`
+- `src/benchmark.a68`
 
 ## Files Unchanged
 _None_
