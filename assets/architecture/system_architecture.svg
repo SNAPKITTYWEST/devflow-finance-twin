@@ -1,0 +1,337 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#555"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#c0392b"/>
+    </marker>
+    <style>
+      text { font-family: 'Segoe UI', sans-serif; font-size: 11px; }
+      .title { font-size: 18px; font-weight: bold; }
+      .subtitle { font-size: 12px; fill: #666; }
+      .box { rx: 8; ry: 8; stroke-width: 1.5; }
+      .label { font-size: 10px; fill: #333; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1400" height="1000" fill="#fafafa"/>
+
+  <!-- Title -->
+  <text x="700" y="35" text-anchor="middle" class="title">Fibonacci Braid Ledger - System Architecture</text>
+  <text x="700" y="55" text-anchor="middle" class="subtitle">devflow-finance-twin | 1,786 files | 41 directories | 25+ languages</text>
+
+  <!-- Layer 1: Input Layer -->
+  <rect x="20" y="80" width="1360" height="100" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="1"/>
+  <text x="35" y="95" class="label" font-weight="bold" fill="#2980b9">INPUT LAYER</text>
+
+  <rect x="40" y="100" width="150" height="60" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="55" y="125">Transaction</text>
+  <text x="55" y="140">Ingestion</text>
+
+  <rect x="210" y="100" width="150" height="60" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="225" y="125">Account</text>
+  <text x="225" y="140">Management</text>
+
+  <rect x="380" y="100" width="150" height="60" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="395" y="125">Invoice</text>
+  <text x="395" y="140">Processing</text>
+
+  <rect x="550" y="100" width="150" height="60" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="565" y="125">ACH/RTP</text>
+  <text x="565" y="140">Payments</text>
+
+  <rect x="720" y="100" width="150" height="60" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="735" y="125">Treasury</text>
+  <text x="735" y="140">Operations</text>
+
+  <rect x="890" y="100" width="150" height="60" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="905" y="125">Compliance</text>
+  <text x="905" y="140">Reporting</text>
+
+  <rect x="1060" y="100" width="150" height="60" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="1075" y="125">CLI/API</text>
+  <text x="1075" y="140">Interface</text>
+
+  <rect x="1230" y="100" width="140" height="60" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="1245" y="125">Cold Boot</text>
+  <text x="1245" y="140">Defenses</text>
+
+  <!-- Layer 2: Core Engine -->
+  <rect x="20" y="200" width="1360" height="120" rx="10" fill="#e8fde8" stroke="#27ae60" stroke-width="1"/>
+  <text x="35" y="215" class="label" font-weight="bold" fill="#27ae60">CORE ENGINE (src/ - 89 files, 52K+ LOC)</text>
+
+  <rect x="40" y="225" width="200" height="80" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="55" y="250">FinanceTwinEngine</text>
+  <text x="55" y="265" class="label">twin.py (329 lines)</text>
+  <text x="55" y="280" class="label">Main orchestrator</text>
+
+  <rect x="260" y="225" width="200" height="80" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="275" y="250">WORM Storage</text>
+  <text x="275" y="265" class="label">worm.py (235 lines)</text>
+  <text x="275" y="280" class="label">Write-once-read-many</text>
+
+  <rect x="480" y="225" width="200" height="80" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="495" y="250">Audit Layer</text>
+  <text x="495" y="265" class="label">audit.py (127 lines)</text>
+  <text x="495" y="280" class="label">Cryptographic audit trail</text>
+
+  <rect x="700" y="225" width="200" height="80" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="715" y="250">ICP Anchor</text>
+  <text x="715" y="265" class="label">icp_anchor.py (371 lines)</text>
+  <text x="715" y="280" class="label">InterContinental Payment</text>
+
+  <rect x="920" y="225" width="200" height="80" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="935" y="250">Cold Boot</text>
+  <text x="935" y="265" class="label">cold_boot.py (288 lines)</text>
+  <text x="935" y="280" class="label">Hardware attack defense</text>
+
+  <rect x="1140" y="225" width="220" height="80" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="1155" y="250">Native Extensions</text>
+  <text x="1155" y="265" class="label">Python, Pascal, CUDA</text>
+  <text x="1155" y="280" class="label">JIT, WebLLM, Futhark</text>
+
+  <!-- Layer 3: Mathematical Foundation -->
+  <rect x="20" y="340" width="680" height="140" rx="10" fill="#fde8e8" stroke="#e74c3c" stroke-width="1"/>
+  <text x="35" y="355" class="label" font-weight="bold" fill="#e74c3c">MATHEMATICAL FOUNDATION (he-binary-functor/ - 29 subdirs)</text>
+
+  <rect x="40" y="370" width="155" height="95" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="50" y="390">Workerman</text>
+  <text x="50" y="405">Calculus</text>
+  <text x="50" y="420" class="label">haskell/ (657 lines)</text>
+  <text x="50" y="435" class="label">GROUND TRUTH</text>
+  <text x="50" y="450" class="label">BraidWord -> WASM</text>
+
+  <rect x="210" y="370" width="155" height="95" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="220" y="390">Custom Crypto</text>
+  <text x="220" y="405">6 Systems</text>
+  <text x="220" y="420" class="label">crypto/ (12 files)</text>
+  <text x="220" y="435" class="label">IAMAC, BraidKernel</text>
+  <text x="220" y="450" class="label">SealChain, Malleability</text>
+
+  <rect x="380" y="370" width="155" height="95" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="390" y="390">Verilog-A</text>
+  <text x="390" y="405">9 Circuits</text>
+  <text x="390" y="420" class="label">verilog-a/ (9 files)</text>
+  <text x="390" y="435" class="label">Quantum dot, Josephson</text>
+  <text x="390" y="450" class="label">Adiabatic qubit gate</text>
+
+  <rect x="550" y="370" width="130" height="95" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="560" y="390">Lean 4</text>
+  <text x="560" y="405">Formal Proofs</text>
+  <text x="560" y="420" class="label">lean4/ (5+ files)</text>
+  <text x="560" y="435" class="label">Sovereign attractor</text>
+  <text x="560" y="450" class="label">Banach contraction</text>
+
+  <!-- Layer 3b: Quantum Computer -->
+  <rect x="720" y="340" width="660" height="140" rx="10" fill="#f0e8fd" stroke="#9b59b6" stroke-width="1"/>
+  <text x="735" y="355" class="label" font-weight="bold" fill="#9b59b6">QUANTUM COMPUTER (quantum_computer/ - 27 files, 6,385 LOC)</text>
+
+  <rect x="740" y="370" width="145" height="95" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="750" y="390">Density Matrix</text>
+  <text x="750" y="405">Simulator</text>
+  <text x="750" y="420" class="label">vm/simulator.py</text>
+  <text x="750" y="435" class="label">Gate application</text>
+  <text x="750" y="450" class="label">Measurement</text>
+
+  <rect x="900" y="370" width="145" height="95" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="910" y="390">24 Quantum</text>
+  <text x="910" y="405">Gates</text>
+  <text x="910" y="420" class="label">gates/__init__.py</text>
+  <text x="910" y="435" class="label">Pauli, Hadamard</text>
+  <text x="910" y="450" class="label">CNOT, Toffoli</text>
+
+  <rect x="1060" y="370" width="145" height="95" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="1070" y="390">Algorithms</text>
+  <text x="1070" y="405">VQE, QAOA</text>
+  <text x="1070" y="420" class="label">algorithms/</text>
+  <text x="1070" y="435" class="label">Grover, Shor</text>
+  <text x="1070" y="450" class="label">Topological</text>
+
+  <rect x="1220" y="370" width="145" height="95" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="1230" y="390">Error</text>
+  <text x="1230" y="405">Correction</text>
+  <text x="1230" y="420" class="label">error_correction/</text>
+  <text x="1230" y="435" class="label">Bit flip, Phase flip</text>
+  <text x="1230" y="450" class="label">Surface code</text>
+
+  <!-- Layer 4: Verification Layer -->
+  <rect x="20" y="500" width="680" height="140" rx="10" fill="#fdf8e8" stroke="#f39c12" stroke-width="1"/>
+  <text x="35" y="515" class="label" font-weight="bold" fill="#f39c12">FORMAL VERIFICATION (7 Proof Systems)</text>
+
+  <rect x="40" y="530" width="120" height="95" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="50" y="550">Lean 4</text>
+  <text x="50" y="565" class="label">sovereign_attractor</text>
+  <text x="50" y="580" class="label">.lean (358 lines)</text>
+  <text x="50" y="595" class="label">Banach contraction</text>
+  <text x="50" y="610" class="label">IMPLEMENTED</text>
+
+  <rect x="170" y="530" width="120" height="95" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="180" y="550">Coq</text>
+  <text x="180" y="565" class="label">RecursiveAudit.v</text>
+  <text x="180" y="580" class="label">(189 lines)</text>
+  <text x="180" y="595" class="label">Token verification</text>
+  <text x="180" y="610" class="label">IMPLEMENTED</text>
+
+  <rect x="300" y="530" width="120" height="95" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="310" y="550">Agda</text>
+  <text x="310" y="565" class="label">RecursiveAudit.agda</text>
+  <text x="310" y="580" class="label">(156 lines)</text>
+  <text x="310" y="595" class="label">Dependent types</text>
+  <text x="310" y="610" class="label">IMPLEMENTED</text>
+
+  <rect x="430" y="530" width="120" height="95" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="440" y="550">F*</text>
+  <text x="440" y="565" class="label">RecursiveAudit.fst</text>
+  <text x="440" y="580" class="label">(167 lines)</text>
+  <text x="440" y="595" class="label">Type-safe</text>
+  <text x="440" y="610" class="label">IMPLEMENTED</text>
+
+  <rect x="560" y="530" width="120" height="95" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="570" y="550">Isabelle</text>
+  <text x="570" y="565" class="label">RecursiveAudit.thy</text>
+  <text x="570" y="580" class="label">(143 lines)</text>
+  <text x="570" y="595" class="label">Theorem prover</text>
+  <text x="570" y="610" class="label">IMPLEMENTED</text>
+
+  <!-- Layer 4b: Compiler Stack -->
+  <rect x="720" y="500" width="660" height="140" rx="10" fill="#e8fdfd" stroke="#1abc9c" stroke-width="1"/>
+  <text x="735" y="515" class="label" font-weight="bold" fill="#1abc9c">COMPILER / DSL STACK</text>
+
+  <rect x="740" y="530" width="145" height="95" rx="6" fill="#ffffff" stroke="#1abc9c"/>
+  <text x="750" y="550">FSL Solver</text>
+  <text x="750" y="565">Language</text>
+  <text x="750" y="580" class="label">rust/fsl/ (36 files)</text>
+  <text x="750" y="595" class="label">Russian syntax parser</text>
+  <text x="750" y="610" class="label">4 backends</text>
+
+  <rect x="900" y="530" width="145" height="95" rx="6" fill="#ffffff" stroke="#1abc9c"/>
+  <text x="910" y="550">Constraint</text>
+  <text x="910" y="565">DSL (MXML)</text>
+  <text x="910" y="580" class="label">constraint-harness/</text>
+  <text x="910" y="595" class="label">25 files, 2,400 LOC</text>
+  <text x="910" y="610" class="label">DAG scheduler</text>
+
+  <rect x="1060" y="530" width="145" height="95" rx="6" fill="#ffffff" stroke="#1abc9c"/>
+  <text x="1070" y="550">ISA-to-JVM</text>
+  <text x="1070" y="565">Compiler</text>
+  <text x="1070" y="580" class="label">isa-jvm/ (22 files)</text>
+  <text x="1070" y="595" class="label">Bytecode compiler</text>
+  <text x="1070" y="610" class="label">Reference interpreter</text>
+
+  <rect x="1220" y="530" width="145" height="95" rx="6" fill="#ffffff" stroke="#1abc9c"/>
+  <text x="1230" y="550">Cobalt</text>
+  <text x="1230" y="565">Compiler</text>
+  <text x="1230" y="580" class="label">cobalt-compiler/</text>
+  <text x="1230" y="595" class="label">PDF report</text>
+  <text x="1230" y="610" class="label">Formal model</text>
+
+  <!-- Layer 5: Banking Layer -->
+  <rect x="20" y="660" width="1360" height="120" rx="10" fill="#fde8f4" stroke="#e91e63" stroke-width="1"/>
+  <text x="35" y="675" class="label" font-weight="bold" fill="#e91e63">BANKING / FINANCE LAYER</text>
+
+  <rect x="40" y="690" width="180" height="80" rx="6" fill="#ffffff" stroke="#e91e63"/>
+  <text x="55" y="715">ACH Processing</text>
+  <text x="55" y="730" class="label">rpgle/ach.rpgle</text>
+  <text x="55" y="745" class="label">IBM i RPGLE</text>
+
+  <rect x="240" y="690" width="180" height="80" rx="6" fill="#ffffff" stroke="#e91e63"/>
+  <text x="255" y="715">Treasury Mgmt</text>
+  <text x="255" y="730" class="label">rpgle/treasury.rpgle</text>
+  <text x="255" y="745" class="label">Cash management</text>
+
+  <rect x="440" y="690" width="180" height="80" rx="6" fill="#ffffff" stroke="#e91e63"/>
+  <text x="455" y="715">RTP Rail</text>
+  <text x="455" y="730" class="label">csharp/RtpRailAdapter.cs</text>
+  <text x="455" y="745" class="label">Real-time payments</text>
+
+  <rect x="640" y="690" width="180" height="80" rx="6" fill="#ffffff" stroke="#e91e63"/>
+  <text x="655" y="715">Ledger Gateway</text>
+  <text x="655" y="730" class="label">csharp/LedgerGateway.cs</text>
+  <text x="655" y="745" class="label">C# gateway</text>
+
+  <rect x="840" y="690" width="180" height="80" rx="6" fill="#ffffff" stroke="#e91e63"/>
+  <text x="855" y="715">Datalog Engine</text>
+  <text x="855" y="730" class="label">datalog-engine/</text>
+  <text x="855" y="745" class="label">9 files, 662 LOC</text>
+
+  <rect x="1040" y="690" width="180" height="80" rx="6" fill="#ffffff" stroke="#e91e63"/>
+  <text x="1055" y="715">Semantic Solver</text>
+  <text x="1055" y="730" class="label">astre-vault/</text>
+  <text x="1055" y="745" class="label">OWL/RDF + RCC-8</text>
+
+  <rect x="1240" y="690" width="130" height="80" rx="6" fill="#ffffff" stroke="#e91e63"/>
+  <text x="1250" y="715">Prolog</text>
+  <text x="1250" y="730" class="label">eclipse/, prolog/</text>
+  <text x="1250" y="745" class="label">Parlog kernel</text>
+
+  <!-- Layer 6: Assembly / GPU -->
+  <rect x="20" y="800" width="680" height="100" rx="10" fill="#e8e8fd" stroke="#6c5ce7" stroke-width="1"/>
+  <text x="35" y="815" class="label" font-weight="bold" fill="#6c5ce7">ASSEMBLY / GPU LAYER</text>
+
+  <rect x="40" y="830" width="155" height="55" rx="6" fill="#ffffff" stroke="#6c5ce7"/>
+  <text x="50" y="850">AVX2 SIMD</text>
+  <text x="50" y="865" class="label">1,064 lines</text>
+
+  <rect x="210" y="830" width="155" height="55" rx="6" fill="#ffffff" stroke="#6c5ce7"/>
+  <text x="220" y="850">x86 Braid</text>
+  <text x="220" y="865" class="label">653 lines</text>
+
+  <rect x="380" y="830" width="155" height="55" rx="6" fill="#ffffff" stroke="#6c5ce7"/>
+  <text x="390" y="850">CUDA Kernels</text>
+  <text x="390" y="865" class="label">VSM2500, H100</text>
+
+  <rect x="550" y="830" width="130" height="55" rx="6" fill="#ffffff" stroke="#6c5ce7"/>
+  <text x="560" y="850">CUDA-Q</text>
+  <text x="560" y="865" class="label">256-qubit</text>
+
+  <!-- Layer 6b: Array Languages -->
+  <rect x="720" y="800" width="660" height="100" rx="10" fill="#fdf8e8" stroke="#f39c12" stroke-width="1"/>
+  <text x="735" y="815" class="label" font-weight="bold" fill="#f39c12">ARRAY LANGUAGES + TRANSFORMERS</text>
+
+  <rect x="740" y="830" width="120" height="55" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="750" y="850">APL</text>
+  <text x="750" y="865" class="label">Transformer</text>
+
+  <rect x="875" y="830" width="120" height="55" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="885" y="850">BQN</text>
+  <text x="885" y="865" class="label">Array lang</text>
+
+  <rect x="1010" y="830" width="120" height="55" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="1020" y="850">K / Uiua</text>
+  <text x="1020" y="865" class="label">Array langs</text>
+
+  <rect x="1145" y="830" width="120" height="55" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="1155" y="850">Q# / Qrisp</text>
+  <text x="1155" y="865" class="label">Quantum langs</text>
+
+  <!-- Layer 7: Assets -->
+  <rect x="20" y="920" width="1360" height="60" rx="10" fill="#f0f0f0" stroke="#95a5a6" stroke-width="1"/>
+  <text x="35" y="935" class="label" font-weight="bold" fill="#7f8c8d">ASSETS / DOCUMENTATION</text>
+
+  <rect x="40" y="935" width="200" height="35" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="50" y="957" class="label">4 SVG diagrams | 19 doc files | 122 tests</text>
+
+  <rect x="260" y="935" width="200" height="35" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="270" y="957" class="label">13 Kani proofs | 3 quantum tests</text>
+
+  <rect x="480" y="935" width="200" height="35" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="490" y="957" class="label">LaTeX paper + Rust claim ledger</text>
+
+  <rect x="700" y="935" width="200" height="35" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="710" y="957" class="label">Makefile + Dockerfile</text>
+
+  <rect x="920" y="935" width="200" height="35" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="930" y="957" class="label">SOV Harmony GIF</text>
+
+  <!-- Arrows between layers -->
+  <line x1="700" y1="180" x2="700" y2="200" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="700" y1="320" x2="700" y2="340" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="350" y1="480" x2="350" y2="500" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="1050" y1="480" x2="1050" y2="500" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="700" y1="640" x2="700" y2="660" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="350" y1="780" x2="350" y2="800" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="1050" y1="780" x2="1050" y2="800" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="700" y1="900" x2="700" y2="920" stroke="#555" marker-end="url(#arrow)"/>
+</svg>

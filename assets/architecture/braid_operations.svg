@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#555"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#e74c3c"/>
+    </marker>
+    <style>
+      text { font-family: 'Segoe UI', sans-serif; font-size: 11px; }
+      .title { font-size: 18px; font-weight: bold; }
+      .subtitle { font-size: 12px; fill: #666; }
+      .box { rx: 8; ry: 8; stroke-width: 1.5; }
+      .label { font-size: 10px; fill: #333; }
+      .math { font-family: 'Cambria Math', serif; font-size: 12px; font-style: italic; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="700" fill="#fafafa"/>
+
+  <!-- Title -->
+  <text x="600" y="35" text-anchor="middle" class="title">Braid Group Operations - Workerman Calculus</text>
+  <text x="600" y="55" text-anchor="middle" class="subtitle">he-binary-functor/haskell/Workerman/Calculus.hs - 657 lines - GROUND TRUTH</text>
+
+  <!-- Ground Truth Spec -->
+  <rect x="450" y="75" width="300" height="60" rx="10" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="600" y="100" text-anchor="middle" fill="#ffffff" font-weight="bold">Workerman Calculus</text>
+  <text x="600" y="118" text-anchor="middle" fill="#ffffff" class="label">GROUND TRUTH SPECIFICATION</text>
+
+  <!-- Braid Word Structure -->
+  <rect x="50" y="160" width="350" height="200" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="1"/>
+  <text x="65" y="180" class="label" font-weight="bold" fill="#2980b9">BRAID WORD STRUCTURE</text>
+
+  <rect x="70" y="195" width="310" height="35" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="80" y="217">BraidWord = [Generator]</text>
+
+  <rect x="70" y="240" width="310" height="35" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="80" y="262">Generator = (Index, Direction)</text>
+
+  <rect x="70" y="285" width="310" height="35" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="80" y="307">Index :: Int (1 to n-1)</text>
+
+  <rect x="70" y="330" width="310" height="15" rx="4" fill="#fff2cc" stroke="#c6a700"/>
+  <text x="80" y="342" class="label" fill="#c6a700">Direction: +1 (over) or -1 (under)</text>
+
+  <!-- Braid Relations -->
+  <rect x="420" y="160" width="360" height="200" rx="10" fill="#fde8e8" stroke="#e74c3c" stroke-width="1"/>
+  <text x="435" y="180" class="label" font-weight="bold" fill="#e74c3c">BRAID RELATIONS (IMPLEMENTED)</text>
+
+  <rect x="440" y="195" width="320" height="35" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="450" y="217" class="math">sigma_i * sigma_{i+1} * sigma_i</text>
+
+  <rect x="440" y="240" width="320" height="35" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="450" y="262" class="math">= sigma_{i+1} * sigma_i * sigma_{i+1}</text>
+
+  <rect x="440" y="285" width="320" height="35" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="450" y="307" class="math">sigma_i * sigma_j = sigma_j * sigma_i</text>
+
+  <rect x="440" y="330" width="320" height="15" rx="4" fill="#fff2cc" stroke="#c6a700"/>
+  <text x="450" y="342" class="label" fill="#c6a700">when |i-j| > 1 (far commutativity)</text>
+
+  <!-- Yang-Baxter -->
+  <rect x="810" y="160" width="370" height="200" rx="10" fill="#f0e8fd" stroke="#9b59b6" stroke-width="1"/>
+  <text x="825" y="180" class="label" font-weight="bold" fill="#9b59b6">YANG-BAXTER TRANSFORMS</text>
+
+  <rect x="830" y="195" width="330" height="35" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="840" y="217">R-matrix: V x V -> V x V</text>
+
+  <rect x="830" y="240" width="330" height="35" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="840" y="262">Yang-Baxter equation (YBE)</text>
+
+  <rect x="830" y="285" width="330" height="35" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="840" y="307">Implementations: pwc_core.rs</text>
+
+  <rect x="830" y="330" width="330" height="15" rx="4" fill="#fff2cc" stroke="#c6a700"/>
+  <text x="840" y="342" class="label" fill="#c6a700">rust/pwc_core.rs - Yang-Baxter R-matrix</text>
+
+  <!-- Compilation Targets -->
+  <rect x="50" y="390" width="1130" height="120" rx="10" fill="#e8fde8" stroke="#27ae60" stroke-width="1"/>
+  <text x="65" y="410" class="label" font-weight="bold" fill="#27ae60">COMPILATION TARGETS (BraidWord -> Target)</text>
+
+  <rect x="70" y="425" width="155" height="70" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="80" y="445">WASM Runtime</text>
+  <text x="80" y="460" class="label">wasm/sha256.wat</text>
+  <text x="80" y="475" class="label">19-phase pipeline</text>
+  <text x="80" y="490" class="label" fill="#e74c3c">INCOMPLETE</text>
+
+  <rect x="240" y="425" width="155" height="70" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="250" y="445">Verilog-A Circuit</text>
+  <text x="250" y="460" class="label">9 quantum circuits</text>
+  <text x="250" y="475" class="label">Analog simulation</text>
+  <text x="250" y="490" class="label" fill="#27ae60">IMPLEMENTED</text>
+
+  <rect x="410" y="425" width="155" height="70" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="420" y="445">Rust Core</text>
+  <text x="420" y="460" class="label">he-binary-functor/rust/</text>
+  <text x="420" y="475" class="label">PWC core, braid ops</text>
+  <text x="420" y="490" class="label" fill="#27ae60">IMPLEMENTED</text>
+
+  <rect x="580" y="425" width="155" height="70" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="590" y="445">CUDA Kernel</text>
+  <text x="590" y="460" class="label">ptx/malbolge_step</text>
+  <text x="590" y="475" class="label">GPU execution</text>
+  <text x="590" y="490" class="label" fill="#27ae60">IMPLEMENTED</text>
+
+  <rect x="750" y="425" width="155" height="70" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="760" y="445">Lean 4 Proof</text>
+  <text x="760" y="460" class="label">lean4/sovereign_attractor</text>
+  <text x="760" y="475" class="label">Formal verification</text>
+  <text x="760" y="490" class="label" fill="#27ae60">IMPLEMENTED</text>
+
+  <rect x="920" y="425" width="155" height="70" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="930" y="445">Quantum Circuit</text>
+  <text x="930" y="460" class="label">quantum_computer/</text>
+  <text x="930" y="475" class="label">Density matrix sim</text>
+  <text x="930" y="490" class="label" fill="#27ae60">IMPLEMENTED</text>
+
+  <rect x="1090" y="425" width="80" height="70" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="1100" y="445">Q#</text>
+  <text x="1100" y="460" class="label">qsharp/</text>
+  <text x="1100" y="475" class="label">Quantum</text>
+  <text x="1100" y="490" class="label" fill="#27ae60">IMPL</text>
+
+  <!-- Algebraic Operations -->
+  <rect x="50" y="530" width="1130" height="150" rx="10" fill="#fdf8e8" stroke="#f39c12" stroke-width="1"/>
+  <text x="65" y="550" class="label" font-weight="bold" fill="#f39c12">ALGEBRAIC OPERATIONS</text>
+
+  <rect x="70" y="565" width="170" height="100" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="80" y="585">Product (Composition)</text>
+  <text x="80" y="600" class="label">b1 * b2 -> b3</text>
+  <text x="80" y="615" class="label">Sequential composition</text>
+  <text x="80" y="630" class="label">IMPLEMENTED</text>
+
+  <rect x="260" y="565" width="170" height="100" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="270" y="585">Inverse</text>
+  <text x="270" y="600" class="label">inverse(b) -> b'</text>
+  <text x="270" y="615" class="label">Reverse + negate</text>
+  <text x="270" y="630" class="label">IMPLEMENTED</text>
+
+  <rect x="450" y="565" width="170" height="100" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="460" y="585">Reduction</text>
+  <text x="460" y="600" class="label">reduce(b) -> b'</text>
+  <text x="460" y="615" class="label">Apply relations</text>
+  <text x="460" y="630" class="label">IMPLEMENTED</text>
+
+  <rect x="640" y="565" width="170" height="100" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="650" y="585">Normalization</text>
+  <text x="650" y="600" class="label">normalize(b) -> b'</text>
+  <text x="650" y="615" class="label">Normal form</text>
+  <text x="650" y="630" class="label">IMPLEMENTED</text>
+
+  <rect x="830" y="565" width="170" height="100" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="840" y="585">Word Length</text>
+  <text x="840" y="600" class="label">length(b) -> Int</text>
+  <text x="840" y="615" class="label">Generator count</text>
+  <text x="840" y="630" class="label">IMPLEMENTED</text>
+
+  <rect x="1020" y="565" width="140" height="100" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="1030" y="585">Visualization</text>
+  <text x="1030" y="600" class="label">ASCII braid</text>
+  <text x="1030" y="615" class="label">Strand crossing</text>
+  <text x="1030" y="630" class="label">IMPLEMENTED</text>
+
+  <!-- Arrows from ground truth -->
+  <line x1="525" y1="135" x2="225" y2="160" stroke="#e74c3c" marker-end="url(#arrow-red)"/>
+  <line x1="600" y1="135" x2="600" y2="160" stroke="#e74c3c" marker-end="url(#arrow-red)"/>
+  <line x1="675" y1="135" x2="995" y2="160" stroke="#e74c3c" marker-end="url(#arrow-red)"/>
+
+  <!-- Arrows to compilation -->
+  <line x1="225" y1="360" x2="225" y2="390" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="600" y1="360" x2="600" y2="390" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="995" y1="360" x2="995" y2="390" stroke="#555" marker-end="url(#arrow)"/>
+
+  <!-- Arrows to algebra -->
+  <line x1="600" y1="510" x2="600" y2="530" stroke="#555" marker-end="url(#arrow)"/>
+</svg>

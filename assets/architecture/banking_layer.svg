@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#555"/>
+    </marker>
+    <style>
+      text { font-family: 'Segoe UI', sans-serif; font-size: 11px; }
+      .title { font-size: 18px; font-weight: bold; }
+      .subtitle { font-size: 12px; fill: #666; }
+      .box { rx: 8; ry: 8; stroke-width: 1.5; }
+      .label { font-size: 10px; fill: #333; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="700" fill="#fafafa"/>
+
+  <!-- Title -->
+  <text x="600" y="35" text-anchor="middle" class="title">Banking / Finance Layer Architecture</text>
+  <text x="600" y="55" text-anchor="middle" class="subtitle">Accounts, Transactions, Invoices, Ledger, Treasury, Audit</text>
+
+  <!-- External Systems -->
+  <rect x="20" y="80" width="1160" height="80" rx="10" fill="#f0f0f0" stroke="#95a5a6" stroke-width="1"/>
+  <text x="35" y="95" class="label" font-weight="bold" fill="#7f8c8d">EXTERNAL SYSTEMS</text>
+
+  <rect x="40" y="100" width="150" height="45" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="50" y="128">ACH Network</text>
+
+  <rect x="210" y="100" width="150" height="45" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="220" y="128">RTP Network</text>
+
+  <rect x="380" y="100" width="150" height="45" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="390" y="128">SWIFT Network</text>
+
+  <rect x="550" y="100" width="150" height="45" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="560" y="128">Core Banking</text>
+
+  <rect x="720" y="100" width="150" height="45" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="730" y="128">Payment Gateway</text>
+
+  <rect x="890" y="100" width="150" height="45" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="900" y="128">Regulatory API</text>
+
+  <rect x="1060" y="100" width="110" height="45" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="1070" y="128">KYC/AML</text>
+
+  <!-- Layer 1: Account Management -->
+  <rect x="20" y="180" width="380" height="180" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="1"/>
+  <text x="35" y="195" class="label" font-weight="bold" fill="#2980b9">ACCOUNT MANAGEMENT</text>
+
+  <rect x="40" y="210" width="170" height="45" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="50" y="238">Create Account</text>
+
+  <rect x="230" y="210" width="150" height="45" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="240" y="238">Account Balance</text>
+
+  <rect x="40" y="265" width="170" height="45" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="50" y="293">Account History</text>
+
+  <rect x="230" y="265" width="150" height="45" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="240" y="293">Account Status</text>
+
+  <rect x="40" y="320" width="340" height="25" rx="4" fill="#fff2cc" stroke="#c6a700"/>
+  <text x="50" y="337" class="label" fill="#c6a700">Implementation: src/twin.py (FinanceTwinEngine)</text>
+
+  <!-- Layer 2: Transaction Processing -->
+  <rect x="420" y="180" width="380" height="180" rx="10" fill="#e8fde8" stroke="#27ae60" stroke-width="1"/>
+  <text x="435" y="195" class="label" font-weight="bold" fill="#27ae60">TRANSACTION PROCESSING</text>
+
+  <rect x="440" y="210" width="170" height="45" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="450" y="238">Initiate Transaction</text>
+
+  <rect x="630" y="210" width="150" height="45" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="640" y="238">Validate Tx</text>
+
+  <rect x="440" y="265" width="170" height="45" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="450" y="293">Execute Transfer</text>
+
+  <rect x="630" y="265" width="150" height="45" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="640" y="293">Confirm Tx</text>
+
+  <rect x="440" y="320" width="340" height="25" rx="4" fill="#fff2cc" stroke="#c6a700"/>
+  <text x="450" y="337" class="label" fill="#c6a700">Implementation: src/twin.py + braid word generation</text>
+
+  <!-- Layer 3: Invoice Management -->
+  <rect x="820" y="180" width="360" height="180" rx="10" fill="#f0e8fd" stroke="#9b59b6" stroke-width="1"/>
+  <text x="835" y="195" class="label" font-weight="bold" fill="#9b59b6">INVOICE MANAGEMENT</text>
+
+  <rect x="840" y="210" width="160" height="45" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="850" y="238">Create Invoice</text>
+
+  <rect x="1020" y="210" width="140" height="45" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="1030" y="238">Send Invoice</text>
+
+  <rect x="840" y="265" width="160" height="45" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="850" y="293">Track Payment</text>
+
+  <rect x="1020" y="265" width="140" height="45" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="1030" y="293">Reconcile</text>
+
+  <rect x="840" y="320" width="320" height="25" rx="4" fill="#fff2cc" stroke="#c6a700"/>
+  <text x="850" y="337" class="label" fill="#c6a700">Implementation: src/twin.py (FinanceTwinEngine)</text>
+
+  <!-- Layer 4: Payment Rails -->
+  <rect x="20" y="380" width="560" height="120" rx="10" fill="#fde8e8" stroke="#e74c3c" stroke-width="1"/>
+  <text x="35" y="395" class="label" font-weight="bold" fill="#e74c3c">PAYMENT RAILS</text>
+
+  <rect x="40" y="410" width="165" height="70" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="50" y="430">ACH Processing</text>
+  <text x="50" y="445" class="label">rpgle/ach.rpgle</text>
+  <text x="50" y="460" class="label">IBM i RPGLE</text>
+  <text x="50" y="475" class="label">Batch payment processing</text>
+
+  <rect x="220" y="410" width="165" height="70" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="230" y="430">RTP Rail</text>
+  <text x="230" y="445" class="label">csharp/RtpRailAdapter.cs</text>
+  <text x="230" y="460" class="label">Real-time payments</text>
+  <text x="230" y="475" class="label">174 lines</text>
+
+  <rect x="400" y="410" width="165" height="70" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="410" y="430">Ledger Gateway</text>
+  <text x="410" y="445" class="label">csharp/LedgerGateway.cs</text>
+  <text x="410" y="460" class="label">C# ledger interface</text>
+  <text x="410" y="475" class="label">239 lines</text>
+
+  <!-- Layer 4b: Treasury -->
+  <rect x="600" y="380" width="580" height="120" rx="10" fill="#fdf8e8" stroke="#f39c12" stroke-width="1"/>
+  <text x="615" y="395" class="label" font-weight="bold" fill="#f39c12">TREASURY OPERATIONS</text>
+
+  <rect x="620" y="410" width="170" height="70" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="630" y="430">Cash Management</text>
+  <text x="630" y="445" class="label">rpgle/treasury.rpgle</text>
+  <text x="630" y="460" class="label">Balance forecasting</text>
+  <text x="630" y="475" class="label">Liquidity analysis</text>
+
+  <rect x="810" y="410" width="170" height="70" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="820" y="430">Wire Transfers</text>
+  <text x="820" y="445" class="label">SWIFT integration</text>
+  <text x="820" y="460" class="label">International payments</text>
+  <text x="820" y="475" class="label">Currency conversion</text>
+
+  <rect x="1000" y="410" width="165" height="70" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="1010" y="430">Investment</text>
+  <text x="1010" y="445" class="label">Portfolio tracking</text>
+  <text x="1010" y="460" class="label">Risk assessment</text>
+  <text x="1010" y="475" class="label">Return calculation</text>
+
+  <!-- Layer 5: Ledger Core -->
+  <rect x="20" y="520" width="1160" height="80" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="1"/>
+  <text x="35" y="535" class="label" font-weight="bold" fill="#2980b9">LEDGER CORE</text>
+
+  <rect x="40" y="545" width="180" height="40" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="50" y="570">WORM Storage (worm.py)</text>
+
+  <rect x="240" y="545" width="180" height="40" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="250" y="570">Audit Trail (audit.py)</text>
+
+  <rect x="440" y="545" width="180" height="40" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="450" y="570">ICP Anchor (icp_anchor.py)</text>
+
+  <rect x="640" y="545" width="180" height="40" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="650" y="570">Cryptographic Seal</text>
+
+  <rect x="840" y="545" width="180" height="40" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="850" y="570">Braid Word Audit</text>
+
+  <rect x="1040" y="545" width="130" height="40" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="1050" y="570">Formal Proof</text>
+
+  <!-- Layer 6: Compliance -->
+  <rect x="20" y="620" width="1160" height="60" rx="10" fill="#fff2cc" stroke="#c6a700" stroke-width="1"/>
+  <text x="35" y="635" class="label" font-weight="bold" fill="#c6a700">COMPLIANCE / REGULATORY</text>
+
+  <rect x="40" y="630" width="150" height="35" rx="6" fill="#ffffff" stroke="#c6a700"/>
+  <text x="50" y="652" class="label">GDPR: 30-day deletion</text>
+
+  <rect x="210" y="630" width="150" height="35" rx="6" fill="#ffffff" stroke="#c6a700"/>
+  <text x="220" y="652" class="label">HIPAA: PHI controls</text>
+
+  <rect x="380" y="630" width="150" height="35" rx="6" fill="#ffffff" stroke="#c6a700"/>
+  <text x="390" y="652" class="label">SOX: Audit trail</text>
+
+  <rect x="550" y="630" width="150" height="35" rx="6" fill="#ffffff" stroke="#c6a700"/>
+  <text x="560" y="652" class="label">PCI-DSS: Card data</text>
+
+  <rect x="720" y="630" width="150" height="35" rx="6" fill="#ffffff" stroke="#c6a700"/>
+  <text x="730" y="652" class="label">AML: Transaction monitor</text>
+
+  <rect x="890" y="630" width="150" height="35" rx="6" fill="#ffffff" stroke="#c6a700"/>
+  <text x="900" y="652" class="label">BSA: Currency reporting</text>
+
+  <rect x="1060" y="630" width="110" height="35" rx="6" fill="#ffffff" stroke="#c6a700"/>
+  <text x="1070" y="652" class="label">KYC: Identity verify</text>
+
+  <!-- Flow arrows -->
+  <line x1="600" y1="160" x2="600" y2="180" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="200" y1="360" x2="200" y2="380" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="800" y1="360" x2="800" y2="380" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="600" y1="500" x2="600" y2="520" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="600" y1="600" x2="600" y2="620" stroke="#555" marker-end="url(#arrow)"/>
+</svg>
