@@ -251,28 +251,6 @@ flowchart TD
     G --> Q[Formal Proofs]
     G --> R[Test Suite]
 ```
-
----
-
-# 05. CRITICAL BUGS
-
-## quantum_computer/
-
-| ID | Severity | File:Line | Issue |
-|----|----------|-----------|-------|
-| C-01 | HIGH | `vm/simulator.py:38-55` | `fidelity` and `_matrix_sqrt` only work for diagonal matrices |
-| C-02 | HIGH | `vm/simulator.py:143-152` | `von_neumann_entropy` uses diagonal elements as eigenvalues |
-| C-03 | HIGH | `algorithms/__init__.py:174-179` | `power_gate_on_qubits` loop body is empty (no-op) |
-
-## he-binary-functor
-
-| ID | Severity | File | Issue |
-|----|----------|------|-------|
-| C-01 | HIGH | `wasm/sha256.wat` | Incomplete SHA-256 (single round only) |
-| C-02 | MED | `tensor-parser/validation.adb:60` | `Check_Seal` returns True always (no-op) |
-| C-03 | MED | `crypto/iamac.rs` | No security proof, trivially forgeable |
-| C-05 | MED | `systemverilog/pwc_hardware_accelerator.sv:101` | Hash hardcoded to 0xDEADBEEF |
-
 ---
 
 # 06. NOVEL CONTRIBUTIONS
