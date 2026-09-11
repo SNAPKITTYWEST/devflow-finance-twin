@@ -1,0 +1,13 @@
+reg_name,addr,bit_width,units,description
+PHASE_REG_0,0x0000,32,deg,Phase register 0 (0..360 deg mapped to 32-bit)
+PHASE_REG_1,0x0004,32,deg,Phase register 1
+FREQ_REG_0,0x0010,48,Hz,Frequency tuning word for DDS channel 0
+AMP_REG_0,0x0020,16,unitless,Amplitude scale (0..65535)
+CTRL_REG,0x00F0,8,flags,Control flags: bit0=enable, bit1=reset
+TIMING_BASE,0x0100,32,us,Base time unit in microseconds
+FREQ_WORD,0x0000,32,Hz,Frequency tuning word (32-bit)
+PHASE_WORD,0x0004,16,deg,Phase offset word (0..65535 -> 0..360deg)
+AMPL_WORD,0x0008,12,unit,Amplitude scaling (0..4095)
+CTRL,0x000C,8,flags,Control flags: bit0=enable, bit1=sync, bit2=reset
+SEQ_ID,0x0010,16,unit,Sequence identifier for playback
+STEP_INDEX,0x0014,16,unit,Current step index

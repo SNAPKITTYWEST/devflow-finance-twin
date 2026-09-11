@@ -1,0 +1,56 @@
+name: Kraus CI
+
+on: [push, pull_request]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup GHC and Cabal
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ghc cabal-install libgmp-dev python3 python3-pip
+          pip3 install numpy scipy
+
+      - name: Install Haskell deps
+        run: |
+          cabal update
+          cabal install hmatrix aeson random time || true
+
+      - name: Run Liquid Haskell check
+        run: |
+          liquid haskell/KrausLH.hs
+
+      - name: Build and run test harness
+        run: |
+          chmod +x haskell/test_runner.sh
+          haskell/test_runner.sh 1000 1337
+
+      - name: Run Python simulator unit tests
+        run: |
+          python3 -m pytest python/tests/ -v || python3 python/simulate_gate_list.py /dev/stdin <<< $'INIT 0 1\nINIT 1 0\nC_RY 0 1 0.392699'
+
+      - name: Run Julia driver smoke test
+        run: |
+          julia --project=. -e '
+            include("julia/julia_driver.jl")
+            println("julia_driver.jl loaded OK")
+          '
+
+      - name: Kraus extraction
+        run: |
+          cabal run kraus-extractor -- --outdir kraus_out --theta 0.392699081698724
+          python3 python/check_kraus.py --tol 1e-8 --dir kraus_out
+
+      - name: Archive reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: kraus-reports
+          path: |
+            kraus_test_report.json
+            kraus_out/K_0.json
+            kraus_out/K_1.json
+            kraus_out/kraus_defs.thy
+            provenance/provenance.json

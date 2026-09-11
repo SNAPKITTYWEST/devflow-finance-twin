@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="320" viewBox="0 0 900 320">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#555" />
+    </marker>
+    <style>
+      text { font-family: sans-serif; font-size: 12px; }
+      .box { rx: 8; ry: 8; stroke: #555; stroke-width: 1.5; }
+    </style>
+  </defs>
+
+  <!-- Row 1: pipeline nodes -->
+  <rect class="box" x="10"  y="30" width="130" height="50" fill="#d0e8ff"/>
+  <text x="20"  y="52">Quipper Circuit</text>
+  <text x="20"  y="68">(Haskell)</text>
+
+  <rect class="box" x="170" y="30" width="130" height="50" fill="#ffe8d0"/>
+  <text x="180" y="52">Statevector</text>
+  <text x="180" y="68">Simulator</text>
+
+  <rect class="box" x="330" y="30" width="130" height="50" fill="#ffe8d0"/>
+  <text x="340" y="52">Unitary U</text>
+  <text x="340" y="68">Builder</text>
+
+  <rect class="box" x="490" y="30" width="130" height="50" fill="#d0ffd0"/>
+  <text x="500" y="52">Kraus</text>
+  <text x="500" y="68">Extraction</text>
+
+  <rect class="box" x="650" y="30" width="130" height="50" fill="#d0ffd0"/>
+  <text x="660" y="52">Isabelle</text>
+  <text x="660" y="68">Verification</text>
+
+  <!-- Row 1 arrows -->
+  <line x1="140" y1="55" x2="170" y2="55" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="300" y1="55" x2="330" y2="55" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="460" y1="55" x2="490" y2="55" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="620" y1="55" x2="650" y2="55" stroke="#555" marker-end="url(#arrow)"/>
+
+  <!-- Measurement branch down -->
+  <line x1="75" y1="80" x2="75" y2="150" stroke="#555" marker-end="url(#arrow)"/>
+  <rect class="box" x="10" y="150" width="130" height="50" fill="#f0d0ff"/>
+  <text x="20" y="172">Ancilla</text>
+  <text x="20" y="188">Measurement</text>
+
+  <!-- TCP stream -->
+  <line x1="140" y1="175" x2="200" y2="175" stroke="#555" marker-end="url(#arrow)"/>
+  <rect class="box" x="200" y="150" width="130" height="50" fill="#f0d0ff"/>
+  <text x="210" y="172">TCP JSON</text>
+  <text x="210" y="188">Stream</text>
+
+  <!-- Julia EMA -->
+  <line x1="330" y1="175" x2="390" y2="175" stroke="#555" marker-end="url(#arrow)"/>
+  <rect class="box" x="390" y="150" width="130" height="50" fill="#d0ffd0"/>
+  <text x="400" y="172">Julia EMA</text>
+  <text x="400" y="188">Controller</text>
+
+  <!-- beliefs.csv -->
+  <line x1="455" y1="200" x2="455" y2="250" stroke="#555" marker-end="url(#arrow)"/>
+  <rect class="box" x="390" y="250" width="130" height="50" fill="#ffffd0"/>
+  <text x="400" y="272">beliefs.csv</text>
+  <text x="400" y="288">plots.png</text>
+
+  <!-- kraus_defs.thy to Isabelle -->
+  <line x1="555" y1="55" x2="560" y2="55" stroke="none"/>
+  <line x1="620" y1="55" x2="715" y2="55" stroke="#555" marker-end="url(#arrow)"/>
+
+  <!-- Labels -->
+  <text x="10"  y="15" fill="#333" font-size="10">CIRCUIT</text>
+  <text x="490" y="15" fill="#333" font-size="10">FORMAL</text>
+  <text x="10"  y="140" fill="#333" font-size="10">IPC</text>
+  <text x="390" y="140" fill="#333" font-size="10">CONTROLLER</text>
+</svg>

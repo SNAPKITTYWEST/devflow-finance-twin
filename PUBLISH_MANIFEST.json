@@ -1,11 +1,53 @@
 {
-  "timestamp": "2026-09-10T23:18:09Z",
+  "timestamp": "2026-09-11T06:29:26Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "7b37669246efa9dab6c0cb13289c532d1fc3d675",
-  "commit_after": "6ce0155dbc7772843052bc0f12feeb99fca68b5b",
+  "commit_before": "acfb5a8a9209e4e1c644ed94cb7e62092442e9ba",
+  "commit_after": "9a70c1da91e79dd24d5e04b44c9ba4c50a362d0b",
   "files_added": [
-    "src/transformer_pascal_200.pas"
+    "src/Almost_Sure_Convergence.thy",
+    "docs/CONTRIBUTING.md",
+    "haskell/ControlLoopSpecs.lhs",
+    "src/Control_Invariants.thy",
+    "src/Density_Matrix.thy",
+    "src/FPGAMock.jl",
+    "src/FPGA_API.jl",
+    "src/FutharkFFI.jl",
+    "src/GKSL_Semigroup.thy",
+    "src/Jungian_Formalization.thy",
+    "src/Jungian_Prob_Dynamics.thy",
+    "src/Jungian_Stochastic_Convergence_Full.thy",
+    "haskell/KrausExtractor.hs",
+    "haskell/KrausExtractorMain.hs",
+    "haskell/KrausLH.hs",
+    "haskell/KrausLHTest.hs",
+    "src/LICENSE",
+    "src/LICENSE-RECURSIVE-INFECTION",
+    "src/Lindblad_GKSL.thy",
+    "docs/PRODUCTION_HARDENING.md",
+    "haskell/PhaseEstimationQuipper.hs",
+    "src/Quantum_Jump_Update.thy",
+    "haskell/QuipperTcpSenderLH.hs",
+    "src/Quipper_Kraus_Check.thy",
+    "docs/README.md",
+    "src/RWPT.jl",
+    "formal-token-verification/agda/SymbolOscillatorInvariant.agda",
+    "haskell/WeakMeasureCircuit.hs",
+    "haskell/WeakMeasureKrausLH.hs",
+    "src/dds_register_map.csv",
+    "src/e2e_sim_harness.jl",
+    "assets/flow.svg",
+    "src/julia_driver.jl",
+    "src/jung_rwpt_sim.jl",
+    "src/jung_sim.jl",
+    "config/kraus_ci.yml",
+    "src/oscillator_fixedpoints.py",
+    "src/pulse_table.csv",
+    "src/quipper_client.jl",
+    "scripts/run_pipeline.sh",
+    "src/simulate_gate_list.py",
+    "scripts/test_runner.sh",
+    "src/wigner_futhark.fut"
   ],
   "files_modified": [
 
@@ -21,6 +63,6 @@
 
   ],
   "sha256": [
-    {"file": "transformer_pascal_200.pas", "source_hash": "6f58f3902e08b20bf84627ed073b2a9bf57ada4b0b01cdbb2ce2f544e5f84913", "destination_hash": "6f58f3902e08b20bf84627ed073b2a9bf57ada4b0b01cdbb2ce2f544e5f84913", "status": "COPIED"}
+    {"file": "RWPT.jl", "source_hash": "efd4c51073cfc3d12f3ebca2e48631020e7cba1fdfca0105d13c9d5b893b3690", "destination_hash": "efd4c51073cfc3d12f3ebca2e48631020e7cba1fdfca0105d13c9d5b893b3690", "status": "COPIED"},    {"file": "FPGAMock.jl", "source_hash": "80a7f62400323dc39c642048979c0720664c479e81ecf2fb853338b1dea03c2a", "destination_hash": "80a7f62400323dc39c642048979c0720664c479e81ecf2fb853338b1dea03c2a", "status": "COPIED"},    {"file": "Jungian_Stochastic_Convergence_Full.thy", "source_hash": "a5a13d354eec052867c2b831db98f9cec186c29307f67f840ca384b8eab94a41", "destination_hash": "a5a13d354eec052867c2b831db98f9cec186c29307f67f840ca384b8eab94a41", "status": "COPIED"},    {"file": "pulse_table.csv", "source_hash": "4e635b825803e4fa8f6587e7898708a3384fa634202bf8b37ef0994e1020e6f8", "destination_hash": "4e635b825803e4fa8f6587e7898708a3384fa634202bf8b37ef0994e1020e6f8", "status": "COPIED"},    {"file": "Control_Invariants.thy", "source_hash": "1d3c779d730b8fa9ed2367339df4b9f4c8abb0cbb54ca8d69983d4261f070488", "destination_hash": "1d3c779d730b8fa9ed2367339df4b9f4c8abb0cbb54ca8d69983d4261f070488", "status": "COPIED"},    {"file": "KrausLH.hs", "source_hash": "97d5604c8505f0ab55a7f1d58aacf810213f5c241bfba3c82b686d3b43713662", "destination_hash": "97d5604c8505f0ab55a7f1d58aacf810213f5c241bfba3c82b686d3b43713662", "status": "COPIED"},    {"file": "Quipper_Kraus_Check.thy", "source_hash": "32f37b84953bc8e24992ec2c442f89eb2321855d54afa3edf93174fbbf14ab4d", "destination_hash": "32f37b84953bc8e24992ec2c442f89eb2321855d54afa3edf93174fbbf14ab4d", "status": "COPIED"},    {"file": "GKSL_Semigroup.thy", "source_hash": "55bd87f4c0fb0bc89f76a92ddca924f4c35fd3e1ef5e0fc827fd007d07030e56", "destination_hash": "55bd87f4c0fb0bc89f76a92ddca924f4c35fd3e1ef5e0fc827fd007d07030e56", "status": "COPIED"},    {"file": "oscillator_fixedpoints.py", "source_hash": "868e12117e0dea9ad13b5cb23c80074599a22d10c830e5e7fdbed907f00b3689", "destination_hash": "868e12117e0dea9ad13b5cb23c80074599a22d10c830e5e7fdbed907f00b3689", "status": "COPIED"},    {"file": "WeakMeasureKrausLH.hs", "source_hash": "5dd5f26bb87aedcfcffa454a4a4ecf36c8783f85ba7035d6d07fce58875e976b", "destination_hash": "5dd5f26bb87aedcfcffa454a4a4ecf36c8783f85ba7035d6d07fce58875e976b", "status": "COPIED"},    {"file": "run_pipeline.sh", "source_hash": "35d376ff36e2473cc1db7fd3f09d436eddcf4b26895f356cece405ee8d847125", "destination_hash": "35d376ff36e2473cc1db7fd3f09d436eddcf4b26895f356cece405ee8d847125", "status": "COPIED"},    {"file": "dds_register_map.csv", "source_hash": "5e84e4db4f40b9bb1c8d683e6b54761d70e6113549636fcd741e959f1e81bbff", "destination_hash": "5e84e4db4f40b9bb1c8d683e6b54761d70e6113549636fcd741e959f1e81bbff", "status": "COPIED"},    {"file": "LICENSE-RECURSIVE-INFECTION", "source_hash": "97ecf07f83134836eb392954b8f3805fa1fb92cdcaf3fa5b55043a321fb8a2e3", "destination_hash": "97ecf07f83134836eb392954b8f3805fa1fb92cdcaf3fa5b55043a321fb8a2e3", "status": "COPIED"},    {"file": "wigner_futhark.fut", "source_hash": "5e63e4d4896f42776b17215a9eb1d4f97a6ab410109ac146438b1eabba7416aa", "destination_hash": "5e63e4d4896f42776b17215a9eb1d4f97a6ab410109ac146438b1eabba7416aa", "status": "COPIED"},    {"file": "KrausLHTest.hs", "source_hash": "0827c78f67803a3495093a42bfa82fa575a0088c4590df398073497a81dea520", "destination_hash": "0827c78f67803a3495093a42bfa82fa575a0088c4590df398073497a81dea520", "status": "COPIED"},    {"file": "simulate_gate_list.py", "source_hash": "c515863ba831bf05bf2180e9c45adc7dd23fb0d01093502a64fc66b203693894", "destination_hash": "c515863ba831bf05bf2180e9c45adc7dd23fb0d01093502a64fc66b203693894", "status": "COPIED"},    {"file": "Density_Matrix.thy", "source_hash": "79f750072c44252eb641e21f648ddc61448e94d6d28f32bc1598e88e23a27571", "destination_hash": "79f750072c44252eb641e21f648ddc61448e94d6d28f32bc1598e88e23a27571", "status": "COPIED"},    {"file": "README.md", "source_hash": "ede46250ab464218295baf8b67b8fb00d59041b4b125e689b58ca1721ca62107", "destination_hash": "ede46250ab464218295baf8b67b8fb00d59041b4b125e689b58ca1721ca62107", "status": "COPIED"},    {"file": "Lindblad_GKSL.thy", "source_hash": "628b68237a7a0cab0acbfefa7ab543b91bf819bbbab44bf0a210916924cc53b8", "destination_hash": "628b68237a7a0cab0acbfefa7ab543b91bf819bbbab44bf0a210916924cc53b8", "status": "COPIED"},    {"file": "ControlLoopSpecs.lhs", "source_hash": "5c7cbab27c0effd82433c3dc68d512734927b7a434ca7f98a8c1b0d0253534eb", "destination_hash": "5c7cbab27c0effd82433c3dc68d512734927b7a434ca7f98a8c1b0d0253534eb", "status": "COPIED"},    {"file": "CONTRIBUTING.md", "source_hash": "f04abb0eb211429a3c186838cfa81309c9f05399e574dcb07b98c6960790c2d6", "destination_hash": "f04abb0eb211429a3c186838cfa81309c9f05399e574dcb07b98c6960790c2d6", "status": "COPIED"},    {"file": "Jungian_Prob_Dynamics.thy", "source_hash": "627e69d7697306ffaf14d4c8b157465fc63fca233a5b15b36cfe7b714e0f0eb8", "destination_hash": "627e69d7697306ffaf14d4c8b157465fc63fca233a5b15b36cfe7b714e0f0eb8", "status": "COPIED"},    {"file": "SymbolOscillatorInvariant.agda", "source_hash": "4098d0aa5e2e9f9f7a18f43317da3c492e70826cbbf64e08b2f3365248dd8f56", "destination_hash": "4098d0aa5e2e9f9f7a18f43317da3c492e70826cbbf64e08b2f3365248dd8f56", "status": "COPIED"},    {"file": "test_runner.sh", "source_hash": "e218728f7053a110b559168a27d877e026e31ed731eaeab20529477fa81e278d", "destination_hash": "e218728f7053a110b559168a27d877e026e31ed731eaeab20529477fa81e278d", "status": "COPIED"},    {"file": "WeakMeasureCircuit.hs", "source_hash": "fad29e59a9e70f58f8ef38ad41c59f29d39213bdd1f2ccdc513a11ad87fecb5d", "destination_hash": "fad29e59a9e70f58f8ef38ad41c59f29d39213bdd1f2ccdc513a11ad87fecb5d", "status": "COPIED"},    {"file": "Almost_Sure_Convergence.thy", "source_hash": "3a13a21a0d2c48963d4d223b60c22d448eb1db128743367d1e318a825e6350a2", "destination_hash": "3a13a21a0d2c48963d4d223b60c22d448eb1db128743367d1e318a825e6350a2", "status": "COPIED"},    {"file": "jung_rwpt_sim.jl", "source_hash": "56d17e72fa8a122ecfecedfdf20601a5e2d7d441d37ed0ca32e004f1379c8efe", "destination_hash": "56d17e72fa8a122ecfecedfdf20601a5e2d7d441d37ed0ca32e004f1379c8efe", "status": "COPIED"},    {"file": "FPGA_API.jl", "source_hash": "4553c7af0489873fc3bc73b0f2181a3858599bf8bfff45e2cd6df28c204744f0", "destination_hash": "4553c7af0489873fc3bc73b0f2181a3858599bf8bfff45e2cd6df28c204744f0", "status": "COPIED"},    {"file": "Quantum_Jump_Update.thy", "source_hash": "f8a966642569fe5d6a86a743de138dd65e9da1fbd8ab5796d2c9f151ee0ce01c", "destination_hash": "f8a966642569fe5d6a86a743de138dd65e9da1fbd8ab5796d2c9f151ee0ce01c", "status": "COPIED"},    {"file": "LICENSE", "source_hash": "c336e3048b72e426a4e3f1cf65ca80ec599d62d574f43f29d277218b4c1741f2", "destination_hash": "c336e3048b72e426a4e3f1cf65ca80ec599d62d574f43f29d277218b4c1741f2", "status": "COPIED"},    {"file": "kraus_ci.yml", "source_hash": "34c18ffe94d709ab505eb2b0cdef78efdfacb6cd3375b5d6ec6100805f2f9809", "destination_hash": "34c18ffe94d709ab505eb2b0cdef78efdfacb6cd3375b5d6ec6100805f2f9809", "status": "COPIED"},    {"file": "julia_driver.jl", "source_hash": "5cf7f7e4f4f77ce92ae7c3236e8b1b65b55d0e7552793c5b5e72aa809d2d5392", "destination_hash": "5cf7f7e4f4f77ce92ae7c3236e8b1b65b55d0e7552793c5b5e72aa809d2d5392", "status": "COPIED"},    {"file": "FutharkFFI.jl", "source_hash": "e50dd06344acfb47254dbde471b7ff21f95fab2edcbd58fb5fd8cddf9e1edf6c", "destination_hash": "e50dd06344acfb47254dbde471b7ff21f95fab2edcbd58fb5fd8cddf9e1edf6c", "status": "COPIED"},    {"file": "KrausExtractorMain.hs", "source_hash": "3ccfaf63529b42906729afcc559a5a91340d8d1914ea51210e1ae23945acf431", "destination_hash": "3ccfaf63529b42906729afcc559a5a91340d8d1914ea51210e1ae23945acf431", "status": "COPIED"},    {"file": "jung_sim.jl", "source_hash": "f42aad90ec9d0fa6fb64ab9a35982b77bc931fcd2e464b9927bdeddfac64d6e5", "destination_hash": "f42aad90ec9d0fa6fb64ab9a35982b77bc931fcd2e464b9927bdeddfac64d6e5", "status": "COPIED"},    {"file": "PRODUCTION_HARDENING.md", "source_hash": "7df39b89ed186bb382ed87edbd9a93682696f9e57be809360e7e4eede587d308", "destination_hash": "7df39b89ed186bb382ed87edbd9a93682696f9e57be809360e7e4eede587d308", "status": "COPIED"},    {"file": "e2e_sim_harness.jl", "source_hash": "9a047a24298e33a8cf74bd3ba8fecc020058e4dfdcda6dcd6f9bbc20abe87a58", "destination_hash": "9a047a24298e33a8cf74bd3ba8fecc020058e4dfdcda6dcd6f9bbc20abe87a58", "status": "COPIED"},    {"file": "flow.svg", "source_hash": "9ce35d5d62cfb9e63945c84b1a1f7bd1fefc5f09744b0be48329ee394d7244d3", "destination_hash": "9ce35d5d62cfb9e63945c84b1a1f7bd1fefc5f09744b0be48329ee394d7244d3", "status": "COPIED"},    {"file": "PhaseEstimationQuipper.hs", "source_hash": "b3f607a5ae7349784f992547d40e11c20a8921f664471837a4770c9af866b9cd", "destination_hash": "b3f607a5ae7349784f992547d40e11c20a8921f664471837a4770c9af866b9cd", "status": "COPIED"},    {"file": "KrausExtractor.hs", "source_hash": "4eaf2e988e69ef544993954e50ababcb6076ea374d7f163354e5b1bf0ac17c25", "destination_hash": "4eaf2e988e69ef544993954e50ababcb6076ea374d7f163354e5b1bf0ac17c25", "status": "COPIED"},    {"file": "Jungian_Formalization.thy", "source_hash": "c5d67b3c9cd6887fb50cced138bc2a3fc5bf11c3b17991477fae07aa4816b38f", "destination_hash": "c5d67b3c9cd6887fb50cced138bc2a3fc5bf11c3b17991477fae07aa4816b38f", "status": "COPIED"},    {"file": "QuipperTcpSenderLH.hs", "source_hash": "c2b8e6cfa0f6a6195aa39e08d5774aeff4784abb72553e212914c612982b0ad3", "destination_hash": "c2b8e6cfa0f6a6195aa39e08d5774aeff4784abb72553e212914c612982b0ad3", "status": "COPIED"},    {"file": "quipper_client.jl", "source_hash": "bd0f89e1d8541644f3fe192101eaf1d1c93e167b8cbbf0e332b8dbdd6c2929eb", "destination_hash": "bd0f89e1d8541644f3fe192101eaf1d1c93e167b8cbbf0e332b8dbdd6c2929eb", "status": "COPIED"}
   ]
 }
