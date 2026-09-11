@@ -1,5 +1,20 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """
-ASTRA-VAULT · TURTLE / RDF + OWL SEMANTICS CONSTRAINTS SOLVER
+ASTRA-VAULT Â· TURTLE / RDF + OWL SEMANTICS CONSTRAINTS SOLVER
 Dense 600-line implementation skeleton
 Pure-Python style reasoning engine over RDF triples + OWL axioms
 Supports: class hierarchy, property characteristics, cardinality,
@@ -15,7 +30,7 @@ constraint satisfaction via tableau-style expansion
 # We use a Python-like dense encoding below for the solver.
 
 class Term:
-    def __init__(self, kind, value): # kind ∈ {iri, bnode, literal}
+    def __init__(self, kind, value): # kind âˆˆ {iri, bnode, literal}
         self.kind = kind
         self.value = value
     def __eq__(self, other):
@@ -32,9 +47,9 @@ class Triple:
 class Graph:
     def __init__(self):
         self.triples = set()
-        self.index_sp = {} # (s,p) → set of o
-        self.index_po = {} # (p,o) → set of s
-        self.index_so = {} # (s,o) → set of p
+        self.index_sp = {} # (s,p) â†’ set of o
+        self.index_po = {} # (p,o) â†’ set of s
+        self.index_so = {} # (s,o) â†’ set of p
     def add(self, s, p, o):
         t = (s, p, o)
         if t in self.triples: return
@@ -299,7 +314,7 @@ class Node:
     def __init__(self, name):
         self.name = name
         self.labels = set() # concepts
-        self.edges = {} # prop → set of successor nodes
+        self.edges = {} # prop â†’ set of successor nodes
         self.blocked = False
         self.nominal = False
 

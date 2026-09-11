@@ -1,67 +1,82 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 -- RecursiveAudit.agda
 -- Recursive counterproof of previous verification conclusions
 
 module RecursiveAudit where
 
-open import Data.Nat using (ℕ; zero; suc; _+_; _*_)
+open import Data.Nat using (â„•; zero; suc; _+_; _*_)
 open import Data.Fin using (Fin; zero; suc)
-open import Data.Vec using (Vec; []; _∷_; map₂; replicate)
-open import Data.Real using (ℝ; _+_; _*_; _-_; _/_; _>_; _≤_; 0ℝ; 1ℝ)
+open import Data.Vec using (Vec; []; _âˆ·_; mapâ‚‚; replicate)
+open import Data.Real using (â„; _+_; _*_; _-_; _/_; _>_; _â‰¤_; 0â„; 1â„)
 open import Data.Real.Properties using (+-comm; *-comm; *-assoc)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong)
+open import Relation.Binary.PropositionalEquality using (_â‰¡_; refl; sym; trans; cong)
 
 --! ## Setup
 
 --! Critical gain
-criticalGain : ∀ {n} → (Vec (Vec ℝ n) n) → Vec ℝ n → Vec ℝ n → ℝ → ℝ
-criticalGain W v x θ = (θ - innerProduct (matVecMul W x) v) / (normSq x * normSq v)
+criticalGain : âˆ€ {n} â†’ (Vec (Vec â„ n) n) â†’ Vec â„ n â†’ Vec â„ n â†’ â„ â†’ â„
+criticalGain W v x Î¸ = (Î¸ - innerProduct (matVecMul W x) v) / (normSq x * normSq v)
 
---! ## THEOREM-A: η > 0 Alone Is Insufficient
+--! ## THEOREM-A: Î· > 0 Alone Is Insufficient
 
 -- This is established by counterexample, not by a universal theorem.
--- Counterexample: W = -100, x = 1, v = 1, η = 1, θ = 0
+-- Counterexample: W = -100, x = 1, v = 1, Î· = 1, Î¸ = 0
 
---! ## THEOREM-B: η > η_critical Is Sufficient
+--! ## THEOREM-B: Î· > Î·_critical Is Sufficient
 
 postulate
-  sufficientCondition : ∀ {n} {W : Vec (Vec ℝ n) n} {η θ : ℝ} {v x : Vec ℝ n} →
-    normSq x > 0ℝ →
-    normSq v > 0ℝ →
-    η > criticalGain W v x θ →
-    thoughtFires (updatedActivation W η v x) v θ
+  sufficientCondition : âˆ€ {n} {W : Vec (Vec â„ n) n} {Î· Î¸ : â„} {v x : Vec â„ n} â†’
+    normSq x > 0â„ â†’
+    normSq v > 0â„ â†’
+    Î· > criticalGain W v x Î¸ â†’
+    thoughtFires (updatedActivation W Î· v x) v Î¸
 
 --! ## THEOREM-C: Necessary and Sufficient Condition
 
 postulate
-  necessaryCondition : ∀ {n} {W : Vec (Vec ℝ n) n} {η θ : ℝ} {v x : Vec ℝ n} →
-    normSq x > 0ℝ →
-    normSq v > 0ℝ →
-    thoughtFires (updatedActivation W η v x) v θ →
-    η > criticalGain W v x θ
+  necessaryCondition : âˆ€ {n} {W : Vec (Vec â„ n) n} {Î· Î¸ : â„} {v x : Vec â„ n} â†’
+    normSq x > 0â„ â†’
+    normSq v > 0â„ â†’
+    thoughtFires (updatedActivation W Î· v x) v Î¸ â†’
+    Î· > criticalGain W v x Î¸
 
-necessaryAndSufficient : ∀ {n} {W : Vec (Vec ℝ n) n} {η θ : ℝ} {v x : Vec ℝ n} →
-  normSq x > 0ℝ →
-  normSq v > 0ℝ →
-  (thoughtFires (updatedActivation W η v x) v θ) × (η > criticalGain W v x θ)
+necessaryAndSufficient : âˆ€ {n} {W : Vec (Vec â„ n) n} {Î· Î¸ : â„} {v x : Vec â„ n} â†’
+  normSq x > 0â„ â†’
+  normSq v > 0â„ â†’
+  (thoughtFires (updatedActivation W Î· v x) v Î¸) Ã— (Î· > criticalGain W v x Î¸)
 necessaryAndSufficient hx hv = (sufficientCondition hx hv , necessaryCondition hx hv)
 
 --! ## THEOREM-D: Existence of Valid Gain
 
 postulate
-  existenceOfValidGain : ∀ {n} {W : Vec (Vec ℝ n) n} {θ : ℝ} {v x : Vec ℝ n} →
-    normSq x > 0ℝ →
-    normSq v > 0ℝ →
-    Σ ℝ (λ η → (0ℝ < η) × (thoughtFires (updatedActivation W η v x) v θ))
+  existenceOfValidGain : âˆ€ {n} {W : Vec (Vec â„ n) n} {Î¸ : â„} {v x : Vec â„ n} â†’
+    normSq x > 0â„ â†’
+    normSq v > 0â„ â†’
+    Î£ â„ (Î» Î· â†’ (0â„ < Î·) Ã— (thoughtFires (updatedActivation W Î· v x) v Î¸))
 
 --! ## THEOREM-E: Valid Gains Form an Open Ray
 
--- The set {η > 0 | thoughtFires(η)} = {η | η > criticalGain}
+-- The set {Î· > 0 | thoughtFires(Î·)} = {Î· | Î· > criticalGain}
 
 --! ## THEOREM-F: Arbitrary Margin Achievable
 
 postulate
-  arbitraryMargin : ∀ {n} {W : Vec (Vec ℝ n) n} {θ ε : ℝ} {v x : Vec ℝ n} →
-    normSq x > 0ℝ →
-    normSq v > 0ℝ →
-    ε > 0ℝ →
-    Σ ℝ (λ η → (0ℝ < η) × (thoughtFires (updatedActivation W η v x) v (θ + ε)))
+  arbitraryMargin : âˆ€ {n} {W : Vec (Vec â„ n) n} {Î¸ Îµ : â„} {v x : Vec â„ n} â†’
+    normSq x > 0â„ â†’
+    normSq v > 0â„ â†’
+    Îµ > 0â„ â†’
+    Î£ â„ (Î» Î· â†’ (0â„ < Î·) Ã— (thoughtFires (updatedActivation W Î· v x) v (Î¸ + Îµ)))

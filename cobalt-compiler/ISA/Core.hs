@@ -1,6 +1,21 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 {-# LANGUAGE GADTs, DataKinds, KindSignatures, TypeFamilies #-}
--- ISA.Core — Machine state, registers, memory, flags, instruction GADT
--- Author: Ahmad Ali Parr — Bel Esprit D'Accord Irrevocable Trust
+-- ISA.Core â€” Machine state, registers, memory, flags, instruction GADT
+-- Author: Ahmad Ali Parr â€” Bel Esprit D'Accord Irrevocable Trust
 
 module ISA.Core where
 
@@ -14,8 +29,8 @@ import qualified Data.Map.Strict as M
 {-@ type MemAddr = Word64 @-}
 {-@ type Imm     = Int64  @-}
 
--- ── Machine state ─────────────────────────────────────────────────────────────
--- رجل الآلة الحالة / machine state
+-- â”€â”€ Machine state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- Ø±Ø¬Ù„ Ø§Ù„Ø¢Ù„Ø© Ø§Ù„Ø­Ø§Ù„Ø© / machine state
 
 data MachineState = MachineState
   { regs  :: Map Int Word64
@@ -40,7 +55,7 @@ emptyState = MachineState
   , flags = Flags False False False False
   }
 
--- ── Register access ───────────────────────────────────────────────────────────
+-- â”€â”€ Register access â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 {-@ getReg :: r:RegId -> MachineState -> Word64 @-}
 getReg :: Int -> MachineState -> Word64
 getReg r s = M.findWithDefault 0 r (regs s)
@@ -49,7 +64,7 @@ getReg r s = M.findWithDefault 0 r (regs s)
 setReg :: Int -> Word64 -> MachineState -> MachineState
 setReg r v s = s { regs = M.insert r v (regs s) }
 
--- ── Memory access ─────────────────────────────────────────────────────────────
+-- â”€â”€ Memory access â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 {-@ readMem  :: MemAddr -> MachineState -> Word8 @-}
 readMem :: Word64 -> MachineState -> Word8
 readMem a s = M.findWithDefault 0 a (mem s)
@@ -58,7 +73,7 @@ readMem a s = M.findWithDefault 0 a (mem s)
 writeMem :: Word64 -> Word8 -> MachineState -> MachineState
 writeMem a v s = s { mem = M.insert a v (mem s) }
 
--- ── Flags ─────────────────────────────────────────────────────────────────────
+-- â”€â”€ Flags â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 {-@ updateFlags :: Word64 -> MachineState -> MachineState @-}
 updateFlags :: Word64 -> MachineState -> MachineState
 updateFlags result s = s
@@ -68,7 +83,7 @@ updateFlags result s = s
       }
   }
 
--- ── Instruction GADT ─────────────────────────────────────────────────────────
+-- â”€â”€ Instruction GADT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 data Instr where
   MovImm    :: Int -> Word64  -> Instr        -- rd = imm
   Add       :: Int -> Int -> Int -> Instr     -- rd = rs1 + rs2
@@ -86,7 +101,7 @@ data Instr where
   Nop       :: Instr
   deriving (Show, Eq)
 
--- ── Instruction execution ─────────────────────────────────────────────────────
+-- â”€â”€ Instruction execution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 {-@ exec :: Instr -> MachineState -> MachineState @-}
 exec :: Instr -> MachineState -> MachineState
 exec instr s = case instr of

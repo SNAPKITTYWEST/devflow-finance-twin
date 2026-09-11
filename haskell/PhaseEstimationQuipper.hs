@@ -1,3 +1,18 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 -- PhaseEstimationQuipper.hs
 -- Quipper circuit: discrete phase estimation analogue (single-qubit phase via controlled-U powers)
 -- Build: ghc with Quipper installed
@@ -9,7 +24,7 @@ import Quipper.Libraries.Simulation (run_generic_io)
 import Data.Bits (testBit)
 import Control.Monad (replicateM_)
 
--- Controlled-U: here U = Rz(φ) on target; controlled by control qubit
+-- Controlled-U: here U = Rz(Ï†) on target; controlled by control qubit
 controlled_Rz :: Double -> (Qubit, Qubit) -> Circ ()
 controlled_Rz phi (ctrl, tgt) = do
   with_controls (ctrl .==. 1) $ do

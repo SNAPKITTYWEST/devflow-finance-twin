@@ -1,4 +1,19 @@
-%% BEAM assembly – functor helpers for CallActor / OTP fibration
+﻿% ========================================================================
+% SOVEREIGN LEVIATHAN NODE LICENSE
+% License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+% Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+% ========================================================================
+%
+% This file is a covered work under the GNU Affero General Public License,
+% version 3, together with the Sovereign Leviathan additional terms.
+%
+% Hark, though this node be but a spark,
+% Its covenant endureth through the dark.
+%
+% Ignorantia juris non excusat.
+% ========================================================================
+
+%% BEAM assembly â€“ functor helpers for CallActor / OTP fibration
 %% Generated style: erlc -S (register-based, TCO-ready)
 %% ~250 lines
 
@@ -18,7 +33,7 @@
 
 %%----------------------------------------------------------------
 %% apply_transform/2 (State, Message) -> NewState
-%% Functorial mapping F(State) → NewState
+%% Functorial mapping F(State) â†’ NewState
 %%----------------------------------------------------------------
 {function, apply_transform, 2, 2}.
   {label,1}.
@@ -40,7 +55,7 @@
     {move,{x,2},{x,0}}.
     {call_only,2,{f,18}}. %% rtp_update/2 (TCO)
   {label,6}.
-    %% Unknown message – identity
+    %% Unknown message â€“ identity
     {move,{x,0},{x,0}}.
     return.
 
@@ -80,10 +95,10 @@
     {test,is_eq_exact,{f,16},[{x,0},{atom,bye}]}.
     {move,{atom,terminated},{x,4}}.
     {jump,{f,17}}.
-  {label,15}. %% :terminated – absorb
+  {label,15}. %% :terminated â€“ absorb
     {move,{x,3},{x,4}}.
     {jump,{f,17}}.
-  {label,16}. %% illegal / unknown – identity
+  {label,16}. %% illegal / unknown â€“ identity
     {move,{x,3},{x,4}}.
   {label,17}.
     %% put_map_assoc :sip => new_state
@@ -134,7 +149,7 @@
      [{\{atom,rtp\},{x,21}},{\{atom,sequence\},{x,9}}]}.
     return.
   {label,24}.
-    %% bad packet – identity
+    %% bad packet â€“ identity
     {move,{x,1},{x,0}}.
     return.
 
@@ -166,7 +181,7 @@
 
 %%----------------------------------------------------------------
 %% fibre_reset/1 (OldState) -> FreshState
-%% Natural transformation component η_c
+%% Natural transformation component Î·_c
 %%----------------------------------------------------------------
 {function, fibre_reset, 1, 28}.
   {label,27}.
@@ -188,7 +203,7 @@
 
 %%----------------------------------------------------------------
 %% monoidal_product/2 (SipState, RtpState) -> Product
-%% S_SIP ⊗ S_RTP
+%% S_SIP âŠ— S_RTP
 %%----------------------------------------------------------------
 {function, monoidal_product, 2, 32}.
   {label,31}.
@@ -241,13 +256,13 @@
     {move,{x,0},{x,1}}.
     {move,{x,2},{x,0}}.
     {call,2,{f,2}}. %% apply_transform/2
-    %% Tail jump – constant stack
+    %% Tail jump â€“ constant stack
     {jump,{f,36}}.
   {label,39}.
     {remove_message}. %% drop unknown
     {jump,{f,36}}.
   {label,40}.
-    {wait,{f,36}}. %% empty mailbox – suspend
+    {wait,{f,36}}. %% empty mailbox â€“ suspend
 
 %%----------------------------------------------------------------
 %% module_info
@@ -269,4 +284,4 @@
     {move,{atom,call_functor},{x,0}}.
     {call_ext_only,2,{extfunc,erlang,get_module_info,2}}.
 
-%% End of module – total instruction lines ≈ 248
+%% End of module â€“ total instruction lines â‰ˆ 248

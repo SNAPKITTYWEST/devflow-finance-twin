@@ -1,6 +1,21 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
-// fsl/src/crux/omega.rs  –  OMEGA SMASHER Dispatcher
-// Routes (Backend, State, Formula) → (Z3 | SAS | Lean) → Proof → Result
+// fsl/src/crux/omega.rs  â€“  OMEGA SMASHER Dispatcher
+// Routes (Backend, State, Formula) â†’ (Z3 | SAS | Lean) â†’ Proof â†’ Result
 // Dense ~250 LOC
 // =============================================================================
 
@@ -64,7 +79,7 @@ impl OmegaSmasher {
         }
     }
 
-    /// Try all backends in priority order: Z3 → Lean → SAS
+    /// Try all backends in priority order: Z3 â†’ Lean â†’ SAS
     pub fn smash_auto(&mut self, state: &State, formula: &Formula) -> OmegaResult {
         let r = self.smash_z3(state, formula);
         if r != OmegaResult::Unknown { return r; }
@@ -155,5 +170,5 @@ pub fn omega_smash_pipeline(
 }
 
 // End of OMEGA SMASHER (~250 lines)
-// Covers: dispatcher (Z3 → Lean → SAS priority),
+// Covers: dispatcher (Z3 â†’ Lean â†’ SAS priority),
 // macro expansion table, pipeline driver, result types.

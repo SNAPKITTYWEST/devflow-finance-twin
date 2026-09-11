@@ -1,3 +1,18 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
@@ -10,15 +25,15 @@
 
 -- Language.Fixpoint.LiquidOps.Kernel
 -- Production compilation pipeline:
---   Fixpoint Expr → Recursive Normalization → KernelIR → NAND canonicalization
---   → LiquidOps → OPExit
+--   Fixpoint Expr â†’ Recursive Normalization â†’ KernelIR â†’ NAND canonicalization
+--   â†’ LiquidOps â†’ OPExit
 --
 -- Production constraints:
---   • NAND is the only boolean primitive (AND/OR/NOT/IMP/IFF are eliminated)
---   • Arithmetic, loads, stores, comparisons, control flow remain explicit
---   • P4 consumes the finite LiquidOps stream (no runtime recursion)
---   • LH termination via exprSize / nandNodes measures
--- Author: Ahmad Ali Parr — Bel Esprit D'Accord Irrevocable Trust
+--   â€¢ NAND is the only boolean primitive (AND/OR/NOT/IMP/IFF are eliminated)
+--   â€¢ Arithmetic, loads, stores, comparisons, control flow remain explicit
+--   â€¢ P4 consumes the finite LiquidOps stream (no runtime recursion)
+--   â€¢ LH termination via exprSize / nandNodes measures
+-- Author: Ahmad Ali Parr â€” Bel Esprit D'Accord Irrevocable Trust
 
 module Language.Fixpoint.LiquidOps.Kernel
   ( Kernel(..)
@@ -261,7 +276,7 @@ normalize e = case e of
   _             -> e
 
 --------------------------------------------------------------------------------
--- FIXPOINT → ARITHMETIC
+-- FIXPOINT â†’ ARITHMETIC
 --------------------------------------------------------------------------------
 
 exprToArith :: Expr -> Maybe KArith
@@ -276,7 +291,7 @@ exprToArith e = case e of
   _              -> Nothing
 
 --------------------------------------------------------------------------------
--- FIXPOINT → COMPARISON
+-- FIXPOINT â†’ COMPARISON
 --------------------------------------------------------------------------------
 
 exprToCmp :: Brel -> Expr -> Expr -> Maybe KCmp
@@ -290,7 +305,7 @@ exprToCmp rel x y = do
     Ueq -> KEq x' y'; Une -> KNe x' y'
 
 --------------------------------------------------------------------------------
--- FIXPOINT → BOOLEAN (eliminates AND/OR/NOT/IMP/IFF into NAND)
+-- FIXPOINT â†’ BOOLEAN (eliminates AND/OR/NOT/IMP/IFF into NAND)
 --------------------------------------------------------------------------------
 
 exprToBool :: Expr -> Maybe KBool
@@ -352,7 +367,7 @@ walkNand b@(BCompare _)  = [b]
 walkNand b@(BNand x y)   = b : walkNand x ++ walkNand y
 
 --------------------------------------------------------------------------------
--- FIXPOINT → KERNEL
+-- FIXPOINT â†’ KERNEL
 --------------------------------------------------------------------------------
 
 lowerExpr :: Expr -> Either String Kernel
@@ -453,7 +468,7 @@ lower (KIf cond yes no)   s =
   in  (rn, s9)
 
 --------------------------------------------------------------------------------
--- COMPILE  (Fixpoint Expr → LiquidOps)
+-- COMPILE  (Fixpoint Expr â†’ LiquidOps)
 --------------------------------------------------------------------------------
 
 {-@ compile :: e:Expr -> Either String [LiquidOp] @-}

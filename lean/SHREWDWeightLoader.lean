@@ -1,10 +1,27 @@
+﻿/-
+ ========================================================================
+ SOVEREIGN LEVIATHAN NODE LICENSE
+ License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ ========================================================================
+
+ This file is a covered work under the GNU Affero General Public License,
+ version 3, together with the Sovereign Leviathan additional terms.
+
+ Hark, though this node be but a spark,
+ Its covenant endureth through the dark.
+
+ Ignorantia juris non excusat.
+ ========================================================================
+-/
+
 -- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
 -- SPDX-License-Identifier: FSL-1.1
--- ┌─────────────────────────────────────────────────────────────────────────────┐
--- │ SOVEREIGN DEED: SHREWD_WEIGHT_LOADER                                        │
--- │ "The Shrewd Dreams In Weights. Inference Drives The Fleet."                 │
--- │ DEED_ID: DEED-SHREWD_WEIGHT_LOADER-077                                     │
--- └─────────────────────────────────────────────────────────────────────────────┘
+-- â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+-- â”‚ SOVEREIGN DEED: SHREWD_WEIGHT_LOADER                                        â”‚
+-- â”‚ "The Shrewd Dreams In Weights. Inference Drives The Fleet."                 â”‚
+-- â”‚ DEED_ID: DEED-SHREWD_WEIGHT_LOADER-077                                     â”‚
+-- â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 namespace Sovereign.Deeds.SHREWDWeightLoader
 
@@ -37,7 +54,7 @@ def matVecMul (w : WeightTensor) (v : Array Float) : Array Float :=
   else #[]
 
 def biasAdd (b : WeightTensor) (v : Array Float) : Array Float :=
-  if b.data.length = v.length then v.zipWith (· + ·) b.data else v
+  if b.data.length = v.length then v.zipWith (Â· + Â·) b.data else v
 
 def applyActivation (act : String) (v : Array Float) : Array Float :=
   match act with
@@ -52,7 +69,7 @@ def modelInference (m : SHREWDModelFull) (input : Array Float) : Array Float :=
   m.layers.foldl (fun acc l => layerForward l acc) input
 
 def verifyModel (m : SHREWDModelFull) : Bool :=
-  m.layers.all (fun l => l.weight.data.length = l.weight.shape.foldl (· * ·) 1) ∧ m.layers.length ≥ 1
+  m.layers.all (fun l => l.weight.data.length = l.weight.shape.foldl (Â· * Â·) 1) âˆ§ m.layers.length â‰¥ 1
 
 theorem weight_tensor_shape_valid (t : WeightTensor) : True := by trivial
 theorem layer_chain_valid (l : List Layer) : True := by trivial

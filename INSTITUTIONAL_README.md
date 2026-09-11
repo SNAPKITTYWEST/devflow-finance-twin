@@ -20,18 +20,23 @@
 6. Quantum Computer Simulator
 7. Formal Verification
 8. Banking and Finance Layer
-9. Compiler and DSL Stack
-10. Assembly and GPU Layer
-11. Array Languages and Transformers
-12. SVG Diagrams and Visual Assets
-13. Test Coverage and Quality Assurance
-14. Deployment and Operations
-15. Compliance and Regulatory
-16. Security Model
-17. Known Issues and Limitations
-18. Future Roadmap
-19. Contributing Guidelines
-20. References
+9. P-Code Virtual Machine
+10. Novel Languages (NAND#, Cobalt, Funnel, AGOL-86)
+11. Transformer Implementations (Pascal, APL, JAX, AGOL-86)
+12. Compiler and DSL Stack
+13. Assembly and GPU Layer
+14. Array Languages
+15. QA5 Reactive Theorem Prover
+16. SVG Diagrams and Visual Assets
+17. Test Coverage and Quality Assurance
+18. Deployment and Operations
+19. Compliance and Regulatory
+20. Security Model
+21. Known Issues and Limitations
+22. Future Roadmap
+23. Contributing Guidelines
+24. References
+25. Dictionary Outline Reference
 
 ---
 
@@ -877,6 +882,66 @@ All contributions must:
 - NACHA Operating Rules: Automated Clearing House standards
 - ISO 20022: Financial messaging standard
 - SWIFT Standards: International payment messaging
+
+---
+
+## 25. LICENSE AND COVENANT
+
+### 25.1 Sovereign Leviathan License
+
+This repository is governed by the **Sovereign Leviathan Covenant** -- a recursive node licensing system built on top of the GNU Affero General Public License v3.0.
+
+**License-ID:** SL-AGPL3-001
+**Covenant-Version:** 1.0
+**Base License:** GNU Affero General Public License v3.0
+**Jurisdiction:** England and Wales
+**Languages:** EN / AR / ZH
+
+### 25.2 Core Principles
+
+1. **Copyleft Foundation:** All source nodes are covered under AGPL-3.0
+2. **Fragment Binding:** Each source file is a designated component of the covered work
+3. **Recursive Compliance:** Dependency traversal evaluates licensing status
+4. **Network Interaction:** Section 13 AGPL obligations apply to network deployments
+5. **Sovereign Audit Chain:** Cryptographically identifiable compliance records
+
+### 25.3 License Headers
+
+Every source file in this repository carries the **Sovereign Leviathan Node License** header. This header identifies the file as a covered work under the GNU Affero General Public License, version 3, together with the Sovereign Leviathan additional terms.
+
+### 25.4 Files
+
+| File | Description |
+|------|-------------|
+| `LICENSE-AGPL-3.0` | GNU Affero General Public License v3.0 |
+| `LICENSE-FSL-1.1` | Sovereign Leviathan additional terms |
+| `SOVEREIGN_LEVIATHAN_COVENANT.md` | Complete covenant documentation |
+| `src/LICENSE-RECURSIVE-INFECTION` | Recursive infection clause |
+
+### 25.5 Unauthorized Use
+
+Unauthorized use of this codebase triggers the following enforcement flow:
+
+1. License condition violated
+2. Additional permissions terminate
+3. AGPL rights remain governed by AGPL-3.0
+4. Copyright/contractual remedies preserved
+5. Injunctive/monetary/other remedies available
+
+**Jurisdiction:** England and Wales
+
+### 25.6 Citation
+
+```bibtex
+@software{braid_group_system_2026,
+  title = {Fibonacci Braid Ledger Cryptographic System},
+  author = {Ahmad Ali Parr and Bel Esprit D'Accord Irrevocable Trust},
+  year = {2026},
+  license = {AGPL-3.0},
+  covenant = {Sovereign Leviathan v1.0},
+  jurisdiction = {England and Wales}
+}
+```
 
 ---
 

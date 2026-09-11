@@ -1,6 +1,21 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
 // SPDX-License-Identifier: FSL-1.1
-// DEED-088: Native WASM Loader — Zig Runtime Layer
+// DEED-088: Native WASM Loader â€” Zig Runtime Layer
 // Handles file I/O, WASM binary parsing, memory management, instantiation, execution.
 
 const std = @import("std");
@@ -8,7 +23,7 @@ const fs = std.fs;
 const mem = std.mem;
 const allocator = std.heap.page_allocator;
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const WasmFunc = struct {
     name: []const u8,
@@ -44,12 +59,12 @@ const LoadedModule = struct {
     bytes: []u8,
 };
 
-// ── Globals ────────────────────────────────────────────────────────────────────
+// â”€â”€ Globals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 var loaded_modules: [16]?LoadedModule = undefined;
 var module_count: u32 = 0;
 
-// ── WASM Binary Parser ─────────────────────────────────────────────────────────
+// â”€â”€ WASM Binary Parser â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Minimal parser: reads only sections needed for our small modules.
 
 fn readLeb128U32(data: []const u8, offset: *u32) u32 {
@@ -320,7 +335,7 @@ fn parseWasmModule(data: []const u8) !WasmModule {
     };
 }
 
-// ── C ABI Exports ──────────────────────────────────────────────────────────────
+// â”€â”€ C ABI Exports â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // These functions are called from Ada via pragma Import.
 
 export fn loader_load_wasm(file_path: [*:0]const u8) callconv(.C) i32 {

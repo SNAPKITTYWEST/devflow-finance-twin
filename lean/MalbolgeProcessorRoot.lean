@@ -1,10 +1,27 @@
+﻿/-
+ ========================================================================
+ SOVEREIGN LEVIATHAN NODE LICENSE
+ License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ ========================================================================
+
+ This file is a covered work under the GNU Affero General Public License,
+ version 3, together with the Sovereign Leviathan additional terms.
+
+ Hark, though this node be but a spark,
+ Its covenant endureth through the dark.
+
+ Ignorantia juris non excusat.
+ ========================================================================
+-/
+
 -- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
 -- SPDX-License-Identifier: FSL-1.1
--- ┌─────────────────────────────────────────────────────────────────────────────┐
--- │ SOVEREIGN DEED: MALBOLGE_PROCESSOR_ROOT                                     │
--- │ "The Abyss Computes. Entropy Is Extracted. The Chain Holds."               │
--- │ DEED_ID: DEED-MALBOLGE_PROCESSOR_ROOT-073                                  │
--- └─────────────────────────────────────────────────────────────────────────────┘
+-- â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+-- â”‚ SOVEREIGN DEED: MALBOLGE_PROCESSOR_ROOT                                     â”‚
+-- â”‚ "The Abyss Computes. Entropy Is Extracted. The Chain Holds."               â”‚
+-- â”‚ DEED_ID: DEED-MALBOLGE_PROCESSOR_ROOT-073                                  â”‚
+-- â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 namespace Sovereign.Deeds.MalbolgeProcessorRoot
 
@@ -66,32 +83,32 @@ structure MalbolgeProcessor where
 theorem memory_size_invariant (p : MalbolgeProcessor) : p.mem.length = memorySize := by
   classical
   by_contra h; exfalso
-  have h₁ : p.mem.length = memorySize := by classical; by_contra h₂; simp_all
+  have hâ‚ : p.mem.length = memorySize := by classical; by_contra hâ‚‚; simp_all
   contradiction
 
 theorem tryte_width_invariant (p : MalbolgeProcessor) :
-    ∀ (t : Tryte), t ∈ p.mem → t.trits.length = tryteSize := by
+    âˆ€ (t : Tryte), t âˆˆ p.mem â†’ t.trits.length = tryteSize := by
   intro t ht; classical; by_contra h; exfalso
-  have h₁ : t.trits.length = tryteSize := by classical; by_contra h₂; simp_all
+  have hâ‚ : t.trits.length = tryteSize := by classical; by_contra hâ‚‚; simp_all
   contradiction
 
 theorem register_valid_invariant (p : MalbolgeProcessor) :
-    p.regs.A.trits.length = tryteSize ∧ p.regs.C.trits.length = tryteSize ∧ p.regs.D.trits.length = tryteSize := by
+    p.regs.A.trits.length = tryteSize âˆ§ p.regs.C.trits.length = tryteSize âˆ§ p.regs.D.trits.length = tryteSize := by
   classical; by_contra h; exfalso
-  have h₁ := by classical; by_contra h₂; simp_all
+  have hâ‚ := by classical; by_contra hâ‚‚; simp_all
   contradiction
 
 def shannonEntropy (samples : List Nat) : Float :=
   if samples.length = 0 then 0.0 else
     let total : Float := samples.length.toFloat
-    let unique := samples.foldl (fun (s : Std.HashSet Nat) x => s.insert x) ∅
+    let unique := samples.foldl (fun (s : Std.HashSet Nat) x => s.insert x) âˆ…
     let probs := unique.toList.map (fun x => (samples.count x).toFloat / total)
     -probs.foldl (fun acc p => acc + p * Real.log p) 0.0
 
 theorem entropy_bound_invariant (p : MalbolgeProcessor) :
-    shannonEntropy p.entropy ≤ 0.20 := by
+    shannonEntropy p.entropy â‰¤ 0.20 := by
   classical; by_contra h; exfalso
-  have h₁ := by classical; by_contra h₂; simp_all [shannonEntropy]; norm_num at *; linarith
+  have hâ‚ := by classical; by_contra hâ‚‚; simp_all [shannonEntropy]; norm_num at *; linarith
   contradiction
 
 def permuteTryte (t : Tryte) : Tryte :=
@@ -100,12 +117,12 @@ def permuteTryte (t : Tryte) : Tryte :=
 
 theorem code_pointer_valid (p : MalbolgeProcessor) : tryteToNat p.regs.C < memorySize := by
   classical; by_contra h; exfalso
-  have h₁ := by classical; by_contra h₂; simp_all [memorySize, tryteToNat]; omega
+  have hâ‚ := by classical; by_contra hâ‚‚; simp_all [memorySize, tryteToNat]; omega
   contradiction
 
 theorem data_pointer_valid (p : MalbolgeProcessor) : tryteToNat p.regs.D < memorySize := by
   classical; by_contra h; exfalso
-  have h₁ := by classical; by_contra h₂; simp_all [memorySize, tryteToNat]; omega
+  have hâ‚ := by classical; by_contra hâ‚‚; simp_all [memorySize, tryteToNat]; omega
   contradiction
 
 inductive MalbolgeInstruction where
@@ -169,14 +186,14 @@ def malbolgeGenesis : MalbolgeProcessor :=
   , stepCount := 0 }
 
 theorem deterministic_execution (p1 p2 : MalbolgeProcessor) (steps : Nat) :
-    p1.regs = p2.regs → p1.mem = p2.mem → p1.entropy = p2.entropy →
-    (malbolgeRun p1 steps).regs = (malbolgeRun p2 steps).regs ∧
+    p1.regs = p2.regs â†’ p1.mem = p2.mem â†’ p1.entropy = p2.entropy â†’
+    (malbolgeRun p1 steps).regs = (malbolgeRun p2 steps).regs âˆ§
     (malbolgeRun p1 steps).mem = (malbolgeRun p2 steps).mem := by
-  intro h₁ h₂ h₃
+  intro hâ‚ hâ‚‚ hâ‚ƒ
   induction steps with
-  | zero => simp [malbolgeRun]; exact ⟨h₁, h₂⟩
+  | zero => simp [malbolgeRun]; exact âŸ¨hâ‚, hâ‚‚âŸ©
   | succ n ih =>
-    have h₄ := ih h₁ h₂ h₃
+    have hâ‚„ := ih hâ‚ hâ‚‚ hâ‚ƒ
     simp [malbolgeRun, malbolgeStep, executeInstruction]
     sorry
 

@@ -1,5 +1,20 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """
-Devflow Finance Twin — Production Test Suite
+Devflow Finance Twin â€” Production Test Suite
 Tests for WORM storage, FinanceTwin, Audit layer, Quantum layer, and integration.
 """
 import sys
@@ -19,7 +34,7 @@ from audit import CryptographicAuditLayer, SEAL_VERSION
 from quantum import QuantumAbstractionLayer
 
 
-# ── WORM Storage Tests ────────────────────────────────────────────────────────
+# â”€â”€ WORM Storage Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestWormStorage(unittest.TestCase):
     def setUp(self):
@@ -101,7 +116,7 @@ class TestWormStorage(unittest.TestCase):
             self.storage.read_all()
 
 
-# ── FinanceTwin Tests ─────────────────────────────────────────────────────────
+# â”€â”€ FinanceTwin Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestFinanceTwin(unittest.TestCase):
     def setUp(self):
@@ -232,7 +247,7 @@ class TestFinanceTwin(unittest.TestCase):
             self.twin.execute_command("REVERSE_TRANSACTION", "admin", {"transaction_id": "TX_001"})
 
 
-# ── Audit Layer Tests ─────────────────────────────────────────────────────────
+# â”€â”€ Audit Layer Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestAuditLayer(unittest.TestCase):
     def test_generate_and_verify_seal(self):
@@ -297,7 +312,7 @@ class TestAuditLayer(unittest.TestCase):
         self.assertFalse(CryptographicAuditLayer.verify_seal(None))
 
 
-# ── Quantum Layer Tests ───────────────────────────────────────────────────────
+# â”€â”€ Quantum Layer Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestQuantumLayer(unittest.TestCase):
     def setUp(self):
@@ -353,7 +368,7 @@ class TestQuantumLayer(unittest.TestCase):
             self.q.hash_input("x", algorithm="md5")
 
 
-# ── Quantize Money Tests ──────────────────────────────────────────────────────
+# â”€â”€ Quantize Money Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestQuantizeMoney(unittest.TestCase):
     def test_string_input(self):
@@ -375,7 +390,7 @@ class TestQuantizeMoney(unittest.TestCase):
         self.assertEqual(quantize_money("0"), Decimal("0.0000"))
 
 
-# ── Rate Limiter Tests ────────────────────────────────────────────────────────
+# â”€â”€ Rate Limiter Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestRateLimiter(unittest.TestCase):
     def test_allows_within_limit(self):
@@ -390,7 +405,7 @@ class TestRateLimiter(unittest.TestCase):
         self.assertFalse(rl.check())
 
 
-# ── Integration Tests ─────────────────────────────────────────────────────────
+# â”€â”€ Integration Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestIntegration(unittest.TestCase):
     def setUp(self):
@@ -480,7 +495,7 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(self.twin.accounts["ACC_001"], Decimal("1000.0000"))
 
 
-# ── Edge Case Tests ───────────────────────────────────────────────────────────
+# â”€â”€ Edge Case Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestEdgeCasesWorm(unittest.TestCase):
     """WORM storage edge cases."""
@@ -509,12 +524,12 @@ class TestEdgeCasesWorm(unittest.TestCase):
 
     def test_unicode_payload(self):
         """Unicode characters in payload are preserved."""
-        payload = {"name": "Ahmad Ali Parr", "arabic": "ال ", "emoji": "🔐"}
+        payload = {"name": "Ahmad Ali Parr", "arabic": "Ø§Ù„ ", "emoji": "ðŸ”"}
         rec = self.storage.append(payload)
         records = self.storage.read_all()
         self.assertEqual(records[0]["payload"]["name"], "Ahmad Ali Parr")
-        self.assertEqual(records[0]["payload"]["arabic"], "ال ")
-        self.assertEqual(records[0]["payload"]["emoji"], "🔐")
+        self.assertEqual(records[0]["payload"]["arabic"], "Ø§Ù„ ")
+        self.assertEqual(records[0]["payload"]["emoji"], "ðŸ”")
 
     def test_deeply_nested_payload(self):
         """Deeply nested JSON payload is stored correctly."""
@@ -901,7 +916,7 @@ class TestEdgeCasesIntegration(unittest.TestCase):
         self.assertIn("Chain break", err)
 
 
-# ── Entry Point ───────────────────────────────────────────────────────────────
+# â”€â”€ Entry Point â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 if __name__ == "__main__":
     unittest.main()

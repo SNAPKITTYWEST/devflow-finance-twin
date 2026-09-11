@@ -1,9 +1,24 @@
--- Language.Fixpoint.Smt.Theories.Recurse — SMT2 recursive function bridge
--- Author: Ahmad Ali Parr — Bel Esprit D'Accord Irrevocable Trust
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
+-- Language.Fixpoint.Smt.Theories.Recurse â€” SMT2 recursive function bridge
+-- Author: Ahmad Ali Parr â€” Bel Esprit D'Accord Irrevocable Trust
 
 module Language.Fixpoint.Smt.Theories.Recurse where
 
--- ── SMT2 token types ─────────────────────────────────────────────────────────
+-- â”€â”€ SMT2 token types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 data SMT2Token
   = Smt2Sym  String
   | Smt2Num  Int
@@ -11,7 +26,7 @@ data SMT2Token
   | Smt2App  [SMT2Token]
   deriving (Eq, Show)
 
--- ── Recursive function descriptor ────────────────────────────────────────────
+-- â”€â”€ Recursive function descriptor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 data RecurseFunc = RecurseFunc
   { rfName     :: String
   , rfArgs     :: [String]
@@ -19,7 +34,7 @@ data RecurseFunc = RecurseFunc
   , rfMaxDepth :: Int
   } deriving (Eq, Show)
 
--- ── Truncation + recursion ────────────────────────────────────────────────────
+-- â”€â”€ Truncation + recursion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- Unroll a recursive function to depth d, substituting base case at leaf
 {-@ truncateAndRecurseFunc :: RecurseFunc -> {v:Int | v >= 0} -> [SMT2Token] @-}
 truncateAndRecurseFunc :: RecurseFunc -> Int -> [SMT2Token]
@@ -41,21 +56,21 @@ substRecurse name replacement (Smt2App ts) =
   Smt2App (map (substRecurse name replacement) ts)
 substRecurse _ _ t = t
 
--- ── SMT2 serialization ────────────────────────────────────────────────────────
+-- â”€â”€ SMT2 serialization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 renderSMT2 :: SMT2Token -> String
 renderSMT2 (Smt2Sym s)    = s
 renderSMT2 (Smt2Num n)    = show n
 renderSMT2 (Smt2Bool b)   = if b then "true" else "false"
 renderSMT2 (Smt2App ts)   = "(" ++ unwords (map renderSMT2 ts) ++ ")"
 
--- ── Bridge: Haskell recursive function → SMT2 define-fun-rec ─────────────────
+-- â”€â”€ Bridge: Haskell recursive function â†’ SMT2 define-fun-rec â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 smt2FuncRecurseBridge :: RecurseFunc -> String
 smt2FuncRecurseBridge rf =
   let args    = unwords [ "(" ++ a ++ " Int)" | a <- rfArgs rf ]
       bodyStr = renderSMT2 (rfBody rf)
   in  "(define-fun-rec " ++ rfName rf ++ " (" ++ args ++ ") Int\n  " ++ bodyStr ++ ")"
 
--- ── Example: factorial recursive descriptor ──────────────────────────────────
+-- â”€â”€ Example: factorial recursive descriptor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 factFunc :: RecurseFunc
 factFunc = RecurseFunc
   { rfName     = "fact"

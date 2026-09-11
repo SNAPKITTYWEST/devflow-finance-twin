@@ -1,7 +1,22 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
-// fsl/src/cbmc.rs – CBMC Adapter for FSL (~500 LOC dense)
+// fsl/src/cbmc.rs â€“ CBMC Adapter for FSL (~500 LOC dense)
 // Converts CBMC-style GOTO / SSA programs into FSL Constraint IR
-// Pipeline position: C/Rust → (CBMC GOTO) → this adapter → FSL IR → Solver
+// Pipeline position: C/Rust â†’ (CBMC GOTO) â†’ this adapter â†’ FSL IR â†’ Solver
 // =============================================================================
 
 use crate::{Constraint, Expr, FslIR, Origin, Sort, Status};
@@ -214,7 +229,7 @@ impl Unroller {
                             let count = unwind_counters.entry(target.clone()).or_insert(0);
                             *count += 1;
                             if *count > self.config.max_loop_unwind {
-                                // Stop unrolling – add assumption false to prune
+                                // Stop unrolling â€“ add assumption false to prune
                                 result.push(Instruction::Assume(ExprCBMC::Operand(
                                     Operand::Const(Constant::Bool(false))
                                 )));
@@ -296,12 +311,12 @@ impl Unroller {
 }
 
 // ---------------------------------------------------------------------------
-// 3. GOTO → FSL IR Encoder
+// 3. GOTO â†’ FSL IR Encoder
 // ---------------------------------------------------------------------------
 
 pub struct CbmcToFsl {
     pub ir: FslIR,
-    pub symbol_map: HashMap<String, u32>, // SSA name → FSL var id
+    pub symbol_map: HashMap<String, u32>, // SSA name â†’ FSL var id
     pub current_path_cond: Vec<Expr>,
 }
 

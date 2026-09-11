@@ -1,11 +1,26 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 --------------------------------------------------------------------------------
 -- | LiquidOps NAND Kernel
 -- |
 -- | SOURCE      : Haskell / Fixpoint Expr
 -- | NORMALIZATION : recursive Fixpoint traversal, constant folding,
 -- |                 boolean folding, set folding
--- | LOGIC       : every boolean operation → NAND blocks
--- | LOWERING    : NAND IR → P4 → LiquidOps
+-- | LOGIC       : every boolean operation â†’ NAND blocks
+-- | LOWERING    : NAND IR â†’ P4 â†’ LiquidOps
 -- | TERMINAL    : LiquidOps contains no Haskell expressions.
 --------------------------------------------------------------------------------
 
@@ -53,7 +68,7 @@ import Data.Int
 import Data.Word
 import GHC.Generics
 
--- Stub imports — replace with real Language.Fixpoint.Types in production
+-- Stub imports â€” replace with real Language.Fixpoint.Types in production
 -- import Language.Fixpoint.Types hiding (simplify)
 -- import Language.Fixpoint.Smt.Theories
 
@@ -264,7 +279,7 @@ applySetFolding :: Expr -> Expr -> Expr
 applySetFolding e1 e2 = EApp e1 e2  -- simplified stub
 
 --------------------------------------------------------------------------------
--- | BOOLEAN EXPR → LOGIC
+-- | BOOLEAN EXPR â†’ LOGIC
 --------------------------------------------------------------------------------
 
 exprToLogic :: Expr -> Logic
@@ -284,7 +299,7 @@ exprToLogic e = case e of
   _          -> LAtom e
 
 --------------------------------------------------------------------------------
--- | LOGIC → NAND  (every gate = NAND)
+-- | LOGIC â†’ NAND  (every gate = NAND)
 --------------------------------------------------------------------------------
 
 nandify :: Logic -> NAND
@@ -310,7 +325,7 @@ nandify l = case l of
     in NNand na nb
 
 --------------------------------------------------------------------------------
--- | NAND → REGISTERS (LiquidOps emission)
+-- | NAND â†’ REGISTERS (LiquidOps emission)
 --------------------------------------------------------------------------------
 
 lowerNAND :: NAND -> LowerState -> (Reg, LowerState)

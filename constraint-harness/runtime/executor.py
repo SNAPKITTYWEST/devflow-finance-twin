@@ -1,3 +1,18 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """High-level execution driver wiring state machine + constitution + scheduler."""
 
 from __future__ import annotations
@@ -25,7 +40,7 @@ class Executor:
         self.ctx = ExecutionContext(execution_id=eid, agent=agent, authorized=authorized)
 
         try:
-            # RECEIVE → PARSE
+            # RECEIVE â†’ PARSE
             self.sm.transition(State.PARSE, reason="begin parse")
             doc = parse_mxml(mxml_source)
             validate_mxml(doc)
@@ -55,7 +70,7 @@ class Executor:
             task_results = sched.run(dag, doc.runtime)
             self.ctx.task_results = task_results
 
-            # SUPERVISE → VALIDATE
+            # SUPERVISE â†’ VALIDATE
             self.sm.transition(State.SUPERVISE, reason="collect")
             self.sm.transition(State.VALIDATE, reason="verify")
             self.ctx.provenance = {

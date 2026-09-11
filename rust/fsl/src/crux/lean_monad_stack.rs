@@ -1,7 +1,22 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
-// fsl/src/crux/lean_monad_stack.rs  –  Lean 4 Monad Stack Reference Types
+// fsl/src/crux/lean_monad_stack.rs  â€“  Lean 4 Monad Stack Reference Types
 // MetaM / TacticM / MacroM / MonadQuotation / Recursive TacticLayer
-// Dense ~300 LOC — Rust-side type definitions matching the Lean 4 grammar
+// Dense ~300 LOC â€” Rust-side type definitions matching the Lean 4 grammar
 // =============================================================================
 
 use crate::crux::ast::*;
@@ -25,7 +40,7 @@ pub enum MonadLayer {
 }
 
 // ---------------------------------------------------------------------------
-// 2. MetaM API surface — key operations
+// 2. MetaM API surface â€” key operations
 // ---------------------------------------------------------------------------
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -90,7 +105,7 @@ pub struct MetavarContext {
 }
 
 // ---------------------------------------------------------------------------
-// 3. TacticM — state, context, config
+// 3. TacticM â€” state, context, config
 // ---------------------------------------------------------------------------
 
 #[derive(Clone, Debug, Default)]
@@ -177,7 +192,7 @@ pub enum LeanTacticOp {
 }
 
 // ---------------------------------------------------------------------------
-// 5. MacroM — hygiene engine
+// 5. MacroM â€” hygiene engine
 // ---------------------------------------------------------------------------
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]

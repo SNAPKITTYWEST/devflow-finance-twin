@@ -1,3 +1,18 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """Explicit state machine states and legal transitions."""
 
 from __future__ import annotations
@@ -22,7 +37,7 @@ class State(str, Enum):
     FAILED_CLOSED = "FAILED_CLOSED"
 
 
-# Legal transitions: from → set of allowed to
+# Legal transitions: from â†’ set of allowed to
 LEGAL_TRANSITIONS: dict[State, frozenset[State]] = {
     State.RECEIVE: frozenset({State.PARSE, State.FAILED_CLOSED}),
     State.PARSE: frozenset({State.CONSTITUTION_CHECK, State.FAILED_CLOSED}),

@@ -1,3 +1,20 @@
+﻿/-
+ ========================================================================
+ SOVEREIGN LEVIATHAN NODE LICENSE
+ License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ ========================================================================
+
+ This file is a covered work under the GNU Affero General Public License,
+ version 3, together with the Sovereign Leviathan additional terms.
+
+ Hark, though this node be but a spark,
+ Its covenant endureth through the dark.
+
+ Ignorantia juris non excusat.
+ ========================================================================
+-/
+
 /-
   LinearAlgebraVerification.lean
   Complete formal verification of outer-product update algebra
@@ -22,94 +39,94 @@ namespace LinearAlgebraVerification
 
 /-! ## Vector Space Setup -/
 
-variable {V : Type*} [InnerProductSpace ℝ V]
+variable {V : Type*} [InnerProductSpace â„ V]
 
 /-! ## Outer Product Definition -/
 
-/-- The outer product of vectors v and x: (v ⊗ xᵀ)(y) = ⟨x,y⟩ · v -/
-def outerProduct (v x : V) : V →ₗ[ℝ] V :=
-  LinearMap.mk (fun y => inner x y • v)
+/-- The outer product of vectors v and x: (v âŠ— xáµ€)(y) = âŸ¨x,yâŸ© Â· v -/
+def outerProduct (v x : V) : V â†’â‚—[â„] V :=
+  LinearMap.mk (fun y => inner x y â€¢ v)
     (fun a b y => by simp [smul_add, inner_add_left])
     (fun a x y => by simp [smul_comm])
 
 /-! ## ALG-001: Outer Product Action -/
 
-/-- (v ⊗ xᵀ)x = ‖x‖² · v -/
+/-- (v âŠ— xáµ€)x = â€–xâ€–Â² Â· v -/
 theorem outerProductAction (v x : V) :
-    outerProduct v x x = inner x x • v := by
+    outerProduct v x x = inner x x â€¢ v := by
   simp [outerProduct]
 
 /-! ## Update Operator -/
 
-/-- ΔW = η · (v ⊗ xᵀ) -/
-def updateOperator (η : ℝ) (v x : V) : V →ₗ[ℝ] V :=
-  η • outerProduct v x
+/-- Î”W = Î· Â· (v âŠ— xáµ€) -/
+def updateOperator (Î· : â„) (v x : V) : V â†’â‚—[â„] V :=
+  Î· â€¢ outerProduct v x
 
-/-- Updated activation: (W + ΔW)x -/
-def updatedActivation (W : V →ₗ[ℝ] V) (η : ℝ) (v x : V) : V :=
-  (W + updateOperator η v x) x
+/-- Updated activation: (W + Î”W)x -/
+def updatedActivation (W : V â†’â‚—[â„] V) (Î· : â„) (v x : V) : V :=
+  (W + updateOperator Î· v x) x
 
 /-! ## ALG-002: Linearity -/
 
-/-- (W + ΔW)x = Wx + ΔWx -/
-theorem linearity (W : V →ₗ[ℝ] V) (η : ℝ) (v x : V) :
-    updatedActivation W η v x = W x + updateOperator η v x x := by
+/-- (W + Î”W)x = Wx + Î”Wx -/
+theorem linearity (W : V â†’â‚—[â„] V) (Î· : â„) (v x : V) :
+    updatedActivation W Î· v x = W x + updateOperator Î· v x x := by
   simp [updatedActivation, LinearMap.add_apply]
 
 /-! ## ALG-003: Inner Product Expansion -/
 
-/-- ⟨(W + ΔW)x, v⟩ = ⟨Wx, v⟩ + ⟨ΔWx, v⟩ -/
-theorem innerProductExpansion (W : V →ₗ[ℝ] V) (η : ℝ) (v x : V) :
-    inner (updatedActivation W η v x) v =
-    inner (W x) v + inner (updateOperator η v x x) v := by
+/-- âŸ¨(W + Î”W)x, vâŸ© = âŸ¨Wx, vâŸ© + âŸ¨Î”Wx, vâŸ© -/
+theorem innerProductExpansion (W : V â†’â‚—[â„] V) (Î· : â„) (v x : V) :
+    inner (updatedActivation W Î· v x) v =
+    inner (W x) v + inner (updateOperator Î· v x x) v := by
   rw [linearity, inner_add_left]
 
 /-! ## ALG-004: Exact Change in Projection -/
 
-/-- ⟨(W + ΔW)x, v⟩ - ⟨Wx, v⟩ = η · ‖x‖² · ‖v‖² -/
-theorem exactChangeInProjection (W : V →ₗ[ℝ] V) (η : ℝ) (v x : V) :
-    inner (updatedActivation W η v x) v - inner (W x) v =
-    η • inner x x • inner v v := by
+/-- âŸ¨(W + Î”W)x, vâŸ© - âŸ¨Wx, vâŸ© = Î· Â· â€–xâ€–Â² Â· â€–vâ€–Â² -/
+theorem exactChangeInProjection (W : V â†’â‚—[â„] V) (Î· : â„) (v x : V) :
+    inner (updatedActivation W Î· v x) v - inner (W x) v =
+    Î· â€¢ inner x x â€¢ inner v v := by
   rw [innerProductExpansion, updateOperator, outerProductAction]
   simp [inner_smul_left, smul_smul]
 
 /-! ## THR-001: Sufficient Condition -/
 
-/-- η > (θ - ⟨Wx,v⟩)/(‖x‖²·‖v‖²) implies threshold crossing -/
-theorem thresholdSufficient (W : V →ₗ[ℝ] V) (η : V →ₗ[ℝ] V → ℝ) (v x : V) (θ : ℝ)
-    (hx : x ≠ 0) (hv : v ≠ 0)
-    (hη : η W v x > (θ - inner (W x) v) / (inner x x * inner v v)) :
-    inner (updatedActivation W (η W v x) v x) v > θ := by
+/-- Î· > (Î¸ - âŸ¨Wx,vâŸ©)/(â€–xâ€–Â²Â·â€–vâ€–Â²) implies threshold crossing -/
+theorem thresholdSufficient (W : V â†’â‚—[â„] V) (Î· : V â†’â‚—[â„] V â†’ â„) (v x : V) (Î¸ : â„)
+    (hx : x â‰  0) (hv : v â‰  0)
+    (hÎ· : Î· W v x > (Î¸ - inner (W x) v) / (inner x x * inner v v)) :
+    inner (updatedActivation W (Î· W v x) v x) v > Î¸ := by
   have hxi : inner x x > 0 := inner_self_pos.mpr hx
   have hvi : inner v v > 0 := inner_self_pos.mpr hv
   have hprod : inner x x * inner v v > 0 := mul_pos hxi hvi
   rw [exactChangeInProjection]
-  have : inner (updatedActivation W (η W v x) v x) v =
-         inner (W x) v + (η W v x) • inner x x • inner v v := by
+  have : inner (updatedActivation W (Î· W v x) v x) v =
+         inner (W x) v + (Î· W v x) â€¢ inner x x â€¢ inner v v := by
     simp [updatedActivation, updateOperator, LinearMap.add_apply,
           inner_add_left, outerProductAction, inner_smul_left, smul_smul]
   rw [this, sub_add_cancel]
-  rw [← sub_lt_iff_lt_add']
-  rw [← div_lt_iff hprod] at hη
+  rw [â† sub_lt_iff_lt_add']
+  rw [â† div_lt_iff hprod] at hÎ·
   linarith
 
 /-! ## THR-002: Existence of Valid Gain -/
 
-/-- For any finite θ and nonzero x,v, there exists η > 0 achieving threshold -/
-theorem existenceOfValidGain (W : V →ₗ[ℝ] V) (v x : V) (θ : ℝ)
-    (hx : x ≠ 0) (hv : v ≠ 0) :
-    ∃ η > 0, inner (updatedActivation W η v x) v > θ := by
-  refine ⟨(θ - inner (W x) v + 1) / (inner x x * inner v v), ?_, ?_⟩
-  · have hxi : inner x x > 0 := inner_self_pos.mpr hx
+/-- For any finite Î¸ and nonzero x,v, there exists Î· > 0 achieving threshold -/
+theorem existenceOfValidGain (W : V â†’â‚—[â„] V) (v x : V) (Î¸ : â„)
+    (hx : x â‰  0) (hv : v â‰  0) :
+    âˆƒ Î· > 0, inner (updatedActivation W Î· v x) v > Î¸ := by
+  refine âŸ¨(Î¸ - inner (W x) v + 1) / (inner x x * inner v v), ?_, ?_âŸ©
+  Â· have hxi : inner x x > 0 := inner_self_pos.mpr hx
     have hvi : inner v v > 0 := inner_self_pos.mpr hv
     have hprod : inner x x * inner v v > 0 := mul_pos hxi hvi
     positivity
-  · have hxi : inner x x > 0 := inner_self_pos.mpr hx
+  Â· have hxi : inner x x > 0 := inner_self_pos.mpr hx
     have hvi : inner v v > 0 := inner_self_pos.mpr hv
     have hprod : inner x x * inner v v > 0 := mul_pos hxi hvi
     rw [exactChangeInProjection]
-    have : inner (updatedActivation W ((θ - inner (W x) v + 1) / (inner x x * inner v v)) v x) v =
-           inner (W x) v + ((θ - inner (W x) v + 1) / (inner x x * inner v v)) • inner x x • inner v v := by
+    have : inner (updatedActivation W ((Î¸ - inner (W x) v + 1) / (inner x x * inner v v)) v x) v =
+           inner (W x) v + ((Î¸ - inner (W x) v + 1) / (inner x x * inner v v)) â€¢ inner x x â€¢ inner v v := by
       simp [updatedActivation, updateOperator, LinearMap.add_apply,
             inner_add_left, outerProductAction, inner_smul_left, smul_smul]
     rw [this]
@@ -118,21 +135,21 @@ theorem existenceOfValidGain (W : V →ₗ[ℝ] V) (v x : V) (θ : ℝ)
 
 /-! ## Arbitrary Margin -/
 
-/-- For any ε > 0, there exists η > 0 achieving margin θ + ε -/
-theorem arbitraryMargin (W : V →ₗ[ℝ] V) (v x : V) (θ ε : ℝ)
-    (hx : x ≠ 0) (hv : v ≠ 0) (hε : ε > 0) :
-    ∃ η > 0, inner (updatedActivation W η v x) v > θ + ε := by
-  refine ⟨(θ + ε - inner (W x) v + 1) / (inner x x * inner v v), ?_, ?_⟩
-  · have hxi : inner x x > 0 := inner_self_pos.mpr hx
+/-- For any Îµ > 0, there exists Î· > 0 achieving margin Î¸ + Îµ -/
+theorem arbitraryMargin (W : V â†’â‚—[â„] V) (v x : V) (Î¸ Îµ : â„)
+    (hx : x â‰  0) (hv : v â‰  0) (hÎµ : Îµ > 0) :
+    âˆƒ Î· > 0, inner (updatedActivation W Î· v x) v > Î¸ + Îµ := by
+  refine âŸ¨(Î¸ + Îµ - inner (W x) v + 1) / (inner x x * inner v v), ?_, ?_âŸ©
+  Â· have hxi : inner x x > 0 := inner_self_pos.mpr hx
     have hvi : inner v v > 0 := inner_self_pos.mpr hv
     have hprod : inner x x * inner v v > 0 := mul_pos hxi hvi
     positivity
-  · have hxi : inner x x > 0 := inner_self_pos.mpr hx
+  Â· have hxi : inner x x > 0 := inner_self_pos.mpr hx
     have hvi : inner v v > 0 := inner_self_pos.mpr hv
     have hprod : inner x x * inner v v > 0 := mul_pos hxi hvi
     rw [exactChangeInProjection]
-    have : inner (updatedActivation W ((θ + ε - inner (W x) v + 1) / (inner x x * inner v v)) v x) v =
-           inner (W x) v + ((θ + ε - inner (W x) v + 1) / (inner x x * inner v v)) • inner x x • inner v v := by
+    have : inner (updatedActivation W ((Î¸ + Îµ - inner (W x) v + 1) / (inner x x * inner v v)) v x) v =
+           inner (W x) v + ((Î¸ + Îµ - inner (W x) v + 1) / (inner x x * inner v v)) â€¢ inner x x â€¢ inner v v := by
       simp [updatedActivation, updateOperator, LinearMap.add_apply,
             inner_add_left, outerProductAction, inner_smul_left, smul_smul]
     rw [this]

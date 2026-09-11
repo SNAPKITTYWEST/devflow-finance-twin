@@ -1,6 +1,21 @@
-; assembly.asm — Bounded machine representation of Fibonacci Braid Ledger
+﻿; ========================================================================
+; SOVEREIGN LEVIATHAN NODE LICENSE
+; License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+; Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+; ========================================================================
+;
+; This file is a covered work under the GNU Affero General Public License,
+; version 3, together with the Sovereign Leviathan additional terms.
+;
+; Hark, though this node be but a spark,
+; Its covenant endureth through the dark.
+;
+; Ignorantia juris non excusat.
+; ========================================================================
+
+; assembly.asm â€” Bounded machine representation of Fibonacci Braid Ledger
 ; Target: x86-64 System V, 64-bit signed, no silent overflow (JO checks)
-; Corresponds to BQN ↔ Liquid Haskell
+; Corresponds to BQN â†” Liquid Haskell
 
 %define MAX_IDX   92
 %define MAX_WORD  256
@@ -16,7 +31,7 @@ init_state: dq 0,0,0,0,0,0,0,0
 section .text
 global fib_array, braid_from_fib, reduce_word, transition, ledger_seal
 
-; fib_array: rdi=n, rsi=out_ptr → len or error
+; fib_array: rdi=n, rsi=out_ptr â†’ len or error
 fib_array:
     cmp rdi, 0
     jl .neg_err

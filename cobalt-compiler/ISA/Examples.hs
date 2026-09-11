@@ -1,5 +1,20 @@
--- ISA.Examples — Concrete programs: sum, factorial, bitwise, macros
--- Author: Ahmad Ali Parr — Bel Esprit D'Accord Irrevocable Trust
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
+-- ISA.Examples â€” Concrete programs: sum, factorial, bitwise, macros
+-- Author: Ahmad Ali Parr â€” Bel Esprit D'Accord Irrevocable Trust
 
 module ISA.Examples where
 
@@ -7,7 +22,7 @@ import ISA.Core
 import ISA.Macro
 import ISA.Program
 
--- برنامج 1: Sum first 10 natural numbers  r0=accumulator, r1=counter, r2=limit
+-- Ø¨Ø±Ù†Ø§Ù…Ø¬ 1: Sum first 10 natural numbers  r0=accumulator, r1=counter, r2=limit
 {-@ programSum :: Program @-}
 programSum :: Program
 programSum =
@@ -22,7 +37,7 @@ programSum =
   , Nop          -- end
   ]
 
--- برنامج 2: Factorial of 5  r0=result, r1=counter, r2 must be 1
+-- Ø¨Ø±Ù†Ø§Ù…Ø¬ 2: Factorial of 5  r0=result, r1=counter, r2 must be 1
 {-@ programFactorial :: Program @-}
 programFactorial :: Program
 programFactorial =
@@ -36,7 +51,7 @@ programFactorial =
   , Nop
   ]
 
--- برنامج 3: Bitwise operations
+-- Ø¨Ø±Ù†Ø§Ù…Ø¬ 3: Bitwise operations
 {-@ programBitwise :: Program @-}
 programBitwise :: Program
 programBitwise =
@@ -49,7 +64,7 @@ programBitwise =
   , Nop
   ]
 
--- برنامج 4: NAND boolean demo  r6=NOT(r5), r7=AND(r5,r4), r8=OR(r5,r4)
+-- Ø¨Ø±Ù†Ø§Ù…Ø¬ 4: NAND boolean demo  r6=NOT(r5), r7=AND(r5,r4), r8=OR(r5,r4)
 {-@ programNandBool :: Program @-}
 programNandBool :: Program
 programNandBool =
@@ -60,7 +75,7 @@ programNandBool =
   ++ macroOr 8 4 5 9 10 -- r8 = OR(r4,r5) = true
   ++ [Nop]
 
--- برنامج 5: With macros
+-- Ø¨Ø±Ù†Ø§Ù…Ø¬ 5: With macros
 {-@ programWithMacros :: Program @-}
 programWithMacros :: Program
 programWithMacros =
@@ -69,7 +84,7 @@ programWithMacros =
   ++ [ Add 7 5 6 ]
   ++ macroClear 8
 
--- اختبار البرنامج / test runner
+-- Ø§Ø®ØªØ¨Ø§Ø± Ø§Ù„Ø¨Ø±Ù†Ø§Ù…Ø¬ / test runner
 {-@ testProgram :: Program -> MachineState -> IO () @-}
 testProgram :: Program -> MachineState -> IO ()
 testProgram prog initial = do

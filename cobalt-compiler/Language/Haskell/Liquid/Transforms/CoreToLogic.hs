@@ -1,11 +1,26 @@
--- Language.Haskell.Liquid.Transforms.CoreToLogic — GHC Core → Fixpoint logic translation
--- Author: Ahmad Ali Parr — Bel Esprit D'Accord Irrevocable Trust
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
+-- Language.Haskell.Liquid.Transforms.CoreToLogic â€” GHC Core â†’ Fixpoint logic translation
+-- Author: Ahmad Ali Parr â€” Bel Esprit D'Accord Irrevocable Trust
 
 module Language.Haskell.Liquid.Transforms.CoreToLogic where
 
 import Language.Fixpoint.Solver.Simplify (Expr(..))
 
--- ── GHC Core subset ──────────────────────────────────────────────────────────
+-- â”€â”€ GHC Core subset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 data CoreExpr
   = CVar   String
   | CLit   Int
@@ -31,7 +46,7 @@ data CorePat
   | PWild
   deriving (Eq, Show)
 
--- ── Translation to Fixpoint Expr ─────────────────────────────────────────────
+-- â”€â”€ Translation to Fixpoint Expr â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 {-@ measure coreSizeC :: CoreExpr -> Nat @-}
 coreSizeC :: CoreExpr -> Int
 coreSizeC (CVar _)       = 1
@@ -51,7 +66,7 @@ coreSizeC (COr  a b)     = 1 + coreSizeC a + coreSizeC b
 coreSizeC (CNot e)       = 1 + coreSizeC e
 coreSizeC (CIte c t f)   = 1 + coreSizeC c + coreSizeC t + coreSizeC f
 
--- Main translation: GHC Core → Fixpoint Expr (structural recursion on coreSizeC)
+-- Main translation: GHC Core â†’ Fixpoint Expr (structural recursion on coreSizeC)
 {-@ coreToLg :: e:CoreExpr -> Expr / [coreSizeC e] @-}
 coreToLg :: CoreExpr -> Expr
 coreToLg (CVar v)     = Var v
@@ -77,7 +92,7 @@ caseAlt scrut (PLit n,  body) rest = Ite (Eq (coreToLg scrut) (Lit n))  (coreToL
 caseAlt scrut (PBool b, body) rest = Ite (Eq (coreToLg scrut) (BoolE b))(coreToLg body) rest
 caseAlt _     (PWild,   body) _    = coreToLg body
 
--- ── Predicate application helper ─────────────────────────────────────────────
+-- â”€â”€ Predicate application helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- Apply a predicate expression to an argument (function application)
 {-@ toPredApp :: CoreExpr -> [CoreExpr] -> Expr @-}
 toPredApp :: CoreExpr -> [CoreExpr] -> Expr

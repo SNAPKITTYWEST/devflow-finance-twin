@@ -1,23 +1,40 @@
+﻿/-
+ ========================================================================
+ SOVEREIGN LEVIATHAN NODE LICENSE
+ License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ ========================================================================
+
+ This file is a covered work under the GNU Affero General Public License,
+ version 3, together with the Sovereign Leviathan additional terms.
+
+ Hark, though this node be but a spark,
+ Its covenant endureth through the dark.
+
+ Ignorantia juris non excusat.
+ ========================================================================
+-/
+
 -- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
 -- SPDX-License-Identifier: FSL-1.1
--- ┌─────────────────────────────────────────────────────────────────────────────┐
--- │ SOVEREIGN DEED: ENOCHIAN_ENGINE_ROOT                                        │
--- │ "The Root Holds. The Glyphs Stand. The Pipeline Breathes."                  │
--- │ DEED_ID: DEED-ENOCHIAN_ENGINE_ROOT-071                                      │
--- │ GENESIS: 0xZ3R0S0RRY... (BLAKE3)                                           │
--- └─────────────────────────────────────────────────────────────────────────────┘
+-- â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+-- â”‚ SOVEREIGN DEED: ENOCHIAN_ENGINE_ROOT                                        â”‚
+-- â”‚ "The Root Holds. The Glyphs Stand. The Pipeline Breathes."                  â”‚
+-- â”‚ DEED_ID: DEED-ENOCHIAN_ENGINE_ROOT-071                                      â”‚
+-- â”‚ GENESIS: 0xZ3R0S0RRY... (BLAKE3)                                           â”‚
+-- â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 namespace Sovereign.Deeds.EnochianEngineRoot
 
 open Nat
 
 -- Axioms (external cryptographic/hardware assumptions)
-axiom blake3Hash : String → String
+axiom blake3Hash : String â†’ String
 axiom malbolge_entropy_sample : Nat
 
--- ═══════════════════════════════════════════════════════════════════════════════
--- 1. ENOCHIAN ROOT — GLYPHS, PHASES, AETHYRS, WATCHTOWERS
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+-- 1. ENOCHIAN ROOT â€” GLYPHS, PHASES, AETHYRS, WATCHTOWERS
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 inductive EnochianGlyph : Type where
   | Un | Pa | Ox | Don | Ceph | Van | G | Gon | Graf | Unn
@@ -50,14 +67,14 @@ def phaseObservable (p : EnochianPhase) : ShrewObservableClass :=
   | .Call9 | .Call10 | .Call16 | .Call19 => .Cut
 
 theorem observable_coverage :
-  ∀ (c : ShrewObservableClass), ∃ (p : EnochianPhase), phaseObservable p = c := by
+  âˆ€ (c : ShrewObservableClass), âˆƒ (p : EnochianPhase), phaseObservable p = c := by
   intro c
   match c with
-  | .Cut => exact ⟨.Call9, rfl⟩
-  | .Know => exact ⟨.Call1, rfl⟩
-  | .Shrewd => exact ⟨.Call3, rfl⟩
-  | .Causal => exact ⟨.Call4, rfl⟩
-  | .Grasp => exact ⟨.Call6, rfl⟩
+  | .Cut => exact âŸ¨.Call9, rflâŸ©
+  | .Know => exact âŸ¨.Call1, rflâŸ©
+  | .Shrewd => exact âŸ¨.Call3, rflâŸ©
+  | .Causal => exact âŸ¨.Call4, rflâŸ©
+  | .Grasp => exact âŸ¨.Call6, rflâŸ©
 
 inductive Aethyr : Type where
   | LIL | ARN | ZOM | PAZ | LIT | MAZ | DEO | ZID | ZIP | ZAX
@@ -164,10 +181,10 @@ theorem pipeline_integrity (e : EnochianEngine) (tick : Nat) :
   <;> ring_nf at * <;> omega
 
 theorem pipeline_is_complete (e : EnochianEngine) :
-    e.phaseQueue.length = 19 → (engineTick e 0).phaseQueue.length = 19 := by
+    e.phaseQueue.length = 19 â†’ (engineTick e 0).phaseQueue.length = 19 := by
   intro h
-  have h₁ := pipeline_integrity e 0
-  rw [h₁] at *
+  have hâ‚ := pipeline_integrity e 0
+  rw [hâ‚] at *
   exact h
 
 def enochianGenesis : EnochianEngine :=
@@ -200,19 +217,19 @@ def phaseWcetNs (p : EnochianPhase) : Nat :=
 
 def totalWcet : Nat := allPhases.foldl (fun acc p => acc + phaseWcetNs p) 0
 
-theorem budget_within_one_ms : totalWcet ≤ 1_000_000 := by
+theorem budget_within_one_ms : totalWcet â‰¤ 1_000_000 := by
   norm_num [totalWcet, allPhases, phaseWcetNs] <;> rfl
 
 def governors_of_aethyr : 7 * 7 = 49 := by decide
 def ere_tick_period : 19 * 49 = 931 := by decide
 
-def is49thCall (cycle_count : Nat) : Bool := cycle_count % 49 = 0 ∧ cycle_count > 0
+def is49thCall (cycle_count : Nat) : Bool := cycle_count % 49 = 0 âˆ§ cycle_count > 0
 
 theorem call49_sees_all_aethyrs :
-  ∀ (a : Aethyr), ∃ (n : Nat), aethyrIndex a = n ∧ n < 30 := by
+  âˆ€ (a : Aethyr), âˆƒ (n : Nat), aethyrIndex a = n âˆ§ n < 30 := by
   intro a
   have h : aethyrIndex a < 30 := by cases a <;> decide
-  exact ⟨aethyrIndex a, by rfl, h⟩
+  exact âŸ¨aethyrIndex a, by rfl, hâŸ©
 
 structure EREReconstruction where
   era : Nat
@@ -225,9 +242,9 @@ structure EREReconstruction where
   governors : Fin 49
   deriving Repr
 
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- 2. WORM CHAIN
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 structure WORMEntry where
   tick : Nat
@@ -247,9 +264,9 @@ structure WORMChain where
 def wormAppend (chain : WORMChain) (entry : WORMEntry) : WORMChain :=
   { entries := chain.entries ++ [entry], head := blake3Hash (chain.head ++ entry.seal) }
 
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- 3. SEAL / CRYPTO
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 structure Seal where
   publicKey : String
@@ -259,14 +276,14 @@ structure Seal where
   deriving Repr
 
 def verifySeal (seal : Seal) : Bool :=
-  seal.signature.length = 64 ∧ seal.publicKey.length = 32
+  seal.signature.length = 64 âˆ§ seal.publicKey.length = 32
 
 def requiresSeal (op : String) : Bool :=
-  op = "biosFlash" ∨ op = "keyRotation" ∨ op = "sealRotation"
+  op = "biosFlash" âˆ¨ op = "keyRotation" âˆ¨ op = "sealRotation"
 
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- 4. AGENT MODEL
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 structure Agent where
   id : String

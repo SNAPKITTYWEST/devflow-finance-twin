@@ -1,3 +1,18 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -5,7 +20,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
 
--- | Workerman calculus – practical core language derived from Liquid
+-- | Workerman calculus â€“ practical core language derived from Liquid
 -- Haskell RefCore, extended with trigonometric annotations and the
 -- Polynomial Wormhole Constraint (PWC) astronomical layer.
 module Language.Workerman.Calculus
@@ -68,8 +83,8 @@ import Prelude hiding (lookup, (<>))
 data Builtin
   = Integer | Double | String
   | Angle | Radian
-  | Celestial   -- S² base manifold
-  | HopfFiber   -- CP¹ Bloch states
+  | Celestial   -- SÂ² base manifold
+  | HopfFiber   -- CPÂ¹ Bloch states
   deriving (Data, Eq, Show, Generic, Binary)
 
 data BaseType = Builtin Builtin | TC Id
@@ -216,18 +231,18 @@ apps tm = (tm, [])
 renameParams :: [Id] -> RefType -> RefType
 renameParams = aux []
   where
-    aux σ _ tp@(RefType {}) = renames σ tp
-    aux σ [] tp = renames σ tp
-    aux σ (y:ys) (ArrType x tpx tp)
+    aux Ïƒ _ tp@(RefType {}) = renames Ïƒ tp
+    aux Ïƒ [] tp = renames Ïƒ tp
+    aux Ïƒ (y:ys) (ArrType x tpx tp)
       | x `notElem` freeVars tp || x == y =
-          ArrType y (renames σ tpx) (aux σ ys tp)
+          ArrType y (renames Ïƒ tpx) (aux Ïƒ ys tp)
     aux _ (y:_) tp0@(ArrType x _ tp)
       | y `elem` freeVars tp =
           error . render $
             "Name clash renaming" <+> text x <+> "to" <+> text y
               <+> "in" <+> pPrint tp0
-    aux σ (y:ys) (ArrType x tpx tp) =
-      ArrType y (renames σ tpx) (aux ((y,x):σ) ys tp)
+    aux Ïƒ (y:ys) (ArrType x tpx tp) =
+      ArrType y (renames Ïƒ tpx) (aux ((y,x):Ïƒ) ys tp)
 
 mkEpicycle :: Double -> Double -> Double -> Reft -> Reft
 mkEpicycle def epi mean anomaly =
@@ -356,14 +371,14 @@ instance HasVars Expr where
         | x `elem` map fst ys || maybe True (notElem x . freeVars) ebr = br
       substBranch ((c,ys),ebr) =
         let freshYs = foldr freshVars [] ys
-            α = filter (uncurry (/=)) $ zipWith (\(y,_) z -> (z,y)) ys freshYs
+            Î± = filter (uncurry (/=)) $ zipWith (\(y,_) z -> (z,y)) ys freshYs
             ys' = zipWith (\(_,b) z -> (z,b)) ys freshYs
             freshVars (y,_) vars =
               if y `elem` freeVars r
                 then freshVar y (fvre `Set.union` Set.fromList vars) : vars
                 else y : vars
             fvre = freeVars r `Set.union` freeVars (Case r' branches genVars)
-        in ((c,ys'), subst r x $ renames α ebr)
+        in ((c,ys'), subst r x $ renames Î± ebr)
   subst r x (QMark r' rh rp) =
     QMark (subst r x r') (subst r x rh) (subst r x rp)
 
@@ -396,34 +411,34 @@ instance HasVars a => HasVars (Maybe a) where
   subst r x = fmap (subst r x)
 
 --------------------------------------------------------------------------------
--- α-equality
+-- Î±-equality
 --------------------------------------------------------------------------------
 
 instance Eq RefType where
   tp1@(RefType x tpx rx) == tp2@(RefType y tpy ry) =
     let z = fresh x [tp1,tp2]
-        (α1,α2) = if x /= y then ([(z,x)],[(z,y)]) else ([],[])
-    in tpx == tpy && renames α1 rx == renames α2 ry
+        (Î±1,Î±2) = if x /= y then ([(z,x)],[(z,y)]) else ([],[])
+    in tpx == tpy && renames Î±1 rx == renames Î±2 ry
   tp1@(ArrType x tpx tp1') == tp2@(ArrType y tpy tp2') =
     let z = fresh x [tp1,tp2]
-        (α1,α2) = if x /= y then ([(z,x)],[(z,y)]) else ([],[])
-    in tpx == tpy && renames α1 tp1' == renames α2 tp2'
+        (Î±1,Î±2) = if x /= y then ([(z,x)],[(z,y)]) else ([],[])
+    in tpx == tpy && renames Î±1 tp1' == renames Î±2 tp2'
   _ == _ = False
 
 instance Eq Expr where
   Reft r1 == Reft r2 = r1 == r2
   e1@(Let x tpx ex e1') == e2@(Let y tpy ey e2') =
     let z = fresh x [e1,e2]
-        (α1,α2) = if x /= y then ([(z,x)],[(z,y)]) else ([],[])
-    in tpx == tpy && ex == ey && renames α1 e1' == renames α2 e2'
+        (Î±1,Î±2) = if x /= y then ([(z,x)],[(z,y)]) else ([],[])
+    in tpx == tpy && ex == ey && renames Î±1 e1' == renames Î±2 e2'
   e1@(Case r1 alts1 g1) == e2@(Case r2 alts2 g2) =
     r1 == r2 && all eqBranch (zip alts1 alts2) && g1 == g2
     where
       eqBranch (((c1,ys1),e1'),((c2,ys2),e2')) =
         let freshYs = foldr freshVars [] (zip ys1 ys2)
-            α ys = filter (uncurry (/=)) $
+            Î± ys = filter (uncurry (/=)) $
                      zipWith (\(y,_) z -> (z,y)) ys freshYs
-        in c1 == c2 && renames (α ys1) e1' == renames (α ys2) e2'
+        in c1 == c2 && renames (Î± ys1) e1' == renames (Î± ys2) e2'
       freshVars ((y1,_),(y2,_)) vars =
         if y1 /= y2
           then freshVar y1 (freeVars [e1,e2] `Set.union` Set.fromList vars) : vars
@@ -640,18 +655,18 @@ instance Pretty Epicycle where
          "mean=" <> double m, "anom=" <> pPrint a])
 
 instance Pretty BraidWord where
-  pPrint BraidEmpty = "ε"
-  pPrint (BraidGen i) = "σ" <> integer (toInteger i)
-  pPrint (BraidComp w1 w2) = pPrint w1 <> "·" <> pPrint w2
-  pPrint (BraidInv w) = pPrint w <> "⁻¹"
+  pPrint BraidEmpty = "Îµ"
+  pPrint (BraidGen i) = "Ïƒ" <> integer (toInteger i)
+  pPrint (BraidComp w1 w2) = pPrint w1 <> "Â·" <> pPrint w2
+  pPrint (BraidInv w) = pPrint w <> "â»Â¹"
   pPrint (BraidYB w) = "YB(" <> pPrint w <> ")"
 
 instance Pretty FlopRom where
   pPrint (FlopRom addr val sealed) =
     "ROM[" <> integer addr <> "]=" <> text (show val)
-      <> (if sealed then "⟂WORM" else empty)
+      <> (if sealed then "âŸ‚WORM" else empty)
 
 instance Pretty SphereCoord where
   pPrint (SphereCoord ra dec m) =
-    "S²(RA=" <> double ra <> ",Dec=" <> double dec <> ")"
-      <> maybe empty (\s -> "⟨" <> text s <> "⟩") m
+    "SÂ²(RA=" <> double ra <> ",Dec=" <> double dec <> ")"
+      <> maybe empty (\s -> "âŸ¨" <> text s <> "âŸ©") m

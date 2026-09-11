@@ -1,6 +1,21 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
-// fsl/src/crux/z3_backend.rs  –  Z3 SMT Query Builder
-// Converts CRUX AST → Z3 SMT-LIB queries, checks satisfiability
+// fsl/src/crux/z3_backend.rs  â€“  Z3 SMT Query Builder
+// Converts CRUX AST â†’ Z3 SMT-LIB queries, checks satisfiability
 // Dense ~200 LOC
 // =============================================================================
 
@@ -89,7 +104,7 @@ impl Z3Solver {
 }
 
 // ---------------------------------------------------------------------------
-// 2. AST → Z3 conversion
+// 2. AST â†’ Z3 conversion
 // ---------------------------------------------------------------------------
 
 fn formula_to_z3(f: &Formula) -> Z3Expr {
@@ -128,7 +143,7 @@ fn formula_to_z3(f: &Formula) -> Z3Expr {
         Formula::Paren(inner) => formula_to_z3(inner),
         Formula::Sila { formula, .. } => formula_to_z3(formula),
         Formula::Mu { var, body } | Formula::Nu { var, body } => {
-            // Fixed points → unfold as recursive predicate
+            // Fixed points â†’ unfold as recursive predicate
             Z3Expr::App { func: var.clone(), args: vec![formula_to_z3(body)] }
         }
         _ => Z3Expr::Const("true".into()),
@@ -299,4 +314,4 @@ pub enum Z3CheckResult {
 
 // End of Z3 SMT backend (~200 lines)
 // Covers: query building, SMT-LIB serialization, variable collection,
-// formula/term → Z3Expr conversion, check result types.
+// formula/term â†’ Z3Expr conversion, check result types.

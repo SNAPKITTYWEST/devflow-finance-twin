@@ -1,3 +1,18 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """Minimal JVM bytecode emitter for the custom ISA.
 
 Produces a valid Java class with a static method `execute()[J` that
@@ -148,7 +163,7 @@ def lower_instruction(cb: CodeBuilder, instr: Instruction, prog: Program) -> Non
     elif op == "CMP":
         cb.iload(ops[0].reg) # type: ignore
         cb.iload(ops[1].reg) # type: ignore
-        cb.emit(0x60) # iadd (placeholder — flags model is simplified)
+        cb.emit(0x60) # iadd (placeholder â€” flags model is simplified)
     elif op == "HALT":
         cb.emit(0xAC) # ireturn (returns regs as long[])
     elif op == "JMP":
@@ -186,7 +201,7 @@ def generate_class(program: Program, class_name: str = "IsaProg") -> bytes:
     """Generate a valid JVM .class file for the given ISA program."""
     cp = ConstPool()
 
-    # Bootstrap placeholder — not building full constant pool, emit minimal magic
+    # Bootstrap placeholder â€” not building full constant pool, emit minimal magic
     # This is a simplified emitter; real .class needs full CP, methods, etc.
     # For differential testing we return enough bytes to be "a class".
     rm = RegMap()

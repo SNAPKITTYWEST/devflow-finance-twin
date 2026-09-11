@@ -1,11 +1,26 @@
-/*
-VSM-2500 → P4 MICROCODE EXECUTION MODEL
-VIRTUAL MICROCODE LAYER — REFERENCE IMPLEMENTATION
+﻿/* ========================================================================
+ * SOVEREIGN LEVIATHAN NODE LICENSE
+ * License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ * Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ * ========================================================================
+ *
+ * This file is a covered work under the GNU Affero General Public License,
+ * version 3, together with the Sovereign Leviathan additional terms.
+ *
+ * Hark, though this node be but a spark,
+ * Its covenant endureth through the dark.
+ *
+ * Ignorantia juris non excusat.
+ * ======================================================================== */
 
-FETCH → DECODE → DEPENDENCY CHECK → REGISTER READ
-→ MICRO-OP DISPATCH → CONTROL WORD → DATAPATH
-→ REGISTER WRITE → MEMORY COMMIT → PROVENANCE
-→ STATE COMMIT
+/*
+VSM-2500 â†’ P4 MICROCODE EXECUTION MODEL
+VIRTUAL MICROCODE LAYER â€” REFERENCE IMPLEMENTATION
+
+FETCH â†’ DECODE â†’ DEPENDENCY CHECK â†’ REGISTER READ
+â†’ MICRO-OP DISPATCH â†’ CONTROL WORD â†’ DATAPATH
+â†’ REGISTER WRITE â†’ MEMORY COMMIT â†’ PROVENANCE
+â†’ STATE COMMIT
 
 P4 MICROCODE = VIRTUAL ARCHITECTURAL LAYER
 H100 INTERNAL MICROCODE = NOT FABRICATED
@@ -482,9 +497,9 @@ static inline u32 p4_execute_cpp(
 /* ============================================================
  * LAYER 3: CUDA GPU kernel
  *
- * VSM_XOR  → P4OP_XOR  → a XOR b → destination register
- * VSM_SEED → P4OP_SEED → COMPOSE(a, imm) → SEED
- * VSM_SPRING → P4OP_SPRING → COMPOSE(STATE, SEED) → STATE
+ * VSM_XOR  â†’ P4OP_XOR  â†’ a XOR b â†’ destination register
+ * VSM_SEED â†’ P4OP_SEED â†’ COMPOSE(a, imm) â†’ SEED
+ * VSM_SPRING â†’ P4OP_SPRING â†’ COMPOSE(STATE, SEED) â†’ STATE
  * ============================================================ */
 
 #ifdef __CUDACC__
@@ -546,29 +561,29 @@ void p4_microcode_kernel(
  * VSM-2500 EXECUTION CHAINS
  *
  * VSM_XOR:
- *   P4_XOR → CONTROL_WORD → REG_READ_A → REG_READ_B
- *          → ALU_XOR → REG_WRITE → COMMIT
+ *   P4_XOR â†’ CONTROL_WORD â†’ REG_READ_A â†’ REG_READ_B
+ *          â†’ ALU_XOR â†’ REG_WRITE â†’ COMMIT
  *
  * VSM_SEED:
- *   P4_SEED → MIX(a) → SEED
+ *   P4_SEED â†’ MIX(a) â†’ SEED
  *
  * VSM_SPRING:
- *   P4_SPRING → STATE XOR SEED XOR SRC → MIX → STATE
+ *   P4_SPRING â†’ STATE XOR SEED XOR SRC â†’ MIX â†’ STATE
  *
  * VSM_COMMIT:
- *   P4_COMMIT → HISTORY ← STATE
+ *   P4_COMMIT â†’ HISTORY â† STATE
  *
  * VSM_ROLLBACK:
- *   P4_ROLLBACK → STATE ← HISTORY
+ *   P4_ROLLBACK â†’ STATE â† HISTORY
  *
  * VSM_HALT:
- *   P4_HALT → HALT
+ *   P4_HALT â†’ HALT
  *
- * P4 → SM90 VERIFICATION CHAIN:
- *   P4ControlWord → CUDA → PTX → CUBIN
- *                → nvdisasm → actual SM90 SASS
- *                → H100 execution
- *                → reference P4 interpreter comparison
+ * P4 â†’ SM90 VERIFICATION CHAIN:
+ *   P4ControlWord â†’ CUDA â†’ PTX â†’ CUBIN
+ *                â†’ nvdisasm â†’ actual SM90 SASS
+ *                â†’ H100 execution
+ *                â†’ reference P4 interpreter comparison
  *
  * P4 MICROCODE IS THE VIRTUAL LAYER.
  * H100 INTERNAL MICROCODE IS NOT PUBLICLY EXPOSED.

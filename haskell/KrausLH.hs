@@ -1,3 +1,18 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 {-@ LIQUID "--reflection"     @-}
 {-@ LIQUID "--ple"            @-}
 {-@ LIQUID "--no-termination" @-}
@@ -59,7 +74,7 @@ meq ((a00,a01),(a10,a11)) ((b00,b01),(b10,b11)) =
 completeness_thm :: Double -> ()
 completeness_thm theta = ()
 
--- | Runtime numeric PSD check: min eigenvalue of K^†K >= -tol.
+-- | Runtime numeric PSD check: min eigenvalue of K^â€ K >= -tol.
 -- Liquid Haskell asserts the return value is True.
 {-@ numeric_psd_check :: theta:Theta -> tol:Tol -> IO {v:Bool | v} @-}
 numeric_psd_check :: Double -> Double -> IO Bool
@@ -97,7 +112,7 @@ clamp01 x | x < 0.0  = 0.0
 evidence_prob_range :: Double -> Double -> ()
 evidence_prob_range _ _ = ()
 
--- | Completeness norm: ||K0^†K0 + K1^†K1 - I||_inf (should be < 1e-12 for any theta)
+-- | Completeness norm: ||K0^â€ K0 + K1^â€ K1 - I||_inf (should be < 1e-12 for any theta)
 completenessNorm :: Double -> Double
 completenessNorm theta =
   let ((_,_),(_,c)) = k0_sym theta

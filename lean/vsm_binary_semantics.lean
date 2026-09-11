@@ -1,3 +1,20 @@
+﻿/-
+ ========================================================================
+ SOVEREIGN LEVIATHAN NODE LICENSE
+ License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ ========================================================================
+
+ This file is a covered work under the GNU Affero General Public License,
+ version 3, together with the Sovereign Leviathan additional terms.
+
+ Hark, though this node be but a spark,
+ Its covenant endureth through the dark.
+
+ Ignorantia juris non excusat.
+ ========================================================================
+-/
+
 -- VSM-2500 Complete Binary Semantics with RISC Instructions
 -- Formal definition of all operations with execution semantics
 
@@ -35,22 +52,22 @@ theorem eq_symm (a b : BinVal) : binEq a b = binEq b a := by
 def wordLshift {n : Nat} (w : BinWord (n + 1)) : BinWord (n + 1) :=
   fun i =>
     if h : i.val = 0 then BinVal.zero
-    else w ⟨i.val - 1, by omega⟩
+    else w âŸ¨i.val - 1, by omegaâŸ©
 
 def wordRshift {n : Nat} (w : BinWord (n + 1)) : BinWord (n + 1) :=
   fun i =>
     if h : i.val = n then BinVal.zero
-    else w ⟨i.val + 1, by omega⟩
+    else w âŸ¨i.val + 1, by omegaâŸ©
 
 def wordRotl {n : Nat} (w : BinWord n) : BinWord n :=
   fun i =>
     if h : n = 0 then absurd i (Fin.not_lt_zero i)
-    else w ⟨(i.val + 1) % n, by omega⟩
+    else w âŸ¨(i.val + 1) % n, by omegaâŸ©
 
 def wordRotr {n : Nat} (w : BinWord n) : BinWord n :=
   fun i =>
     if h : n = 0 then absurd i (Fin.not_lt_zero i)
-    else w ⟨(i.val + (n - 1)) % n, by omega⟩
+    else w âŸ¨(i.val + (n - 1)) % n, by omegaâŸ©
 
 -- ===== SECTION 3: COMPLETE INSTRUCTION SEMANTICS =====
 
@@ -58,49 +75,49 @@ structure AndSemantics where
   opcode : OpCode := OpCode.AND
   src1 src2 : SemanticValue
   result : SemanticValue
-  correctness : ∀ i : Fin src1.width,
+  correctness : âˆ€ i : Fin src1.width,
     result.word i = binAnd (src1.word i) (src2.word i)
 
 structure OrSemantics where
   opcode : OpCode := OpCode.OR
   src1 src2 : SemanticValue
   result : SemanticValue
-  correctness : ∀ i : Fin src1.width,
+  correctness : âˆ€ i : Fin src1.width,
     result.word i = binOr (src1.word i) (src2.word i)
 
 structure XorSemantics where
   opcode : OpCode := OpCode.XOR
   src1 src2 : SemanticValue
   result : SemanticValue
-  correctness : ∀ i : Fin src1.width,
+  correctness : âˆ€ i : Fin src1.width,
     result.word i = binXor (src1.word i) (src2.word i)
 
 structure NotSemantics where
   opcode : OpCode := OpCode.NOT
   src : SemanticValue
   result : SemanticValue
-  correctness : ∀ i : Fin src.width,
+  correctness : âˆ€ i : Fin src.width,
     result.word i = binNot (src.word i)
 
 structure NandSemantics where
   opcode : OpCode := OpCode.NAND
   src1 src2 : SemanticValue
   result : SemanticValue
-  correctness : ∀ i : Fin src1.width,
+  correctness : âˆ€ i : Fin src1.width,
     result.word i = binNand (src1.word i) (src2.word i)
 
 structure NorSemantics where
   opcode : OpCode := OpCode.NOR
   src1 src2 : SemanticValue
   result : SemanticValue
-  correctness : ∀ i : Fin src1.width,
+  correctness : âˆ€ i : Fin src1.width,
     result.word i = binNor (src1.word i) (src2.word i)
 
 structure ImplySemantics where
   opcode : OpCode := OpCode.IMPLY
   src1 src2 : SemanticValue
   result : SemanticValue
-  correctness : ∀ i : Fin src1.width,
+  correctness : âˆ€ i : Fin src1.width,
     result.word i = binImply (src1.word i) (src2.word i)
 
 -- ===== SECTION 4: COMPARISON SEMANTICS =====
@@ -109,11 +126,11 @@ inductive CompResult : Type where
   | equal | greater | less
 
 def wordCompare {n : Nat} (w1 w2 : BinWord n) : CompResult :=
-  if ∀ i, w1 i = w2 i then
+  if âˆ€ i, w1 i = w2 i then
     CompResult.equal
   else
     let diff_indices :=
-      List.filter (fun i : Fin n => w1 i ≠ w2 i) (List.finRange n)
+      List.filter (fun i : Fin n => w1 i â‰  w2 i) (List.finRange n)
     match diff_indices.reverse.head? with
     | none => CompResult.equal
     | some i =>
@@ -126,7 +143,7 @@ structure EqSemantics where
   opcode : OpCode := OpCode.EQ
   src1 src2 : SemanticValue
   result : SemanticValue
-  correctness : ∀ i, result.word i =
+  correctness : âˆ€ i, result.word i =
     if wordCompare src1.word src2.word = CompResult.equal then
       BinVal.one else BinVal.zero
 
@@ -134,7 +151,7 @@ structure GtSemantics where
   opcode : OpCode := OpCode.GT
   src1 src2 : SemanticValue
   result : SemanticValue
-  correctness : ∀ i, result.word i =
+  correctness : âˆ€ i, result.word i =
     if wordCompare src1.word src2.word = CompResult.greater then
       BinVal.one else BinVal.zero
 
@@ -142,7 +159,7 @@ structure LtSemantics where
   opcode : OpCode := OpCode.LT
   src1 src2 : SemanticValue
   result : SemanticValue
-  correctness : ∀ i, result.word i =
+  correctness : âˆ€ i, result.word i =
     if wordCompare src1.word src2.word = CompResult.less then
       BinVal.one else BinVal.zero
 
@@ -167,9 +184,9 @@ structure StoreSemantics where
   src_value : SemanticValue
   address : Nat
   provenance : Nat
-  memory_state_before : Nat → Option SemanticValue
-  memory_state_after  : Nat → Option SemanticValue
-  correctness : ∀ addr : Nat,
+  memory_state_before : Nat â†’ Option SemanticValue
+  memory_state_after  : Nat â†’ Option SemanticValue
+  correctness : âˆ€ addr : Nat,
     if addr = address then
       memory_state_after addr = some src_value
     else
@@ -179,7 +196,7 @@ structure StoreSemantics where
 
 def semanticCompatibility {n : Nat} (w1 w2 : BinWord n) : Nat :=
   (List.range n).filter
-    (fun i => w1 ⟨i, by omega⟩ = w2 ⟨i, by omega⟩)
+    (fun i => w1 âŸ¨i, by omegaâŸ© = w2 âŸ¨i, by omegaâŸ©)
     |>.length
 
 structure RoutingDecision where
@@ -190,11 +207,11 @@ structure RoutingDecision where
   constraint_satisfied : Bool
 
 def routingDeterministic (decision : RoutingDecision) : Prop :=
-  ∀ source_copy : SemanticValue,
-    source_copy = decision.source_state →
-    (∀ target_copy : SemanticValue,
+  âˆ€ source_copy : SemanticValue,
+    source_copy = decision.source_state â†’
+    (âˆ€ target_copy : SemanticValue,
       semanticCompatibility source_copy.word target_copy.word =
-      semanticCompatibility decision.source_state.word decision.target_state.word →
+      semanticCompatibility decision.source_state.word decision.target_state.word â†’
       target_copy = decision.target_state)
 
 -- ===== SECTION 7: CONTROL FLOW SEMANTICS =====
@@ -228,16 +245,16 @@ structure RollbackSemantics where
 -- ===== SECTION 8: COMPOSITION AND SEQUENCING =====
 
 theorem sequential_composition_deterministic (instr1 instr2 : Instruction) :
-    isDeterministic instr1 → isDeterministic instr2 →
-    isDeterministic instr1 ∧ isDeterministic instr2 := by
-  intro h1 h2; exact ⟨h1, h2⟩
+    isDeterministic instr1 â†’ isDeterministic instr2 â†’
+    isDeterministic instr1 âˆ§ isDeterministic instr2 := by
+  intro h1 h2; exact âŸ¨h1, h2âŸ©
 
 -- ===== SECTION 9: CORRECTNESS GUARANTEES =====
 
 theorem execution_preserves_validity (ctx : ExecContext) (instr : Instruction) :
-    ctx.valid = true →
-    (executeInstruction ctx instr).valid = true ∨
-    (executeInstruction ctx instr).error_code ≠ 0 := by
+    ctx.valid = true â†’
+    (executeInstruction ctx instr).valid = true âˆ¨
+    (executeInstruction ctx instr).error_code â‰  0 := by
   intro hvalid
   cases instr.opcode <;> simp [executeInstruction] <;> (try (left; exact hvalid))
 
@@ -259,14 +276,14 @@ structure InstructionProperties where
   memory_safe      : Bool
   proof_required   : Bool
 
-def and_properties     : InstructionProperties := ⟨OpCode.AND,      true, true, false, true, false⟩
-def or_properties      : InstructionProperties := ⟨OpCode.OR,       true, true, false, true, false⟩
-def xor_properties     : InstructionProperties := ⟨OpCode.XOR,      true, true, true,  true, false⟩
-def not_properties     : InstructionProperties := ⟨OpCode.NOT,      true, true, true,  true, false⟩
-def load_properties    : InstructionProperties := ⟨OpCode.LOAD,     true, true, false, true, true⟩
-def store_properties   : InstructionProperties := ⟨OpCode.STORE,    true, true, false, true, true⟩
-def spring_properties  : InstructionProperties := ⟨OpCode.SPRING,   true, true, false, true, true⟩
-def commit_properties  : InstructionProperties := ⟨OpCode.COMMIT,   true, true, false, true, true⟩
-def rollback_properties : InstructionProperties := ⟨OpCode.ROLLBACK, true, true, false, true, true⟩
+def and_properties     : InstructionProperties := âŸ¨OpCode.AND,      true, true, false, true, falseâŸ©
+def or_properties      : InstructionProperties := âŸ¨OpCode.OR,       true, true, false, true, falseâŸ©
+def xor_properties     : InstructionProperties := âŸ¨OpCode.XOR,      true, true, true,  true, falseâŸ©
+def not_properties     : InstructionProperties := âŸ¨OpCode.NOT,      true, true, true,  true, falseâŸ©
+def load_properties    : InstructionProperties := âŸ¨OpCode.LOAD,     true, true, false, true, trueâŸ©
+def store_properties   : InstructionProperties := âŸ¨OpCode.STORE,    true, true, false, true, trueâŸ©
+def spring_properties  : InstructionProperties := âŸ¨OpCode.SPRING,   true, true, false, true, trueâŸ©
+def commit_properties  : InstructionProperties := âŸ¨OpCode.COMMIT,   true, true, false, true, trueâŸ©
+def rollback_properties : InstructionProperties := âŸ¨OpCode.ROLLBACK, true, true, false, true, trueâŸ©
 
 end VSM.BinarySemantics

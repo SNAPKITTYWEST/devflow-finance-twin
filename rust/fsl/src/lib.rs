@@ -1,6 +1,21 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
-// fsl/src/lib.rs  –  FSL Formal Solver Language Kernel
-// Pipeline: Rust assert_eq! → Equality Obligation → BV/Arith IR → FSL Solver
+// fsl/src/lib.rs  â€“  FSL Formal Solver Language Kernel
+// Pipeline: Rust assert_eq! â†’ Equality Obligation â†’ BV/Arith IR â†’ FSL Solver
 // Dense implementation targeting the requested component sizes
 // =============================================================================
 
@@ -150,7 +165,7 @@ impl FslIR {
 }
 
 // ---------------------------------------------------------------------------
-// 2. Rust → FSL Extraction  (~170 LOC)
+// 2. Rust â†’ FSL Extraction  (~170 LOC)
 //    Strips assert_eq!(A, B) macro syntax into Equality obligations
 // ---------------------------------------------------------------------------
 
@@ -300,7 +315,7 @@ pub mod semantics {
 }
 
 // ---------------------------------------------------------------------------
-// 4. FSL Solver – Reverse / Symbolic Engine  (~250 LOC)
+// 4. FSL Solver â€“ Reverse / Symbolic Engine  (~250 LOC)
 // ---------------------------------------------------------------------------
 
 #[derive(Clone, Debug)]
@@ -312,7 +327,7 @@ pub enum SolverResult {
 
 #[derive(Clone, Debug, Default)]
 pub struct Model {
-    pub assignment: HashMap<u32, u64>,   // var-id → value
+    pub assignment: HashMap<u32, u64>,   // var-id â†’ value
     pub interpretations: BTreeMap<String, String>,
 }
 
@@ -389,7 +404,7 @@ impl FslSolver {
             }
             if violated { continue; }
 
-            // If all variables assigned → success
+            // If all variables assigned â†’ success
             if partial.len() == self.ir.vars.len() {
                 let mut m = Model::default();
                 m.assignment = partial.clone();
@@ -418,7 +433,7 @@ impl FslSolver {
 }
 
 // ---------------------------------------------------------------------------
-// 5. Z3 Backend Shim  (~300 LOC target – compact interface)
+// 5. Z3 Backend Shim  (~300 LOC target â€“ compact interface)
 // ---------------------------------------------------------------------------
 
 pub mod z3_backend {
@@ -482,7 +497,7 @@ pub mod kani {
     }
 
     pub fn kani_semantics_note() -> &'static str {
-        "Kani semantics: bounded model checking of Rust via MIR → Goto-C → CBMC. \
+        "Kani semantics: bounded model checking of Rust via MIR â†’ Goto-C â†’ CBMC. \
          FSL intercepts the assert_eq! / assert! surface before codegen and \
          discharges the resulting BV obligations with its own solver or Z3."
     }
@@ -495,14 +510,14 @@ pub mod kani {
 pub fn reconstruct_model(result: &SolverResult, ir: &FslIR) -> String {
     match result {
         SolverResult::Sat(m) => {
-            let mut s = String::from("SAT – Model:\n");
+            let mut s = String::from("SAT â€“ Model:\n");
             for (name, val) in &m.interpretations {
                 s.push_str(&format!("  {} = {}\n", name, val));
             }
             s
         }
-        SolverResult::Unsat => "UNSAT – No model exists (equality obligations contradictory)".into(),
-        SolverResult::Unknown => "UNKNOWN – Solver fuel exhausted or incomplete theory".into(),
+        SolverResult::Unsat => "UNSAT â€“ No model exists (equality obligations contradictory)".into(),
+        SolverResult::Unknown => "UNKNOWN â€“ Solver fuel exhausted or incomplete theory".into(),
     }
 }
 
@@ -560,14 +575,14 @@ mod tests {
     fn crux_ast_sort_roundtrip() {
         use crux::ast::*;
         let s = Sort::Arrow(Box::new(Sort::BitVec(32)), Box::new(Sort::Bool));
-        assert_eq!(format!("{}", s), "BitVec 32 → Bool");
+        assert_eq!(format!("{}", s), "BitVec 32 â†’ Bool");
     }
 
     #[test]
     fn crux_russian_parse_equality() {
         use crux::ast::RussianForm;
         use crux::ast::Term;
-        let result = crux::russian::parse_russian("равенство(x, y)");
+        let result = crux::russian::parse_russian("Ñ€Ð°Ð²ÐµÐ½ÑÑ‚Ð²Ð¾(x, y)");
         assert!(result.is_ok());
         match result.unwrap() {
             RussianForm::Ravnostvo(a, b) => {
@@ -580,7 +595,7 @@ mod tests {
 
     #[test]
     fn crux_russian_parse_sila() {
-        let result = crux::russian::parse_russian("сила(S0, равенство(x, y))");
+        let result = crux::russian::parse_russian("ÑÐ¸Ð»Ð°(S0, Ñ€Ð°Ð²ÐµÐ½ÑÑ‚Ð²Ð¾(x, y))");
         assert!(result.is_ok());
     }
 
@@ -600,7 +615,7 @@ mod tests {
 
     #[test]
     fn crux_russian_parse_forall() {
-        let result = crux::russian::parse_formula("∀ x : Int . x = x");
+        let result = crux::russian::parse_formula("âˆ€ x : Int . x = x");
         assert!(result.is_ok(), "parse failed: {:?}", result.err());
     }
 
@@ -743,7 +758,7 @@ mod tests {
             feq(FormulaArg::var("b"), FormulaArg::num(2)),
         ]);
         let p = pretty(&combined);
-        assert!(p.contains("∧"));
+        assert!(p.contains("âˆ§"));
     }
 
     #[test]
@@ -969,4 +984,4 @@ mod tests {
 //   Driver + tests      ~100
 //   QA5 Reactive Prover ~700
 //   Assert-Q DSL        ~700
-// Total core ≈ 1200+ lines when fully expanded with real parsing / bitblasting.
+// Total core â‰ˆ 1200+ lines when fully expanded with real parsing / bitblasting.

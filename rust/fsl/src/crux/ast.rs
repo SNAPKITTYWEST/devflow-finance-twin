@@ -1,5 +1,20 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
-// fsl/src/crux/ast.rs  –  CRUX Core AST Types
+// fsl/src/crux/ast.rs  â€“  CRUX Core AST Types
 // Formula, Term, Sort, State, Backend, Proof Closure
 // Dense ~350 LOC
 // =============================================================================
@@ -61,7 +76,7 @@ impl fmt::Display for Sort {
             Sort::BitVec(w) => write!(f, "BitVec {}", w),
             Sort::List(s) => write!(f, "List {}", s),
             Sort::Array(k, v) => write!(f, "Array {} {}", k, v),
-            Sort::Arrow(a, b) => write!(f, "{} → {}", a, b),
+            Sort::Arrow(a, b) => write!(f, "{} â†’ {}", a, b),
             Sort::State => write!(f, "State"),
             Sort::Formula => write!(f, "Formula"),
             Sort::Term => write!(f, "Term"),
@@ -531,7 +546,7 @@ impl fmt::Display for FinalResult {
                 write!(f, "MODEL{{ ")?;
                 for (i, (name, val)) in bindings.iter().enumerate() {
                     if i > 0 { write!(f, ", ")?; }
-                    write!(f, "{:?} ↦ {:?}", name, val)?;
+                    write!(f, "{:?} â†¦ {:?}", name, val)?;
                 }
                 write!(f, " }}")
             }
@@ -551,18 +566,18 @@ impl fmt::Display for FinalResult {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum RussianForm {
-    Ravnostvo(Term, Term),       // равенство(A, B)
-    Implikatsiya(Formula, Formula), // импликация(A, B)
-    Konyunktsiya(Formula, Formula), // конъюнкция(A, B)
-    Dizyunktsiya(Formula, Formula), // дизъюнкция(A, B)
-    Otritsanie(Formula),          // отрицание(A)
-    DlyaVsekh(Ident, Sort, Formula), // для_всех x : S. P
-    Sushchestvuet(Ident, Sort, Formula), // существует x : S. P
-    Rekursiya(Ident, Formula),    // рекурсия x. P
-    Sostoyanie(State),            // состояние S
-    Sila(State, Formula),         // сила(S, P)
-    Omega(Backend, State, Formula), // омега(B, S, P)
-    Dokazatelstvo(ProofClosure),  // доказательство PC
+    Ravnostvo(Term, Term),       // Ñ€Ð°Ð²ÐµÐ½ÑÑ‚Ð²Ð¾(A, B)
+    Implikatsiya(Formula, Formula), // Ð¸Ð¼Ð¿Ð»Ð¸ÐºÐ°Ñ†Ð¸Ñ(A, B)
+    Konyunktsiya(Formula, Formula), // ÐºÐ¾Ð½ÑŠÑŽÐ½ÐºÑ†Ð¸Ñ(A, B)
+    Dizyunktsiya(Formula, Formula), // Ð´Ð¸Ð·ÑŠÑŽÐ½ÐºÑ†Ð¸Ñ(A, B)
+    Otritsanie(Formula),          // Ð¾Ñ‚Ñ€Ð¸Ñ†Ð°Ð½Ð¸Ðµ(A)
+    DlyaVsekh(Ident, Sort, Formula), // Ð´Ð»Ñ_Ð²ÑÐµÑ… x : S. P
+    Sushchestvuet(Ident, Sort, Formula), // ÑÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÐµÑ‚ x : S. P
+    Rekursiya(Ident, Formula),    // Ñ€ÐµÐºÑƒÑ€ÑÐ¸Ñ x. P
+    Sostoyanie(State),            // ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ðµ S
+    Sila(State, Formula),         // ÑÐ¸Ð»Ð°(S, P)
+    Omega(Backend, State, Formula), // Ð¾Ð¼ÐµÐ³Ð°(B, S, P)
+    Dokazatelstvo(ProofClosure),  // Ð´Ð¾ÐºÐ°Ð·Ð°Ñ‚ÐµÐ»ÑŒÑÑ‚Ð²Ð¾ PC
 }
 
 // End of CRUX AST types (~350 lines)

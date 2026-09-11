@@ -1,5 +1,20 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
-// fsl/src/crux/russian.rs  –  Russian Syntax Parser
+// fsl/src/crux/russian.rs  â€“  Russian Syntax Parser
 // Parses RussianForm from token stream, lowers to CRUX AST
 // Dense ~250 LOC
 // =============================================================================
@@ -205,22 +220,22 @@ impl RussianLexer {
                         _ => Token::Minus,
                     }
                 }
-                Some('\u{2192}') => { self.advance(); Token::Arrow }    // →
-                Some('\u{2194}') => { self.advance(); Token::DoubleArrow } // ↔
-                Some('\u{2200}') => { self.advance(); Token::Forall }   // ∀
-                Some('\u{2203}') => { self.advance(); Token::Exists }   // ∃
-                Some('\u{2227}') => { self.advance(); Token::And }      // ∧
-                Some('\u{2228}') => { self.advance(); Token::Or }       // ∨
-                Some('\u{00AC}') => { self.advance(); Token::Not }      // ¬
-                Some('\u{2261}') => { self.advance(); Token::Eq }       // ≡
-                Some('\u{2264}') => { self.advance(); Token::Le }       // ≤
-                Some('\u{2265}') => { self.advance(); Token::Ge }       // ≥
-                Some('\u{2260}') => { self.advance(); Token::Ne }       // ≠
-                Some('\u{22A2}') => { self.advance(); Token::Not }      // ⊢ placeholder
-                Some('\u{22A8}') => { self.advance(); Token::Not }      // ⊧ placeholder
-                Some('\u{22A4}') => { self.advance(); Token::BoolLit(true) }  // ⊤
-                Some('\u{22A5}') => { self.advance(); Token::BoolLit(false) } // ⊥
-                Some('\u{21A6}') => { self.advance(); Token::FatArrow } // ↦
+                Some('\u{2192}') => { self.advance(); Token::Arrow }    // â†’
+                Some('\u{2194}') => { self.advance(); Token::DoubleArrow } // â†”
+                Some('\u{2200}') => { self.advance(); Token::Forall }   // âˆ€
+                Some('\u{2203}') => { self.advance(); Token::Exists }   // âˆƒ
+                Some('\u{2227}') => { self.advance(); Token::And }      // âˆ§
+                Some('\u{2228}') => { self.advance(); Token::Or }       // âˆ¨
+                Some('\u{00AC}') => { self.advance(); Token::Not }      // Â¬
+                Some('\u{2261}') => { self.advance(); Token::Eq }       // â‰¡
+                Some('\u{2264}') => { self.advance(); Token::Le }       // â‰¤
+                Some('\u{2265}') => { self.advance(); Token::Ge }       // â‰¥
+                Some('\u{2260}') => { self.advance(); Token::Ne }       // â‰ 
+                Some('\u{22A2}') => { self.advance(); Token::Not }      // âŠ¢ placeholder
+                Some('\u{22A8}') => { self.advance(); Token::Not }      // âŠ§ placeholder
+                Some('\u{22A4}') => { self.advance(); Token::BoolLit(true) }  // âŠ¤
+                Some('\u{22A5}') => { self.advance(); Token::BoolLit(false) } // âŠ¥
+                Some('\u{21A6}') => { self.advance(); Token::FatArrow } // â†¦
                 Some('"') => {
                     self.advance();
                     let mut s = String::new();
@@ -233,18 +248,18 @@ impl RussianLexer {
                 Some(c) if c.is_alphabetic() || c == '_' || (c as u32 >= 0x0400) => {
                     let ident = self.read_ident();
                     match ident.as_str() {
-                        "равенство" => Token::Ravno,
-                        "импликация" => Token::Imply,
-                        "конъюнкция" => Token::Conj,
-                        "дизъюнкция" => Token::Disj,
-                        "отрицание" => Token::Neg,
-                        "для_всех" => Token::DlyaVsekh,
-                        "существует" => Token::Sushchestvuet,
-                        "рекурсия" => Token::Rekursiya,
-                        "состояние" => Token::Sostoyanie,
-                        "сила" => Token::Sila,
-                        "омега" => Token::Omega,
-                        "доказательство" => Token::Dokazatelstvo,
+                        "Ñ€Ð°Ð²ÐµÐ½ÑÑ‚Ð²Ð¾" => Token::Ravno,
+                        "Ð¸Ð¼Ð¿Ð»Ð¸ÐºÐ°Ñ†Ð¸Ñ" => Token::Imply,
+                        "ÐºÐ¾Ð½ÑŠÑŽÐ½ÐºÑ†Ð¸Ñ" => Token::Conj,
+                        "Ð´Ð¸Ð·ÑŠÑŽÐ½ÐºÑ†Ð¸Ñ" => Token::Disj,
+                        "Ð¾Ñ‚Ñ€Ð¸Ñ†Ð°Ð½Ð¸Ðµ" => Token::Neg,
+                        "Ð´Ð»Ñ_Ð²ÑÐµÑ…" => Token::DlyaVsekh,
+                        "ÑÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÐµÑ‚" => Token::Sushchestvuet,
+                        "Ñ€ÐµÐºÑƒÑ€ÑÐ¸Ñ" => Token::Rekursiya,
+                        "ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ðµ" => Token::Sostoyanie,
+                        "ÑÐ¸Ð»Ð°" => Token::Sila,
+                        "Ð¾Ð¼ÐµÐ³Ð°" => Token::Omega,
+                        "Ð´Ð¾ÐºÐ°Ð·Ð°Ñ‚ÐµÐ»ÑŒÑÑ‚Ð²Ð¾" => Token::Dokazatelstvo,
                         "let" => Token::Let,
                         "in" => Token::In,
                         "if" => Token::If,
@@ -513,7 +528,7 @@ impl RussianParser {
                 self.advance();
                 let var = match self.advance() {
                     Token::Ident(n) => n,
-                    t => return Err(format!("expected ident after μ, got {:?}", t)),
+                    t => return Err(format!("expected ident after Î¼, got {:?}", t)),
                 };
                 self.expect(&Token::Dot)?;
                 let body = self.parse_formula()?;
@@ -523,7 +538,7 @@ impl RussianParser {
                 self.advance();
                 let var = match self.advance() {
                     Token::Ident(n) => n,
-                    t => return Err(format!("expected ident after ν, got {:?}", t)),
+                    t => return Err(format!("expected ident after Î½, got {:?}", t)),
                 };
                 self.expect(&Token::Dot)?;
                 let body = self.parse_formula()?;
@@ -538,7 +553,7 @@ impl RussianParser {
             Token::BoolLit(true) => { self.advance(); Ok(Formula::Atomic(Atomic::True)) }
             Token::BoolLit(false) => { self.advance(); Ok(Formula::Atomic(Atomic::False)) }
             Token::Ravno => {
-                // равенство(A, B) in formula position
+                // Ñ€Ð°Ð²ÐµÐ½ÑÑ‚Ð²Ð¾(A, B) in formula position
                 self.advance();
                 self.expect(&Token::LParen)?;
                 let a = self.parse_term()?;
@@ -572,7 +587,7 @@ impl RussianParser {
                         self.advance();
                         let rhs = self.parse_term()?;
                         Ok(Formula::Atomic(Atomic::Predicate {
-                            name: "≤".into(), args: vec![lhs, rhs],
+                            name: "â‰¤".into(), args: vec![lhs, rhs],
                         }))
                     }
                     Token::Gt => {
@@ -586,7 +601,7 @@ impl RussianParser {
                         self.advance();
                         let rhs = self.parse_term()?;
                         Ok(Formula::Atomic(Atomic::Predicate {
-                            name: "≥".into(), args: vec![lhs, rhs],
+                            name: "â‰¥".into(), args: vec![lhs, rhs],
                         }))
                     }
                     _ => {

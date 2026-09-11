@@ -1,7 +1,22 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
-// fsl/src/crux/mod.rs  –  CRUX · SILA · OMEGA-SMASHER
-// Russian Syntax → Recursive State IR → Dual Backend (GHC | Kani)
-// → OMEGA SMASHER → (Z3 | SAS | Lean) → Proof Closure → SAT | UNSAT | MODEL
+// fsl/src/crux/mod.rs  â€“  CRUX Â· SILA Â· OMEGA-SMASHER
+// Russian Syntax â†’ Recursive State IR â†’ Dual Backend (GHC | Kani)
+// â†’ OMEGA SMASHER â†’ (Z3 | SAS | Lean) â†’ Proof Closure â†’ SAT | UNSAT | MODEL
 // =============================================================================
 
 pub mod ast;

@@ -1,6 +1,21 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
 // fsl/src/cbmc_binary_semantics.rs
-// CBMC GOTO Binary Semantics – raw dense ~400 LOC
+// CBMC GOTO Binary Semantics â€“ raw dense ~400 LOC
 // Bit-vector, memory, pointer, endianness, overflow, and SSA evaluation rules
 // =============================================================================
 
@@ -18,7 +33,7 @@ use std::collections::HashMap;
 pub struct BitVec {
     pub width: u32,
     pub value: u128, // concrete; high bits must be zero
-    pub symbolic: Option<Expr>, // when None → concrete
+    pub symbolic: Option<Expr>, // when None â†’ concrete
 }
 
 impl BitVec {
@@ -52,7 +67,7 @@ impl BitVec {
 
 #[derive(Clone, Debug, Default)]
 pub struct Memory {
-    // address → byte value (concrete or symbolic)
+    // address â†’ byte value (concrete or symbolic)
     pub bytes: HashMap<u64, BitVec>,
     pub default_byte: BitVec, // usually 0 or nondet
     pub little_endian: bool,
@@ -113,7 +128,7 @@ impl Memory {
             }
             BitVec::concrete(width, val)
         } else {
-            // symbolic concatenation path – simplified
+            // symbolic concatenation path â€“ simplified
             BitVec::from_expr(width, Expr::BVLit { value: 0, width })
         }
     }
@@ -158,7 +173,7 @@ pub fn eval_unary(op: UnaryOp, v: &BitVec) -> BitVec {
             }
         }
         UnaryOp::PointerObject => {
-            // extract object bits (upper bits) – architecture dependent
+            // extract object bits (upper bits) â€“ architecture dependent
             BitVec::concrete(v.width, v.value >> (v.width / 2))
         }
         UnaryOp::PointerOffset => {
@@ -223,7 +238,7 @@ pub fn eval_binary(op: BinaryOp, l: &BitVec, r: &BitVec) -> Result<BitVec, Strin
         return Ok(BitVec::concrete(out_width, res));
     }
 
-    // Symbolic path – lower to FSL Expr
+    // Symbolic path â€“ lower to FSL Expr
     let le = l.symbolic.clone().unwrap_or_else(|| Expr::BVLit { value: l.value as u64, width: w });
     let re = r.symbolic.clone().unwrap_or_else(|| Expr::BVLit { value: r.value as u64, width: r.width });
 
@@ -262,7 +277,7 @@ fn sign_extend(val: u128, width: u32) -> u128 {
 
 pub struct BinaryEvaluator<'a> {
     pub memory: &'a mut Memory,
-    pub env: HashMap<String, BitVec>, // SSA name → value
+    pub env: HashMap<String, BitVec>, // SSA name â†’ value
     pub ir: &'a mut FslIR, // for emitting symbolic constraints
 }
 
@@ -348,7 +363,7 @@ impl<'a> BinaryEvaluator<'a> {
                         return Err(format!("assertion failed: {}", msg));
                     }
                 } else {
-                    // emit to FSL: we want to find violation, so assert ¬cond
+                    // emit to FSL: we want to find violation, so assert Â¬cond
                     let e = v.symbolic.unwrap();
                     self.ir.assert(Expr::Not(Box::new(e)), Origin::Assembler);
                 }
@@ -358,7 +373,7 @@ impl<'a> BinaryEvaluator<'a> {
                 let v = self.eval_expr(cond)?;
                 if v.is_concrete() {
                     if v.value == 0 {
-                        return Err("assumption false – path pruned".into());
+                        return Err("assumption false â€“ path pruned".into());
                     }
                 } else {
                     let e = v.symbolic.unwrap();

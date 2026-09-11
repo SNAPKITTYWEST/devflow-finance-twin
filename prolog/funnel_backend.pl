@@ -1,3 +1,18 @@
+﻿% ========================================================================
+% SOVEREIGN LEVIATHAN NODE LICENSE
+% License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+% Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+% ========================================================================
+%
+% This file is a covered work under the GNU Affero General Public License,
+% version 3, together with the Sovereign Leviathan additional terms.
+%
+% Hark, though this node be but a spark,
+% Its covenant endureth through the dark.
+%
+% Ignorantia juris non excusat.
+% ========================================================================
+
 % funnel_backend.pl
 % Minimal dispatch: parse JSON (assumes JSON already parsed into Prolog terms)
 % For PRPG integration, the transport layer should call dispatch_op/3 with

@@ -1,1545 +1,1560 @@
-⍝ ================================================================
-⍝ LIQUIDAPL FLOW ASSERTION LIBRARY
-⍝ ================================================================
-⍝ File: LiquidAssert.apl
-⍝ Purpose: deterministic tensor-state integrity assertions
-⍝ Style: Dyalog APL
-⍝ ================================================================
-⍝
-⍝ Convention:
-⍝   ⍺ = configuration / thresholds
-⍝   ⍵ = tensor / state
-⍝
-⍝ Configuration vectors commonly use:
-⍝   [epsilon chiMax]
-⍝
-⍝ The library is intentionally assertion-oriented.
-⍝ ================================================================
+﻿â ========================================================================
+â SOVEREIGN LEVIATHAN NODE LICENSE
+â License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+â Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+â ========================================================================
+â
+â This file is a covered work under the GNU Affero General Public License,
+â version 3, together with the Sovereign Leviathan additional terms.
+â
+â Hark, though this node be but a spark,
+â Its covenant endureth through the dark.
+â
+â Ignorantia juris non excusat.
+â ========================================================================
 
-⎕IO←1
-⎕ML←1
+â ================================================================
+â LIQUIDAPL FLOW ASSERTION LIBRARY
+â ================================================================
+â File: LiquidAssert.apl
+â Purpose: deterministic tensor-state integrity assertions
+â Style: Dyalog APL
+â ================================================================
+â
+â Convention:
+â   âº = configuration / thresholds
+â   âµ = tensor / state
+â
+â Configuration vectors commonly use:
+â   [epsilon chiMax]
+â
+â The library is intentionally assertion-oriented.
+â ================================================================
 
-⍝ ----------------------------------------------------------------
-⍝ 001  CONSTANTS
-⍝ ----------------------------------------------------------------
+âŽ•IOâ†1
+âŽ•MLâ†1
 
-LiquidVersion←'1.0.0'
-DefaultEpsilon←1E¯10
-DefaultChiMax←64
-DefaultNormTarget←1
-DefaultTraceEpsilon←1E¯10
-DefaultEnergyEpsilon←1E¯10
+â ----------------------------------------------------------------
+â 001  CONSTANTS
+â ----------------------------------------------------------------
 
-⍝ ----------------------------------------------------------------
-⍝ 002  BASIC NUMERIC PREDICATES
-⍝ ----------------------------------------------------------------
+LiquidVersionâ†'1.0.0'
+DefaultEpsilonâ†1EÂ¯10
+DefaultChiMaxâ†64
+DefaultNormTargetâ†1
+DefaultTraceEpsilonâ†1EÂ¯10
+DefaultEnergyEpsilonâ†1EÂ¯10
 
-IsFinite←{
-    v←⍵
-    ^/((v=v)∨(v≠v))
+â ----------------------------------------------------------------
+â 002  BASIC NUMERIC PREDICATES
+â ----------------------------------------------------------------
+
+IsFiniteâ†{
+    vâ†âµ
+    ^/((v=v)âˆ¨(vâ‰ v))
 }
 
-IsScalar←{
-    1=≢⍴⍵
+IsScalarâ†{
+    1=â‰¢â´âµ
 }
 
-IsVector←{
-    1=≢⍴⍵
+IsVectorâ†{
+    1=â‰¢â´âµ
 }
 
-IsArray←{
-    0<≢⍴⍵
+IsArrayâ†{
+    0<â‰¢â´âµ
 }
 
-HasElements←{
-    0<≢,⍵
+HasElementsâ†{
+    0<â‰¢,âµ
 }
 
-AllNonNegative←{
-    ^/0≤,⍵
+AllNonNegativeâ†{
+    ^/0â‰¤,âµ
 }
 
-AllPositive←{
-    ^/0<,⍵
+AllPositiveâ†{
+    ^/0<,âµ
 }
 
-Within←{
-    (⍺[1]≤⍵)^⍵≤⍺[2]
+Withinâ†{
+    (âº[1]â‰¤âµ)^âµâ‰¤âº[2]
 }
 
-Near←{
-    |⍺[1]-⍵≤⍺[2]
+Nearâ†{
+    |âº[1]-âµâ‰¤âº[2]
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 003  NORM PRIMITIVES
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 003  NORM PRIMITIVES
+â ----------------------------------------------------------------
 
-NormSq←{
-    +/ ,⍵ × ⍵
+NormSqâ†{
+    +/ ,âµ Ã— âµ
 }
 
-NormL2←{
-    *0.5 × ⍟ NormSq ⍵
+NormL2â†{
+    *0.5 Ã— âŸ NormSq âµ
 }
 
-NormL1←{
-    +/|,⍵
+NormL1â†{
+    +/|,âµ
 }
 
-NormInf←{
-    ⌈/|,⍵
+NormInfâ†{
+    âŒˆ/|,âµ
 }
 
-NormTargetError←{
-    |(NormL2 ⍵)-⍺
+NormTargetErrorâ†{
+    |(NormL2 âµ)-âº
 }
 
-NormalizeL2←{
-    s←NormL2 ⍵
-    s=0:⍵
-    ⍵÷s
+NormalizeL2â†{
+    sâ†NormL2 âµ
+    s=0:âµ
+    âµÃ·s
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 004  SHAPE PRIMITIVES
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 004  SHAPE PRIMITIVES
+â ----------------------------------------------------------------
 
-Rank←{
-    ≢⍴⍵
+Rankâ†{
+    â‰¢â´âµ
 }
 
-Shape←{
-    ⍴⍵
+Shapeâ†{
+    â´âµ
 }
 
-ElementCount←{
-    ×/⍴⍵
+ElementCountâ†{
+    Ã—/â´âµ
 }
 
-MaxDimension←{
-    0=≢⍴⍵:0
-    ⌈/⍴⍵
+MaxDimensionâ†{
+    0=â‰¢â´âµ:0
+    âŒˆ/â´âµ
 }
 
-MinDimension←{
-    0=≢⍴⍵:0
-    ⌊/⍴⍵
+MinDimensionâ†{
+    0=â‰¢â´âµ:0
+    âŒŠ/â´âµ
 }
 
-DimensionAt←{
-    ⍺⊃⍴⍵
+DimensionAtâ†{
+    âºâŠƒâ´âµ
 }
 
-ShapeProduct←{
-    ×/⍵
+ShapeProductâ†{
+    Ã—/âµ
 }
 
-SameShape←{
-    (⍴⍺)≡⍴⍵
+SameShapeâ†{
+    (â´âº)â‰¡â´âµ
 }
 
-CompatibleShape←{
-    a←⍴⍺
-    b←⍴⍵
-    a≡b
+CompatibleShapeâ†{
+    aâ†â´âº
+    bâ†â´âµ
+    aâ‰¡b
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 005  ASSERTION CORE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 005  ASSERTION CORE
+â ----------------------------------------------------------------
 
-Assert←{
-    condition message←⍺
+Assertâ†{
+    condition messageâ†âº
     condition:
-        ⍵
-    ⎕SIGNAL 11
+        âµ
+    âŽ•SIGNAL 11
 }
 
-AssertTrue←{
-    condition message←⍺
+AssertTrueâ†{
+    condition messageâ†âº
     condition:
         1
-    ⎕SIGNAL 11
+    âŽ•SIGNAL 11
 }
 
-AssertFalse←{
-    condition message←⍺
+AssertFalseâ†{
+    condition messageâ†âº
     ~condition:
         1
-    ⎕SIGNAL 11
+    âŽ•SIGNAL 11
 }
 
-AssertNear←{
-    epsilon expected actual←⍺
-    (|expected-actual)≤epsilon:
+AssertNearâ†{
+    epsilon expected actualâ†âº
+    (|expected-actual)â‰¤epsilon:
         actual
-    ⎕SIGNAL 11
+    âŽ•SIGNAL 11
 }
 
-AssertShape←{
-    expected actual←⍺
-    (expected≡⍴actual):
+AssertShapeâ†{
+    expected actualâ†âº
+    (expectedâ‰¡â´actual):
         actual
-    ⎕SIGNAL 11
+    âŽ•SIGNAL 11
 }
 
-AssertRank←{
-    expected actual←⍺
+AssertRankâ†{
+    expected actualâ†âº
     (expected=Rank actual):
         actual
-    ⎕SIGNAL 11
+    âŽ•SIGNAL 11
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 006  LIQUID FLOW ASSERTION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 006  LIQUID FLOW ASSERTION
+â ----------------------------------------------------------------
 
-LiquidAssert←{
-    eps chiMax←⍺
-    state←⍵
+LiquidAssertâ†{
+    eps chiMaxâ†âº
+    stateâ†âµ
 
-    normSq←NormSq state
-    normVal←*0.5 × ⍟ normSq
+    normSqâ†NormSq state
+    normValâ†*0.5 Ã— âŸ normSq
 
-    ⎕Assert (|normVal-1.0)<eps
+    âŽ•Assert (|normVal-1.0)<eps
 
-    maxDimension←MaxDimension state
-    ⎕Assert maxDimension≤chiMax
+    maxDimensionâ†MaxDimension state
+    âŽ•Assert maxDimensionâ‰¤chiMax
 
     state
 }
 
-LiquidAssertReport←{
-    eps chiMax←⍺
-    state←⍵
-    ns←NormSq state
-    nv←*0.5 × ⍟ ns
-    md←MaxDimension state
-    (nv md ((|nv-1)≤eps) (md≤chiMax))
+LiquidAssertReportâ†{
+    eps chiMaxâ†âº
+    stateâ†âµ
+    nsâ†NormSq state
+    nvâ†*0.5 Ã— âŸ ns
+    mdâ†MaxDimension state
+    (nv md ((|nv-1)â‰¤eps) (mdâ‰¤chiMax))
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 007  NORMALIZATION ASSERTIONS
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 007  NORMALIZATION ASSERTIONS
+â ----------------------------------------------------------------
 
-AssertNormalized←{
-    epsilon←⍺
-    state←⍵
-    n←NormL2 state
-    ⎕Assert |n-DefaultNormTarget≤epsilon
+AssertNormalizedâ†{
+    epsilonâ†âº
+    stateâ†âµ
+    nâ†NormL2 state
+    âŽ•Assert |n-DefaultNormTargetâ‰¤epsilon
     state
 }
 
-AssertNormSq←{
-    epsilon target←⍺
-    state←⍵
-    actual←NormSq state
-    ⎕Assert |actual-target≤epsilon
+AssertNormSqâ†{
+    epsilon targetâ†âº
+    stateâ†âµ
+    actualâ†NormSq state
+    âŽ•Assert |actual-targetâ‰¤epsilon
     state
 }
 
-AssertUnitNorm←{
-    epsilon←⍺
-    state←⍵
+AssertUnitNormâ†{
+    epsilonâ†âº
+    stateâ†âµ
     AssertNormalized epsilon state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 008  BOND DIMENSION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 008  BOND DIMENSION
+â ----------------------------------------------------------------
 
-AssertChi←{
-    chiMax←⍺
-    state←⍵
-    md←MaxDimension state
-    ⎕Assert md≤chiMax
+AssertChiâ†{
+    chiMaxâ†âº
+    stateâ†âµ
+    mdâ†MaxDimension state
+    âŽ•Assert mdâ‰¤chiMax
     state
 }
 
-AssertDefaultChi←{
-    state←⍵
+AssertDefaultChiâ†{
+    stateâ†âµ
     AssertChi DefaultChiMax state
 }
 
-ChiWithin←{
-    chiMax←⍺
-    MaxDimension ⍵≤chiMax
+ChiWithinâ†{
+    chiMaxâ†âº
+    MaxDimension âµâ‰¤chiMax
 }
 
-BondDimensions←{
-    ⍴⍵
+BondDimensionsâ†{
+    â´âµ
 }
 
-BondDimensionCount←{
-    ≢BondDimensions ⍵
+BondDimensionCountâ†{
+    â‰¢BondDimensions âµ
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 009  FINITE STATE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 009  FINITE STATE
+â ----------------------------------------------------------------
 
-AssertFinite←{
-    state←⍵
-    ⎕Assert IsFinite state
+AssertFiniteâ†{
+    stateâ†âµ
+    âŽ•Assert IsFinite state
     state
 }
 
-AssertNonEmpty←{
-    state←⍵
-    ⎕Assert HasElements state
+AssertNonEmptyâ†{
+    stateâ†âµ
+    âŽ•Assert HasElements state
     state
 }
 
-AssertFiniteNonEmpty←{
-    state←⍵
+AssertFiniteNonEmptyâ†{
+    stateâ†âµ
     AssertFinite AssertNonEmpty state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 010  NONNEGATIVE STATES
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 010  NONNEGATIVE STATES
+â ----------------------------------------------------------------
 
-AssertNonNegative←{
-    state←⍵
-    ⎕Assert AllNonNegative state
+AssertNonNegativeâ†{
+    stateâ†âµ
+    âŽ•Assert AllNonNegative state
     state
 }
 
-AssertPositive←{
-    state←⍵
-    ⎕Assert AllPositive state
+AssertPositiveâ†{
+    stateâ†âµ
+    âŽ•Assert AllPositive state
     state
 }
 
-AssertProbabilityVector←{
-    epsilon←⍺
-    p←⍵
-    ⎕Assert IsVector p
-    ⎕Assert AllNonNegative p
-    ⎕Assert |(+/p)-1≤epsilon
+AssertProbabilityVectorâ†{
+    epsilonâ†âº
+    pâ†âµ
+    âŽ•Assert IsVector p
+    âŽ•Assert AllNonNegative p
+    âŽ•Assert |(+/p)-1â‰¤epsilon
     p
 }
 
-AssertSimplex←{
-    AssertProbabilityVector ⍺ ⍵
+AssertSimplexâ†{
+    AssertProbabilityVector âº âµ
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 011  TRACE PRIMITIVES
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 011  TRACE PRIMITIVES
+â ----------------------------------------------------------------
 
-Diagonal←{
-    n←⌊/⍴⍵
-    ⍳n
+Diagonalâ†{
+    nâ†âŒŠ/â´âµ
+    â³n
 }
 
-MatrixTrace←{
-    a←⍵
-    +/a[⍳⌊/⍴a;⍳⌊/⍴a]
+MatrixTraceâ†{
+    aâ†âµ
+    +/a[â³âŒŠ/â´a;â³âŒŠ/â´a]
 }
 
-AssertTrace←{
-    epsilon target←⍺
-    state←⍵
-    tr←MatrixTrace state
-    ⎕Assert |tr-target≤epsilon
+AssertTraceâ†{
+    epsilon targetâ†âº
+    stateâ†âµ
+    trâ†MatrixTrace state
+    âŽ•Assert |tr-targetâ‰¤epsilon
     state
 }
 
-AssertUnitTrace←{
-    AssertTrace (⍺ 1) ⍵
+AssertUnitTraceâ†{
+    AssertTrace (âº 1) âµ
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 012  SYMMETRY
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 012  SYMMETRY
+â ----------------------------------------------------------------
 
-TransposeMatrix←{
-    ⍉⍵
+TransposeMatrixâ†{
+    â‰âµ
 }
 
-SymmetryError←{
-    a←⍵
-    NormL2 a-⍉a
+SymmetryErrorâ†{
+    aâ†âµ
+    NormL2 a-â‰a
 }
 
-AssertSymmetric←{
-    epsilon←⍺
-    state←⍵
-    ⎕Assert (SymmetryError state)≤epsilon
+AssertSymmetricâ†{
+    epsilonâ†âº
+    stateâ†âµ
+    âŽ•Assert (SymmetryError state)â‰¤epsilon
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 013  HERMITIAN
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 013  HERMITIAN
+â ----------------------------------------------------------------
 
-Conjugate←{
-    +⍵
+Conjugateâ†{
+    +âµ
 }
 
-HermitianTranspose←{
-    ⍉+⍵
+HermitianTransposeâ†{
+    â‰+âµ
 }
 
-HermitianError←{
-    a←⍵
+HermitianErrorâ†{
+    aâ†âµ
     NormL2 a-HermitianTranspose a
 }
 
-AssertHermitian←{
-    epsilon←⍺
-    state←⍵
-    ⎕Assert (HermitianError state)≤epsilon
+AssertHermitianâ†{
+    epsilonâ†âº
+    stateâ†âµ
+    âŽ•Assert (HermitianError state)â‰¤epsilon
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 014  POSITIVE SEMIDEFINITE HEURISTIC
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 014  POSITIVE SEMIDEFINITE HEURISTIC
+â ----------------------------------------------------------------
 
-DiagonalValues←{
-    a←⍵
-    n←⌊/⍴a
-    a[⍳n;⍳n]
+DiagonalValuesâ†{
+    aâ†âµ
+    nâ†âŒŠ/â´a
+    a[â³n;â³n]
 }
 
-AssertNonNegativeDiagonal←{
-    state←⍵
-    d←DiagonalValues state
-    ⎕Assert AllNonNegative d
+AssertNonNegativeDiagonalâ†{
+    stateâ†âµ
+    dâ†DiagonalValues state
+    âŽ•Assert AllNonNegative d
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 015  AXIS ASSERTIONS
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 015  AXIS ASSERTIONS
+â ----------------------------------------------------------------
 
-AssertAxisCount←{
-    expected state←⍺
-    ⎕Assert expected=Rank state
+AssertAxisCountâ†{
+    expected stateâ†âº
+    âŽ•Assert expected=Rank state
     state
 }
 
-AssertAxisDimension←{
-    axis dimension state←⍺
-    ⎕Assert dimension=axis⊃⍴state
+AssertAxisDimensionâ†{
+    axis dimension stateâ†âº
+    âŽ•Assert dimension=axisâŠƒâ´state
     state
 }
 
-AssertAxisNonZero←{
-    axis state←⍺
-    ⎕Assert 0<axis⊃⍴state
+AssertAxisNonZeroâ†{
+    axis stateâ†âº
+    âŽ•Assert 0<axisâŠƒâ´state
     state
 }
 
-AssertSquare←{
-    state←⍵
-    s←⍴state
-    ⎕Assert (2=Rank state)^(s[1]=s[2])
+AssertSquareâ†{
+    stateâ†âµ
+    sâ†â´state
+    âŽ•Assert (2=Rank state)^(s[1]=s[2])
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 016  SHAPE COMPATIBILITY
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 016  SHAPE COMPATIBILITY
+â ----------------------------------------------------------------
 
-AssertSameShape←{
-    reference state←⍺
-    ⎕Assert (⍴reference)≡⍴state
+AssertSameShapeâ†{
+    reference stateâ†âº
+    âŽ•Assert (â´reference)â‰¡â´state
     state
 }
 
-AssertSameRank←{
-    reference state←⍺
-    ⎕Assert Rank reference=Rank state
+AssertSameRankâ†{
+    reference stateâ†âº
+    âŽ•Assert Rank reference=Rank state
     state
 }
 
-AssertBroadcastable←{
-    reference state←⍺
-    a←⌽⍴reference
-    b←⌽⍴state
-    n←⌈/2,≢a,≢b
-    ⎕Assert 1
+AssertBroadcastableâ†{
+    reference stateâ†âº
+    aâ†âŒ½â´reference
+    bâ†âŒ½â´state
+    nâ†âŒˆ/2,â‰¢a,â‰¢b
+    âŽ•Assert 1
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 017  DIFFERENCE METRICS
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 017  DIFFERENCE METRICS
+â ----------------------------------------------------------------
 
-Delta←{
-    a b←⍺
+Deltaâ†{
+    a bâ†âº
     a-b
 }
 
-DeltaNorm←{
-    a b←⍺
+DeltaNormâ†{
+    a bâ†âº
     NormL2 a-b
 }
 
-RelativeError←{
-    a b←⍺
-    d←NormL2 a-b
-    n←NormL2 b
+RelativeErrorâ†{
+    a bâ†âº
+    dâ†NormL2 a-b
+    nâ†NormL2 b
     n=0:d
-    d÷n
+    dÃ·n
 }
 
-AssertDelta←{
-    epsilon a b←⍺
-    ⎕Assert (DeltaNorm a b)≤epsilon
+AssertDeltaâ†{
+    epsilon a bâ†âº
+    âŽ•Assert (DeltaNorm a b)â‰¤epsilon
     b
 }
 
-AssertRelativeError←{
-    epsilon a b←⍺
-    ⎕Assert (RelativeError a b)≤epsilon
+AssertRelativeErrorâ†{
+    epsilon a bâ†âº
+    âŽ•Assert (RelativeError a b)â‰¤epsilon
     b
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 018  EROSION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 018  EROSION
+â ----------------------------------------------------------------
 
-ErosionMagnitude←{
-    previous current←⍺
+ErosionMagnitudeâ†{
+    previous currentâ†âº
     DeltaNorm current previous
 }
 
-ErosionRatio←{
-    previous current←⍺
-    p←NormL2 previous
+ErosionRatioâ†{
+    previous currentâ†âº
+    pâ†NormL2 previous
     p=0:0
-    (NormL2 current-previous)÷p
+    (NormL2 current-previous)Ã·p
 }
 
-AssertErosion←{
-    epsilon previous current←⍺
-    e←ErosionMagnitude previous current
-    ⎕Assert e≤epsilon
+AssertErosionâ†{
+    epsilon previous currentâ†âº
+    eâ†ErosionMagnitude previous current
+    âŽ•Assert eâ‰¤epsilon
     current
 }
 
-AssertErosionRatio←{
-    epsilon previous current←⍺
-    r←ErosionRatio previous current
-    ⎕Assert r≤epsilon
+AssertErosionRatioâ†{
+    epsilon previous currentâ†âº
+    râ†ErosionRatio previous current
+    âŽ•Assert râ‰¤epsilon
     current
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 019  FLOW STEP
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 019  FLOW STEP
+â ----------------------------------------------------------------
 
-FlowStep←{
-    state operator←⍺
+FlowStepâ†{
+    state operatorâ†âº
     operator state
 }
 
-VerifiedFlowStep←{
-    epsilon chiMax state operator←⍺
-    next←operator state
+VerifiedFlowStepâ†{
+    epsilon chiMax state operatorâ†âº
+    nextâ†operator state
     LiquidAssert (epsilon chiMax) next
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 020  WICK ROTATION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 020  WICK ROTATION
+â ----------------------------------------------------------------
 
-WickRotate←{
-    state←⍵
+WickRotateâ†{
+    stateâ†âµ
     +state
 }
 
-WickRotateScaled←{
-    theta state←⍺
-    (*theta)×state
+WickRotateScaledâ†{
+    theta stateâ†âº
+    (*theta)Ã—state
 }
 
-AssertWickFinite←{
-    state←WickRotate ⍵
+AssertWickFiniteâ†{
+    stateâ†WickRotate âµ
     AssertFinite state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 021  ENERGY
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 021  ENERGY
+â ----------------------------------------------------------------
 
-ExpectationValue←{
-    operator state←⍺
-    +/,state×operator state
+ExpectationValueâ†{
+    operator stateâ†âº
+    +/,stateÃ—operator state
 }
 
-EnergyError←{
-    expected actual←⍺
+EnergyErrorâ†{
+    expected actualâ†âº
     |expected-actual
 }
 
-AssertEnergy←{
-    epsilon expected operator state←⍺
-    e←ExpectationValue operator state
-    ⎕Assert |e-expected≤epsilon
+AssertEnergyâ†{
+    epsilon expected operator stateâ†âº
+    eâ†ExpectationValue operator state
+    âŽ•Assert |e-expectedâ‰¤epsilon
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 022  CONSERVATION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 022  CONSERVATION
+â ----------------------------------------------------------------
 
-ConservedNorm←{
-    a b←⍺
+ConservedNormâ†{
+    a bâ†âº
     |NormL2 a-NormL2 b
 }
 
-AssertNormConservation←{
-    epsilon old new←⍺
-    ⎕Assert ConservedNorm old new≤epsilon
+AssertNormConservationâ†{
+    epsilon old newâ†âº
+    âŽ•Assert ConservedNorm old newâ‰¤epsilon
     new
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 023  STATE TRANSITIONS
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 023  STATE TRANSITIONS
+â ----------------------------------------------------------------
 
-StateTransition←{
-    old new←⍺
+StateTransitionâ†{
+    old newâ†âº
     new-old
 }
 
-TransitionMagnitude←{
-    old new←⍺
+TransitionMagnitudeâ†{
+    old newâ†âº
     NormL2 new-old
 }
 
-AssertTransitionBound←{
-    maximum old new←⍺
-    ⎕Assert (TransitionMagnitude old new)≤maximum
+AssertTransitionBoundâ†{
+    maximum old newâ†âº
+    âŽ•Assert (TransitionMagnitude old new)â‰¤maximum
     new
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 024  CONTRACTED STATE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 024  CONTRACTED STATE
+â ----------------------------------------------------------------
 
-Contract←{
-    axisA axisB state←⍺
-    +⌿state
+Contractâ†{
+    axisA axisB stateâ†âº
+    +âŒ¿state
 }
 
-AssertContractedFinite←{
-    axisA axisB state←⍺
-    result←Contract axisA axisB state
+AssertContractedFiniteâ†{
+    axisA axisB stateâ†âº
+    resultâ†Contract axisA axisB state
     AssertFinite result
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 025  REDUCTION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 025  REDUCTION
+â ----------------------------------------------------------------
 
-TensorSum←{
-    +/,⍵
+TensorSumâ†{
+    +/,âµ
 }
 
-TensorAbsSum←{
-    +/|,⍵
+TensorAbsSumâ†{
+    +/|,âµ
 }
 
-TensorMaximum←{
-    ⌈/,⍵
+TensorMaximumâ†{
+    âŒˆ/,âµ
 }
 
-TensorMinimum←{
-    ⌊/,⍵
+TensorMinimumâ†{
+    âŒŠ/,âµ
 }
 
-AssertMaximum←{
-    maximum state←⍺
-    ⎕Assert TensorMaximum state≤maximum
+AssertMaximumâ†{
+    maximum stateâ†âº
+    âŽ•Assert TensorMaximum stateâ‰¤maximum
     state
 }
 
-AssertMinimum←{
-    minimum state←⍺
-    ⎕Assert minimum≤TensorMinimum state
+AssertMinimumâ†{
+    minimum stateâ†âº
+    âŽ•Assert minimumâ‰¤TensorMinimum state
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 026  RANGE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 026  RANGE
+â ----------------------------------------------------------------
 
-AssertRange←{
-    lower upper state←⍺
-    ⎕Assert ^/((lower≤,state)^(,state)≤upper)
+AssertRangeâ†{
+    lower upper stateâ†âº
+    âŽ•Assert ^/((lowerâ‰¤,state)^(,state)â‰¤upper)
     state
 }
 
-AssertMagnitudeRange←{
-    lower upper state←⍺
-    ⎕Assert ^/((lower≤|,state)^(|,state)≤upper)
+AssertMagnitudeRangeâ†{
+    lower upper stateâ†âº
+    âŽ•Assert ^/((lowerâ‰¤|,state)^(|,state)â‰¤upper)
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 027  ORTHOGONALITY
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 027  ORTHOGONALITY
+â ----------------------------------------------------------------
 
-InnerProduct←{
-    a b←⍺
-    +/,a×b
+InnerProductâ†{
+    a bâ†âº
+    +/,aÃ—b
 }
 
-AssertOrthogonal←{
-    epsilon a b←⍺
-    ip←InnerProduct a b
-    ⎕Assert |ip≤epsilon
+AssertOrthogonalâ†{
+    epsilon a bâ†âº
+    ipâ†InnerProduct a b
+    âŽ•Assert |ipâ‰¤epsilon
     b
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 028  OVERLAP
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 028  OVERLAP
+â ----------------------------------------------------------------
 
-Overlap←{
-    a b←⍺
+Overlapâ†{
+    a bâ†âº
     InnerProduct a b
 }
 
-AssertOverlap←{
-    epsilon expected a b←⍺
-    o←Overlap a b
-    ⎕Assert |o-expected≤epsilon
+AssertOverlapâ†{
+    epsilon expected a bâ†âº
+    oâ†Overlap a b
+    âŽ•Assert |o-expectedâ‰¤epsilon
     b
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 029  FIDELITY
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 029  FIDELITY
+â ----------------------------------------------------------------
 
-Fidelity←{
-    a b←⍺
-    o←Overlap a b
-    (o×o)
+Fidelityâ†{
+    a bâ†âº
+    oâ†Overlap a b
+    (oÃ—o)
 }
 
-AssertFidelity←{
-    epsilon target a b←⍺
-    f←Fidelity a b
-    ⎕Assert |f-target≤epsilon
+AssertFidelityâ†{
+    epsilon target a bâ†âº
+    fâ†Fidelity a b
+    âŽ•Assert |f-targetâ‰¤epsilon
     b
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 030  ENTROPY
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 030  ENTROPY
+â ----------------------------------------------------------------
 
-SafeLog←{
-    x←⍵
-    x≤0:0
-    ⍟x
+SafeLogâ†{
+    xâ†âµ
+    xâ‰¤0:0
+    âŸx
 }
 
-ShannonEntropy←{
-    p←⍵
-    -+/p×SafeLog¨p
+ShannonEntropyâ†{
+    pâ†âµ
+    -+/pÃ—SafeLogÂ¨p
 }
 
-AssertEntropyRange←{
-    low high state←⍺
-    h←ShannonEntropy state
-    ⎕Assert (low≤h)^h≤high
+AssertEntropyRangeâ†{
+    low high stateâ†âº
+    hâ†ShannonEntropy state
+    âŽ•Assert (lowâ‰¤h)^hâ‰¤high
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 031  WEIGHT CHECKS
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 031  WEIGHT CHECKS
+â ----------------------------------------------------------------
 
-WeightSum←{
-    +/,⍵
+WeightSumâ†{
+    +/,âµ
 }
 
-AssertWeight←{
-    epsilon target state←⍺
-    w←WeightSum state
-    ⎕Assert |w-target≤epsilon
+AssertWeightâ†{
+    epsilon target stateâ†âº
+    wâ†WeightSum state
+    âŽ•Assert |w-targetâ‰¤epsilon
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 032  NORMALIZATION PIPELINE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 032  NORMALIZATION PIPELINE
+â ----------------------------------------------------------------
 
-NormalizeChecked←{
-    epsilon state←⍺
-    result←NormalizeL2 state
+NormalizeCheckedâ†{
+    epsilon stateâ†âº
+    resultâ†NormalizeL2 state
     AssertNormalized epsilon result
 }
 
-NormalizeAndChi←{
-    epsilon chiMax state←⍺
-    result←NormalizeL2 state
+NormalizeAndChiâ†{
+    epsilon chiMax stateâ†âº
+    resultâ†NormalizeL2 state
     LiquidAssert (epsilon chiMax) result
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 033  LIQUID PIPELINE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 033  LIQUID PIPELINE
+â ----------------------------------------------------------------
 
-LiquidStep←{
-    epsilon chiMax operator state←⍺
-    next←operator state
+LiquidStepâ†{
+    epsilon chiMax operator stateâ†âº
+    nextâ†operator state
     LiquidAssert (epsilon chiMax) next
 }
 
-LiquidStepPreserveNorm←{
-    epsilon chiMax operator state←⍺
-    next←LiquidStep epsilon chiMax operator state
+LiquidStepPreserveNormâ†{
+    epsilon chiMax operator stateâ†âº
+    nextâ†LiquidStep epsilon chiMax operator state
     AssertNormConservation epsilon state next
 }
 
-LiquidStepBounded←{
-    epsilon chiMax delta operator state←⍺
-    next←LiquidStep epsilon chiMax operator state
+LiquidStepBoundedâ†{
+    epsilon chiMax delta operator stateâ†âº
+    nextâ†LiquidStep epsilon chiMax operator state
     AssertTransitionBound delta state next
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 034  COMBINED ASSERTIONS
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 034  COMBINED ASSERTIONS
+â ----------------------------------------------------------------
 
-AssertAll←{
-    assertions state←⍺
-    result←state
+AssertAllâ†{
+    assertions stateâ†âº
+    resultâ†state
     :For f :In assertions
-        result←f result
+        resultâ†f result
     :EndFor
     result
 }
 
-AssertLiquidState←{
-    epsilon chiMax state←⍺
-    result←state
-    result←AssertFinite result
-    result←LiquidAssert (epsilon chiMax) result
+AssertLiquidStateâ†{
+    epsilon chiMax stateâ†âº
+    resultâ†state
+    resultâ†AssertFinite result
+    resultâ†LiquidAssert (epsilon chiMax) result
     result
 }
 
-AssertPhysicalState←{
-    epsilon chiMax state←⍺
-    result←state
-    result←AssertFinite result
-    result←AssertNormalized epsilon result
-    result←AssertChi chiMax result
+AssertPhysicalStateâ†{
+    epsilon chiMax stateâ†âº
+    resultâ†state
+    resultâ†AssertFinite result
+    resultâ†AssertNormalized epsilon result
+    resultâ†AssertChi chiMax result
     result
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 035  STATE SEAL
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 035  STATE SEAL
+â ----------------------------------------------------------------
 
-StateSeal←{
-    state←⍵
-    ⍕(⍴state)(NormL2 state)(TensorSum state)
+StateSealâ†{
+    stateâ†âµ
+    â•(â´state)(NormL2 state)(TensorSum state)
 }
 
-AssertStateSeal←{
-    expected state←⍺
-    actual←StateSeal state
-    ⎕Assert expected≡actual
+AssertStateSealâ†{
+    expected stateâ†âº
+    actualâ†StateSeal state
+    âŽ•Assert expectedâ‰¡actual
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 036  DETERMINISTIC SIGNATURE COMPONENTS
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 036  DETERMINISTIC SIGNATURE COMPONENTS
+â ----------------------------------------------------------------
 
-StateShapeSignature←{
-    ⍕⍴⍵
+StateShapeSignatureâ†{
+    â•â´âµ
 }
 
-StateNormSignature←{
-    ⍕NormL2 ⍵
+StateNormSignatureâ†{
+    â•NormL2 âµ
 }
 
-StateDimensionSignature←{
-    ⍕MaxDimension ⍵
+StateDimensionSignatureâ†{
+    â•MaxDimension âµ
 }
 
-StateSignature←{
-    StateShapeSignature ⍵,StateNormSignature ⍵,StateDimensionSignature ⍵
+StateSignatureâ†{
+    StateShapeSignature âµ,StateNormSignature âµ,StateDimensionSignature âµ
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 037  ASSERTION PIPE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 037  ASSERTION PIPE
+â ----------------------------------------------------------------
 
-Pipe←{
-    f←⍺
-    f ⍵
+Pipeâ†{
+    fâ†âº
+    f âµ
 }
 
-Pipe2←{
-    f g←⍺
-    g f ⍵
+Pipe2â†{
+    f gâ†âº
+    g f âµ
 }
 
-Pipe3←{
-    f g h←⍺
-    h g f ⍵
+Pipe3â†{
+    f g hâ†âº
+    h g f âµ
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 038  TOLERANCE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 038  TOLERANCE
+â ----------------------------------------------------------------
 
-Tolerance←{
-    epsilon←⍺
-    a b←⍵
-    |a-b≤epsilon
+Toleranceâ†{
+    epsilonâ†âº
+    a bâ†âµ
+    |a-bâ‰¤epsilon
 }
 
-AbsoluteTolerance←{
-    epsilon←⍺
-    a b←⍵
-    |a-b≤epsilon
+AbsoluteToleranceâ†{
+    epsilonâ†âº
+    a bâ†âµ
+    |a-bâ‰¤epsilon
 }
 
-RelativeTolerance←{
-    epsilon←⍺
-    a b←⍵
-    RelativeError a b≤epsilon
+RelativeToleranceâ†{
+    epsilonâ†âº
+    a bâ†âµ
+    RelativeError a bâ‰¤epsilon
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 039  ARRAY DIFFERENCE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 039  ARRAY DIFFERENCE
+â ----------------------------------------------------------------
 
-MaxAbsoluteDifference←{
-    a b←⍺
-    ⌈/|,a-b
+MaxAbsoluteDifferenceâ†{
+    a bâ†âº
+    âŒˆ/|,a-b
 }
 
-MeanAbsoluteDifference←{
-    a b←⍺
-    (+/|,a-b)÷≢,a
+MeanAbsoluteDifferenceâ†{
+    a bâ†âº
+    (+/|,a-b)Ã·â‰¢,a
 }
 
-RootMeanSquareError←{
-    a b←⍺
-    *0.5×(+/,((a-b)×(a-b)))÷≢,a
+RootMeanSquareErrorâ†{
+    a bâ†âº
+    *0.5Ã—(+/,((a-b)Ã—(a-b)))Ã·â‰¢,a
 }
 
-AssertRMSE←{
-    epsilon a b←⍺
-    ⎕Assert (RootMeanSquareError a b)≤epsilon
+AssertRMSEâ†{
+    epsilon a bâ†âº
+    âŽ•Assert (RootMeanSquareError a b)â‰¤epsilon
     b
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 040  AXIS PERMUTATION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 040  AXIS PERMUTATION
+â ----------------------------------------------------------------
 
-AssertAxisPermutation←{
-    permutation state←⍺
-    s←⍴state
-    ⎕Assert (⍳≢s)≡⍋permutation
+AssertAxisPermutationâ†{
+    permutation stateâ†âº
+    sâ†â´state
+    âŽ•Assert (â³â‰¢s)â‰¡â‹permutation
     state
 }
 
-PermuteAxes←{
-    permutation state←⍺
-    permutation⍉state
+PermuteAxesâ†{
+    permutation stateâ†âº
+    permutationâ‰state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 041  RESHAPE SAFETY
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 041  RESHAPE SAFETY
+â ----------------------------------------------------------------
 
-AssertReshapeCount←{
-    newShape state←⍺
-    ⎕Assert (×/newShape)=ElementCount state
+AssertReshapeCountâ†{
+    newShape stateâ†âº
+    âŽ•Assert (Ã—/newShape)=ElementCount state
     state
 }
 
-SafeReshape←{
-    newShape state←⍺
+SafeReshapeâ†{
+    newShape stateâ†âº
     AssertReshapeCount newShape state
-    newShape⍴state
+    newShapeâ´state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 042  MATRIX MULTIPLICATION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 042  MATRIX MULTIPLICATION
+â ----------------------------------------------------------------
 
-AssertMatMul←{
-    a b←⍺
-    sa←⍴a
-    sb←⍴b
-    ⎕Assert (2=≢sa)^2=≢sb
-    ⎕Assert sa[2]=sb[1]
+AssertMatMulâ†{
+    a bâ†âº
+    saâ†â´a
+    sbâ†â´b
+    âŽ•Assert (2=â‰¢sa)^2=â‰¢sb
+    âŽ•Assert sa[2]=sb[1]
     b
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 043  IDENTITY
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 043  IDENTITY
+â ----------------------------------------------------------------
 
-Identity←{
-    n←⍵
-    (n n)⍴(⍳n)∘.=⍳n
+Identityâ†{
+    nâ†âµ
+    (n n)â´(â³n)âˆ˜.=â³n
 }
 
-AssertIdentity←{
-    epsilon a←⍺
-    n←⌊/⍴a
-    i←Identity n
+AssertIdentityâ†{
+    epsilon aâ†âº
+    nâ†âŒŠ/â´a
+    iâ†Identity n
     AssertNear epsilon i a
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 044  ZERO CHECK
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 044  ZERO CHECK
+â ----------------------------------------------------------------
 
-IsZero←{
-    epsilon←⍺
-    state←⍵
-    ^/|,state≤epsilon
+IsZeroâ†{
+    epsilonâ†âº
+    stateâ†âµ
+    ^/|,stateâ‰¤epsilon
 }
 
-AssertZero←{
-    epsilon state←⍺
-    ⎕Assert epsilon IsZero state
+AssertZeroâ†{
+    epsilon stateâ†âº
+    âŽ•Assert epsilon IsZero state
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 045  BOUNDARY CHECKS
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 045  BOUNDARY CHECKS
+â ----------------------------------------------------------------
 
-AssertLowerBound←{
-    lower state←⍺
-    ⎕Assert ^/lower≤,state
+AssertLowerBoundâ†{
+    lower stateâ†âº
+    âŽ•Assert ^/lowerâ‰¤,state
     state
 }
 
-AssertUpperBound←{
-    upper state←⍺
-    ⎕Assert ^/,state≤upper
+AssertUpperBoundâ†{
+    upper stateâ†âº
+    âŽ•Assert ^/,stateâ‰¤upper
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 046  DENSITY MATRIX
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 046  DENSITY MATRIX
+â ----------------------------------------------------------------
 
-AssertDensityMatrix←{
-    epsilon state←⍺
-    result←AssertSquare state
-    result←AssertHermitian epsilon result
-    result←AssertUnitTrace epsilon result
-    result←AssertNonNegativeDiagonal result
+AssertDensityMatrixâ†{
+    epsilon stateâ†âº
+    resultâ†AssertSquare state
+    resultâ†AssertHermitian epsilon result
+    resultâ†AssertUnitTrace epsilon result
+    resultâ†AssertNonNegativeDiagonal result
     result
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 047  FLOW INVARIANT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 047  FLOW INVARIANT
+â ----------------------------------------------------------------
 
-FlowInvariant←{
-    epsilon old new←⍺
-    (|NormL2 old-NormL2 new)≤epsilon
+FlowInvariantâ†{
+    epsilon old newâ†âº
+    (|NormL2 old-NormL2 new)â‰¤epsilon
 }
 
-AssertFlowInvariant←{
-    epsilon old new←⍺
-    ⎕Assert FlowInvariant epsilon old new
+AssertFlowInvariantâ†{
+    epsilon old newâ†âº
+    âŽ•Assert FlowInvariant epsilon old new
     new
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 048  MULTI-INVARIANT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 048  MULTI-INVARIANT
+â ----------------------------------------------------------------
 
-CheckInvariants←{
-    epsilon chiMax old new←⍺
-    a←AssertFinite new
-    a←LiquidAssert (epsilon chiMax) a
-    a←AssertNormConservation epsilon old a
+CheckInvariantsâ†{
+    epsilon chiMax old newâ†âº
+    aâ†AssertFinite new
+    aâ†LiquidAssert (epsilon chiMax) a
+    aâ†AssertNormConservation epsilon old a
     a
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 049  EROSION GATE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 049  EROSION GATE
+â ----------------------------------------------------------------
 
-ErosionGate←{
-    epsilon previous current←⍺
-    ErosionMagnitude previous current≤epsilon
+ErosionGateâ†{
+    epsilon previous currentâ†âº
+    ErosionMagnitude previous currentâ‰¤epsilon
 }
 
-AssertErosionGate←{
-    epsilon previous current←⍺
-    ⎕Assert ErosionGate epsilon previous current
+AssertErosionGateâ†{
+    epsilon previous currentâ†âº
+    âŽ•Assert ErosionGate epsilon previous current
     current
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 050  CHI GATE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 050  CHI GATE
+â ----------------------------------------------------------------
 
-ChiGate←{
-    chiMax←⍺
-    MaxDimension ⍵≤chiMax
+ChiGateâ†{
+    chiMaxâ†âº
+    MaxDimension âµâ‰¤chiMax
 }
 
-AssertChiGate←{
-    chiMax state←⍺
-    ⎕Assert ChiGate chiMax state
+AssertChiGateâ†{
+    chiMax stateâ†âº
+    âŽ•Assert ChiGate chiMax state
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 051  LIQUID GATE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 051  LIQUID GATE
+â ----------------------------------------------------------------
 
-LiquidGate←{
-    epsilon chiMax state←⍺
-    a←IsFinite state
-    b←NormTargetError state≤epsilon
-    c←MaxDimension state≤chiMax
+LiquidGateâ†{
+    epsilon chiMax stateâ†âº
+    aâ†IsFinite state
+    bâ†NormTargetError stateâ‰¤epsilon
+    câ†MaxDimension stateâ‰¤chiMax
     a^b^c
 }
 
-AssertLiquidGate←{
-    epsilon chiMax state←⍺
-    ⎕Assert LiquidGate epsilon chiMax state
+AssertLiquidGateâ†{
+    epsilon chiMax stateâ†âº
+    âŽ•Assert LiquidGate epsilon chiMax state
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 052  ACCEPT / REJECT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 052  ACCEPT / REJECT
+â ----------------------------------------------------------------
 
-Accept←{
-    state←⍵
+Acceptâ†{
+    stateâ†âµ
     1
 }
 
-Reject←{
-    state←⍵
+Rejectâ†{
+    stateâ†âµ
     0
 }
 
-Gate←{
-    condition←⍺
-    condition:Accept ⍵
-    Reject ⍵
+Gateâ†{
+    conditionâ†âº
+    condition:Accept âµ
+    Reject âµ
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 053  VALIDATION CODE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 053  VALIDATION CODE
+â ----------------------------------------------------------------
 
-ValidationCode←{
-    epsilon chiMax state←⍺
-    finite←IsFinite state
-    normOk←NormTargetError state≤epsilon
-    chiOk←MaxDimension state≤chiMax
-    4×finite+2×normOk+chiOk
+ValidationCodeâ†{
+    epsilon chiMax stateâ†âº
+    finiteâ†IsFinite state
+    normOkâ†NormTargetError stateâ‰¤epsilon
+    chiOkâ†MaxDimension stateâ‰¤chiMax
+    4Ã—finite+2Ã—normOk+chiOk
 }
 
-ValidationPass←{
-    epsilon chiMax state←⍺
+ValidationPassâ†{
+    epsilon chiMax stateâ†âº
     7=ValidationCode epsilon chiMax state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 054  REPORT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 054  REPORT
+â ----------------------------------------------------------------
 
-LiquidReport←{
-    epsilon chiMax state←⍺
-    norm←NormL2 state
-    chi←MaxDimension state
-    finite←IsFinite state
-    normOK←|norm-1≤epsilon
-    chiOK←chi≤chiMax
+LiquidReportâ†{
+    epsilon chiMax stateâ†âº
+    normâ†NormL2 state
+    chiâ†MaxDimension state
+    finiteâ†IsFinite state
+    normOKâ†|norm-1â‰¤epsilon
+    chiOKâ†chiâ‰¤chiMax
     (finite norm normOK chi chiOK)
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 055  REPORT FORMAT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 055  REPORT FORMAT
+â ----------------------------------------------------------------
 
-LiquidReportText←{
-    epsilon chiMax state←⍺
-    r←LiquidReport epsilon chiMax state
-    'FINITE=',⍕r[1],', NORM=',⍕r[2],', NORM_OK=',⍕r[3],', CHI=',⍕r[4],', CHI_OK=',⍕r[5]
+LiquidReportTextâ†{
+    epsilon chiMax stateâ†âº
+    râ†LiquidReport epsilon chiMax state
+    'FINITE=',â•r[1],', NORM=',â•r[2],', NORM_OK=',â•r[3],', CHI=',â•r[4],', CHI_OK=',â•r[5]
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 056  SAMPLE STATE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 056  SAMPLE STATE
+â ----------------------------------------------------------------
 
-SampleState←{
-    s←⍵
+SampleStateâ†{
+    sâ†âµ
     NormalizeL2 s
 }
 
-SampleVector←{
+SampleVectorâ†{
     NormalizeL2 1 2 3 4
 }
 
-SampleMatrix←{
-    NormalizeL2 1 2 3 4⍴1
+SampleMatrixâ†{
+    NormalizeL2 1 2 3 4â´1
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 057  TEST NORMALIZATION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 057  TEST NORMALIZATION
+â ----------------------------------------------------------------
 
-TestNorm←{
-    state←SampleVector 0
+TestNormâ†{
+    stateâ†SampleVector 0
     AssertUnitNorm DefaultEpsilon state
 }
 
-TestChi←{
-    state←SampleVector 0
+TestChiâ†{
+    stateâ†SampleVector 0
     AssertChi DefaultChiMax state
 }
 
-TestFinite←{
-    state←SampleVector 0
+TestFiniteâ†{
+    stateâ†SampleVector 0
     AssertFinite state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 058  TEST LIQUID ASSERT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 058  TEST LIQUID ASSERT
+â ----------------------------------------------------------------
 
-TestLiquidAssert←{
-    state←SampleVector 0
+TestLiquidAssertâ†{
+    stateâ†SampleVector 0
     LiquidAssert (DefaultEpsilon DefaultChiMax) state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 059  TEST EROSION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 059  TEST EROSION
+â ----------------------------------------------------------------
 
-TestErosion←{
-    state←SampleVector 0
-    AssertErosion 1E¯8 state state
+TestErosionâ†{
+    stateâ†SampleVector 0
+    AssertErosion 1EÂ¯8 state state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 060  TEST REPORT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 060  TEST REPORT
+â ----------------------------------------------------------------
 
-TestReport←{
-    state←SampleVector 0
+TestReportâ†{
+    stateâ†SampleVector 0
     LiquidReport DefaultEpsilon DefaultChiMax state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 061  WICK FLOW
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 061  WICK FLOW
+â ----------------------------------------------------------------
 
-WickFlow←{
-    epsilon chiMax state←⍺
-    next←WickRotate state
+WickFlowâ†{
+    epsilon chiMax stateâ†âº
+    nextâ†WickRotate state
     LiquidAssert (epsilon chiMax) next
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 062  NORMALIZED WICK FLOW
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 062  NORMALIZED WICK FLOW
+â ----------------------------------------------------------------
 
-NormalizedWickFlow←{
-    epsilon chiMax state←⍺
-    next←NormalizeL2 WickRotate state
+NormalizedWickFlowâ†{
+    epsilon chiMax stateâ†âº
+    nextâ†NormalizeL2 WickRotate state
     LiquidAssert (epsilon chiMax) next
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 063  ERODED WICK FLOW
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 063  ERODED WICK FLOW
+â ----------------------------------------------------------------
 
-ErodedWickFlow←{
-    epsilon chiMax erosion state←⍺
-    next←NormalizeL2 WickRotate state
+ErodedWickFlowâ†{
+    epsilon chiMax erosion stateâ†âº
+    nextâ†NormalizeL2 WickRotate state
     LiquidAssert (epsilon chiMax) next
     AssertErosion erosion state next
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 064  STATE COMMIT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 064  STATE COMMIT
+â ----------------------------------------------------------------
 
-CommitState←{
-    epsilon chiMax state←⍺
+CommitStateâ†{
+    epsilon chiMax stateâ†âº
     LiquidAssert (epsilon chiMax) state
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 065  STATE ROLLBACK
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 065  STATE ROLLBACK
+â ----------------------------------------------------------------
 
-RollbackState←{
-    state←⍵
+RollbackStateâ†{
+    stateâ†âµ
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 066  CONDITIONAL COMMIT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 066  CONDITIONAL COMMIT
+â ----------------------------------------------------------------
 
-ConditionalCommit←{
-    epsilon chiMax old new←⍺
+ConditionalCommitâ†{
+    epsilon chiMax old newâ†âº
     LiquidGate epsilon chiMax new:
         new
     old
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 067  CONSERVATION COMMIT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 067  CONSERVATION COMMIT
+â ----------------------------------------------------------------
 
-ConservationCommit←{
-    epsilon chiMax old new←⍺
+ConservationCommitâ†{
+    epsilon chiMax old newâ†âº
     LiquidAssert (epsilon chiMax) new
     AssertNormConservation epsilon old new
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 068  ASSERTION CHAIN
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 068  ASSERTION CHAIN
+â ----------------------------------------------------------------
 
-LiquidChain←{
-    epsilon chiMax state←⍺
-    result←AssertFinite state
-    result←AssertUnitNorm epsilon result
-    result←AssertChi chiMax result
+LiquidChainâ†{
+    epsilon chiMax stateâ†âº
+    resultâ†AssertFinite state
+    resultâ†AssertUnitNorm epsilon result
+    resultâ†AssertChi chiMax result
     result
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 069  STRICT CHAIN
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 069  STRICT CHAIN
+â ----------------------------------------------------------------
 
-StrictLiquidChain←{
-    epsilon chiMax state←⍺
-    result←AssertNonEmpty state
-    result←AssertFinite result
-    result←AssertUnitNorm epsilon result
-    result←AssertChi chiMax result
+StrictLiquidChainâ†{
+    epsilon chiMax stateâ†âº
+    resultâ†AssertNonEmpty state
+    resultâ†AssertFinite result
+    resultâ†AssertUnitNorm epsilon result
+    resultâ†AssertChi chiMax result
     result
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 070  SOFT VALIDATION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 070  SOFT VALIDATION
+â ----------------------------------------------------------------
 
-SoftValidate←{
-    epsilon chiMax state←⍺
+SoftValidateâ†{
+    epsilon chiMax stateâ†âº
     LiquidGate epsilon chiMax state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 071  NORM CLAMP
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 071  NORM CLAMP
+â ----------------------------------------------------------------
 
-ClampNorm←{
-    epsilon state←⍺
-    n←NormL2 state
-    |n-1≤epsilon:state
+ClampNormâ†{
+    epsilon stateâ†âº
+    nâ†NormL2 state
+    |n-1â‰¤epsilon:state
     NormalizeL2 state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 072  DIMENSION CLAMP
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 072  DIMENSION CLAMP
+â ----------------------------------------------------------------
 
-DimensionWithin←{
-    chiMax state←⍺
-    MaxDimension state≤chiMax
+DimensionWithinâ†{
+    chiMax stateâ†âº
+    MaxDimension stateâ‰¤chiMax
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 073  VALIDATE CONFIGURATION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 073  VALIDATE CONFIGURATION
+â ----------------------------------------------------------------
 
-AssertConfig←{
-    cfg←⍵
-    ⎕Assert 2=≢cfg          ⍝ [epsilon chiMax]
-    epsilon chiMax←cfg
-    ⎕Assert epsilon>0
-    ⎕Assert chiMax>0
+AssertConfigâ†{
+    cfgâ†âµ
+    âŽ•Assert 2=â‰¢cfg          â [epsilon chiMax]
+    epsilon chiMaxâ†cfg
+    âŽ•Assert epsilon>0
+    âŽ•Assert chiMax>0
     cfg
 }
 
-AssertConfigFinite←{
-    cfg←⍵
-    ⎕Assert IsFinite cfg
+AssertConfigFiniteâ†{
+    cfgâ†âµ
+    âŽ•Assert IsFinite cfg
     cfg
 }
 
-ValidateConfig←{
-    cfg←⍵
-    cfg←AssertConfig cfg
-    cfg←AssertConfigFinite cfg
+ValidateConfigâ†{
+    cfgâ†âµ
+    cfgâ†AssertConfig cfg
+    cfgâ†AssertConfigFinite cfg
     cfg
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 074  CONFIGURED LIQUID STEP
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 074  CONFIGURED LIQUID STEP
+â ----------------------------------------------------------------
 
-ConfiguredLiquidStep←{
-    cfg operator state←⍺
-    cfg←ValidateConfig cfg
-    epsilon chiMax←cfg
-    next←operator state
+ConfiguredLiquidStepâ†{
+    cfg operator stateâ†âº
+    cfgâ†ValidateConfig cfg
+    epsilon chiMaxâ†cfg
+    nextâ†operator state
     LiquidAssert (epsilon chiMax) next
 }
 
-ConfiguredLiquidChain←{
-    cfg state←⍺
-    cfg←ValidateConfig cfg
-    epsilon chiMax←cfg
+ConfiguredLiquidChainâ†{
+    cfg stateâ†âº
+    cfgâ†ValidateConfig cfg
+    epsilon chiMaxâ†cfg
     StrictLiquidChain epsilon chiMax state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 075  CONFIG + STATE SEAL
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 075  CONFIG + STATE SEAL
+â ----------------------------------------------------------------
 
-ConfigStateSeal←{
-    cfg state←⍺
-    cfg←ValidateConfig cfg
-    epsilon chiMax←cfg
-    sig←StateSignature state
-    ⍕epsilon,',',chiMax,',',sig
+ConfigStateSealâ†{
+    cfg stateâ†âº
+    cfgâ†ValidateConfig cfg
+    epsilon chiMaxâ†cfg
+    sigâ†StateSignature state
+    â•epsilon,',',chiMax,',',sig
 }
 
-AssertConfigStateSeal←{
-    expected cfg state←⍺
-    actual←ConfigStateSeal cfg state
-    ⎕Assert expected≡actual
+AssertConfigStateSealâ†{
+    expected cfg stateâ†âº
+    actualâ†ConfigStateSeal cfg state
+    âŽ•Assert expectedâ‰¡actual
     state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 076  DEFAULT ASSERTOR
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 076  DEFAULT ASSERTOR
+â ----------------------------------------------------------------
 
-DefaultLiquidAssert←{
-    LiquidAssert (DefaultEpsilon DefaultChiMax) ⍵
+DefaultLiquidAssertâ†{
+    LiquidAssert (DefaultEpsilon DefaultChiMax) âµ
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 077  STRICT DEFAULT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 077  STRICT DEFAULT
+â ----------------------------------------------------------------
 
-StrictDefaultAssert←{
-    StrictLiquidChain DefaultEpsilon DefaultChiMax ⍵
+StrictDefaultAssertâ†{
+    StrictLiquidChain DefaultEpsilon DefaultChiMax âµ
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 078  FLOW DIAGNOSTICS
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 078  FLOW DIAGNOSTICS
+â ----------------------------------------------------------------
 
-FlowDiagnostics←{
-    epsilon chiMax old new←⍺
-    oldNorm←NormL2 old
-    newNorm←NormL2 new
-    erosion←ErosionMagnitude old new
-    chi←MaxDimension new
+FlowDiagnosticsâ†{
+    epsilon chiMax old newâ†âº
+    oldNormâ†NormL2 old
+    newNormâ†NormL2 new
+    erosionâ†ErosionMagnitude old new
+    chiâ†MaxDimension new
     (oldNorm newNorm erosion chi)
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 079  DIAGNOSTIC ASSERTION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 079  DIAGNOSTIC ASSERTION
+â ----------------------------------------------------------------
 
-AssertFlowDiagnostics←{
-    epsilon chiMax erosion old new←⍺
-    d←FlowDiagnostics epsilon chiMax old new
-    ⎕Assert |d[1]-d[2]≤epsilon
-    ⎕Assert d[3]≤erosion
-    ⎕Assert d[4]≤chiMax
+AssertFlowDiagnosticsâ†{
+    epsilon chiMax erosion old newâ†âº
+    dâ†FlowDiagnostics epsilon chiMax old new
+    âŽ•Assert |d[1]-d[2]â‰¤epsilon
+    âŽ•Assert d[3]â‰¤erosion
+    âŽ•Assert d[4]â‰¤chiMax
     new
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 080  ENDPOINT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 080  ENDPOINT
+â ----------------------------------------------------------------
 
-LiquidEndpoint←{
-    epsilon chiMax state←⍺
+LiquidEndpointâ†{
+    epsilon chiMax stateâ†âº
     LiquidAssert (epsilon chiMax) state
     StateSignature state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 081  FINAL FLOW
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 081  FINAL FLOW
+â ----------------------------------------------------------------
 
-LiquidFlow←{
-    epsilon chiMax operator state←⍺
-    next←operator state
-    next←NormalizeL2 next
+LiquidFlowâ†{
+    epsilon chiMax operator stateâ†âº
+    nextâ†operator state
+    nextâ†NormalizeL2 next
     LiquidAssert (epsilon chiMax) next
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 082  FINAL PRESERVATION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 082  FINAL PRESERVATION
+â ----------------------------------------------------------------
 
-LiquidFlowPreserve←{
-    epsilon chiMax operator state←⍺
-    next←LiquidFlow epsilon chiMax operator state
+LiquidFlowPreserveâ†{
+    epsilon chiMax operator stateâ†âº
+    nextâ†LiquidFlow epsilon chiMax operator state
     AssertNormConservation epsilon state next
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 083  EXAMPLE UPDATE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 083  EXAMPLE UPDATE
+â ----------------------------------------------------------------
 
-ExampleUpdate←{
-    updatedTensorState←⍵
+ExampleUpdateâ†{
+    updatedTensorStateâ†âµ
     LiquidAssert (0.001 64) updatedTensorState
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 084  EXAMPLE NORMALIZATION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 084  EXAMPLE NORMALIZATION
+â ----------------------------------------------------------------
 
-ExampleNormalized←{
-    state←NormalizeL2 ⍵
+ExampleNormalizedâ†{
+    stateâ†NormalizeL2 âµ
     LiquidAssert (0.001 64) state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 085  EXAMPLE WICK UPDATE
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 085  EXAMPLE WICK UPDATE
+â ----------------------------------------------------------------
 
-ExampleWickUpdate←{
-    state←⍵
-    updatedTensorState←WickRotate state
-    normalized←NormalizeL2 updatedTensorState
+ExampleWickUpdateâ†{
+    stateâ†âµ
+    updatedTensorStateâ†WickRotate state
+    normalizedâ†NormalizeL2 updatedTensorState
     LiquidAssert (0.001 64) normalized
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 086  LIBRARY SELF TEST
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 086  LIBRARY SELF TEST
+â ----------------------------------------------------------------
 
-SelfTest←{
+SelfTestâ†{
     TestNorm 0
     TestChi 0
     TestFinite 0
@@ -1549,19 +1564,19 @@ SelfTest←{
     1
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 087  VERSION
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 087  VERSION
+â ----------------------------------------------------------------
 
-Version←{
+Versionâ†{
     LiquidVersion
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 088  EXPORT INDEX
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 088  EXPORT INDEX
+â ----------------------------------------------------------------
 
-CoreExports←{
+CoreExportsâ†{
     LiquidAssert
     LiquidAssertReport
     LiquidGate
@@ -1569,27 +1584,27 @@ CoreExports←{
     LiquidFlowPreserve
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 089  DOCUMENTED ENTRY POINT
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 089  DOCUMENTED ENTRY POINT
+â ----------------------------------------------------------------
 
-LiquidValidate←{
-    epsilon chiMax state←⍺
+LiquidValidateâ†{
+    epsilon chiMax stateâ†âº
     AssertConfiguration epsilon chiMax
     AssertFinite state
     LiquidAssert (epsilon chiMax) state
 }
 
-⍝ ----------------------------------------------------------------
-⍝ 090  TERMINAL VALIDATOR
-⍝ ----------------------------------------------------------------
+â ----------------------------------------------------------------
+â 090  TERMINAL VALIDATOR
+â ----------------------------------------------------------------
 
-LiquidFinalize←{
-    epsilon chiMax state←⍺
-    result←LiquidValidate epsilon chiMax state
+LiquidFinalizeâ†{
+    epsilon chiMax stateâ†âº
+    resultâ†LiquidValidate epsilon chiMax state
     StateSignature result
 }
 
-⍝ ================================================================
-⍝ END LIQUIDAPL FLOW ASSERTION LIBRARY
-⍝ ================================================================
+â ================================================================
+â END LIQUIDAPL FLOW ASSERTION LIBRARY
+â ================================================================

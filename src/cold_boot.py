@@ -1,10 +1,25 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """
-Devflow Finance Twin — Cold Boot Protocol (Python Layer)
+Devflow Finance Twin â€” Cold Boot Protocol (Python Layer)
 Mirrors the 3-phase z/Architecture IPL for the Python WORM engine.
 
-Phase 1: ROM Anchor — verify firmware integrity (BLAKE3 root)
-Phase 2: Bridge Init — establish WORM buffer, storage keys, runtime vectors
-Phase 3: Treasury Driver — enter main loop (WRITE_ONCE / READ_MANY / ANCHOR)
+Phase 1: ROM Anchor â€” verify firmware integrity (BLAKE3 root)
+Phase 2: Bridge Init â€” establish WORM buffer, storage keys, runtime vectors
+Phase 3: Treasury Driver â€” enter main loop (WRITE_ONCE / READ_MANY / ANCHOR)
 
 ICP Anchor: Registers the WORM state hash to the Internet Computer canister
 for sovereign cross-chain verification.
@@ -21,7 +36,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("devflow.cold_boot")
 
-# ── Constants (mirror s390x assembly) ────────────────────────────────────────
+# â”€â”€ Constants (mirror s390x assembly) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 WORM_MAGIC = b"WORM"
 WORM_VERSION = 1
@@ -142,7 +157,7 @@ class ColdBootProtocol:
         self._initialized = False
         self._rom_hash: Optional[str] = None
 
-    # ── Phase 1: ROM Anchor ──────────────────────────────────────────────
+    # â”€â”€ Phase 1: ROM Anchor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     def phase1_rom_anchor(self, firmware_bytes: Optional[bytes] = None) -> str:
         """
@@ -150,7 +165,7 @@ class ColdBootProtocol:
         Computes BLAKE3 (SHA-256 fallback) root of firmware.
         Returns the root hash.
         """
-        logger.info("PHASE 1: ROM Anchor — verifying firmware integrity")
+        logger.info("PHASE 1: ROM Anchor â€” verifying firmware integrity")
 
         if firmware_bytes is None:
             # Compute hash of our own source files for integrity
@@ -173,14 +188,14 @@ class ColdBootProtocol:
         logger.info("PHASE 1: ROM root hash = %s", root_hash[:16])
         return root_hash
 
-    # ── Phase 2: Bridge Init ─────────────────────────────────────────────
+    # â”€â”€ Phase 2: Bridge Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     def phase2_bridge_init(self) -> WORMMetadata:
         """
         Phase 2: Initialize WORM buffer and bridge.
         Sets up storage keys, maps WORM volume, initializes Merkle root.
         """
-        logger.info("PHASE 2: Bridge Init — establishing WORM buffer")
+        logger.info("PHASE 2: Bridge Init â€” establishing WORM buffer")
 
         # Ensure storage exists
         if not self.storage_path.exists():
@@ -220,7 +235,7 @@ class ColdBootProtocol:
 
         self._initialized = True
         logger.info(
-            "PHASE 2: WORM buffer initialized — HEAD=%d, TAIL=%d, ROOT=%s",
+            "PHASE 2: WORM buffer initialized â€” HEAD=%d, TAIL=%d, ROOT=%s",
             self.metadata.head, self.metadata.tail, self.metadata.root_slot[:16]
         )
         return self.metadata
@@ -245,7 +260,7 @@ class ColdBootProtocol:
         except (json.JSONDecodeError, OSError) as e:
             logger.warning("PHASE 2: Could not load existing state: %s", e)
 
-    # ── Phase 3: Treasury Driver ─────────────────────────────────────────
+    # â”€â”€ Phase 3: Treasury Driver â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     def phase3_treasury_driver(self) -> None:
         """
@@ -254,13 +269,13 @@ class ColdBootProtocol:
         In production, this would be an event loop waiting for PL/I/COBOL SVCs.
         """
         if not self._initialized:
-            raise Phase2Error("Bridge not initialized — call phase2_bridge_init() first")
+            raise Phase2Error("Bridge not initialized â€” call phase2_bridge_init() first")
 
-        logger.info("PHASE 3: Treasury Driver — entering main loop")
+        logger.info("PHASE 3: Treasury Driver â€” entering main loop")
         logger.info("PHASE 3: SVC handlers registered: %s", list(self._svc_handlers.keys()))
-        logger.info("PHASE 3: WORM driver online — ready for WRITE_ONCE / READ_MANY / ANCHOR")
+        logger.info("PHASE 3: WORM driver online â€” ready for WRITE_ONCE / READ_MANY / ANCHOR")
 
-    # ── SVC Handlers ─────────────────────────────────────────────────────
+    # â”€â”€ SVC Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     def _svc_write_once(
         self,
@@ -268,7 +283,7 @@ class ColdBootProtocol:
         record_type: int = RecordType.LEDGER
     ) -> Tuple[int, Optional[str]]:
         """
-        SVC 254: PL/I WRITE_ONCE — append immutable record.
+        SVC 254: PL/I WRITE_ONCE â€” append immutable record.
         Returns (return_code, record_hash).
         RC: 0=OK, 4=WORM_FULL, 8=CRC_ERR, 12=SEAL_FAIL
         """
@@ -278,10 +293,10 @@ class ColdBootProtocol:
         # 1. Check space
         payload_bytes = len(json.dumps(payload, sort_keys=True).encode("utf-8"))
         if self.metadata.tail + payload_bytes + 64 > self.metadata.limit:
-            logger.error("SVC 254: WORM FULL — tail=%d, need=%d", self.metadata.tail, payload_bytes + 64)
+            logger.error("SVC 254: WORM FULL â€” tail=%d, need=%d", self.metadata.tail, payload_bytes + 64)
             return 4, None
 
-        # 2. Compute record hash — match worm.py canonical format
+        # 2. Compute record hash â€” match worm.py canonical format
         record = {
             "prev_hash": self.metadata.root_slot,
             "payload": payload,
@@ -302,7 +317,7 @@ class ColdBootProtocol:
                 f.flush()
                 os.fsync(f.fileno())
         except OSError as e:
-            logger.error("SVC 254: Write failed — %s", e)
+            logger.error("SVC 254: Write failed â€” %s", e)
             return 8, None
 
         # 5. Update metadata
@@ -314,14 +329,14 @@ class ColdBootProtocol:
         if record_type == RecordType.ANCHOR:
             self._svc_borrowchain_anchor()
 
-        logger.debug("SVC 254: WORM append OK — hash=%s", record_hash[:16])
+        logger.debug("SVC 254: WORM append OK â€” hash=%s", record_hash[:16])
         return 0, record_hash
 
     def _svc_read_many(
         self, record_index: int
     ) -> Tuple[int, Optional[Dict[str, Any]]]:
         """
-        SVC 255: COBOL READ_MANY — read and verify record at index.
+        SVC 255: COBOL READ_MANY â€” read and verify record at index.
         Returns (return_code, record_or_none).
         RC: 0=OK, 4=NOT_FOUND, 8=HASH_MISMATCH, 12=CORRUPT
         """
@@ -336,7 +351,7 @@ class ColdBootProtocol:
                     if stripped:
                         records.append(json.loads(stripped))
         except (json.JSONDecodeError, OSError) as e:
-            logger.error("SVC 255: Read failed — %s", e)
+            logger.error("SVC 255: Read failed â€” %s", e)
             return 12, None
 
         if record_index < 0 or record_index >= len(records):
@@ -368,16 +383,16 @@ class ColdBootProtocol:
 
     def _svc_borrowchain_anchor(self) -> int:
         """
-        SVC 253: BorrowChain Anchor — commit WORM state hash to cross-chain.
+        SVC 253: BorrowChain Anchor â€” commit WORM state hash to cross-chain.
         Returns 0 on success.
         """
-        logger.info("SVC 253: BorrowChain anchor — root=%s", self.metadata.root_slot[:16])
+        logger.info("SVC 253: BorrowChain anchor â€” root=%s", self.metadata.root_slot[:16])
         return 0
 
-    # ── Public API (mirrors assembly SVC interface) ──────────────────────
+    # â”€â”€ Public API (mirrors assembly SVC interface) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     def write_once(self, payload: Dict[str, Any], record_type: int = RecordType.LEDGER) -> str:
-        """High-level WRITE_ONCE — returns record hash or raises."""
+        """High-level WRITE_ONCE â€” returns record hash or raises."""
         rc, record_hash = self._svc_write_once(payload, record_type)
         if rc == 4:
             raise WORMFullError("WORM storage at capacity")
@@ -388,7 +403,7 @@ class ColdBootProtocol:
         return record_hash
 
     def read_many(self, record_index: int) -> Dict[str, Any]:
-        """High-level READ_MANY — returns record payload or raises."""
+        """High-level READ_MANY â€” returns record payload or raises."""
         rc, record = self._svc_read_many(record_index)
         if rc == 4:
             raise ColdBootError(f"Record {record_index} not found")
@@ -438,7 +453,7 @@ class ColdBootProtocol:
         return self.metadata.record_count
 
 
-# ── Convenience: Full Cold Boot Sequence ─────────────────────────────────────
+# â”€â”€ Convenience: Full Cold Boot Sequence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def cold_boot(storage_path: str = "ledger.worm") -> ColdBootProtocol:
     """
@@ -449,15 +464,15 @@ def cold_boot(storage_path: str = "ledger.worm") -> ColdBootProtocol:
 
     # Phase 1: ROM Anchor
     root_hash = protocol.phase1_rom_anchor()
-    logger.info("COLD BOOT: Phase 1 complete — root=%s", root_hash[:16])
+    logger.info("COLD BOOT: Phase 1 complete â€” root=%s", root_hash[:16])
 
     # Phase 2: Bridge Init
     metadata = protocol.phase2_bridge_init()
-    logger.info("COLD BOOT: Phase 2 complete — %d records, root=%s",
+    logger.info("COLD BOOT: Phase 2 complete â€” %d records, root=%s",
                 metadata.record_count, metadata.root_slot[:16])
 
     # Phase 3: Treasury Driver
     protocol.phase3_treasury_driver()
-    logger.info("COLD BOOT: Phase 3 complete — driver online")
+    logger.info("COLD BOOT: Phase 3 complete â€” driver online")
 
     return protocol

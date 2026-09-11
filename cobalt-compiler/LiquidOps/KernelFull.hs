@@ -1,3 +1,18 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
@@ -6,22 +21,22 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveFunctor #-}
 
--- LiquidOps.KernelFull — Production recursive refinement kernel
+-- LiquidOps.KernelFull â€” Production recursive refinement kernel
 -- Full pipeline:
 --   FExpr (Fixpoint-style logic)
---     → recursive normalization
---     → Logic IR
---     → NandTree (boolean reduction)
---     → typed ISA (Instr GADT)
---     → validated Program
---     → MachineState transition
+--     â†’ recursive normalization
+--     â†’ Logic IR
+--     â†’ NandTree (boolean reduction)
+--     â†’ typed ISA (Instr GADT)
+--     â†’ validated Program
+--     â†’ MachineState transition
 --
 -- Production invariants:
---   • NandTree is the only boolean form (AND/OR/NOT/IMP/IFF eliminated)
---   • Arithmetic, memory, comparisons, control flow remain explicit in ISA
---   • Termination proved by exprSize / logicSize / nandSize measures
---   • No dependency on liquid-fixpoint (FExpr is a self-contained type)
--- Author: Ahmad Ali Parr — Bel Esprit D'Accord Irrevocable Trust
+--   â€¢ NandTree is the only boolean form (AND/OR/NOT/IMP/IFF eliminated)
+--   â€¢ Arithmetic, memory, comparisons, control flow remain explicit in ISA
+--   â€¢ Termination proved by exprSize / logicSize / nandSize measures
+--   â€¢ No dependency on liquid-fixpoint (FExpr is a self-contained type)
+-- Author: Ahmad Ali Parr â€” Bel Esprit D'Accord Irrevocable Trust
 
 module LiquidOps.KernelFull
   ( -- Machine domain
@@ -422,7 +437,7 @@ normIff PTrue y = y; normIff x PTrue = x; normIff PFalse y = normNot y
 normIff x PFalse = normNot x; normIff x y | x==y = PTrue; normIff x y = PIff x y
 
 --------------------------------------------------------------------------------
--- 11. FEXPR → LOGIC → NAND
+-- 11. FEXPR â†’ LOGIC â†’ NAND
 --------------------------------------------------------------------------------
 
 {-@ toLogic :: FExpr -> Logic FExpr @-}
@@ -448,7 +463,7 @@ nandKernel :: FExpr -> FExpr
 nandKernel = fromNand . nandReduce . lowerToNand
 
 --------------------------------------------------------------------------------
--- 12. COMPILE NAND → ISA
+-- 12. COMPILE NAND â†’ ISA
 --------------------------------------------------------------------------------
 
 data CompileState = CompileState { nextReg :: Int, code :: [Instr] } deriving (Show, Eq)

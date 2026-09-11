@@ -1,3 +1,18 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 use super::clause::{Clause, Literal, LitArg, make_clause, reset_counter};
 use super::resolution::{resolve, make_resolvent_clause};
 use super::strategy::{pick_clause, subsumed_by_any};
@@ -104,7 +119,7 @@ pub fn qa5_prove(
 /// Convenience wrapper: Socrates demo
 pub fn socrates_demo() -> ProofResult {
         let axioms = vec![
-            // ∀x Man(x) → Mortal(x)
+            // âˆ€x Man(x) â†’ Mortal(x)
             vec![
                 Literal::neg("man", vec![LitArg::Var("x".into())]),
                 Literal::pos("mortal", vec![LitArg::Var("x".into())]),
@@ -115,7 +130,7 @@ pub fn socrates_demo() -> ProofResult {
             ],
         ];
         let goals = vec![
-            // ¬Mortal(socrates)
+            // Â¬Mortal(socrates)
             vec![
                 Literal::neg("mortal", vec![LitArg::Sym("socrates".into())]),
             ],
@@ -142,7 +157,7 @@ mod tests {
 
     #[test]
     fn test_unprovable() {
-        // Goal: mortal(socrates), Axiom: man(socrates) — no rule connects them
+        // Goal: mortal(socrates), Axiom: man(socrates) â€” no rule connects them
         let axioms = vec![
             vec![Literal::pos("man", vec![LitArg::Sym("socrates".into())])],
         ];

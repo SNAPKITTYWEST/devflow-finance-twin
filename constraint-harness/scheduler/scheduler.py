@@ -1,3 +1,18 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """Bounded concurrent scheduler over a DAG."""
 
 from __future__ import annotations
@@ -16,7 +31,7 @@ class Scheduler:
         self.timeout = timeout_seconds
 
     def run(self, dag: DAG, runtime: RuntimeConfig) -> dict[str, Any]:
-        """Execute tasks respecting dependencies. Returns task_id → result dict."""
+        """Execute tasks respecting dependencies. Returns task_id â†’ result dict."""
         completed: set[str] = set()
         results: dict[str, Any] = {}
         cmd_map = {c.id: c for c in runtime.commands}

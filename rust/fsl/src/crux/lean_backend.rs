@@ -1,5 +1,20 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
-// fsl/src/crux/lean_backend.rs  –  Lean 4 Backend
+// fsl/src/crux/lean_backend.rs  â€“  Lean 4 Backend
 // Builds Lean goals, expands tactic macros, proves via reflection
 // Dense ~200 LOC
 // =============================================================================
@@ -126,24 +141,24 @@ fn formula_to_lean4(f: &Formula) -> String {
         Formula::Not(inner) => format!("Not {}", formula_to_lean4(inner)),
         Formula::And(fs) => {
             let parts: Vec<_> = fs.iter().map(formula_to_lean4).collect();
-            parts.join(" ∧ ")
+            parts.join(" âˆ§ ")
         }
         Formula::Or(fs) => {
             let parts: Vec<_> = fs.iter().map(formula_to_lean4).collect();
-            parts.join(" ∨ ")
+            parts.join(" âˆ¨ ")
         }
-        Formula::Implies(a, b) => format!("{} → {}", formula_to_lean4(a), formula_to_lean4(b)),
-        Formula::Iff(a, b) => format!("{} ↔ {}", formula_to_lean4(a), formula_to_lean4(b)),
+        Formula::Implies(a, b) => format!("{} â†’ {}", formula_to_lean4(a), formula_to_lean4(b)),
+        Formula::Iff(a, b) => format!("{} â†” {}", formula_to_lean4(a), formula_to_lean4(b)),
         Formula::Eq(a, b) => format!("{} = {}", term_to_lean4(a), term_to_lean4(b)),
         Formula::Forall { var, sort, body } => {
-            format!("∀ ({} : {}), {}", var, sort_to_lean4(sort), formula_to_lean4(body))
+            format!("âˆ€ ({} : {}), {}", var, sort_to_lean4(sort), formula_to_lean4(body))
         }
         Formula::Exists { var, sort, body } => {
-            format!("∃ ({} : {}), {}", var, sort_to_lean4(sort), formula_to_lean4(body))
+            format!("âˆƒ ({} : {}), {}", var, sort_to_lean4(sort), formula_to_lean4(body))
         }
         Formula::Paren(inner) => format!("({})", formula_to_lean4(inner)),
         Formula::Sila { state, formula } => {
-            format!("Сила({}, {})", state_to_lean4(state), formula_to_lean4(formula))
+            format!("Ð¡Ð¸Ð»Ð°({}, {})", state_to_lean4(state), formula_to_lean4(formula))
         }
         _ => "True".into(),
     }
@@ -159,9 +174,9 @@ fn term_to_lean4(t: &Term) -> String {
             let op_str = match op {
                 BinOp::Add => "+", BinOp::Sub => "-", BinOp::Mul => "*",
                 BinOp::Div => "/", BinOp::Mod => "%",
-                BinOp::Eq => "=", BinOp::Ne => "≠",
-                BinOp::Lt => "<", BinOp::Le => "≤",
-                BinOp::Gt => ">", BinOp::Ge => "≥",
+                BinOp::Eq => "=", BinOp::Ne => "â‰ ",
+                BinOp::Lt => "<", BinOp::Le => "â‰¤",
+                BinOp::Gt => ">", BinOp::Ge => "â‰¥",
             };
             format!("({} {} {})", term_to_lean4(lhs), op_str, term_to_lean4(rhs))
         }
@@ -180,7 +195,7 @@ fn sort_to_lean4(s: &Sort) -> String {
         Sort::Bool => "Bool".into(),
         Sort::BitVec(w) => format!("BitVec {}", w),
         Sort::List(inner) => format!("List {}", sort_to_lean4(inner)),
-        Sort::Arrow(a, b) => format!("{} → {}", sort_to_lean4(a), sort_to_lean4(b)),
+        Sort::Arrow(a, b) => format!("{} â†’ {}", sort_to_lean4(a), sort_to_lean4(b)),
         Sort::User(name) => name.clone(),
         _ => "Type".into(),
     }
@@ -189,7 +204,7 @@ fn sort_to_lean4(s: &Sort) -> String {
 fn state_to_lean4(s: &State) -> String {
     match s {
         State::S => "S".into(),
-        State::S0 => "S₀".into(),
+        State::S0 => "Sâ‚€".into(),
         State::Sn(n) => format!("S{}", n),
         State::Prime(inner) => format!("({}')", state_to_lean4(inner)),
         _ => "S".into(),
@@ -219,7 +234,7 @@ fn tactic_to_lean4(t: &LeanTactic) -> String {
         LeanTactic::AllGoals(inner) => format!("all_goals {}", tactic_to_lean4(inner)),
         LeanTactic::Focus(ts) => {
             let tactics: Vec<_> = ts.iter().map(tactic_to_lean4).collect();
-            format!("· {}", tactics.join(" <;> "))
+            format!("Â· {}", tactics.join(" <;> "))
         }
         LeanTactic::Seq(ts) => {
             let tactics: Vec<_> = ts.iter().map(tactic_to_lean4).collect();

@@ -1,9 +1,24 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 #!/usr/bin/env python3
 
 """
 souffle_symbolic_agent.py
 
-Soufflé subprocess bridge for a dense symbolic reasoning kernel.
+SoufflÃ© subprocess bridge for a dense symbolic reasoning kernel.
 
 Architecture:
 
@@ -16,7 +31,7 @@ Architecture:
       |
       +--> Symbolic facts/rules
       |
-      +--> Generated Soufflé Datalog
+      +--> Generated SoufflÃ© Datalog
       |
       v
     souffle compiler
@@ -31,7 +46,7 @@ Architecture:
     Agent reasoning state
 
 The Python layer does not implement the Datalog evaluator.
-Soufflé is the Datalog compiler and evaluator.
+SoufflÃ© is the Datalog compiler and evaluator.
 """
 
 from __future__ import annotations
@@ -276,7 +291,7 @@ class SymbolicKernel:
 
 
 # ================================================================
-# Soufflé identifier escaping
+# SoufflÃ© identifier escaping
 # ================================================================
 
 def souffle_string(value: str) -> str:
@@ -292,7 +307,7 @@ def souffle_string(value: str) -> str:
 
 
 # ================================================================
-# Soufflé variable detection
+# SoufflÃ© variable detection
 # ================================================================
 
 def is_variable(value: str) -> bool:
@@ -306,7 +321,7 @@ def is_variable(value: str) -> bool:
 
 
 # ================================================================
-# Soufflé source builder
+# SoufflÃ© source builder
 # ================================================================
 
 class SouffleBuilder:
@@ -415,7 +430,7 @@ class SouffleBuilder:
 
 
 # ================================================================
-# Soufflé compiler
+# SoufflÃ© compiler
 # ================================================================
 
 class SouffleCompiler:
@@ -499,7 +514,7 @@ class SouffleCompiler:
 
             if result.returncode != 0:
                 raise RuntimeError(
-                    "Soufflé failed:\n"
+                    "SoufflÃ© failed:\n"
                     + result.stderr
                 )
 
@@ -944,595 +959,595 @@ def default_dictionary_entries() -> List[
         DictionaryEntry(
             "logic",
             "logic",
-            "منطق",
+            "Ù…Ù†Ø·Ù‚",
             "reasoning",
         ),
 
         DictionaryEntry(
             "reason",
             "reason",
-            "استدلال",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "knowledge",
             "knowledge",
-            "معرفة",
+            "Ù…Ø¹Ø±ÙØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "concept",
             "concept",
-            "مفهوم",
+            "Ù…ÙÙ‡ÙˆÙ…",
             "semantic",
         ),
 
         DictionaryEntry(
             "relation",
             "relation",
-            "علاقة",
+            "Ø¹Ù„Ø§Ù‚Ø©",
             "semantic",
         ),
 
         DictionaryEntry(
             "fact",
             "fact",
-            "حقيقة",
+            "Ø­Ù‚ÙŠÙ‚Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "rule",
             "rule",
-            "قاعدة",
+            "Ù‚Ø§Ø¹Ø¯Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "proof",
             "proof",
-            "برهان",
+            "Ø¨Ø±Ù‡Ø§Ù†",
             "logic",
         ),
 
         DictionaryEntry(
             "inference",
             "inference",
-            "استنتاج",
+            "Ø§Ø³ØªÙ†ØªØ§Ø¬",
             "reasoning",
         ),
 
         DictionaryEntry(
             "symbol",
             "symbol",
-            "رمز",
+            "Ø±Ù…Ø²",
             "language",
         ),
 
         DictionaryEntry(
             "language",
             "language",
-            "لغة",
+            "Ù„ØºØ©",
             "language",
         ),
 
         DictionaryEntry(
             "arabic",
             "Arabic",
-            "العربية",
+            "Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "english",
             "English",
-            "الإنجليزية",
+            "Ø§Ù„Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "truth",
             "truth",
-            "حقيقة",
+            "Ø­Ù‚ÙŠÙ‚Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "false",
             "false",
-            "خطأ",
+            "Ø®Ø·Ø£",
             "logic",
         ),
 
         DictionaryEntry(
             "true",
             "true",
-            "صحيح",
+            "ØµØ­ÙŠØ­",
             "logic",
         ),
 
         DictionaryEntry(
             "set",
             "set",
-            "مجموعة",
+            "Ù…Ø¬Ù…ÙˆØ¹Ø©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "number",
             "number",
-            "عدد",
+            "Ø¹Ø¯Ø¯",
             "mathematics",
         ),
 
         DictionaryEntry(
             "function",
             "function",
-            "دالة",
+            "Ø¯Ø§Ù„Ø©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "structure",
             "structure",
-            "بنية",
+            "Ø¨Ù†ÙŠØ©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "system",
             "system",
-            "نظام",
+            "Ù†Ø¸Ø§Ù…",
             "architecture",
         ),
 
         DictionaryEntry(
             "state",
             "state",
-            "حالة",
+            "Ø­Ø§Ù„Ø©",
             "architecture",
         ),
 
         DictionaryEntry(
             "transition",
             "transition",
-            "انتقال",
+            "Ø§Ù†ØªÙ‚Ø§Ù„",
             "architecture",
         ),
 
         DictionaryEntry(
             "network",
             "network",
-            "شبكة",
+            "Ø´Ø¨ÙƒØ©",
             "architecture",
         ),
 
         DictionaryEntry(
             "graph",
             "graph",
-            "رسم بياني",
+            "Ø±Ø³Ù… Ø¨ÙŠØ§Ù†ÙŠ",
             "mathematics",
         ),
 
         DictionaryEntry(
             "node",
             "node",
-            "عقدة",
+            "Ø¹Ù‚Ø¯Ø©",
             "graph",
         ),
 
         DictionaryEntry(
             "edge",
             "edge",
-            "حافة",
+            "Ø­Ø§ÙØ©",
             "graph",
         ),
 
         DictionaryEntry(
             "path",
             "path",
-            "مسار",
+            "Ù…Ø³Ø§Ø±",
             "graph",
         ),
 
         DictionaryEntry(
             "root",
             "root",
-            "جذر",
+            "Ø¬Ø°Ø±",
             "graph",
         ),
 
         DictionaryEntry(
             "ancestor",
             "ancestor",
-            "سلف",
+            "Ø³Ù„Ù",
             "graph",
         ),
 
         DictionaryEntry(
             "descendant",
             "descendant",
-            "نسل",
+            "Ù†Ø³Ù„",
             "graph",
         ),
 
         DictionaryEntry(
             "parent",
             "parent",
-            "والد",
+            "ÙˆØ§Ù„Ø¯",
             "graph",
         ),
 
         DictionaryEntry(
             "child",
             "child",
-            "ابن",
+            "Ø§Ø¨Ù†",
             "graph",
         ),
 
         DictionaryEntry(
             "equivalence",
             "equivalence",
-            "تكافؤ",
+            "ØªÙƒØ§ÙØ¤",
             "logic",
         ),
 
         DictionaryEntry(
             "identity",
             "identity",
-            "هوية",
+            "Ù‡ÙˆÙŠØ©",
             "logic",
         ),
 
         DictionaryEntry(
             "difference",
             "difference",
-            "اختلاف",
+            "Ø§Ø®ØªÙ„Ø§Ù",
             "logic",
         ),
 
         DictionaryEntry(
             "dependency",
             "dependency",
-            "اعتماد",
+            "Ø§Ø¹ØªÙ…Ø§Ø¯",
             "architecture",
         ),
 
         DictionaryEntry(
             "input",
             "input",
-            "مدخل",
+            "Ù…Ø¯Ø®Ù„",
             "system",
         ),
 
         DictionaryEntry(
             "output",
             "output",
-            "مخرج",
+            "Ù…Ø®Ø±Ø¬",
             "system",
         ),
 
         DictionaryEntry(
             "compile",
             "compile",
-            "ترجمة",
+            "ØªØ±Ø¬Ù…Ø©",
             "system",
         ),
 
         DictionaryEntry(
             "execute",
             "execute",
-            "تنفيذ",
+            "ØªÙ†ÙÙŠØ°",
             "system",
         ),
 
         DictionaryEntry(
             "query",
             "query",
-            "استعلام",
+            "Ø§Ø³ØªØ¹Ù„Ø§Ù…",
             "database",
         ),
 
         DictionaryEntry(
             "database",
             "database",
-            "قاعدة بيانات",
+            "Ù‚Ø§Ø¹Ø¯Ø© Ø¨ÙŠØ§Ù†Ø§Øª",
             "database",
         ),
 
         DictionaryEntry(
             "relation_database",
             "relational database",
-            "قاعدة بيانات علائقية",
+            "Ù‚Ø§Ø¹Ø¯Ø© Ø¨ÙŠØ§Ù†Ø§Øª Ø¹Ù„Ø§Ø¦Ù‚ÙŠØ©",
             "database",
         ),
 
         DictionaryEntry(
             "predicate",
             "predicate",
-            "محمول",
+            "Ù…Ø­Ù…ÙˆÙ„",
             "logic",
         ),
 
         DictionaryEntry(
             "variable",
             "variable",
-            "متغير",
+            "Ù…ØªØºÙŠØ±",
             "logic",
         ),
 
         DictionaryEntry(
             "constant",
             "constant",
-            "ثابت",
+            "Ø«Ø§Ø¨Øª",
             "logic",
         ),
 
         DictionaryEntry(
             "term",
             "term",
-            "حد",
+            "Ø­Ø¯",
             "logic",
         ),
 
         DictionaryEntry(
             "atom",
             "atom",
-            "ذرة",
+            "Ø°Ø±Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "negation",
             "negation",
-            "نفي",
+            "Ù†ÙÙŠ",
             "logic",
         ),
 
         DictionaryEntry(
             "stratum",
             "stratum",
-            "طبقة",
+            "Ø·Ø¨Ù‚Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "recursive",
             "recursive",
-            "تكراري",
+            "ØªÙƒØ±Ø§Ø±ÙŠ",
             "logic",
         ),
 
         DictionaryEntry(
             "deterministic",
             "deterministic",
-            "حتمي",
+            "Ø­ØªÙ…ÙŠ",
             "system",
         ),
 
         DictionaryEntry(
             "symbolic",
             "symbolic",
-            "رمزي",
+            "Ø±Ù…Ø²ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "semantic_reasoning",
             "semantic reasoning",
-            "استدلال دلالي",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ø¯Ù„Ø§Ù„ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "formal_reasoning",
             "formal reasoning",
-            "استدلال صوري",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ ØµÙˆØ±ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "deduction",
             "deduction",
-            "استنباط",
+            "Ø§Ø³ØªÙ†Ø¨Ø§Ø·",
             "reasoning",
         ),
 
         DictionaryEntry(
             "derivation",
             "derivation",
-            "اشتقاق",
+            "Ø§Ø´ØªÙ‚Ø§Ù‚",
             "reasoning",
         ),
 
         DictionaryEntry(
             "closure",
             "closure",
-            "إغلاق",
+            "Ø¥ØºÙ„Ø§Ù‚",
             "mathematics",
         ),
 
         DictionaryEntry(
             "fixed_point",
             "fixed point",
-            "نقطة ثابتة",
+            "Ù†Ù‚Ø·Ø© Ø«Ø§Ø¨ØªØ©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "iteration",
             "iteration",
-            "تكرار",
+            "ØªÙƒØ±Ø§Ø±",
             "mathematics",
         ),
 
         DictionaryEntry(
             "invariant",
             "invariant",
-            "ثابت بنيوي",
+            "Ø«Ø§Ø¨Øª Ø¨Ù†ÙŠÙˆÙŠ",
             "mathematics",
         ),
 
         DictionaryEntry(
             "verification",
             "verification",
-            "تحقق",
+            "ØªØ­Ù‚Ù‚",
             "logic",
         ),
 
         DictionaryEntry(
             "validation",
             "validation",
-            "تصديق",
+            "ØªØµØ¯ÙŠÙ‚",
             "system",
         ),
 
         DictionaryEntry(
             "constraint",
             "constraint",
-            "قيد",
+            "Ù‚ÙŠØ¯",
             "logic",
         ),
 
         DictionaryEntry(
             "model",
             "model",
-            "نموذج",
+            "Ù†Ù…ÙˆØ°Ø¬",
             "reasoning",
         ),
 
         DictionaryEntry(
             "schema",
             "schema",
-            "مخطط",
+            "Ù…Ø®Ø·Ø·",
             "database",
         ),
 
         DictionaryEntry(
             "index",
             "index",
-            "فهرس",
+            "ÙÙ‡Ø±Ø³",
             "database",
         ),
 
         DictionaryEntry(
             "tuple",
             "tuple",
-            "صف",
+            "ØµÙ",
             "database",
         ),
 
         DictionaryEntry(
             "join",
             "join",
-            "ضم",
+            "Ø¶Ù…",
             "database",
         ),
 
         DictionaryEntry(
             "projection",
             "projection",
-            "إسقاط",
+            "Ø¥Ø³Ù‚Ø§Ø·",
             "database",
         ),
 
         DictionaryEntry(
             "recursion",
             "recursion",
-            "استدعاء ذاتي",
+            "Ø§Ø³ØªØ¯Ø¹Ø§Ø¡ Ø°Ø§ØªÙŠ",
             "logic",
         ),
 
         DictionaryEntry(
             "compiler",
             "compiler",
-            "مترجم",
+            "Ù…ØªØ±Ø¬Ù…",
             "system",
         ),
 
         DictionaryEntry(
             "kernel",
             "kernel",
-            "نواة",
+            "Ù†ÙˆØ§Ø©",
             "system",
         ),
 
         DictionaryEntry(
             "agent",
             "agent",
-            "وكيل",
+            "ÙˆÙƒÙŠÙ„",
             "system",
         ),
 
         DictionaryEntry(
             "context",
             "context",
-            "سياق",
+            "Ø³ÙŠØ§Ù‚",
             "reasoning",
         ),
 
         DictionaryEntry(
             "memory",
             "memory",
-            "ذاكرة",
+            "Ø°Ø§ÙƒØ±Ø©",
             "system",
         ),
 
         DictionaryEntry(
             "knowledge_graph",
             "knowledge graph",
-            "رسم بياني معرفي",
+            "Ø±Ø³Ù… Ø¨ÙŠØ§Ù†ÙŠ Ù…Ø¹Ø±ÙÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "translation",
             "translation",
-            "ترجمة",
+            "ØªØ±Ø¬Ù…Ø©",
             "language",
         ),
 
         DictionaryEntry(
             "meaning",
             "meaning",
-            "معنى",
+            "Ù…Ø¹Ù†Ù‰",
             "language",
         ),
 
         DictionaryEntry(
             "word",
             "word",
-            "كلمة",
+            "ÙƒÙ„Ù…Ø©",
             "language",
         ),
 
         DictionaryEntry(
             "sentence",
             "sentence",
-            "جملة",
+            "Ø¬Ù…Ù„Ø©",
             "language",
         ),
 
         DictionaryEntry(
             "text",
             "text",
-            "نص",
+            "Ù†Øµ",
             "language",
         ),
 
         DictionaryEntry(
             "character",
             "character",
-            "حرف",
+            "Ø­Ø±Ù",
             "language",
         ),
 
         DictionaryEntry(
             "unicode",
             "Unicode",
-            "يونيكود",
+            "ÙŠÙˆÙ†ÙŠÙƒÙˆØ¯",
             "language",
         ),
 
@@ -1546,434 +1561,434 @@ def default_dictionary_entries() -> List[
         DictionaryEntry(
             "encoding",
             "encoding",
-            "ترميز",
+            "ØªØ±Ù…ÙŠØ²",
             "encoding",
         ),
 
         DictionaryEntry(
             "normalization",
             "normalization",
-            "تطبيع",
+            "ØªØ·Ø¨ÙŠØ¹",
             "language",
         ),
 
         DictionaryEntry(
             "token",
             "token",
-            "رمز لغوي",
+            "Ø±Ù…Ø² Ù„ØºÙˆÙŠ",
             "language",
         ),
 
         DictionaryEntry(
             "lexicon",
             "lexicon",
-            "معجم",
+            "Ù…Ø¹Ø¬Ù…",
             "language",
         ),
 
         DictionaryEntry(
             "ontology",
             "ontology",
-            "أنطولوجيا",
+            "Ø£Ù†Ø·ÙˆÙ„ÙˆØ¬ÙŠØ§",
             "reasoning",
         ),
 
         DictionaryEntry(
             "classification",
             "classification",
-            "تصنيف",
+            "ØªØµÙ†ÙŠÙ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "category",
             "category",
-            "فئة",
+            "ÙØ¦Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "attribute",
             "attribute",
-            "خاصية",
+            "Ø®Ø§ØµÙŠØ©",
             "database",
         ),
 
         DictionaryEntry(
             "property",
             "property",
-            "خاصية",
+            "Ø®Ø§ØµÙŠØ©",
             "logic",
         ),
 
         DictionaryEntry(
             "entity",
             "entity",
-            "كيان",
+            "ÙƒÙŠØ§Ù†",
             "ontology",
         ),
 
         DictionaryEntry(
             "object",
             "object",
-            "كائن",
+            "ÙƒØ§Ø¦Ù†",
             "ontology",
         ),
 
         DictionaryEntry(
             "event",
             "event",
-            "حدث",
+            "Ø­Ø¯Ø«",
             "reasoning",
         ),
 
         DictionaryEntry(
             "condition",
             "condition",
-            "شرط",
+            "Ø´Ø±Ø·",
             "logic",
         ),
 
         DictionaryEntry(
             "conclusion",
             "conclusion",
-            "استنتاج نهائي",
+            "Ø§Ø³ØªÙ†ØªØ§Ø¬ Ù†Ù‡Ø§Ø¦ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "premise",
             "premise",
-            "مقدمة",
+            "Ù…Ù‚Ø¯Ù…Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "axiom",
             "axiom",
-            "مسلمة",
+            "Ù…Ø³Ù„Ù…Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "theorem",
             "theorem",
-            "مبرهنة",
+            "Ù…Ø¨Ø±Ù‡Ù†Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "consistency",
             "consistency",
-            "اتساق",
+            "Ø§ØªØ³Ø§Ù‚",
             "logic",
         ),
 
         DictionaryEntry(
             "soundness",
             "soundness",
-            "سلامة",
+            "Ø³Ù„Ø§Ù…Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "completeness",
             "completeness",
-            "اكتمال",
+            "Ø§ÙƒØªÙ…Ø§Ù„",
             "logic",
         ),
 
         DictionaryEntry(
             "truth_value",
             "truth value",
-            "قيمة الحقيقة",
+            "Ù‚ÙŠÙ…Ø© Ø§Ù„Ø­Ù‚ÙŠÙ‚Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "domain",
             "domain",
-            "مجال",
+            "Ù…Ø¬Ø§Ù„",
             "mathematics",
         ),
 
         DictionaryEntry(
             "codomain",
             "codomain",
-            "المجال المقابل",
+            "Ø§Ù„Ù…Ø¬Ø§Ù„ Ø§Ù„Ù…Ù‚Ø§Ø¨Ù„",
             "mathematics",
         ),
 
         DictionaryEntry(
             "mapping",
             "mapping",
-            "تطبيق",
+            "ØªØ·Ø¨ÙŠÙ‚",
             "mathematics",
         ),
 
         DictionaryEntry(
             "composition",
             "composition",
-            "تركيب",
+            "ØªØ±ÙƒÙŠØ¨",
             "mathematics",
         ),
 
         DictionaryEntry(
             "order",
             "order",
-            "ترتيب",
+            "ØªØ±ØªÙŠØ¨",
             "mathematics",
         ),
 
         DictionaryEntry(
             "partial_order",
             "partial order",
-            "ترتيب جزئي",
+            "ØªØ±ØªÙŠØ¨ Ø¬Ø²Ø¦ÙŠ",
             "mathematics",
         ),
 
         DictionaryEntry(
             "lattice",
             "lattice",
-            "شبكة رياضية",
+            "Ø´Ø¨ÙƒØ© Ø±ÙŠØ§Ø¶ÙŠØ©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "set_member",
             "set member",
-            "عضو مجموعة",
+            "Ø¹Ø¶Ùˆ Ù…Ø¬Ù…ÙˆØ¹Ø©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "subset",
             "subset",
-            "مجموعة جزئية",
+            "Ù…Ø¬Ù…ÙˆØ¹Ø© Ø¬Ø²Ø¦ÙŠØ©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "intersection",
             "intersection",
-            "تقاطع",
+            "ØªÙ‚Ø§Ø·Ø¹",
             "mathematics",
         ),
 
         DictionaryEntry(
             "union",
             "union",
-            "اتحاد",
+            "Ø§ØªØ­Ø§Ø¯",
             "mathematics",
         ),
 
         DictionaryEntry(
             "difference_set",
             "set difference",
-            "فرق المجموعات",
+            "ÙØ±Ù‚ Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Ø§Øª",
             "mathematics",
         ),
 
         DictionaryEntry(
             "cardinality",
             "cardinality",
-            "عدد العناصر",
+            "Ø¹Ø¯Ø¯ Ø§Ù„Ø¹Ù†Ø§ØµØ±",
             "mathematics",
         ),
 
         DictionaryEntry(
             "finite",
             "finite",
-            "منته",
+            "Ù…Ù†ØªÙ‡",
             "mathematics",
         ),
 
         DictionaryEntry(
             "infinite",
             "infinite",
-            "لانهائي",
+            "Ù„Ø§Ù†Ù‡Ø§Ø¦ÙŠ",
             "mathematics",
         ),
 
         DictionaryEntry(
             "algorithm",
             "algorithm",
-            "خوارزمية",
+            "Ø®ÙˆØ§Ø±Ø²Ù…ÙŠØ©",
             "system",
         ),
 
         DictionaryEntry(
             "evaluation",
             "evaluation",
-            "تقييم",
+            "ØªÙ‚ÙŠÙŠÙ…",
             "logic",
         ),
 
         DictionaryEntry(
             "bottom_up",
             "bottom-up",
-            "من الأسفل إلى الأعلى",
+            "Ù…Ù† Ø§Ù„Ø£Ø³ÙÙ„ Ø¥Ù„Ù‰ Ø§Ù„Ø£Ø¹Ù„Ù‰",
             "logic",
         ),
 
         DictionaryEntry(
             "semi_naive",
             "semi-naive evaluation",
-            "تقييم شبه ساذج",
+            "ØªÙ‚ÙŠÙŠÙ… Ø´Ø¨Ù‡ Ø³Ø§Ø°Ø¬",
             "logic",
         ),
 
         DictionaryEntry(
             "dependency_graph",
             "dependency graph",
-            "رسم بياني للاعتماد",
+            "Ø±Ø³Ù… Ø¨ÙŠØ§Ù†ÙŠ Ù„Ù„Ø§Ø¹ØªÙ…Ø§Ø¯",
             "logic",
         ),
 
         DictionaryEntry(
             "negative_dependency",
             "negative dependency",
-            "اعتماد سلبي",
+            "Ø§Ø¹ØªÙ…Ø§Ø¯ Ø³Ù„Ø¨ÙŠ",
             "logic",
         ),
 
         DictionaryEntry(
             "positive_dependency",
             "positive dependency",
-            "اعتماد إيجابي",
+            "Ø§Ø¹ØªÙ…Ø§Ø¯ Ø¥ÙŠØ¬Ø§Ø¨ÙŠ",
             "logic",
         ),
 
         DictionaryEntry(
             "stratified_negation",
             "stratified negation",
-            "النفي الطبقي",
+            "Ø§Ù„Ù†ÙÙŠ Ø§Ù„Ø·Ø¨Ù‚ÙŠ",
             "logic",
         ),
 
         DictionaryEntry(
             "ground_fact",
             "ground fact",
-            "حقيقة مكتملة",
+            "Ø­Ù‚ÙŠÙ‚Ø© Ù…ÙƒØªÙ…Ù„Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "substitution",
             "substitution",
-            "استبدال",
+            "Ø§Ø³ØªØ¨Ø¯Ø§Ù„",
             "logic",
         ),
 
         DictionaryEntry(
             "unification",
             "unification",
-            "توحيد",
+            "ØªÙˆØ­ÙŠØ¯",
             "logic",
         ),
 
         DictionaryEntry(
             "variable_binding",
             "variable binding",
-            "ربط المتغير",
+            "Ø±Ø¨Ø· Ø§Ù„Ù…ØªØºÙŠØ±",
             "logic",
         ),
 
         DictionaryEntry(
             "pattern",
             "pattern",
-            "نمط",
+            "Ù†Ù…Ø·",
             "logic",
         ),
 
         DictionaryEntry(
             "match",
             "match",
-            "مطابقة",
+            "Ù…Ø·Ø§Ø¨Ù‚Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "grounding",
             "grounding",
-            "تثبيت",
+            "ØªØ«Ø¨ÙŠØª",
             "logic",
         ),
 
         DictionaryEntry(
             "derivation_tree",
             "derivation tree",
-            "شجرة الاشتقاق",
+            "Ø´Ø¬Ø±Ø© Ø§Ù„Ø§Ø´ØªÙ‚Ø§Ù‚",
             "logic",
         ),
 
         DictionaryEntry(
             "proof_tree",
             "proof tree",
-            "شجرة البرهان",
+            "Ø´Ø¬Ø±Ø© Ø§Ù„Ø¨Ø±Ù‡Ø§Ù†",
             "logic",
         ),
 
         DictionaryEntry(
             "dependency",
             "dependency",
-            "تبعية",
+            "ØªØ¨Ø¹ÙŠØ©",
             "architecture",
         ),
 
         DictionaryEntry(
             "pipeline",
             "pipeline",
-            "خط معالجة",
+            "Ø®Ø· Ù…Ø¹Ø§Ù„Ø¬Ø©",
             "architecture",
         ),
 
         DictionaryEntry(
             "compiler_pass",
             "compiler pass",
-            "مرحلة مترجم",
+            "Ù…Ø±Ø­Ù„Ø© Ù…ØªØ±Ø¬Ù…",
             "compiler",
         ),
 
         DictionaryEntry(
             "intermediate_representation",
             "intermediate representation",
-            "تمثيل وسيط",
+            "ØªÙ…Ø«ÙŠÙ„ ÙˆØ³ÙŠØ·",
             "compiler",
         ),
 
         DictionaryEntry(
             "runtime",
             "runtime",
-            "بيئة تشغيل",
+            "Ø¨ÙŠØ¦Ø© ØªØ´ØºÙŠÙ„",
             "system",
         ),
 
         DictionaryEntry(
             "process",
             "process",
-            "عملية",
+            "Ø¹Ù…Ù„ÙŠØ©",
             "system",
         ),
 
         DictionaryEntry(
             "subprocess",
             "subprocess",
-            "عملية فرعية",
+            "Ø¹Ù…Ù„ÙŠØ© ÙØ±Ø¹ÙŠØ©",
             "system",
         ),
 
         DictionaryEntry(
             "filesystem",
             "filesystem",
-            "نظام ملفات",
+            "Ù†Ø¸Ø§Ù… Ù…Ù„ÙØ§Øª",
             "system",
         ),
 
         DictionaryEntry(
             "temporary_directory",
             "temporary directory",
-            "دليل مؤقت",
+            "Ø¯Ù„ÙŠÙ„ Ù…Ø¤Ù‚Øª",
             "system",
         ),
 
@@ -1987,1946 +2002,1946 @@ def default_dictionary_entries() -> List[
         DictionaryEntry(
             "serialization",
             "serialization",
-            "تسلسل",
+            "ØªØ³Ù„Ø³Ù„",
             "system",
         ),
 
         DictionaryEntry(
             "hash",
             "hash",
-            "بصمة",
+            "Ø¨ØµÙ…Ø©",
             "security",
         ),
 
         DictionaryEntry(
             "integrity",
             "integrity",
-            "سلامة",
+            "Ø³Ù„Ø§Ù…Ø©",
             "security",
         ),
 
         DictionaryEntry(
             "determinism",
             "determinism",
-            "حتمية",
+            "Ø­ØªÙ…ÙŠØ©",
             "security",
         ),
 
         DictionaryEntry(
             "audit",
             "audit",
-            "تدقيق",
+            "ØªØ¯Ù‚ÙŠÙ‚",
             "security",
         ),
 
         DictionaryEntry(
             "trace",
             "trace",
-            "تتبع",
+            "ØªØªØ¨Ø¹",
             "reasoning",
         ),
 
         DictionaryEntry(
             "explain",
             "explain",
-            "شرح",
+            "Ø´Ø±Ø­",
             "reasoning",
         ),
 
         DictionaryEntry(
             "evidence",
             "evidence",
-            "دليل",
+            "Ø¯Ù„ÙŠÙ„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "assertion",
             "assertion",
-            "تأكيد",
+            "ØªØ£ÙƒÙŠØ¯",
             "logic",
         ),
 
         DictionaryEntry(
             "verification_state",
             "verification state",
-            "حالة التحقق",
+            "Ø­Ø§Ù„Ø© Ø§Ù„ØªØ­Ù‚Ù‚",
             "logic",
         ),
 
         DictionaryEntry(
             "accepted",
             "accepted",
-            "مقبول",
+            "Ù…Ù‚Ø¨ÙˆÙ„",
             "verification",
         ),
 
         DictionaryEntry(
             "rejected",
             "rejected",
-            "مرفوض",
+            "Ù…Ø±ÙÙˆØ¶",
             "verification",
         ),
 
         DictionaryEntry(
             "unknown",
             "unknown",
-            "غير معروف",
+            "ØºÙŠØ± Ù…Ø¹Ø±ÙˆÙ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "known",
             "known",
-            "معروف",
+            "Ù…Ø¹Ø±ÙˆÙ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "derived",
             "derived",
-            "مشتق",
+            "Ù…Ø´ØªÙ‚",
             "reasoning",
         ),
 
         DictionaryEntry(
             "source",
             "source",
-            "مصدر",
+            "Ù…ØµØ¯Ø±",
             "reasoning",
         ),
 
         DictionaryEntry(
             "target",
             "target",
-            "هدف",
+            "Ù‡Ø¯Ù",
             "reasoning",
         ),
 
         DictionaryEntry(
             "dependency_edge",
             "dependency edge",
-            "حافة اعتماد",
+            "Ø­Ø§ÙØ© Ø§Ø¹ØªÙ…Ø§Ø¯",
             "graph",
         ),
 
         DictionaryEntry(
             "semantic_edge",
             "semantic edge",
-            "حافة دلالية",
+            "Ø­Ø§ÙØ© Ø¯Ù„Ø§Ù„ÙŠØ©",
             "graph",
         ),
 
         DictionaryEntry(
             "logical_edge",
             "logical edge",
-            "حافة منطقية",
+            "Ø­Ø§ÙØ© Ù…Ù†Ø·Ù‚ÙŠØ©",
             "graph",
         ),
 
         DictionaryEntry(
             "activation",
             "activation",
-            "تنشيط",
+            "ØªÙ†Ø´ÙŠØ·",
             "reasoning",
         ),
 
         DictionaryEntry(
             "selection",
             "selection",
-            "اختيار",
+            "Ø§Ø®ØªÙŠØ§Ø±",
             "reasoning",
         ),
 
         DictionaryEntry(
             "resolution",
             "resolution",
-            "حل",
+            "Ø­Ù„",
             "logic",
         ),
 
         DictionaryEntry(
             "conflict",
             "conflict",
-            "تعارض",
+            "ØªØ¹Ø§Ø±Ø¶",
             "logic",
         ),
 
         DictionaryEntry(
             "agreement",
             "agreement",
-            "اتفاق",
+            "Ø§ØªÙØ§Ù‚",
             "logic",
         ),
 
         DictionaryEntry(
             "contradiction",
             "contradiction",
-            "تناقض",
+            "ØªÙ†Ø§Ù‚Ø¶",
             "logic",
         ),
 
         DictionaryEntry(
             "consensus",
             "consensus",
-            "إجماع",
+            "Ø¥Ø¬Ù…Ø§Ø¹",
             "reasoning",
         ),
 
         DictionaryEntry(
             "priority",
             "priority",
-            "أولوية",
+            "Ø£ÙˆÙ„ÙˆÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "weight",
             "weight",
-            "وزن",
+            "ÙˆØ²Ù†",
             "mathematics",
         ),
 
         DictionaryEntry(
             "score",
             "score",
-            "درجة",
+            "Ø¯Ø±Ø¬Ø©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "threshold",
             "threshold",
-            "عتبة",
+            "Ø¹ØªØ¨Ø©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "rank",
             "rank",
-            "رتبة",
+            "Ø±ØªØ¨Ø©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "dimension",
             "dimension",
-            "بُعد",
+            "Ø¨ÙØ¹Ø¯",
             "mathematics",
         ),
 
         DictionaryEntry(
             "matrix",
             "matrix",
-            "مصفوفة",
+            "Ù…ØµÙÙˆÙØ©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "vector",
             "vector",
-            "متجه",
+            "Ù…ØªØ¬Ù‡",
             "mathematics",
         ),
 
         DictionaryEntry(
             "tensor",
             "tensor",
-            "موتر",
+            "Ù…ÙˆØªØ±",
             "mathematics",
         ),
 
         DictionaryEntry(
             "operation",
             "operation",
-            "عملية",
+            "Ø¹Ù…Ù„ÙŠØ©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "composition_rule",
             "composition rule",
-            "قاعدة التركيب",
+            "Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„ØªØ±ÙƒÙŠØ¨",
             "logic",
         ),
 
         DictionaryEntry(
             "rewrite",
             "rewrite",
-            "إعادة كتابة",
+            "Ø¥Ø¹Ø§Ø¯Ø© ÙƒØªØ§Ø¨Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "normal_form",
             "normal form",
-            "صيغة معيارية",
+            "ØµÙŠØºØ© Ù…Ø¹ÙŠØ§Ø±ÙŠØ©",
             "logic",
         ),
 
         DictionaryEntry(
             "canonical",
             "canonical",
-            "قياسي",
+            "Ù‚ÙŠØ§Ø³ÙŠ",
             "mathematics",
         ),
 
         DictionaryEntry(
             "representation",
             "representation",
-            "تمثيل",
+            "ØªÙ…Ø«ÙŠÙ„",
             "system",
         ),
 
         DictionaryEntry(
             "serialization_format",
             "serialization format",
-            "تنسيق التسلسل",
+            "ØªÙ†Ø³ÙŠÙ‚ Ø§Ù„ØªØ³Ù„Ø³Ù„",
             "system",
         ),
 
         DictionaryEntry(
             "configuration",
             "configuration",
-            "تهيئة",
+            "ØªÙ‡ÙŠØ¦Ø©",
             "system",
         ),
 
         DictionaryEntry(
             "parameter",
             "parameter",
-            "معامل",
+            "Ù…Ø¹Ø§Ù…Ù„",
             "mathematics",
         ),
 
         DictionaryEntry(
             "argument",
             "argument",
-            "وسيط",
+            "ÙˆØ³ÙŠØ·",
             "logic",
         ),
 
         DictionaryEntry(
             "arity",
             "arity",
-            "رتبة العلاقة",
+            "Ø±ØªØ¨Ø© Ø§Ù„Ø¹Ù„Ø§Ù‚Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "predicate_symbol",
             "predicate symbol",
-            "رمز المحمول",
+            "Ø±Ù…Ø² Ø§Ù„Ù…Ø­Ù…ÙˆÙ„",
             "logic",
         ),
 
         DictionaryEntry(
             "relation_symbol",
             "relation symbol",
-            "رمز العلاقة",
+            "Ø±Ù…Ø² Ø§Ù„Ø¹Ù„Ø§Ù‚Ø©",
             "logic",
         ),
 
         DictionaryEntry(
             "database_fact",
             "database fact",
-            "حقيقة قاعدة البيانات",
+            "Ø­Ù‚ÙŠÙ‚Ø© Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª",
             "database",
         ),
 
         DictionaryEntry(
             "derived_relation",
             "derived relation",
-            "علاقة مشتقة",
+            "Ø¹Ù„Ø§Ù‚Ø© Ù…Ø´ØªÙ‚Ø©",
             "database",
         ),
 
         DictionaryEntry(
             "base_relation",
             "base relation",
-            "علاقة أساسية",
+            "Ø¹Ù„Ø§Ù‚Ø© Ø£Ø³Ø§Ø³ÙŠØ©",
             "database",
         ),
 
         DictionaryEntry(
             "recursive_relation",
             "recursive relation",
-            "علاقة تكرارية",
+            "Ø¹Ù„Ø§Ù‚Ø© ØªÙƒØ±Ø§Ø±ÙŠØ©",
             "database",
         ),
 
         DictionaryEntry(
             "query_result",
             "query result",
-            "نتيجة الاستعلام",
+            "Ù†ØªÙŠØ¬Ø© Ø§Ù„Ø§Ø³ØªØ¹Ù„Ø§Ù…",
             "database",
         ),
 
         DictionaryEntry(
             "relation_algebra",
             "relational algebra",
-            "الجبر العلائقي",
+            "Ø§Ù„Ø¬Ø¨Ø± Ø§Ù„Ø¹Ù„Ø§Ø¦Ù‚ÙŠ",
             "database",
         ),
 
         DictionaryEntry(
             "join_condition",
             "join condition",
-            "شرط الضم",
+            "Ø´Ø±Ø· Ø§Ù„Ø¶Ù…",
             "database",
         ),
 
         DictionaryEntry(
             "selection_condition",
             "selection condition",
-            "شرط الاختيار",
+            "Ø´Ø±Ø· Ø§Ù„Ø§Ø®ØªÙŠØ§Ø±",
             "database",
         ),
 
         DictionaryEntry(
             "projection_column",
             "projection column",
-            "عمود الإسقاط",
+            "Ø¹Ù…ÙˆØ¯ Ø§Ù„Ø¥Ø³Ù‚Ø§Ø·",
             "database",
         ),
 
         DictionaryEntry(
             "closure_operator",
             "closure operator",
-            "مؤثر الإغلاق",
+            "Ù…Ø¤Ø«Ø± Ø§Ù„Ø¥ØºÙ„Ø§Ù‚",
             "mathematics",
         ),
 
         DictionaryEntry(
             "fixed_point_operator",
             "fixed point operator",
-            "مؤثر النقطة الثابتة",
+            "Ù…Ø¤Ø«Ø± Ø§Ù„Ù†Ù‚Ø·Ø© Ø§Ù„Ø«Ø§Ø¨ØªØ©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "least_fixed_point",
             "least fixed point",
-            "أصغر نقطة ثابتة",
+            "Ø£ØµØºØ± Ù†Ù‚Ø·Ø© Ø«Ø§Ø¨ØªØ©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "monotonic",
             "monotonic",
-            "رتيب",
+            "Ø±ØªÙŠØ¨",
             "mathematics",
         ),
 
         DictionaryEntry(
             "finite_model",
             "finite model",
-            "نموذج منته",
+            "Ù†Ù…ÙˆØ°Ø¬ Ù…Ù†ØªÙ‡",
             "logic",
         ),
 
         DictionaryEntry(
             "model_checking",
             "model checking",
-            "فحص النموذج",
+            "ÙØ­Øµ Ø§Ù„Ù†Ù…ÙˆØ°Ø¬",
             "logic",
         ),
 
         DictionaryEntry(
             "formal_system",
             "formal system",
-            "نظام صوري",
+            "Ù†Ø¸Ø§Ù… ØµÙˆØ±ÙŠ",
             "logic",
         ),
 
         DictionaryEntry(
             "symbolic_execution",
             "symbolic execution",
-            "تنفيذ رمزي",
+            "ØªÙ†ÙÙŠØ° Ø±Ù…Ø²ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "symbolic_state",
             "symbolic state",
-            "حالة رمزية",
+            "Ø­Ø§Ù„Ø© Ø±Ù…Ø²ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "reasoning_kernel",
             "reasoning kernel",
-            "نواة الاستدلال",
+            "Ù†ÙˆØ§Ø© Ø§Ù„Ø§Ø³ØªØ¯Ù„Ø§Ù„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "dense_reasoning",
             "dense reasoning",
-            "استدلال كثيف",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ ÙƒØ«ÙŠÙ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "knowledge_base",
             "knowledge base",
-            "قاعدة معرفة",
+            "Ù‚Ø§Ø¹Ø¯Ø© Ù…Ø¹Ø±ÙØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "knowledge_relation",
             "knowledge relation",
-            "علاقة معرفية",
+            "Ø¹Ù„Ø§Ù‚Ø© Ù…Ø¹Ø±ÙÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "semantic_relation",
             "semantic relation",
-            "علاقة دلالية",
+            "Ø¹Ù„Ø§Ù‚Ø© Ø¯Ù„Ø§Ù„ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "lexical_relation",
             "lexical relation",
-            "علاقة معجمية",
+            "Ø¹Ù„Ø§Ù‚Ø© Ù…Ø¹Ø¬Ù…ÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "bilingual",
             "bilingual",
-            "ثنائي اللغة",
+            "Ø«Ù†Ø§Ø¦ÙŠ Ø§Ù„Ù„ØºØ©",
             "language",
         ),
 
         DictionaryEntry(
             "multilingual",
             "multilingual",
-            "متعدد اللغات",
+            "Ù…ØªØ¹Ø¯Ø¯ Ø§Ù„Ù„ØºØ§Øª",
             "language",
         ),
 
         DictionaryEntry(
             "arabic_script",
             "Arabic script",
-            "الخط العربي",
+            "Ø§Ù„Ø®Ø· Ø§Ù„Ø¹Ø±Ø¨ÙŠ",
             "language",
         ),
 
         DictionaryEntry(
             "right_to_left",
             "right-to-left",
-            "من اليمين إلى اليسار",
+            "Ù…Ù† Ø§Ù„ÙŠÙ…ÙŠÙ† Ø¥Ù„Ù‰ Ø§Ù„ÙŠØ³Ø§Ø±",
             "language",
         ),
 
         DictionaryEntry(
             "left_to_right",
             "left-to-right",
-            "من اليسار إلى اليمين",
+            "Ù…Ù† Ø§Ù„ÙŠØ³Ø§Ø± Ø¥Ù„Ù‰ Ø§Ù„ÙŠÙ…ÙŠÙ†",
             "language",
         ),
 
         DictionaryEntry(
             "bidirectional_text",
             "bidirectional text",
-            "نص ثنائي الاتجاه",
+            "Ù†Øµ Ø«Ù†Ø§Ø¦ÙŠ Ø§Ù„Ø§ØªØ¬Ø§Ù‡",
             "language",
         ),
 
         DictionaryEntry(
             "unicode_symbol",
             "Unicode symbol",
-            "رمز يونيكود",
+            "Ø±Ù…Ø² ÙŠÙˆÙ†ÙŠÙƒÙˆØ¯",
             "encoding",
         ),
 
         DictionaryEntry(
             "arabic_semantics",
             "Arabic semantics",
-            "دلالات عربية",
+            "Ø¯Ù„Ø§Ù„Ø§Øª Ø¹Ø±Ø¨ÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "english_semantics",
             "English semantics",
-            "دلالات إنجليزية",
+            "Ø¯Ù„Ø§Ù„Ø§Øª Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "cross_language",
             "cross-language",
-            "عبر اللغات",
+            "Ø¹Ø¨Ø± Ø§Ù„Ù„ØºØ§Øª",
             "language",
         ),
 
         DictionaryEntry(
             "semantic_equivalence",
             "semantic equivalence",
-            "تكافؤ دلالي",
+            "ØªÙƒØ§ÙØ¤ Ø¯Ù„Ø§Ù„ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "translation_edge",
             "translation edge",
-            "حافة ترجمة",
+            "Ø­Ø§ÙØ© ØªØ±Ø¬Ù…Ø©",
             "language",
         ),
 
         DictionaryEntry(
             "concept_identity",
             "concept identity",
-            "هوية المفهوم",
+            "Ù‡ÙˆÙŠØ© Ø§Ù„Ù…ÙÙ‡ÙˆÙ…",
             "reasoning",
         ),
 
         DictionaryEntry(
             "concept_relation",
             "concept relation",
-            "علاقة المفهوم",
+            "Ø¹Ù„Ø§Ù‚Ø© Ø§Ù„Ù…ÙÙ‡ÙˆÙ…",
             "reasoning",
         ),
 
         DictionaryEntry(
             "knowledge_edge",
             "knowledge edge",
-            "حافة معرفية",
+            "Ø­Ø§ÙØ© Ù…Ø¹Ø±ÙÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "reasoning_edge",
             "reasoning edge",
-            "حافة استدلالية",
+            "Ø­Ø§ÙØ© Ø§Ø³ØªØ¯Ù„Ø§Ù„ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "proof_edge",
             "proof edge",
-            "حافة برهانية",
+            "Ø­Ø§ÙØ© Ø¨Ø±Ù‡Ø§Ù†ÙŠØ©",
             "logic",
         ),
 
         DictionaryEntry(
             "derivation_edge",
             "derivation edge",
-            "حافة اشتقاق",
+            "Ø­Ø§ÙØ© Ø§Ø´ØªÙ‚Ø§Ù‚",
             "logic",
         ),
 
         DictionaryEntry(
             "constraint_edge",
             "constraint edge",
-            "حافة قيد",
+            "Ø­Ø§ÙØ© Ù‚ÙŠØ¯",
             "logic",
         ),
 
         DictionaryEntry(
             "verification_edge",
             "verification edge",
-            "حافة تحقق",
+            "Ø­Ø§ÙØ© ØªØ­Ù‚Ù‚",
             "verification",
         ),
 
         DictionaryEntry(
             "audit_edge",
             "audit edge",
-            "حافة تدقيق",
+            "Ø­Ø§ÙØ© ØªØ¯Ù‚ÙŠÙ‚",
             "security",
         ),
 
         DictionaryEntry(
             "trust",
             "trust",
-            "ثقة",
+            "Ø«Ù‚Ø©",
             "security",
         ),
 
         DictionaryEntry(
             "authorization",
             "authorization",
-            "تفويض",
+            "ØªÙÙˆÙŠØ¶",
             "security",
         ),
 
         DictionaryEntry(
             "permission",
             "permission",
-            "إذن",
+            "Ø¥Ø°Ù†",
             "security",
         ),
 
         DictionaryEntry(
             "policy",
             "policy",
-            "سياسة",
+            "Ø³ÙŠØ§Ø³Ø©",
             "security",
         ),
 
         DictionaryEntry(
             "governance",
             "governance",
-            "حوكمة",
+            "Ø­ÙˆÙƒÙ…Ø©",
             "security",
         ),
 
         DictionaryEntry(
             "provenance",
             "provenance",
-            "مصدرية",
+            "Ù…ØµØ¯Ø±ÙŠØ©",
             "security",
         ),
 
         DictionaryEntry(
             "lineage",
             "lineage",
-            "سلسلة الأصل",
+            "Ø³Ù„Ø³Ù„Ø© Ø§Ù„Ø£ØµÙ„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "traceability",
             "traceability",
-            "قابلية التتبع",
+            "Ù‚Ø§Ø¨Ù„ÙŠØ© Ø§Ù„ØªØªØ¨Ø¹",
             "reasoning",
         ),
 
         DictionaryEntry(
             "reproducibility",
             "reproducibility",
-            "قابلية إعادة الإنتاج",
+            "Ù‚Ø§Ø¨Ù„ÙŠØ© Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ø¥Ù†ØªØ§Ø¬",
             "system",
         ),
 
         DictionaryEntry(
             "deterministic_output",
             "deterministic output",
-            "مخرج حتمي",
+            "Ù…Ø®Ø±Ø¬ Ø­ØªÙ…ÙŠ",
             "system",
         ),
 
         DictionaryEntry(
             "failure",
             "failure",
-            "فشل",
+            "ÙØ´Ù„",
             "system",
         ),
 
         DictionaryEntry(
             "error",
             "error",
-            "خطأ",
+            "Ø®Ø·Ø£",
             "system",
         ),
 
         DictionaryEntry(
             "exception",
             "exception",
-            "استثناء",
+            "Ø§Ø³ØªØ«Ù†Ø§Ø¡",
             "system",
         ),
 
         DictionaryEntry(
             "timeout",
             "timeout",
-            "مهلة",
+            "Ù…Ù‡Ù„Ø©",
             "system",
         ),
 
         DictionaryEntry(
             "process_exit",
             "process exit",
-            "خروج العملية",
+            "Ø®Ø±ÙˆØ¬ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©",
             "system",
         ),
 
         DictionaryEntry(
             "compiler_error",
             "compiler error",
-            "خطأ المترجم",
+            "Ø®Ø·Ø£ Ø§Ù„Ù…ØªØ±Ø¬Ù…",
             "compiler",
         ),
 
         DictionaryEntry(
             "compile_success",
             "compile success",
-            "نجاح الترجمة",
+            "Ù†Ø¬Ø§Ø­ Ø§Ù„ØªØ±Ø¬Ù…Ø©",
             "compiler",
         ),
 
         DictionaryEntry(
             "result_set",
             "result set",
-            "مجموعة النتائج",
+            "Ù…Ø¬Ù…ÙˆØ¹Ø© Ø§Ù„Ù†ØªØ§Ø¦Ø¬",
             "database",
         ),
 
         DictionaryEntry(
             "row",
             "row",
-            "صف",
+            "ØµÙ",
             "database",
         ),
 
         DictionaryEntry(
             "column",
             "column",
-            "عمود",
+            "Ø¹Ù…ÙˆØ¯",
             "database",
         ),
 
         DictionaryEntry(
             "schema_declaration",
             "schema declaration",
-            "تصريح المخطط",
+            "ØªØµØ±ÙŠØ­ Ø§Ù„Ù…Ø®Ø·Ø·",
             "database",
         ),
 
         DictionaryEntry(
             "relation_declaration",
             "relation declaration",
-            "تصريح العلاقة",
+            "ØªØµØ±ÙŠØ­ Ø§Ù„Ø¹Ù„Ø§Ù‚Ø©",
             "database",
         ),
 
         DictionaryEntry(
             "fact_store",
             "fact store",
-            "مخزن الحقائق",
+            "Ù…Ø®Ø²Ù† Ø§Ù„Ø­Ù‚Ø§Ø¦Ù‚",
             "database",
         ),
 
         DictionaryEntry(
             "knowledge_store",
             "knowledge store",
-            "مخزن المعرفة",
+            "Ù…Ø®Ø²Ù† Ø§Ù„Ù…Ø¹Ø±ÙØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "reasoning_engine",
             "reasoning engine",
-            "محرك الاستدلال",
+            "Ù…Ø­Ø±Ùƒ Ø§Ù„Ø§Ø³ØªØ¯Ù„Ø§Ù„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "logical_engine",
             "logical engine",
-            "محرك منطقي",
+            "Ù…Ø­Ø±Ùƒ Ù…Ù†Ø·Ù‚ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "symbolic_engine",
             "symbolic engine",
-            "محرك رمزي",
+            "Ù…Ø­Ø±Ùƒ Ø±Ù…Ø²ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "datalog",
             "Datalog",
-            "داتالوج",
+            "Ø¯Ø§ØªØ§Ù„ÙˆØ¬",
             "logic",
         ),
 
         DictionaryEntry(
             "souffle",
-            "Soufflé",
-            "Soufflé",
+            "SoufflÃ©",
+            "SoufflÃ©",
             "compiler",
         ),
 
         DictionaryEntry(
             "subprocess_bridge",
             "subprocess bridge",
-            "جسر العملية الفرعية",
+            "Ø¬Ø³Ø± Ø§Ù„Ø¹Ù…Ù„ÙŠØ© Ø§Ù„ÙØ±Ø¹ÙŠØ©",
             "system",
         ),
 
         DictionaryEntry(
             "agent_reasoning",
             "agent reasoning",
-            "استدلال الوكيل",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ø§Ù„ÙˆÙƒÙŠÙ„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "massive",
             "massive",
-            "ضخم",
+            "Ø¶Ø®Ù…",
             "system",
         ),
 
         DictionaryEntry(
             "dense",
             "dense",
-            "كثيف",
+            "ÙƒØ«ÙŠÙ",
             "system",
         ),
 
         DictionaryEntry(
             "kernel_layer",
             "kernel layer",
-            "طبقة النواة",
+            "Ø·Ø¨Ù‚Ø© Ø§Ù„Ù†ÙˆØ§Ø©",
             "architecture",
         ),
 
         DictionaryEntry(
             "reasoning_layer",
             "reasoning layer",
-            "طبقة الاستدلال",
+            "Ø·Ø¨Ù‚Ø© Ø§Ù„Ø§Ø³ØªØ¯Ù„Ø§Ù„",
             "architecture",
         ),
 
         DictionaryEntry(
             "language_layer",
             "language layer",
-            "طبقة اللغة",
+            "Ø·Ø¨Ù‚Ø© Ø§Ù„Ù„ØºØ©",
             "architecture",
         ),
 
         DictionaryEntry(
             "data_layer",
             "data layer",
-            "طبقة البيانات",
+            "Ø·Ø¨Ù‚Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª",
             "architecture",
         ),
 
         DictionaryEntry(
             "execution_layer",
             "execution layer",
-            "طبقة التنفيذ",
+            "Ø·Ø¨Ù‚Ø© Ø§Ù„ØªÙ†ÙÙŠØ°",
             "architecture",
         ),
 
         DictionaryEntry(
             "interface_layer",
             "interface layer",
-            "طبقة الواجهة",
+            "Ø·Ø¨Ù‚Ø© Ø§Ù„ÙˆØ§Ø¬Ù‡Ø©",
             "architecture",
         ),
 
         DictionaryEntry(
             "knowledge_layer",
             "knowledge layer",
-            "طبقة المعرفة",
+            "Ø·Ø¨Ù‚Ø© Ø§Ù„Ù…Ø¹Ø±ÙØ©",
             "architecture",
         ),
 
         DictionaryEntry(
             "semantic_layer",
             "semantic layer",
-            "الطبقة الدلالية",
+            "Ø§Ù„Ø·Ø¨Ù‚Ø© Ø§Ù„Ø¯Ù„Ø§Ù„ÙŠØ©",
             "architecture",
         ),
 
         DictionaryEntry(
             "proof_layer",
             "proof layer",
-            "طبقة البرهان",
+            "Ø·Ø¨Ù‚Ø© Ø§Ù„Ø¨Ø±Ù‡Ø§Ù†",
             "architecture",
         ),
 
         DictionaryEntry(
             "verification_layer",
             "verification layer",
-            "طبقة التحقق",
+            "Ø·Ø¨Ù‚Ø© Ø§Ù„ØªØ­Ù‚Ù‚",
             "architecture",
         ),
 
         DictionaryEntry(
             "audit_layer",
             "audit layer",
-            "طبقة التدقيق",
+            "Ø·Ø¨Ù‚Ø© Ø§Ù„ØªØ¯Ù‚ÙŠÙ‚",
             "architecture",
         ),
 
         DictionaryEntry(
             "decision",
             "decision",
-            "قرار",
+            "Ù‚Ø±Ø§Ø±",
             "reasoning",
         ),
 
         DictionaryEntry(
             "decision_rule",
             "decision rule",
-            "قاعدة القرار",
+            "Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ù‚Ø±Ø§Ø±",
             "reasoning",
         ),
 
         DictionaryEntry(
             "decision_graph",
             "decision graph",
-            "رسم بياني للقرار",
+            "Ø±Ø³Ù… Ø¨ÙŠØ§Ù†ÙŠ Ù„Ù„Ù‚Ø±Ø§Ø±",
             "reasoning",
         ),
 
         DictionaryEntry(
             "decision_path",
             "decision path",
-            "مسار القرار",
+            "Ù…Ø³Ø§Ø± Ø§Ù„Ù‚Ø±Ø§Ø±",
             "reasoning",
         ),
 
         DictionaryEntry(
             "decision_state",
             "decision state",
-            "حالة القرار",
+            "Ø­Ø§Ù„Ø© Ø§Ù„Ù‚Ø±Ø§Ø±",
             "reasoning",
         ),
 
         DictionaryEntry(
             "proof_state",
             "proof state",
-            "حالة البرهان",
+            "Ø­Ø§Ù„Ø© Ø§Ù„Ø¨Ø±Ù‡Ø§Ù†",
             "logic",
         ),
 
         DictionaryEntry(
             "logical_state",
             "logical state",
-            "حالة منطقية",
+            "Ø­Ø§Ù„Ø© Ù…Ù†Ø·Ù‚ÙŠØ©",
             "logic",
         ),
 
         DictionaryEntry(
             "semantic_state",
             "semantic state",
-            "حالة دلالية",
+            "Ø­Ø§Ù„Ø© Ø¯Ù„Ø§Ù„ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "language_state",
             "language state",
-            "حالة لغوية",
+            "Ø­Ø§Ù„Ø© Ù„ØºÙˆÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "translation_state",
             "translation state",
-            "حالة الترجمة",
+            "Ø­Ø§Ù„Ø© Ø§Ù„ØªØ±Ø¬Ù…Ø©",
             "language",
         ),
 
         DictionaryEntry(
             "knowledge_state",
             "knowledge state",
-            "حالة المعرفة",
+            "Ø­Ø§Ù„Ø© Ø§Ù„Ù…Ø¹Ø±ÙØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "consistency_check",
             "consistency check",
-            "فحص الاتساق",
+            "ÙØ­Øµ Ø§Ù„Ø§ØªØ³Ø§Ù‚",
             "verification",
         ),
 
         DictionaryEntry(
             "constraint_check",
             "constraint check",
-            "فحص القيود",
+            "ÙØ­Øµ Ø§Ù„Ù‚ÙŠÙˆØ¯",
             "verification",
         ),
 
         DictionaryEntry(
             "proof_check",
             "proof check",
-            "فحص البرهان",
+            "ÙØ­Øµ Ø§Ù„Ø¨Ø±Ù‡Ø§Ù†",
             "verification",
         ),
 
         DictionaryEntry(
             "semantic_check",
             "semantic check",
-            "الفحص الدلالي",
+            "Ø§Ù„ÙØ­Øµ Ø§Ù„Ø¯Ù„Ø§Ù„ÙŠ",
             "verification",
         ),
 
         DictionaryEntry(
             "dictionary_check",
             "dictionary check",
-            "فحص المعجم",
+            "ÙØ­Øµ Ø§Ù„Ù…Ø¹Ø¬Ù…",
             "verification",
         ),
 
         DictionaryEntry(
             "bilingual_check",
             "bilingual check",
-            "الفحص ثنائي اللغة",
+            "Ø§Ù„ÙØ­Øµ Ø«Ù†Ø§Ø¦ÙŠ Ø§Ù„Ù„ØºØ©",
             "verification",
         ),
 
         DictionaryEntry(
             "kernel_check",
             "kernel check",
-            "فحص النواة",
+            "ÙØ­Øµ Ø§Ù„Ù†ÙˆØ§Ø©",
             "verification",
         ),
 
         DictionaryEntry(
             "agent_check",
             "agent check",
-            "فحص الوكيل",
+            "ÙØ­Øµ Ø§Ù„ÙˆÙƒÙŠÙ„",
             "verification",
         ),
 
         DictionaryEntry(
             "reasoning_check",
             "reasoning check",
-            "فحص الاستدلال",
+            "ÙØ­Øµ Ø§Ù„Ø§Ø³ØªØ¯Ù„Ø§Ù„",
             "verification",
         ),
 
         DictionaryEntry(
             "final_result",
             "final result",
-            "النتيجة النهائية",
+            "Ø§Ù„Ù†ØªÙŠØ¬Ø© Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "derived_fact",
             "derived fact",
-            "حقيقة مشتقة",
+            "Ø­Ù‚ÙŠÙ‚Ø© Ù…Ø´ØªÙ‚Ø©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "base_fact",
             "base fact",
-            "حقيقة أساسية",
+            "Ø­Ù‚ÙŠÙ‚Ø© Ø£Ø³Ø§Ø³ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "rule_application",
             "rule application",
-            "تطبيق القاعدة",
+            "ØªØ·Ø¨ÙŠÙ‚ Ø§Ù„Ù‚Ø§Ø¹Ø¯Ø©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "inference_step",
             "inference step",
-            "خطوة استدلال",
+            "Ø®Ø·ÙˆØ© Ø§Ø³ØªØ¯Ù„Ø§Ù„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "proof_step",
             "proof step",
-            "خطوة برهان",
+            "Ø®Ø·ÙˆØ© Ø¨Ø±Ù‡Ø§Ù†",
             "logic",
         ),
 
         DictionaryEntry(
             "reasoning_step",
             "reasoning step",
-            "خطوة استدلال",
+            "Ø®Ø·ÙˆØ© Ø§Ø³ØªØ¯Ù„Ø§Ù„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "symbolic_step",
             "symbolic step",
-            "خطوة رمزية",
+            "Ø®Ø·ÙˆØ© Ø±Ù…Ø²ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "semantic_step",
             "semantic step",
-            "خطوة دلالية",
+            "Ø®Ø·ÙˆØ© Ø¯Ù„Ø§Ù„ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "language_step",
             "language step",
-            "خطوة لغوية",
+            "Ø®Ø·ÙˆØ© Ù„ØºÙˆÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "graph_step",
             "graph step",
-            "خطوة بيانية",
+            "Ø®Ø·ÙˆØ© Ø¨ÙŠØ§Ù†ÙŠØ©",
             "graph",
         ),
 
         DictionaryEntry(
             "database_step",
             "database step",
-            "خطوة قاعدة بيانات",
+            "Ø®Ø·ÙˆØ© Ù‚Ø§Ø¹Ø¯Ø© Ø¨ÙŠØ§Ù†Ø§Øª",
             "database",
         ),
 
         DictionaryEntry(
             "compiler_step",
             "compiler step",
-            "خطوة مترجم",
+            "Ø®Ø·ÙˆØ© Ù…ØªØ±Ø¬Ù…",
             "compiler",
         ),
 
         DictionaryEntry(
             "execution_step",
             "execution step",
-            "خطوة تنفيذ",
+            "Ø®Ø·ÙˆØ© ØªÙ†ÙÙŠØ°",
             "system",
         ),
 
         DictionaryEntry(
             "system_step",
             "system step",
-            "خطوة نظام",
+            "Ø®Ø·ÙˆØ© Ù†Ø¸Ø§Ù…",
             "system",
         ),
 
         DictionaryEntry(
             "terminal_state",
             "terminal state",
-            "حالة نهائية",
+            "Ø­Ø§Ù„Ø© Ù†Ù‡Ø§Ø¦ÙŠØ©",
             "system",
         ),
 
         DictionaryEntry(
             "initial_state",
             "initial state",
-            "حالة ابتدائية",
+            "Ø­Ø§Ù„Ø© Ø§Ø¨ØªØ¯Ø§Ø¦ÙŠØ©",
             "system",
         ),
 
         DictionaryEntry(
             "transition_rule",
             "transition rule",
-            "قاعدة الانتقال",
+            "Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø§Ù†ØªÙ‚Ø§Ù„",
             "system",
         ),
 
         DictionaryEntry(
             "state_relation",
             "state relation",
-            "علاقة الحالة",
+            "Ø¹Ù„Ø§Ù‚Ø© Ø§Ù„Ø­Ø§Ù„Ø©",
             "system",
         ),
 
         DictionaryEntry(
             "state_graph",
             "state graph",
-            "رسم بياني للحالة",
+            "Ø±Ø³Ù… Ø¨ÙŠØ§Ù†ÙŠ Ù„Ù„Ø­Ø§Ù„Ø©",
             "system",
         ),
 
         DictionaryEntry(
             "causal_relation",
             "causal relation",
-            "علاقة سببية",
+            "Ø¹Ù„Ø§Ù‚Ø© Ø³Ø¨Ø¨ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "logical_relation",
             "logical relation",
-            "علاقة منطقية",
+            "Ø¹Ù„Ø§Ù‚Ø© Ù…Ù†Ø·Ù‚ÙŠØ©",
             "logic",
         ),
 
         DictionaryEntry(
             "syntactic_relation",
             "syntactic relation",
-            "علاقة نحوية",
+            "Ø¹Ù„Ø§Ù‚Ø© Ù†Ø­ÙˆÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "morphological_relation",
             "morphological relation",
-            "علاقة صرفية",
+            "Ø¹Ù„Ø§Ù‚Ø© ØµØ±ÙÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "lexical_relation",
             "lexical relation",
-            "علاقة معجمية",
+            "Ø¹Ù„Ø§Ù‚Ø© Ù…Ø¹Ø¬Ù…ÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "translation_relation",
             "translation relation",
-            "علاقة ترجمة",
+            "Ø¹Ù„Ø§Ù‚Ø© ØªØ±Ø¬Ù…Ø©",
             "language",
         ),
 
         DictionaryEntry(
             "semantic_mapping",
             "semantic mapping",
-            "تطبيق دلالي",
+            "ØªØ·Ø¨ÙŠÙ‚ Ø¯Ù„Ø§Ù„ÙŠ",
             "language",
         ),
 
         DictionaryEntry(
             "concept_mapping",
             "concept mapping",
-            "مطابقة المفاهيم",
+            "Ù…Ø·Ø§Ø¨Ù‚Ø© Ø§Ù„Ù…ÙØ§Ù‡ÙŠÙ…",
             "reasoning",
         ),
 
         DictionaryEntry(
             "cross_reference",
             "cross-reference",
-            "مرجع متقاطع",
+            "Ù…Ø±Ø¬Ø¹ Ù…ØªÙ‚Ø§Ø·Ø¹",
             "reasoning",
         ),
 
         DictionaryEntry(
             "knowledge_reference",
             "knowledge reference",
-            "مرجع معرفي",
+            "Ù…Ø±Ø¬Ø¹ Ù…Ø¹Ø±ÙÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "symbol_reference",
             "symbol reference",
-            "مرجع رمزي",
+            "Ù…Ø±Ø¬Ø¹ Ø±Ù…Ø²ÙŠ",
             "logic",
         ),
 
         DictionaryEntry(
             "relation_reference",
             "relation reference",
-            "مرجع العلاقة",
+            "Ù…Ø±Ø¬Ø¹ Ø§Ù„Ø¹Ù„Ø§Ù‚Ø©",
             "database",
         ),
 
         DictionaryEntry(
             "dictionary_reference",
             "dictionary reference",
-            "مرجع المعجم",
+            "Ù…Ø±Ø¬Ø¹ Ø§Ù„Ù…Ø¹Ø¬Ù…",
             "language",
         ),
 
         DictionaryEntry(
             "proof_reference",
             "proof reference",
-            "مرجع البرهان",
+            "Ù…Ø±Ø¬Ø¹ Ø§Ù„Ø¨Ø±Ù‡Ø§Ù†",
             "logic",
         ),
 
         DictionaryEntry(
             "audit_reference",
             "audit reference",
-            "مرجع التدقيق",
+            "Ù…Ø±Ø¬Ø¹ Ø§Ù„ØªØ¯Ù‚ÙŠÙ‚",
             "security",
         ),
 
         DictionaryEntry(
             "execution_reference",
             "execution reference",
-            "مرجع التنفيذ",
+            "Ù…Ø±Ø¬Ø¹ Ø§Ù„ØªÙ†ÙÙŠØ°",
             "system",
         ),
 
         DictionaryEntry(
             "compiler_reference",
             "compiler reference",
-            "مرجع المترجم",
+            "Ù…Ø±Ø¬Ø¹ Ø§Ù„Ù…ØªØ±Ø¬Ù…",
             "compiler",
         ),
 
         DictionaryEntry(
             "agent_reference",
             "agent reference",
-            "مرجع الوكيل",
+            "Ù…Ø±Ø¬Ø¹ Ø§Ù„ÙˆÙƒÙŠÙ„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "reasoning_reference",
             "reasoning reference",
-            "مرجع الاستدلال",
+            "Ù…Ø±Ø¬Ø¹ Ø§Ù„Ø§Ø³ØªØ¯Ù„Ø§Ù„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "kernel_reference",
             "kernel reference",
-            "مرجع النواة",
+            "Ù…Ø±Ø¬Ø¹ Ø§Ù„Ù†ÙˆØ§Ø©",
             "system",
         ),
 
         DictionaryEntry(
             "dense_kernel",
             "dense kernel",
-            "نواة كثيفة",
+            "Ù†ÙˆØ§Ø© ÙƒØ«ÙŠÙØ©",
             "system",
         ),
 
         DictionaryEntry(
             "symbolic_kernel",
             "symbolic kernel",
-            "نواة رمزية",
+            "Ù†ÙˆØ§Ø© Ø±Ù…Ø²ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "language_kernel",
             "language kernel",
-            "نواة لغوية",
+            "Ù†ÙˆØ§Ø© Ù„ØºÙˆÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "semantic_kernel",
             "semantic kernel",
-            "نواة دلالية",
+            "Ù†ÙˆØ§Ø© Ø¯Ù„Ø§Ù„ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "logic_kernel",
             "logic kernel",
-            "نواة منطقية",
+            "Ù†ÙˆØ§Ø© Ù…Ù†Ø·Ù‚ÙŠØ©",
             "logic",
         ),
 
         DictionaryEntry(
             "database_kernel",
             "database kernel",
-            "نواة قاعدة البيانات",
+            "Ù†ÙˆØ§Ø© Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª",
             "database",
         ),
 
         DictionaryEntry(
             "compiler_kernel",
             "compiler kernel",
-            "نواة المترجم",
+            "Ù†ÙˆØ§Ø© Ø§Ù„Ù…ØªØ±Ø¬Ù…",
             "compiler",
         ),
 
         DictionaryEntry(
             "verification_kernel",
             "verification kernel",
-            "نواة التحقق",
+            "Ù†ÙˆØ§Ø© Ø§Ù„ØªØ­Ù‚Ù‚",
             "verification",
         ),
 
         DictionaryEntry(
             "audit_kernel",
             "audit kernel",
-            "نواة التدقيق",
+            "Ù†ÙˆØ§Ø© Ø§Ù„ØªØ¯Ù‚ÙŠÙ‚",
             "security",
         ),
 
         DictionaryEntry(
             "sovereign",
             "sovereign",
-            "سيادي",
+            "Ø³ÙŠØ§Ø¯ÙŠ",
             "architecture",
         ),
 
         DictionaryEntry(
             "local",
             "local",
-            "محلي",
+            "Ù…Ø­Ù„ÙŠ",
             "architecture",
         ),
 
         DictionaryEntry(
             "portable",
             "portable",
-            "محمول",
+            "Ù…Ø­Ù…ÙˆÙ„",
             "system",
         ),
 
         DictionaryEntry(
             "reproducible",
             "reproducible",
-            "قابل لإعادة الإنتاج",
+            "Ù‚Ø§Ø¨Ù„ Ù„Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ø¥Ù†ØªØ§Ø¬",
             "system",
         ),
 
         DictionaryEntry(
             "auditable",
             "auditable",
-            "قابل للتدقيق",
+            "Ù‚Ø§Ø¨Ù„ Ù„Ù„ØªØ¯Ù‚ÙŠÙ‚",
             "security",
         ),
 
         DictionaryEntry(
             "formalizable",
             "formalizable",
-            "قابل للصياغة الرسمية",
+            "Ù‚Ø§Ø¨Ù„ Ù„Ù„ØµÙŠØ§ØºØ© Ø§Ù„Ø±Ø³Ù…ÙŠØ©",
             "logic",
         ),
 
         DictionaryEntry(
             "machine_reasoning",
             "machine reasoning",
-            "استدلال آلي",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ø¢Ù„ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "symbolic_reasoning",
             "symbolic reasoning",
-            "استدلال رمزي",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ø±Ù…Ø²ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "logical_reasoning",
             "logical reasoning",
-            "استدلال منطقي",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ù…Ù†Ø·Ù‚ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "deductive_reasoning",
             "deductive reasoning",
-            "استدلال استنباطي",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ø§Ø³ØªÙ†Ø¨Ø§Ø·ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "relational_reasoning",
             "relational reasoning",
-            "استدلال علائقي",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ø¹Ù„Ø§Ø¦Ù‚ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "graph_reasoning",
             "graph reasoning",
-            "استدلال بياني",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ø¨ÙŠØ§Ù†ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "semantic_reasoning_engine",
             "semantic reasoning engine",
-            "محرك الاستدلال الدلالي",
+            "Ù…Ø­Ø±Ùƒ Ø§Ù„Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ø§Ù„Ø¯Ù„Ø§Ù„ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "bilingual_reasoning",
             "bilingual reasoning",
-            "استدلال ثنائي اللغة",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ø«Ù†Ø§Ø¦ÙŠ Ø§Ù„Ù„ØºØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "arabic_english_reasoning",
             "Arabic English reasoning",
-            "استدلال عربي إنجليزي",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ø¹Ø±Ø¨ÙŠ Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "knowledge_compilation",
             "knowledge compilation",
-            "تجميع المعرفة",
+            "ØªØ¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø¹Ø±ÙØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "reasoning_compilation",
             "reasoning compilation",
-            "تجميع الاستدلال",
+            "ØªØ¬Ù…ÙŠØ¹ Ø§Ù„Ø§Ø³ØªØ¯Ù„Ø§Ù„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "symbolic_compilation",
             "symbolic compilation",
-            "تجميع رمزي",
+            "ØªØ¬Ù…ÙŠØ¹ Ø±Ù…Ø²ÙŠ",
             "compiler",
         ),
 
         DictionaryEntry(
             "relation_compilation",
             "relation compilation",
-            "تجميع علائقي",
+            "ØªØ¬Ù…ÙŠØ¹ Ø¹Ù„Ø§Ø¦Ù‚ÙŠ",
             "compiler",
         ),
 
         DictionaryEntry(
             "query_compilation",
             "query compilation",
-            "تجميع الاستعلام",
+            "ØªØ¬Ù…ÙŠØ¹ Ø§Ù„Ø§Ø³ØªØ¹Ù„Ø§Ù…",
             "compiler",
         ),
 
         DictionaryEntry(
             "rule_compilation",
             "rule compilation",
-            "تجميع القواعد",
+            "ØªØ¬Ù…ÙŠØ¹ Ø§Ù„Ù‚ÙˆØ§Ø¹Ø¯",
             "compiler",
         ),
 
         DictionaryEntry(
             "fact_compilation",
             "fact compilation",
-            "تجميع الحقائق",
+            "ØªØ¬Ù…ÙŠØ¹ Ø§Ù„Ø­Ù‚Ø§Ø¦Ù‚",
             "compiler",
         ),
 
         DictionaryEntry(
             "semantic_compilation",
             "semantic compilation",
-            "تجميع دلالي",
+            "ØªØ¬Ù…ÙŠØ¹ Ø¯Ù„Ø§Ù„ÙŠ",
             "compiler",
         ),
 
         DictionaryEntry(
             "language_compilation",
             "language compilation",
-            "تجميع لغوي",
+            "ØªØ¬Ù…ÙŠØ¹ Ù„ØºÙˆÙŠ",
             "compiler",
         ),
 
         DictionaryEntry(
             "arabic_processing",
             "Arabic processing",
-            "معالجة العربية",
+            "Ù…Ø¹Ø§Ù„Ø¬Ø© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "english_processing",
             "English processing",
-            "معالجة الإنجليزية",
+            "Ù…Ø¹Ø§Ù„Ø¬Ø© Ø§Ù„Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠØ©",
             "language",
         ),
 
         DictionaryEntry(
             "bilingual_processing",
             "bilingual processing",
-            "معالجة ثنائية اللغة",
+            "Ù…Ø¹Ø§Ù„Ø¬Ø© Ø«Ù†Ø§Ø¦ÙŠØ© Ø§Ù„Ù„ØºØ©",
             "language",
         ),
 
         DictionaryEntry(
             "semantic_processing",
             "semantic processing",
-            "معالجة دلالية",
+            "Ù…Ø¹Ø§Ù„Ø¬Ø© Ø¯Ù„Ø§Ù„ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "symbolic_processing",
             "symbolic processing",
-            "معالجة رمزية",
+            "Ù…Ø¹Ø§Ù„Ø¬Ø© Ø±Ù…Ø²ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "formal_processing",
             "formal processing",
-            "معالجة صورية",
+            "Ù…Ø¹Ø§Ù„Ø¬Ø© ØµÙˆØ±ÙŠØ©",
             "logic",
         ),
 
         DictionaryEntry(
             "reasoning_context",
             "reasoning context",
-            "سياق الاستدلال",
+            "Ø³ÙŠØ§Ù‚ Ø§Ù„Ø§Ø³ØªØ¯Ù„Ø§Ù„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "dictionary_context",
             "dictionary context",
-            "سياق المعجم",
+            "Ø³ÙŠØ§Ù‚ Ø§Ù„Ù…Ø¹Ø¬Ù…",
             "language",
         ),
 
         DictionaryEntry(
             "semantic_context",
             "semantic context",
-            "سياق دلالي",
+            "Ø³ÙŠØ§Ù‚ Ø¯Ù„Ø§Ù„ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "symbolic_context",
             "symbolic context",
-            "سياق رمزي",
+            "Ø³ÙŠØ§Ù‚ Ø±Ù…Ø²ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "logical_context",
             "logical context",
-            "سياق منطقي",
+            "Ø³ÙŠØ§Ù‚ Ù…Ù†Ø·Ù‚ÙŠ",
             "logic",
         ),
 
         DictionaryEntry(
             "graph_context",
             "graph context",
-            "سياق بياني",
+            "Ø³ÙŠØ§Ù‚ Ø¨ÙŠØ§Ù†ÙŠ",
             "graph",
         ),
 
         DictionaryEntry(
             "database_context",
             "database context",
-            "سياق قاعدة البيانات",
+            "Ø³ÙŠØ§Ù‚ Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª",
             "database",
         ),
 
         DictionaryEntry(
             "execution_context",
             "execution context",
-            "سياق التنفيذ",
+            "Ø³ÙŠØ§Ù‚ Ø§Ù„ØªÙ†ÙÙŠØ°",
             "system",
         ),
 
         DictionaryEntry(
             "compiler_context",
             "compiler context",
-            "سياق المترجم",
+            "Ø³ÙŠØ§Ù‚ Ø§Ù„Ù…ØªØ±Ø¬Ù…",
             "compiler",
         ),
 
         DictionaryEntry(
             "verification_context",
             "verification context",
-            "سياق التحقق",
+            "Ø³ÙŠØ§Ù‚ Ø§Ù„ØªØ­Ù‚Ù‚",
             "verification",
         ),
 
         DictionaryEntry(
             "audit_context",
             "audit context",
-            "سياق التدقيق",
+            "Ø³ÙŠØ§Ù‚ Ø§Ù„ØªØ¯Ù‚ÙŠÙ‚",
             "security",
         ),
 
         DictionaryEntry(
             "agent_context",
             "agent context",
-            "سياق الوكيل",
+            "Ø³ÙŠØ§Ù‚ Ø§Ù„ÙˆÙƒÙŠÙ„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "kernel_context",
             "kernel context",
-            "سياق النواة",
+            "Ø³ÙŠØ§Ù‚ Ø§Ù„Ù†ÙˆØ§Ø©",
             "system",
         ),
 
         DictionaryEntry(
             "system_context",
             "system context",
-            "سياق النظام",
+            "Ø³ÙŠØ§Ù‚ Ø§Ù„Ù†Ø¸Ø§Ù…",
             "system",
         ),
 
         DictionaryEntry(
             "final_state",
             "final state",
-            "الحالة النهائية",
+            "Ø§Ù„Ø­Ø§Ù„Ø© Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠØ©",
             "system",
         ),
 
         DictionaryEntry(
             "stable_state",
             "stable state",
-            "حالة مستقرة",
+            "Ø­Ø§Ù„Ø© Ù…Ø³ØªÙ‚Ø±Ø©",
             "system",
         ),
 
         DictionaryEntry(
             "converged_state",
             "converged state",
-            "حالة متقاربة",
+            "Ø­Ø§Ù„Ø© Ù…ØªÙ‚Ø§Ø±Ø¨Ø©",
             "mathematics",
         ),
 
         DictionaryEntry(
             "closure_state",
             "closure state",
-            "حالة الإغلاق",
+            "Ø­Ø§Ù„Ø© Ø§Ù„Ø¥ØºÙ„Ø§Ù‚",
             "mathematics",
         ),
 
         DictionaryEntry(
             "reasoning_closure",
             "reasoning closure",
-            "إغلاق الاستدلال",
+            "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ø§Ø³ØªØ¯Ù„Ø§Ù„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "knowledge_closure",
             "knowledge closure",
-            "إغلاق المعرفة",
+            "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ù…Ø¹Ø±ÙØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "semantic_closure",
             "semantic closure",
-            "الإغلاق الدلالي",
+            "Ø§Ù„Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ø¯Ù„Ø§Ù„ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "logical_closure",
             "logical closure",
-            "الإغلاق المنطقي",
+            "Ø§Ù„Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ù…Ù†Ø·Ù‚ÙŠ",
             "logic",
         ),
 
         DictionaryEntry(
             "graph_closure",
             "graph closure",
-            "إغلاق الرسم البياني",
+            "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ø±Ø³Ù… Ø§Ù„Ø¨ÙŠØ§Ù†ÙŠ",
             "graph",
         ),
 
         DictionaryEntry(
             "transitive_closure",
             "transitive closure",
-            "الإغلاق الانتقالي",
+            "Ø§Ù„Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ø§Ù†ØªÙ‚Ø§Ù„ÙŠ",
             "mathematics",
         ),
 
         DictionaryEntry(
             "dependency_closure",
             "dependency closure",
-            "إغلاق التبعيات",
+            "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„ØªØ¨Ø¹ÙŠØ§Øª",
             "architecture",
         ),
 
         DictionaryEntry(
             "translation_closure",
             "translation closure",
-            "إغلاق الترجمة",
+            "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„ØªØ±Ø¬Ù…Ø©",
             "language",
         ),
 
         DictionaryEntry(
             "dictionary_closure",
             "dictionary closure",
-            "إغلاق المعجم",
+            "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ù…Ø¹Ø¬Ù…",
             "language",
         ),
 
         DictionaryEntry(
             "proof_closure",
             "proof closure",
-            "إغلاق البرهان",
+            "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ø¨Ø±Ù‡Ø§Ù†",
             "logic",
         ),
 
         DictionaryEntry(
             "verification_closure",
             "verification closure",
-            "إغلاق التحقق",
+            "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„ØªØ­Ù‚Ù‚",
             "verification",
         ),
 
         DictionaryEntry(
             "audit_closure",
             "audit closure",
-            "إغلاق التدقيق",
+            "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„ØªØ¯Ù‚ÙŠÙ‚",
             "security",
         ),
 
         DictionaryEntry(
             "agent_closure",
             "agent closure",
-            "إغلاق الوكيل",
+            "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„ÙˆÙƒÙŠÙ„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "kernel_closure",
             "kernel closure",
-            "إغلاق النواة",
+            "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ù†ÙˆØ§Ø©",
             "system",
         ),
 
         DictionaryEntry(
             "system_closure",
             "system closure",
-            "إغلاق النظام",
+            "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ù†Ø¸Ø§Ù…",
             "system",
         ),
 
         DictionaryEntry(
             "complete_reasoning",
             "complete reasoning",
-            "استدلال كامل",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ ÙƒØ§Ù…Ù„",
             "reasoning",
         ),
 
         DictionaryEntry(
             "verified_reasoning",
             "verified reasoning",
-            "استدلال متحقق",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ù…ØªØ­Ù‚Ù‚",
             "verification",
         ),
 
         DictionaryEntry(
             "audited_reasoning",
             "audited reasoning",
-            "استدلال مدقق",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ù…Ø¯Ù‚Ù‚",
             "security",
         ),
 
         DictionaryEntry(
             "deterministic_reasoning",
             "deterministic reasoning",
-            "استدلال حتمي",
+            "Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ø­ØªÙ…ÙŠ",
             "reasoning",
         ),
 
         DictionaryEntry(
             "formal_reasoning_kernel",
             "formal reasoning kernel",
-            "نواة استدلال صورية",
+            "Ù†ÙˆØ§Ø© Ø§Ø³ØªØ¯Ù„Ø§Ù„ ØµÙˆØ±ÙŠØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "bilingual_symbolic_kernel",
             "bilingual symbolic kernel",
-            "نواة رمزية ثنائية اللغة",
+            "Ù†ÙˆØ§Ø© Ø±Ù…Ø²ÙŠØ© Ø«Ù†Ø§Ø¦ÙŠØ© Ø§Ù„Ù„ØºØ©",
             "reasoning",
         ),
 
         DictionaryEntry(
             "arabic_english_dictionary",
             "Arabic English dictionary",
-            "معجم عربي إنجليزي",
+            "Ù…Ø¹Ø¬Ù… Ø¹Ø±Ø¨ÙŠ Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠ",
             "language",
         ),
 
         DictionaryEntry(
             "dense_symbolic_kernel",
             "dense symbolic kernel",
-            "نواة رمزية كثيفة",
+            "Ù†ÙˆØ§Ø© Ø±Ù…Ø²ÙŠØ© ÙƒØ«ÙŠÙØ©",
             "reasoning",
         ),
 

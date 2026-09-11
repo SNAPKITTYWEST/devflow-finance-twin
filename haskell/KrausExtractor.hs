@@ -1,3 +1,18 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE BangPatterns #-}
@@ -72,7 +87,7 @@ extractKrausOperators d_s d_a u =
         [ [ u LA.@> (idxRow s' m, idxCol s 0) | s <- [0..d_s-1] ] | s' <- [0..d_s-1] ]
   in [ buildK m | m <- [0..d_a-1] ]
 
--- | Completeness check: ||sum K^†K - I||_inf < tol
+-- | Completeness check: ||sum K^â€ K - I||_inf < tol
 checkCompleteness :: [Matrix C] -> Double -> Bool
 checkCompleteness ks tol =
   let z       = LA.konst 0 (LA.rows (head ks), LA.cols (head ks))
@@ -119,7 +134,7 @@ writeKrausIsabelle outdir thetaSym ks = do
           let entry = if abs y < 1e-12
                         then printf "of_real %.15g" x
                         else printf "(of_real %.15g + %g * ii)" x y
-          hPutStrLn h $ "    (if i = " ++ show i ++ " ∧ j = " ++ show (j::Int) ++ " then " ++ entry ++ " else"
+          hPutStrLn h $ "    (if i = " ++ show i ++ " âˆ§ j = " ++ show (j::Int) ++ " then " ++ entry ++ " else"
       hPutStrLn h "    0))\""
       hPutStrLn h ""
     hPutStrLn h "end"

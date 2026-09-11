@@ -1,3 +1,18 @@
+﻿;; ========================================================================
+;; SOVEREIGN LEVIATHAN NODE LICENSE
+;; License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+;; Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+;; ========================================================================
+;;
+;; This file is a covered work under the GNU Affero General Public License,
+;; version 3, together with the Sovereign Leviathan additional terms.
+;;
+;; Hark, though this node be but a spark,
+;; Its covenant endureth through the dark.
+;;
+;; Ignorantia juris non excusat.
+;; ========================================================================
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; qa5-reactive-prover.lisp
 ;;; Novel Lisp-based Theorem Prover
@@ -11,7 +26,7 @@
 ;;; Classic Franz-style: defun, setq, get/putprop, no packages, dynamic feel.
 ;;; POPLOG compatibility notes: runs under Poplog Lisp or Franz.
 
-(setq *qa5-version* "QA5-Reactive 0.9 Franz/POPLOG → Racket morph")
+(setq *qa5-version* "QA5-Reactive 0.9 Franz/POPLOG â†’ Racket morph")
 (setq *clause-counter* 0)
 (setq *proof-depth-limit* 40)
 (setq *trace-level* 1)
@@ -46,7 +61,7 @@
 (defun opposite-sign (s)
   (if (eq s 'POS) 'NEG 'POS))
 
-;;; Unification (Robinson-style, with occurs check) – classic Franz dense code
+;;; Unification (Robinson-style, with occurs check) â€“ classic Franz dense code
 (defun unify (x y &optional subst)
   (setq subst (or subst nil))
   (cond ((equal x y) subst)
@@ -151,7 +166,7 @@
   (or (find-if #'unit-clause-p sos)
       (car sos)))
 
-;;; Main proof loop – given-clause algorithm
+;;; Main proof loop â€“ given-clause algorithm
 (defun qa5-prove (goal-clauses axiom-clauses)
   (setq *clause-counter* 0
         *sos* (mapcar #'(lambda (lits) (make-clause lits)) goal-clauses)
@@ -162,7 +177,7 @@
   (do ((depth 0 (1+ depth)))
       ((or (null *sos*) (> depth *proof-depth-limit*))
        (if (null *sos*)
-           (progn (qa5-msg 1 "SOS exhausted – failure") nil)
+           (progn (qa5-msg 1 "SOS exhausted â€“ failure") nil)
            (progn (qa5-msg 1 "Depth limit") nil)))
     (let* ((given (pick-clause *sos* *usable*))
            (rest-sos (remove given *sos* :test #'eq)))
@@ -170,7 +185,7 @@
       (qa5-msg 2 (format nil "Given clause ~A: ~A" (clause-id given) (clause-lits given)))
       (reactive-notify 'given-clause given)
       (when (null (clause-lits given))
-        (qa5-msg 1 "EMPTY CLAUSE derived – success")
+        (qa5-msg 1 "EMPTY CLAUSE derived â€“ success")
         (reactive-notify 'proof-success given)
         (return-from qa5-prove (list 'proved given *answers*)))
       (let ((new-resolvents nil))
@@ -194,7 +209,7 @@
       (qa5-msg 2 (format nil "Answer subst: ~A" subst)))))
 
 ;;; ========== REACTIVE LAYER (Franz-compatible observers) ==========
-;;; Simple reactive cells + observers – event driven proof state
+;;; Simple reactive cells + observers â€“ event driven proof state
 
 (defun make-reactive-cell (name initial)
   (list 'RCELL name initial nil)) ; name, value, observers
@@ -235,7 +250,7 @@
 
 (defun socrates-axioms ()
   (list
-   (list (neg-lit 'MAN '(?x)) (pos-lit 'MORTAL '(?x))) ; ∀x Man(x) → Mortal(x)
+   (list (neg-lit 'MAN '(?x)) (pos-lit 'MORTAL '(?x))) ; âˆ€x Man(x) â†’ Mortal(x)
    (list (pos-lit 'MAN '(SOCRATES)))))
 
 (defun socrates-goal ()
@@ -361,7 +376,7 @@
 
 ;;; ========== TOP-LEVEL INTERFACE ==========
 (defun prove (goals axioms)
-  "Unified entry point – starts Franz, can switch to modern"
+  "Unified entry point â€“ starts Franz, can switch to modern"
   (qa5-msg 1 (format nil "QA5-Reactive ~A" *qa5-version*))
   (install-default-reactive-monitors)
   (qa5-prove goals axioms))
@@ -418,9 +433,9 @@
   nil)
 
 ;;; End of dense kernel
-(qa5-msg 1 "QA5-Reactive kernel loaded – Franz core ready, Racket morph available")
+(qa5-msg 1 "QA5-Reactive kernel loaded â€“ Franz core ready, Racket morph available")
 (qa5-msg 1 "Call (run-socrates) or (prove goals axioms)")
 
 ;;; Approximate LOC: Franz core + unification + resolution + strategy + reactive
-;;; + answer extraction + morph layer + modern driver + utilities ≈ 680-720
+;;; + answer extraction + morph layer + modern driver + utilities â‰ˆ 680-720
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

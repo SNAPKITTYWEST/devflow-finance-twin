@@ -1,3 +1,18 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 -- TokenModel.agda
 -- Core definitions for formal verification of linear-algebraic transformation protocol
 --
@@ -11,100 +26,100 @@
 
 module TokenModel where
 
-open import Data.Nat using (ℕ; zero; suc; _+_; _*_)
+open import Data.Nat using (â„•; zero; suc; _+_; _*_)
 open import Data.Fin using (Fin; zero; suc)
-open import Data.Vec using (Vec; []; _∷_; map₂; replicate)
-open import Data.Real using (ℝ; _+_; _*_; _-_; _>_; _≤_; 0ℝ; 1ℝ)
+open import Data.Vec using (Vec; []; _âˆ·_; mapâ‚‚; replicate)
+open import Data.Real using (â„; _+_; _*_; _-_; _>_; _â‰¤_; 0â„; 1â„)
 open import Data.Real.Properties using (+-comm; *-comm; *-assoc)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong)
+open import Relation.Binary.PropositionalEquality using (_â‰¡_; refl; sym; trans; cong)
 
 --! ## Vector Space Definitions
 
 --! A finite-dimensional real vector space
-Vector : ℕ → Set
-Vector n = Vec ℝ n
+Vector : â„• â†’ Set
+Vector n = Vec â„ n
 
 --! Inner product
-innerProduct : ∀ {n} → Vector n → Vector n → ℝ
-innerProduct [] [] = 0ℝ
-innerProduct (x ∷ xs) (y ∷ ys) = (x * y) + innerProduct xs ys
+innerProduct : âˆ€ {n} â†’ Vector n â†’ Vector n â†’ â„
+innerProduct [] [] = 0â„
+innerProduct (x âˆ· xs) (y âˆ· ys) = (x * y) + innerProduct xs ys
 
 --! Norm squared
-normSq : ∀ {n} → Vector n → ℝ
+normSq : âˆ€ {n} â†’ Vector n â†’ â„
 normSq v = innerProduct v v
 
 --! ## Outer Product
 
 --! Outer product of two vectors
-outerProduct : ∀ {n} → Vector n → Vector n → Vec (Vector n) n
+outerProduct : âˆ€ {n} â†’ Vector n â†’ Vector n â†’ Vec (Vector n) n
 outerProduct [] ys = []
-outerProduct (x ∷ xs) ys = map₂ (λ xi xj → xi * xj) (replicate x) ys ∷ outerProduct xs ys
+outerProduct (x âˆ· xs) ys = mapâ‚‚ (Î» xi xj â†’ xi * xj) (replicate x) ys âˆ· outerProduct xs ys
 
 --! ## Update Operator
 
---! Update operator: ΔW = η · (v ⊗ xᵀ)
-updateOperator : ∀ {n} → ℝ → Vector n → Vector n → Vec (Vector n) n
-updateOperator η v x = map₂ (λ row vi → vi * η) (outerProduct v x) v
+--! Update operator: Î”W = Î· Â· (v âŠ— xáµ€)
+updateOperator : âˆ€ {n} â†’ â„ â†’ Vector n â†’ Vector n â†’ Vec (Vector n) n
+updateOperator Î· v x = mapâ‚‚ (Î» row vi â†’ vi * Î·) (outerProduct v x) v
 
 --! ## Activation
 
 --! Matrix-vector multiplication
-matVecMul : ∀ {n} → Vec (Vector n) n → Vector n → Vector n
+matVecMul : âˆ€ {n} â†’ Vec (Vector n) n â†’ Vector n â†’ Vector n
 matVecMul [] [] = []
-matVecMul (row ∷ rows) (x ∷ xs) = innerProduct row (x ∷ xs) ∷ matVecMul rows xs
+matVecMul (row âˆ· rows) (x âˆ· xs) = innerProduct row (x âˆ· xs) âˆ· matVecMul rows xs
 
 --! Activation of input x under operator W
-activation : ∀ {n} → Vec (Vector n) n → Vector n → Vector n
+activation : âˆ€ {n} â†’ Vec (Vector n) n â†’ Vector n â†’ Vector n
 activation W x = matVecMul W x
 
 --! Updated activation
-updatedActivation : ∀ {n} → Vec (Vector n) n → ℝ → Vector n → Vector n → Vector n
-updatedActivation W η v x = matVecMul (map₂ (map₂ _+_) W (updateOperator η v x)) x
+updatedActivation : âˆ€ {n} â†’ Vec (Vector n) n â†’ â„ â†’ Vector n â†’ Vector n â†’ Vector n
+updatedActivation W Î· v x = matVecMul (mapâ‚‚ (mapâ‚‚ _+_) W (updateOperator Î· v x)) x
 
 --! ## Threshold Predicate
 
---! Threshold predicate: ThoughtFires(y, v, θ) ⟺ ⟨y, v⟩ > θ
-thoughtFires : ∀ {n} → Vector n → Vector n → ℝ → Set
-thoughtFires y v θ = innerProduct y v > θ
+--! Threshold predicate: ThoughtFires(y, v, Î¸) âŸº âŸ¨y, vâŸ© > Î¸
+thoughtFires : âˆ€ {n} â†’ Vector n â†’ Vector n â†’ â„ â†’ Set
+thoughtFires y v Î¸ = innerProduct y v > Î¸
 
 --! ## Core Theorems
 
 --! AX-001: Outer product action
---! (v ⊗ xᵀ)x = ‖x‖² · v
+--! (v âŠ— xáµ€)x = â€–xâ€–Â² Â· v
 postulate
-  outerProductAction : ∀ {n} (v x : Vector n) →
-    matVecMul (outerProduct v x) x ≡ map₂ _*_ (replicate (normSq x)) v
+  outerProductAction : âˆ€ {n} (v x : Vector n) â†’
+    matVecMul (outerProduct v x) x â‰¡ mapâ‚‚ _*_ (replicate (normSq x)) v
 
 --! AX-002: Update action
---! ΔW · x = η · ‖x‖² · v
+--! Î”W Â· x = Î· Â· â€–xâ€–Â² Â· v
 postulate
-  updateAction : ∀ {n} (η : ℝ) (v x : Vector n) →
-    matVecMul (updateOperator η v x) x ≡ map₂ _*_ (replicate (η * normSq x)) v
+  updateAction : âˆ€ {n} (Î· : â„) (v x : Vector n) â†’
+    matVecMul (updateOperator Î· v x) x â‰¡ mapâ‚‚ _*_ (replicate (Î· * normSq x)) v
 
 --! ALG-001: Linearity of updated activation
---! (W + ΔW)x = Wx + ΔWx
+--! (W + Î”W)x = Wx + Î”Wx
 postulate
-  linearityOfUpdatedActivation : ∀ {n} (W : Vec (Vector n) n) (η : ℝ) (v x : Vector n) →
-    updatedActivation W η v x ≡ map₂ _+_ (activation W x) (matVecMul (updateOperator η v x) x
+  linearityOfUpdatedActivation : âˆ€ {n} (W : Vec (Vector n) n) (Î· : â„) (v x : Vector n) â†’
+    updatedActivation W Î· v x â‰¡ mapâ‚‚ _+_ (activation W x) (matVecMul (updateOperator Î· v x) x
 
 --! ALG-002: Projection expansion
---! ⟨(W + ΔW)x, v⟩ = ⟨Wx, v⟩ + ⟨ΔWx, v⟩
+--! âŸ¨(W + Î”W)x, vâŸ© = âŸ¨Wx, vâŸ© + âŸ¨Î”Wx, vâŸ©
 postulate
-  projectionExpansion : ∀ {n} (W : Vec (Vector n) n) (η : ℝ) (v x : Vector n) →
-    innerProduct (updatedActivation W η v x) v ≡
-    innerProduct (activation W x) v + innerProduct (matVecMul (updateOperator η v x) x) v
+  projectionExpansion : âˆ€ {n} (W : Vec (Vector n) n) (Î· : â„) (v x : Vector n) â†’
+    innerProduct (updatedActivation W Î· v x) v â‰¡
+    innerProduct (activation W x) v + innerProduct (matVecMul (updateOperator Î· v x) x) v
 
 --! ALG-003: Exact change in projection
---! ⟨(W + ΔW)x, v⟩ - ⟨Wx, v⟩ = η · ‖x‖² · ‖v‖²
+--! âŸ¨(W + Î”W)x, vâŸ© - âŸ¨Wx, vâŸ© = Î· Â· â€–xâ€–Â² Â· â€–vâ€–Â²
 postulate
-  exactChangeInProjection : ∀ {n} (W : Vec (Vector n) n) (η : ℝ) (v x : Vector n) →
-    innerProduct (updatedActivation W η v x) v - innerProduct (activation W x) v ≡
-    η * normSq x * normSq v
+  exactChangeInProjection : âˆ€ {n} (W : Vec (Vector n) n) (Î· : â„) (v x : Vector n) â†’
+    innerProduct (updatedActivation W Î· v x) v - innerProduct (activation W x) v â‰¡
+    Î· * normSq x * normSq v
 
 --! THR-001: Sufficient condition for threshold crossing
 postulate
-  thresholdSufficientCondition : ∀ {n} {W : Vec (Vector n) n} {η θ : ℝ} {v x : Vector n} →
-    normSq x > 0ℝ →
-    normSq v > 0ℝ →
-    η > (θ - innerProduct (activation W x) v) / (normSq x * normSq v) →
-    thoughtFires (updatedActivation W η v x) v θ
+  thresholdSufficientCondition : âˆ€ {n} {W : Vec (Vector n) n} {Î· Î¸ : â„} {v x : Vector n} â†’
+    normSq x > 0â„ â†’
+    normSq v > 0â„ â†’
+    Î· > (Î¸ - innerProduct (activation W x) v) / (normSq x * normSq v) â†’
+    thoughtFires (updatedActivation W Î· v x) v Î¸

@@ -379,3 +379,63 @@ cd formal-token-verification/coq && coqc .
 **WHEN SOMETHING IS UNKNOWN, PRESERVE THE UNKNOWN.**
 
 **NEVER INVENT THE MISSING PIECE.**
+
+---
+
+# 11. LICENSE AND COVENANT
+
+## Sovereign Leviathan License
+
+This repository is governed by the **Sovereign Leviathan Covenant** -- a recursive node licensing system built on top of the GNU Affero General Public License v3.0.
+
+**License-ID:** SL-AGPL3-001
+**Covenant-Version:** 1.0
+**Base License:** GNU Affero General Public License v3.0
+**Jurisdiction:** England and Wales
+**Languages:** EN / AR / ZH
+
+### Core Principles
+
+1. **Copyleft Foundation:** All source nodes are covered under AGPL-3.0
+2. **Fragment Binding:** Each source file is a designated component of the covered work
+3. **Recursive Compliance:** Dependency traversal evaluates licensing status
+4. **Network Interaction:** Section 13 AGPL obligations apply to network deployments
+5. **Sovereign Audit Chain:** Cryptographically identifiable compliance records
+
+### License Headers
+
+Every source file in this repository carries the **Sovereign Leviathan Node License** header. This header identifies the file as a covered work under the GNU Affero General Public License, version 3, together with the Sovereign Leviathan additional terms.
+
+### Files
+
+| File | Description |
+|------|-------------|
+| `LICENSE-AGPL-3.0` | GNU Affero General Public License v3.0 |
+| `LICENSE-FSL-1.1` | Sovereign Leviathan additional terms |
+| `SOVEREIGN_LEVIATHAN_COVENANT.md` | Complete covenant documentation |
+| `src/LICENSE-RECURSIVE-INFECTION` | Recursive infection clause |
+
+### Unauthorized Use
+
+Unauthorized use of this codebase triggers the following enforcement flow:
+
+1. License condition violated
+2. Additional permissions terminate
+3. AGPL rights remain governed by AGPL-3.0
+4. Copyright/contractual remedies preserved
+5. Injunctive/monetary/other remedies available
+
+**Jurisdiction:** England and Wales
+
+### Citation
+
+```bibtex
+@software{braid_group_system_2026,
+  title = {Fibonacci Braid Ledger Cryptographic System},
+  author = {Ahmad Ali Parr and Bel Esprit D'Accord Irrevocable Trust},
+  year = {2026},
+  license = {AGPL-3.0},
+  covenant = {Sovereign Leviathan v1.0},
+  jurisdiction = {England and Wales}
+}
+```

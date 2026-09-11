@@ -1,3 +1,20 @@
+﻿/-
+ ========================================================================
+ SOVEREIGN LEVIATHAN NODE LICENSE
+ License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ ========================================================================
+
+ This file is a covered work under the GNU Affero General Public License,
+ version 3, together with the Sovereign Leviathan additional terms.
+
+ Hark, though this node be but a spark,
+ Its covenant endureth through the dark.
+
+ Ignorantia juris non excusat.
+ ========================================================================
+-/
+
 -- VSM-2500 Semantic Algebra Formalization in Lean 4
 -- Complete formal verification of binary semantics, axioms, and RISC instruction set
 
@@ -19,17 +36,17 @@ instance : DecidableEq BinVal := fun a b =>
   | BinVal.one,  BinVal.one  => isTrue rfl
 
 /-- Binary word: fixed-width semantically meaningful bit vector -/
-def BinWord (n : Nat) : Type := Fin n → BinVal
+def BinWord (n : Nat) : Type := Fin n â†’ BinVal
 
 /-- Empty word (0 bits) -/
 def emptyWord : BinWord 0 := fun i => absurd i (Fin.not_lt_zero i)
 
 /-- Word equality -/
 def wordEq {n : Nat} (w1 w2 : BinWord n) : Prop :=
-  ∀ i : Fin n, w1 i = w2 i
+  âˆ€ i : Fin n, w1 i = w2 i
 
 instance {n : Nat} : DecidableEq (BinWord n) := fun w1 w2 =>
-  if h : ∀ i : Fin n, w1 i = w2 i then
+  if h : âˆ€ i : Fin n, w1 i = w2 i then
     isTrue (funext h)
   else
     isFalse (fun heq => h (by rw [heq]))
@@ -148,7 +165,7 @@ def setBit {n : Nat} (w : BinWord n) (i : Fin n) (v : BinVal) : BinWord n :=
   fun j => if j = i then v else w j
 
 def popcount {n : Nat} (w : BinWord n) : Nat :=
-  (List.range n).filter (fun i => w ⟨i, by omega⟩ = BinVal.one) |>.length
+  (List.range n).filter (fun i => w âŸ¨i, by omegaâŸ© = BinVal.one) |>.length
 
 -- ===== SECTION 4: SEMANTIC CLASS HIERARCHY =====
 
@@ -191,8 +208,8 @@ structure Instruction where
 -- ===== SECTION 6: INSTRUCTION SEMANTICS =====
 
 structure ExecContext where
-  registers  : RegId → SemanticValue
-  memory     : Nat → Option SemanticValue
+  registers  : RegId â†’ SemanticValue
+  memory     : Nat â†’ Option SemanticValue
   pc         : Nat
   valid      : Bool
   error_code : Nat
@@ -202,56 +219,56 @@ def executeInstruction (ctx : ExecContext) (instr : Instruction) : ExecContext :
   | OpCode.LOAD =>
     match ctx.memory instr.immediate with
     | some value =>
-      let new_regs : RegId → SemanticValue :=
+      let new_regs : RegId â†’ SemanticValue :=
         fun r => if r = instr.reg_dest then value else ctx.registers r
-      ⟨new_regs, ctx.memory, ctx.pc + 1, ctx.valid, 0⟩
+      âŸ¨new_regs, ctx.memory, ctx.pc + 1, ctx.valid, 0âŸ©
     | none =>
-      ⟨ctx.registers, ctx.memory, ctx.pc + 1, false, 1⟩
+      âŸ¨ctx.registers, ctx.memory, ctx.pc + 1, false, 1âŸ©
   | OpCode.STORE =>
     let src_val := ctx.registers instr.reg_src1
-    let new_memory : Nat → Option SemanticValue :=
+    let new_memory : Nat â†’ Option SemanticValue :=
       fun addr => if addr = instr.immediate then some src_val else ctx.memory addr
-    ⟨ctx.registers, new_memory, ctx.pc + 1, ctx.valid, 0⟩
+    âŸ¨ctx.registers, new_memory, ctx.pc + 1, ctx.valid, 0âŸ©
   | OpCode.AND =>
     let v1 := ctx.registers instr.reg_src1
     let v2 := ctx.registers instr.reg_src2
     let result : SemanticValue :=
-      ⟨v1.width, wordAnd v1.word v2.word, SemanticClass.primitive, 0⟩
-    let new_regs : RegId → SemanticValue :=
+      âŸ¨v1.width, wordAnd v1.word v2.word, SemanticClass.primitive, 0âŸ©
+    let new_regs : RegId â†’ SemanticValue :=
       fun r => if r = instr.reg_dest then result else ctx.registers r
-    ⟨new_regs, ctx.memory, ctx.pc + 1, ctx.valid, 0⟩
+    âŸ¨new_regs, ctx.memory, ctx.pc + 1, ctx.valid, 0âŸ©
   | OpCode.OR =>
     let v1 := ctx.registers instr.reg_src1
     let v2 := ctx.registers instr.reg_src2
     let result : SemanticValue :=
-      ⟨v1.width, wordOr v1.word v2.word, SemanticClass.primitive, 0⟩
-    let new_regs : RegId → SemanticValue :=
+      âŸ¨v1.width, wordOr v1.word v2.word, SemanticClass.primitive, 0âŸ©
+    let new_regs : RegId â†’ SemanticValue :=
       fun r => if r = instr.reg_dest then result else ctx.registers r
-    ⟨new_regs, ctx.memory, ctx.pc + 1, ctx.valid, 0⟩
+    âŸ¨new_regs, ctx.memory, ctx.pc + 1, ctx.valid, 0âŸ©
   | OpCode.XOR =>
     let v1 := ctx.registers instr.reg_src1
     let v2 := ctx.registers instr.reg_src2
     let result : SemanticValue :=
-      ⟨v1.width, wordXor v1.word v2.word, SemanticClass.primitive, 0⟩
-    let new_regs : RegId → SemanticValue :=
+      âŸ¨v1.width, wordXor v1.word v2.word, SemanticClass.primitive, 0âŸ©
+    let new_regs : RegId â†’ SemanticValue :=
       fun r => if r = instr.reg_dest then result else ctx.registers r
-    ⟨new_regs, ctx.memory, ctx.pc + 1, ctx.valid, 0⟩
+    âŸ¨new_regs, ctx.memory, ctx.pc + 1, ctx.valid, 0âŸ©
   | OpCode.NOT =>
     let v1 := ctx.registers instr.reg_src1
     let result : SemanticValue :=
-      ⟨v1.width, wordNot v1.word, SemanticClass.primitive, 0⟩
-    let new_regs : RegId → SemanticValue :=
+      âŸ¨v1.width, wordNot v1.word, SemanticClass.primitive, 0âŸ©
+    let new_regs : RegId â†’ SemanticValue :=
       fun r => if r = instr.reg_dest then result else ctx.registers r
-    ⟨new_regs, ctx.memory, ctx.pc + 1, ctx.valid, 0⟩
+    âŸ¨new_regs, ctx.memory, ctx.pc + 1, ctx.valid, 0âŸ©
   | OpCode.MOVE =>
     let src_val := ctx.registers instr.reg_src1
-    let new_regs : RegId → SemanticValue :=
+    let new_regs : RegId â†’ SemanticValue :=
       fun r => if r = instr.reg_dest then src_val else ctx.registers r
-    ⟨new_regs, ctx.memory, ctx.pc + 1, ctx.valid, 0⟩
+    âŸ¨new_regs, ctx.memory, ctx.pc + 1, ctx.valid, 0âŸ©
   | OpCode.HALT =>
-    ⟨ctx.registers, ctx.memory, ctx.pc, ctx.valid, 0⟩
+    âŸ¨ctx.registers, ctx.memory, ctx.pc, ctx.valid, 0âŸ©
   | _ =>
-    ⟨ctx.registers, ctx.memory, ctx.pc + 1, ctx.valid, 0⟩
+    âŸ¨ctx.registers, ctx.memory, ctx.pc + 1, ctx.valid, 0âŸ©
 
 -- ===== SECTION 7: INSTRUCTION PROPERTIES =====
 
@@ -263,7 +280,7 @@ theorem all_instructions_deterministic (instr : Instruction) : isDeterministic i
 -- ===== SECTION 8: EXECUTION CORRECTNESS =====
 
 theorem and_instruction_valid (ctx : ExecContext) (valid_src1 : ctx.valid) :
-    (executeInstruction ctx ⟨OpCode.AND, 2, 0, 1, 0⟩).valid = true := by
+    (executeInstruction ctx âŸ¨OpCode.AND, 2, 0, 1, 0âŸ©).valid = true := by
   simp [executeInstruction]
   exact valid_src1
 
@@ -275,7 +292,7 @@ def executeSeq (ctx : ExecContext) (instrs : InstructionSeq) : ExecContext :=
   instrs.foldl executeInstruction ctx
 
 def seqValid (instrs : InstructionSeq) : Prop :=
-  ∀ instr ∈ instrs, isDeterministic instr
+  âˆ€ instr âˆˆ instrs, isDeterministic instr
 
 theorem seq_all_valid (instrs : InstructionSeq) : seqValid instrs := by
   unfold seqValid; intro instr _; exact all_instructions_deterministic instr

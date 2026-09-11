@@ -1,3 +1,20 @@
+﻿/-
+ ========================================================================
+ SOVEREIGN LEVIATHAN NODE LICENSE
+ License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ ========================================================================
+
+ This file is a covered work under the GNU Affero General Public License,
+ version 3, together with the Sovereign Leviathan additional terms.
+
+ Hark, though this node be but a spark,
+ Its covenant endureth through the dark.
+
+ Ignorantia juris non excusat.
+ ========================================================================
+-/
+
 -- ============================================================
 -- LEAN 4 ARRAY VERIFICATION STARTER TEMPLATE
 -- ============================================================
@@ -19,28 +36,28 @@ namespace YourProject
 section Specification
 
 /-- Abstract specification: contract for your array operation -/
-structure ArrayContract (α : Type u) where
+structure ArrayContract (Î± : Type u) where
   size : Nat
-  read : Fin size → α
+  read : Fin size â†’ Î±
 
 /-- SPECIFICATION 1: What does your array represent? -/
-def your_spec_1 {α : Type u} (param : Type) : ArrayContract α :=
+def your_spec_1 {Î± : Type u} (param : Type) : ArrayContract Î± :=
   { size := ?_
     read := ?_ }
 
 /-- SPECIFICATION 2: (if needed, add more specs) -/
-def your_spec_2 {α : Type u} (param : Type) : ArrayContract α :=
+def your_spec_2 {Î± : Type u} (param : Type) : ArrayContract Î± :=
   { size := ?_
     read := ?_ }
 
 /-- Refinement relation: what it means for implementation to be correct -/
-def satisfies (arr : Array α) (spec : ArrayContract α) : Prop :=
-  arr.size = spec.size ∧
-  ∀ i : Fin arr.size, arr.get i = spec.read ⟨i.val, by
-    rw [← Array.Correctness.satisfies]
-    exact i.isLt⟩
+def satisfies (arr : Array Î±) (spec : ArrayContract Î±) : Prop :=
+  arr.size = spec.size âˆ§
+  âˆ€ i : Fin arr.size, arr.get i = spec.read âŸ¨i.val, by
+    rw [â† Array.Correctness.satisfies]
+    exact i.isLtâŸ©
 
-notation:25 a " ⊑ " s => satisfies a s
+notation:25 a " âŠ‘ " s => satisfies a s
 
 end Specification
 
@@ -51,11 +68,11 @@ end Specification
 section Implementation
 
 /-- CONSTRUCTION 1: How do you build your array? -/
-def your_array_constructor (param : Type) : Array α :=
+def your_array_constructor (param : Type) : Array Î± :=
   ?_
 
 /-- CONSTRUCTION 2: (if needed) -/
-def your_other_constructor (param : Type) : Array α :=
+def your_other_constructor (param : Type) : Array Î± :=
   ?_
 
 end Implementation
@@ -96,17 +113,17 @@ section RefinementProofs
 
 /-- CLAIM: Constructor satisfies specification -/
 theorem your_constructor_refines (param : Type) :
-    your_array_constructor param ⊑ your_spec_1 param := by
+    your_array_constructor param âŠ‘ your_spec_1 param := by
   constructor
-  · unfold satisfies your_array_constructor your_spec_1
+  Â· unfold satisfies your_array_constructor your_spec_1
     exact your_constructor_size param
-  · unfold your_array_constructor your_spec_1
+  Â· unfold your_array_constructor your_spec_1
     intro i
     exact your_constructor_get param i
 
 /-- CLAIM: Alternative constructor (if applicable) -/
 theorem your_other_constructor_refines (param : Type) :
-    your_other_constructor param ⊑ your_spec_2 param := by
+    your_other_constructor param âŠ‘ your_spec_2 param := by
   sorry
 
 end RefinementProofs
@@ -138,16 +155,16 @@ end EdgeCases
 section SafeAccess
 
 /-- Safe get: bounded array access -/
-def safe_get (arr : Array α) (i : Nat) : Option α :=
-  if h : i < arr.size then some (arr.get ⟨i, h⟩) else none
+def safe_get (arr : Array Î±) (i : Nat) : Option Î± :=
+  if h : i < arr.size then some (arr.get âŸ¨i, hâŸ©) else none
 
 /-- PROPERTY: Valid index always succeeds -/
-theorem safe_get_valid {arr : Array α} {i : Nat} (h : i < arr.size) :
-    safe_get arr i = some (arr.get ⟨i, h⟩) := by
+theorem safe_get_valid {arr : Array Î±} {i : Nat} (h : i < arr.size) :
+    safe_get arr i = some (arr.get âŸ¨i, hâŸ©) := by
   unfold safe_get; rw [dif_pos h]
 
 /-- PROPERTY: Invalid index always fails -/
-theorem safe_get_invalid {arr : Array α} {i : Nat} (h : ¬(i < arr.size)) :
+theorem safe_get_invalid {arr : Array Î±} {i : Nat} (h : Â¬(i < arr.size)) :
     safe_get arr i = none := by
   unfold safe_get; rw [dif_neg h]
 
@@ -160,18 +177,18 @@ end SafeAccess
 section Invariants
 
 /-- INVARIANT: Predicate holding for all elements -/
-def your_invariant (P : α → Prop) (arr : Array α) : Prop :=
-  ∀ i : Fin arr.size, P (arr.get i)
+def your_invariant (P : Î± â†’ Prop) (arr : Array Î±) : Prop :=
+  âˆ€ i : Fin arr.size, P (arr.get i)
 
 /-- CLAIM: Construction preserves invariant -/
-theorem constructor_preserves_invariant {P : α → Prop} (param : Type)
-    (h : ∀ x, ?_ x → P x) :
+theorem constructor_preserves_invariant {P : Î± â†’ Prop} (param : Type)
+    (h : âˆ€ x, ?_ x â†’ P x) :
     your_invariant P (your_array_constructor param) := by
   unfold your_invariant; intro i; simp [your_array_constructor]; sorry
 
 /-- CLAIM: Invariant composability -/
-theorem invariant_chain {P Q : α → Prop} {arr : Array α}
-    (h1 : your_invariant P arr) (h2 : ∀ x, P x → Q x) :
+theorem invariant_chain {P Q : Î± â†’ Prop} {arr : Array Î±}
+    (h1 : your_invariant P arr) (h2 : âˆ€ x, P x â†’ Q x) :
     your_invariant Q arr := by
   unfold your_invariant at *; intro i; exact h2 _ (h1 i)
 
@@ -184,24 +201,24 @@ end Invariants
 section Transformations
 
 /-- TRANSFORMATION: How do you transform the array? -/
-def your_transform (f : α → β) (arr : Array α) : Array β := arr.map f
+def your_transform (f : Î± â†’ Î²) (arr : Array Î±) : Array Î² := arr.map f
 
 /-- PROPERTY: Size preservation -/
-theorem transform_size {f : α → β} {arr : Array α} :
+theorem transform_size {f : Î± â†’ Î²} {arr : Array Î±} :
     (your_transform f arr).size = arr.size := by
   unfold your_transform; exact Array.size_map f arr
 
 /-- PROPERTY: Correct element mapping -/
-theorem transform_element {f : α → β} {arr : Array α} {i : Fin arr.size} :
+theorem transform_element {f : Î± â†’ Î²} {arr : Array Î±} {i : Fin arr.size} :
     (your_transform f arr).get i = f (arr.get i) := by
   unfold your_transform; exact Array.getElem_map f arr i
 
 /-- CLAIM: Transformation refines specification -/
-theorem transform_refines {f : α → β} {arr : Array α} :
-    your_transform f arr ⊑ ?_ := by
+theorem transform_refines {f : Î± â†’ Î²} {arr : Array Î±} :
+    your_transform f arr âŠ‘ ?_ := by
   constructor
-  · exact transform_size
-  · intro i; exact transform_element
+  Â· exact transform_size
+  Â· intro i; exact transform_element
 
 end Transformations
 
@@ -212,17 +229,17 @@ end Transformations
 section Composition
 
 /-- COMPOSITION: Combining two operations -/
-def composed_operation (arr : Array α) : Array β :=
+def composed_operation (arr : Array Î±) : Array Î² :=
   your_transform ?_ (your_array_constructor ?_)
 
 /-- CLAIM: Composition preserves correctness -/
-theorem composition_correct (arr : Array α) :
-    composed_operation arr ⊑ ?_ := by
+theorem composition_correct (arr : Array Î±) :
+    composed_operation arr âŠ‘ ?_ := by
   unfold composed_operation; sorry
 
 /-- LEMMA: Transitivity of refinement -/
-theorem refine_trans {arr : Array α} {s1 s2 : ArrayContract α}
-    (h1 : arr ⊑ s1) (h2 : s1.size = s2.size) :
+theorem refine_trans {arr : Array Î±} {s1 s2 : ArrayContract Î±}
+    (h1 : arr âŠ‘ s1) (h2 : s1.size = s2.size) :
     s1.size = s2.size := h2
 
 end Composition
@@ -248,7 +265,7 @@ example :
   transform_size
 
 /-- EXAMPLE 4: Verify refinement -/
-example : your_array_constructor ?_ ⊑ your_spec_1 ?_ :=
+example : your_array_constructor ?_ âŠ‘ your_spec_1 ?_ :=
   your_constructor_refines ?_
 
 end Examples
@@ -268,7 +285,7 @@ section IntegrityChecks
 theorem no_circularity : True := trivial
 
 /-- Check: Refinement notation works -/
-#check (fun (arr : Array α) (spec : ArrayContract α) => arr ⊑ spec)
+#check (fun (arr : Array Î±) (spec : ArrayContract Î±) => arr âŠ‘ spec)
 
 end IntegrityChecks
 

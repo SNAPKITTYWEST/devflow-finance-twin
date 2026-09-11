@@ -1,3 +1,18 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """ISA type system and machine state model."""
 
 from __future__ import annotations
@@ -76,16 +91,16 @@ class MachineState:
     """Explicit machine state. Source of truth for interpreter and for differential tests."""
     registers: RegisterFile = field(default_factory=RegisterFile)
     stack: list[int] = field(default_factory=list)
-    memory: dict[int, int] = field(default_factory=dict) # address → value (word)
+    memory: dict[int, int] = field(default_factory=dict) # address â†’ value (word)
     pc: int = 0
     flags: Flags = field(default_factory=Flags)
     agent_id: int = 0
     status: AgentStatus = AgentStatus.READY
     halted: bool = False
-    # simple channel store: chan_id → list of messages
+    # simple channel store: chan_id â†’ list of messages
     channels: dict[int, list[int]] = field(default_factory=dict)
     next_chan_id: int = 1
-    # agent mailboxes: agent_id → list of messages
+    # agent mailboxes: agent_id â†’ list of messages
     mailboxes: dict[int, list[int]] = field(default_factory=dict)
     next_agent_id: int = 1
 

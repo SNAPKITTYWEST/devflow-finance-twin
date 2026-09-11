@@ -1,138 +1,153 @@
-⍝ Tiny Decoder-Only Transformer in Dyalog APL
-⍝ Run in Dyalog: ]load transformer.apl
-⍝ Config is tiny for readability. All arrays are 0-index friendly.
+﻿â ========================================================================
+â SOVEREIGN LEVIATHAN NODE LICENSE
+â License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+â Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+â ========================================================================
+â
+â This file is a covered work under the GNU Affero General Public License,
+â version 3, together with the Sovereign Leviathan additional terms.
+â
+â Hark, though this node be but a spark,
+â Its covenant endureth through the dark.
+â
+â Ignorantia juris non excusat.
+â ========================================================================
 
-⍝ ── Hyperparams ──
-vocab←512 ⋄ dModel←64 ⋄ nHeads←4 ⋄ dk←dModel÷nHeads
-dFF←128 ⋄ seqLen←32 ⋄ eps←1e-5
+â Tiny Decoder-Only Transformer in Dyalog APL
+â Run in Dyalog: ]load transformer.apl
+â Config is tiny for readability. All arrays are 0-index friendly.
 
-⍝ ── Primitives ──
-⍝ stable softmax for vector
-softmaxVec←{e←*⍵-⌈/⍵ ⋄ e÷+/e}
-⍝ row-wise softmax for matrix [seq, seq]
-softmaxRows←softmaxVec⍤1
+â â”€â”€ Hyperparams â”€â”€
+vocabâ†512 â‹„ dModelâ†64 â‹„ nHeadsâ†4 â‹„ dkâ†dModelÃ·nHeads
+dFFâ†128 â‹„ seqLenâ†32 â‹„ epsâ†1e-5
 
-⍝ layerNorm per row: [n, d] -> [n, d]
-lnVec←{m←(+/⍵)÷≢⍵ ⋄ v←(+/2*⍨⍵-m)÷≢⍵ ⋄ (⍵-m)÷√v+eps}
-layerNorm←lnVec⍤1
+â â”€â”€ Primitives â”€â”€
+â stable softmax for vector
+softmaxVecâ†{eâ†*âµ-âŒˆ/âµ â‹„ eÃ·+/e}
+â row-wise softmax for matrix [seq, seq]
+softmaxRowsâ†softmaxVecâ¤1
 
-⍝ gelu approx (tanh version)
-gelu←{0.5×⍵×1+7○0.79788456×⍵+0.044715×⍵*3}
+â layerNorm per row: [n, d] -> [n, d]
+lnVecâ†{mâ†(+/âµ)Ã·â‰¢âµ â‹„ vâ†(+/2*â¨âµ-m)Ã·â‰¢âµ â‹„ (âµ-m)Ã·âˆšv+eps}
+layerNormâ†lnVecâ¤1
 
-⍝ causal mask: 0 allowed, ¯1e9 future
-causalMask←{n←⍵ ⋄ (n n⍴0)+¯1e9×n n⍴(⍳n)∘.<⍳n}
-⍝ Note: (⍳n)∘.<⍳n gives strictly lower triangular 1s, we invert for causal
+â gelu approx (tanh version)
+geluâ†{0.5Ã—âµÃ—1+7â—‹0.79788456Ã—âµ+0.044715Ã—âµ*3}
 
-⍝ fix mask orientation for demo: lower-tri inclusive = allowed
-causalMask←{(n n⍴0)+¯1e9×~(n n⍴(⍳⍵)∘.≤⍳⍵)}
+â causal mask: 0 allowed, Â¯1e9 future
+causalMaskâ†{nâ†âµ â‹„ (n nâ´0)+Â¯1e9Ã—n nâ´(â³n)âˆ˜.<â³n}
+â Note: (â³n)âˆ˜.<â³n gives strictly lower triangular 1s, we invert for causal
 
-⍝ ── Attention ──
-⍝ Single head: Q K V are [seq, dk], returns [seq, dk]
-attn1←{
-  scores←⍺⍺.+.×⍉⍵⍵ ⍝ placeholder to keep tacit clear
-  ⍵
+â fix mask orientation for demo: lower-tri inclusive = allowed
+causalMaskâ†{(n nâ´0)+Â¯1e9Ã—~(n nâ´(â³âµ)âˆ˜.â‰¤â³âµ)}
+
+â â”€â”€ Attention â”€â”€
+â Single head: Q K V are [seq, dk], returns [seq, dk]
+attn1â†{
+  scoresâ†âºâº.+.Ã—â‰âµâµ â placeholder to keep tacit clear
+  âµ
 }
-⍝ explicit version:
-⍝ Q K V as left,mid,right args via namespace - use dfn with 3 args via ⍺ ⍵ and global
-singleHead←{
-  ⍝ ⍵ is namespace with Q K V Mask
-  scores←(⍵.Q)+.×⍉⍵.K
-  scaled←scores÷√dk
-  masked←scaled+⍵.mask
-  w←softmaxRows masked
-  w+.×⍵.V
-}
-
-⍝ Split heads: X [seq, dModel] -> [nHeads, seq, dk]
-splitHeads←{nHeads (seqLen dk)⍴⍵}
-
-⍝ mergeHeads: [nHeads, seq, dk] -> [seq, dModel]
-mergeHeads←{(seqLen dModel)⍴⍉[0 2 1 3]⍵} ⍝ conceptual, simplified below for demo
-
-⍝ Simplified MHA for demo (loop over heads for clarity):
-⍝ Wq Wk Wv Wo are [dModel, dModel]
-mha←{
-  ⍝ ⍵: X [seq, dModel], ⍺: namespace of params
-  X←⍵ ⋄ P←⍺
-  Q←X+.×P.Wq ⋄ K←X+.×P.Wk ⋄ V←X+.×P.Wv
-  ⍝ reshape to heads by splitting last axis
-  Qh←(nHeads seqLen dk)⍴⍉[2 0 1] (seqLen nHeads dk)⍴Q
-  Kh←(nHeads seqLen dk)⍴⍉[2 0 1] (seqLen nHeads dk)⍴K
-  Vh←(nHeads seqLen dk)⍴⍉[2 0 1] (seqLen nHeads dk)⍴V
-  mask←causalMask seqLen
-  ⍝ per-head attention
-  Oh←{
-    s←(⍵.Q)+.×⍉⍵.K
-    w←softmaxRows (s÷√dk)+mask
-    w+.×⍵.V
-  }¨ (⊂Qh)(⊂Kh)(⊂Vh) ⍝ vector of namespaces - illustrative
-  O←(seqLen dModel)⍴,⍉[1 0 2] (seqLen nHeads dk)⍴↑Oh
-  O+.×P.Wo
+â explicit version:
+â Q K V as left,mid,right args via namespace - use dfn with 3 args via âº âµ and global
+singleHeadâ†{
+  â âµ is namespace with Q K V Mask
+  scoresâ†(âµ.Q)+.Ã—â‰âµ.K
+  scaledâ†scoresÃ·âˆšdk
+  maskedâ†scaled+âµ.mask
+  wâ†softmaxRows masked
+  w+.Ã—âµ.V
 }
 
-⍝ ── MLP ──
-⍝ params W1 [dModel, dFF] W2 [dFF, dModel] b1 b2
-mlp←{
-  X←⍵ ⋄ P←⍺
-  h←gelu (X+.×P.W1)+P.b1
-  (h+.×P.W2)+P.b2
+â Split heads: X [seq, dModel] -> [nHeads, seq, dk]
+splitHeadsâ†{nHeads (seqLen dk)â´âµ}
+
+â mergeHeads: [nHeads, seq, dk] -> [seq, dModel]
+mergeHeadsâ†{(seqLen dModel)â´â‰[0 2 1 3]âµ} â conceptual, simplified below for demo
+
+â Simplified MHA for demo (loop over heads for clarity):
+â Wq Wk Wv Wo are [dModel, dModel]
+mhaâ†{
+  â âµ: X [seq, dModel], âº: namespace of params
+  Xâ†âµ â‹„ Pâ†âº
+  Qâ†X+.Ã—P.Wq â‹„ Kâ†X+.Ã—P.Wk â‹„ Vâ†X+.Ã—P.Wv
+  â reshape to heads by splitting last axis
+  Qhâ†(nHeads seqLen dk)â´â‰[2 0 1] (seqLen nHeads dk)â´Q
+  Khâ†(nHeads seqLen dk)â´â‰[2 0 1] (seqLen nHeads dk)â´K
+  Vhâ†(nHeads seqLen dk)â´â‰[2 0 1] (seqLen nHeads dk)â´V
+  maskâ†causalMask seqLen
+  â per-head attention
+  Ohâ†{
+    sâ†(âµ.Q)+.Ã—â‰âµ.K
+    wâ†softmaxRows (sÃ·âˆšdk)+mask
+    w+.Ã—âµ.V
+  }Â¨ (âŠ‚Qh)(âŠ‚Kh)(âŠ‚Vh) â vector of namespaces - illustrative
+  Oâ†(seqLen dModel)â´,â‰[1 0 2] (seqLen nHeads dk)â´â†‘Oh
+  O+.Ã—P.Wo
 }
 
-⍝ ── Transformer block (pre-norm) ──
-⍝ P contains Wq Wk Wv Wo W1 W2 b1 b2
-block←{
-  X←⍵ ⋄ P←⍺
-  a←P mha layerNorm X
-  X1←X+a
-  m←P mlp layerNorm X1
+â â”€â”€ MLP â”€â”€
+â params W1 [dModel, dFF] W2 [dFF, dModel] b1 b2
+mlpâ†{
+  Xâ†âµ â‹„ Pâ†âº
+  hâ†gelu (X+.Ã—P.W1)+P.b1
+  (h+.Ã—P.W2)+P.b2
+}
+
+â â”€â”€ Transformer block (pre-norm) â”€â”€
+â P contains Wq Wk Wv Wo W1 W2 b1 b2
+blockâ†{
+  Xâ†âµ â‹„ Pâ†âº
+  aâ†P mha layerNorm X
+  X1â†X+a
+  mâ†P mlp layerNorm X1
   X1+m
 }
 
-⍝ ── Jacobian blocks ──
-⍝ Linear: y = W+.×x  =>  J = W (for x vector)
-linearJac←{⍺} ⍝ returns W itself
+â â”€â”€ Jacobian blocks â”€â”€
+â Linear: y = W+.Ã—x  =>  J = W (for x vector)
+linearJacâ†{âº} â returns W itself
 
-⍝ Softmax Jacobian: J = diag(s) - s∘.×s
-softmaxJac←{
-  s←softmaxVec ⍵
-  n←≢s
-  I←(∘.=⍨⍳n)
-  D←I×(n n⍴s)  ⍝ diag(s)
-  D-s∘.×s
+â Softmax Jacobian: J = diag(s) - sâˆ˜.Ã—s
+softmaxJacâ†{
+  sâ†softmaxVec âµ
+  nâ†â‰¢s
+  Iâ†(âˆ˜.=â¨â³n)
+  Dâ†IÃ—(n nâ´s)  â diag(s)
+  D-sâˆ˜.Ã—s
 }
 
-⍝ Finite-difference checker for any vec->vec fn
-⍝ (fn x) returns vector, h step
-fdJac←{
-  fn←⍺⍺ ⋄ x←⍵ ⋄ h←1e-5
-  n←≢x ⋄ m←≢fn x
-  J←(m n)⍴0
-  :For i :In ⍳n
-    e←(n⍴0)+h×(⍳n)=i
-    J[;i]←(fn x+e)-fn x÷h
+â Finite-difference checker for any vec->vec fn
+â (fn x) returns vector, h step
+fdJacâ†{
+  fnâ†âºâº â‹„ xâ†âµ â‹„ hâ†1e-5
+  nâ†â‰¢x â‹„ mâ†â‰¢fn x
+  Jâ†(m n)â´0
+  :For i :In â³n
+    eâ†(nâ´0)+hÃ—(â³n)=i
+    J[;i]â†(fn x+e)-fn xÃ·h
   :EndFor
   J
 }
 
-⍝ ── Demo ──
-⍝ Random tiny test (use ? for demo, replace with fixed weights in real run)
-demo←{
-  ⍝ fake X [4, 8] for readability
-  X←(4 8)⍴0.1×⍳32
-  s←softmaxVec 1 2 3
-  ⎕←'softmax:' ⋄ ⎕←s
-  ⎕←'softmax jacobian:' ⋄ ⎕←softmaxJac 1 2 3
-  ⍝ check vs finite diff
-  J1←softmaxJac 1 2 3
-  J2←(softmaxVec fdJac) 1 2 3
-  ⎕←'max fd error:' ⋄ ⎕←⌈/,|J1-J2
+â â”€â”€ Demo â”€â”€
+â Random tiny test (use ? for demo, replace with fixed weights in real run)
+demoâ†{
+  â fake X [4, 8] for readability
+  Xâ†(4 8)â´0.1Ã—â³32
+  sâ†softmaxVec 1 2 3
+  âŽ•â†'softmax:' â‹„ âŽ•â†s
+  âŽ•â†'softmax jacobian:' â‹„ âŽ•â†softmaxJac 1 2 3
+  â check vs finite diff
+  J1â†softmaxJac 1 2 3
+  J2â†(softmaxVec fdJac) 1 2 3
+  âŽ•â†'max fd error:' â‹„ âŽ•â†âŒˆ/,|J1-J2
 }
 
-⍝ Full model forward (embeddings omitted for brevity):
-⍝ modelForward X P Q  where X [seq, dModel]
-modelForward←{
-  X←⍵ ⋄ P←⍺
-  X←P.block1 block X
-  X←P.block2 block X
+â Full model forward (embeddings omitted for brevity):
+â modelForward X P Q  where X [seq, dModel]
+modelForwardâ†{
+  Xâ†âµ â‹„ Pâ†âº
+  Xâ†P.block1 block X
+  Xâ†P.block2 block X
   layerNorm X
 }

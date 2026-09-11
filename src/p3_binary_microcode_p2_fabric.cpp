@@ -1,8 +1,23 @@
+﻿/* ========================================================================
+ * SOVEREIGN LEVIATHAN NODE LICENSE
+ * License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ * Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ * ========================================================================
+ *
+ * This file is a covered work under the GNU Affero General Public License,
+ * version 3, together with the Sovereign Leviathan additional terms.
+ *
+ * Hark, though this node be but a spark,
+ * Its covenant endureth through the dark.
+ *
+ * Ignorantia juris non excusat.
+ * ======================================================================== */
+
 /*
 P3 BINARY MICROCODE + P2 HARDWARE PARALLEL FABRIC
 COMBINED REFERENCE IMPLEMENTATION
 
-P3 → P4 MICRO-OP → SM90 SASS RECURSION CHAIN
+P3 â†’ P4 MICRO-OP â†’ SM90 SASS RECURSION CHAIN
 P2 HARDWARE PARALLEL LAYER
 
 Virtual architecture only.
@@ -303,9 +318,9 @@ static inline p3_u32 p3_execute_v1(
 /* ============================================================
  * P3 BINARY STATE (recursion layer)
  *
- * SEMANTIC → PARAMETER → EMBEDDING → FEATURE
- *         → INSTRUCTION → MICRO-OP → CONTROL WORD
- *         → PROVENANCE → VALIDATION
+ * SEMANTIC â†’ PARAMETER â†’ EMBEDDING â†’ FEATURE
+ *         â†’ INSTRUCTION â†’ MICRO-OP â†’ CONTROL WORD
+ *         â†’ PROVENANCE â†’ VALIDATION
  * ============================================================ */
 
 struct P3BinaryState {
@@ -642,9 +657,9 @@ finish:
 /* ============================================================
  * P2 HARDWARE PARALLEL FABRIC (header-style, namespace p2)
  *
- * P3 instruction → P2 decode → P2 lane expansion
- *               → P2 execution units → P2 synchronization
- *               → P2 commit
+ * P3 instruction â†’ P2 decode â†’ P2 lane expansion
+ *               â†’ P2 execution units â†’ P2 synchronization
+ *               â†’ P2 commit
  * ============================================================ */
 
 namespace p2 {
@@ -798,22 +813,22 @@ static inline void execute(
 #endif /* __cplusplus */
 
 /*
- * P4 → P3 → P2 COMPLETE RECURSION
+ * P4 â†’ P3 â†’ P2 COMPLETE RECURSION
  *
  * VSM SEMANTICS
- *   → P5 SEMANTIC MODEL
- *   → P4 MICROCODE MODEL
- *   → P3 BINARY ISA
- *   → P2 HARDWARE PARALLEL FABRIC
- *   → 32 LANES / 8-WIDE ISSUE / EXECUTION UNITS
- *   → REGISTER BANKS / SHARED STATE
- *   → REDUCTION NETWORK / BARRIER NETWORK
- *   → COMMIT FABRIC
- *   → CUDA → PTX → CUBIN → SM90 SASS → NVIDIA H100
+ *   â†’ P5 SEMANTIC MODEL
+ *   â†’ P4 MICROCODE MODEL
+ *   â†’ P3 BINARY ISA
+ *   â†’ P2 HARDWARE PARALLEL FABRIC
+ *   â†’ 32 LANES / 8-WIDE ISSUE / EXECUTION UNITS
+ *   â†’ REGISTER BANKS / SHARED STATE
+ *   â†’ REDUCTION NETWORK / BARRIER NETWORK
+ *   â†’ COMMIT FABRIC
+ *   â†’ CUDA â†’ PTX â†’ CUBIN â†’ SM90 SASS â†’ NVIDIA H100
  *
  * FORMAL INVARIANTS
- *   I1: lane_id ∈ [0,31]
- *   I2: register_id ∈ [0,255]
+ *   I1: lane_id âˆˆ [0,31]
+ *   I2: register_id âˆˆ [0,255]
  *   I3: inactive lane performs no architectural write
  *   I4: barrier releases only when all active lanes arrive
  *   I5: committed state cannot be rolled back

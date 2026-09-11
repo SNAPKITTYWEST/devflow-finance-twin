@@ -1,5 +1,20 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
-// fsl/src/crux/pcc.rs  –  Proof-Carrying Code Structures
+// fsl/src/crux/pcc.rs  â€“  Proof-Carrying Code Structures
 // CertifiedState, Sila.Derivation, reflective combinators
 // Dense ~200 LOC
 // =============================================================================
@@ -20,15 +35,15 @@ pub struct SilaDerivation {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum DerivationRule {
-    /// Axiom: φ is an axiom
+    /// Axiom: Ï† is an axiom
     Axiom(Formula),
-    /// Modus ponens: from φ → ψ and φ derive ψ
+    /// Modus ponens: from Ï† â†’ Ïˆ and Ï† derive Ïˆ
     ModusPonens { imp: Box<SilaDerivation>, antecedent: Box<SilaDerivation> },
-    /// Generalization: from φ derive ∀x. φ
+    /// Generalization: from Ï† derive âˆ€x. Ï†
     Generalization { inner: Box<SilaDerivation>, var: Ident },
-    /// Recursive unfolding: from μX. φ derive φ[X := μX. φ]
+    /// Recursive unfolding: from Î¼X. Ï† derive Ï†[X := Î¼X. Ï†]
     RecursiveUnfold { inner: Box<SilaDerivation> },
-    /// State update: from S ⊢ φ derive (S[b↦v]) ⊢ φ
+    /// State update: from S âŠ¢ Ï† derive (S[bâ†¦v]) âŠ¢ Ï†
     StateUpdate { inner: Box<SilaDerivation>, binding: Binding },
     /// OMEGA result: external solver confirmed
     OmegaConfirmed(OmegaResult),
@@ -164,10 +179,10 @@ impl CertifiedState {
 // 4. Combinators
 // ---------------------------------------------------------------------------
 
-/// Compose two PCC values: if f has proof of (A → B) and x has proof of A,
+/// Compose two PCC values: if f has proof of (A â†’ B) and x has proof of A,
 /// produce proof of B.
 pub fn compose_pcc<A, B>(
-    f: &ProofCarrying<A>, // should be A → B
+    f: &ProofCarrying<A>, // should be A â†’ B
     _x: &ProofCarrying<B>,
     _a: &ProofCarrying<A>,
 ) -> ProofCertificate {

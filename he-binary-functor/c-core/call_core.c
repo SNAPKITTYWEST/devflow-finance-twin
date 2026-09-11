@@ -1,4 +1,19 @@
-/* call_core.c — isolated call fibre + supervisor
+﻿/* ========================================================================
+ * SOVEREIGN LEVIATHAN NODE LICENSE
+ * License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ * Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ * ========================================================================
+ *
+ * This file is a covered work under the GNU Affero General Public License,
+ * version 3, together with the Sovereign Leviathan additional terms.
+ *
+ * Hark, though this node be but a spark,
+ * Its covenant endureth through the dark.
+ *
+ * Ignorantia juris non excusat.
+ * ======================================================================== */
+
+/* call_core.c â€” isolated call fibre + supervisor
  * Constraints: static alloc, fixed widths, deterministic transitions,
  * O(1) per message, no hidden state, explicit recovery.
  */
@@ -48,7 +63,7 @@ static const sip_t sip_next[5][5] = {
 /* TERM */ { SIP_TERM, SIP_TERM, SIP_TERM, SIP_TERM, SIP_TERM }
 };
 
-/* map external event codes 0..4 → column */
+/* map external event codes 0..4 â†’ column */
 static sip_t sip_step(sip_t s, uint8_t ev)
 {
     if (ev > 4) return s;
@@ -69,7 +84,7 @@ static void rtp_step(rtp_t *r, uint32_t ssrc, uint16_t seq, uint32_t ts)
 }
 
 /* ---------- single fibre transition ---------- */
-/* state + msg → new_state (effects: none, pure) */
+/* state + msg â†’ new_state (effects: none, pure) */
 static err_t call_step(call_t *c, uint8_t kind, uint32_t a, uint32_t b, uint32_t d)
 {
     if (!c->alive) return E_DEAD;
@@ -183,7 +198,7 @@ void sup_tick(sup_t *s, uint32_t now_ms)
 
 /* invariants (checked by audit, not runtime):
  * - active == count of alive slots
- * - id==0 ⇒ free
+ * - id==0 â‡’ free
  * - restarts never decreases except on window expiry
  * - SIP state only moves forward or stays
  * - no shared mutable data between slots

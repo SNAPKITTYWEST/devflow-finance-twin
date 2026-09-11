@@ -1,3 +1,18 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """State transition with audit event generation."""
 
 from __future__ import annotations
@@ -45,7 +60,7 @@ class StateMachine:
     ) -> AuditEvent:
         if not can_transition(self.current, to_state):
             raise IllegalTransitionError(
-                f"illegal transition {self.current.value} → {to_state.value}"
+                f"illegal transition {self.current.value} â†’ {to_state.value}"
             )
         payload = repr(input_data).encode("utf-8") if input_data is not None else b""
         input_hash = hashlib.sha256(payload).hexdigest()[:16]

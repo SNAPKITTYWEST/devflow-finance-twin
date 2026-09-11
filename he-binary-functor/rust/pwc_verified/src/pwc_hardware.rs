@@ -1,6 +1,21 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =====================================================================
 // PWC_HARDWARE - MMIO Interface with Timing Guarantees
-// Verified: τ_hardware = 1 cycle, WORM seal
+// Verified: Ï„_hardware = 1 cycle, WORM seal
 // =====================================================================
 
 use crate::pwc_core::{BraidWord, GeneratorIndex, evaluate_matrix, parse_braid_word};
@@ -72,6 +87,6 @@ fn compute_matrix_hash(word: &BraidWord) -> u32 {
 }
 
 pub fn worm_seal_timed(cycles: u32, matrix_hash: u32, timestamp_ns: u64) {
-    debug_assert_eq!(cycles, 1, "τ_hardware violation: cycles != 1");
+    debug_assert_eq!(cycles, 1, "Ï„_hardware violation: cycles != 1");
     eprintln!("WORM_SEAL: cycles={}, hash=0x{:08X}, ts={}", cycles, matrix_hash, timestamp_ns);
 }

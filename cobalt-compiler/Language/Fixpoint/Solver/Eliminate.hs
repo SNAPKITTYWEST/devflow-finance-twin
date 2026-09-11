@@ -1,11 +1,26 @@
--- Language.Fixpoint.Solver.Eliminate — KV scope solver and constraint elimination
--- Author: Ahmad Ali Parr — Bel Esprit D'Accord Irrevocable Trust
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
+-- Language.Fixpoint.Solver.Eliminate â€” KV scope solver and constraint elimination
+-- Author: Ahmad Ali Parr â€” Bel Esprit D'Accord Irrevocable Trust
 
 module Language.Fixpoint.Solver.Eliminate where
 
 import Language.Fixpoint.Solver.Simplify (Expr(..), simplify)
 
--- ── Constraint types ─────────────────────────────────────────────────────────
+-- â”€â”€ Constraint types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type KVar = String
 type Subst = [(String, Expr)]
 
@@ -21,7 +36,7 @@ data SolverInfo = SolverInfo
   , siSimplified  :: [Constraint]
   } deriving (Show)
 
--- ── KV scope analysis ────────────────────────────────────────────────────────
+-- â”€â”€ KV scope analysis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- Collect all KVars in an expression
 collectKVs :: Expr -> [KVar]
 collectKVs (Var s)      = [s]
@@ -42,7 +57,7 @@ kvScopes cs =
   [ (kv, concatMap collectKVs [cLhs c, cRhs c])
   | c <- cs, kv <- cKVs c ]
 
--- ── Substitution ─────────────────────────────────────────────────────────────
+-- â”€â”€ Substitution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 applySubst :: Subst -> Expr -> Expr
 applySubst s (Var v) = case lookup v s of
   Just e  -> e
@@ -58,7 +73,7 @@ applySubst s (Lt   e1 e2) = Lt   (applySubst s e1) (applySubst s e2)
 applySubst s (Ite  c t f) = Ite  (applySubst s c) (applySubst s t) (applySubst s f)
 applySubst _ e            = e
 
--- ── Elimination ──────────────────────────────────────────────────────────────
+-- â”€â”€ Elimination â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- Eliminate a KVar from constraints by substituting Lit 0 (conservative)
 eliminateKV :: KVar -> [Constraint] -> [Constraint]
 eliminateKV kv cs =
@@ -66,7 +81,7 @@ eliminateKV kv cs =
                , cRhs = applySubst [(kv, Lit 0)] (cRhs c) })
       cs
 
--- ── Main solver entry point ───────────────────────────────────────────────────
+-- â”€â”€ Main solver entry point â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 solverInfo :: [Constraint] -> SolverInfo
 solverInfo cs = SolverInfo
   { siConstraints = cs

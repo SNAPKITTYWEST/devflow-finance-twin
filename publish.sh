@@ -1,8 +1,23 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
 ###############################################################################
-# publish.sh — Deterministic repository publisher
+# publish.sh â€” Deterministic repository publisher
 #
 # Scans .inbox/, classifies files, organizes into repository structure,
 # verifies integrity via SHA-256, stages only publication files, commits,
@@ -448,12 +463,12 @@ handle_collision() {
     dest_hash="$(compute_sha256 "$dest_file")"
 
     if [[ "$src_hash" == "$dest_hash" ]]; then
-        # Identical — no-op
+        # Identical â€” no-op
         FILES_UNCHANGED+=("$src_relpath -> $(realpath --relative-to="$REPO_ROOT" "$dest_file" 2>/dev/null || printf '%s' "$dest_file") [IDENTICAL]")
         HASH_RECORD["$src_relpath"]="${src_hash}:${dest_hash}:UNCHANGED"
         return 0
     else
-        # Conflict — move to conflicts dir
+        # Conflict â€” move to conflicts dir
         mkdir -p "$CONFLICT_DIR"
         local conflict_name
         conflict_name="$(basename "$dest_file")"
@@ -615,10 +630,10 @@ process_inbox() {
         # Check for collision
         if [[ -e "$dest_file" ]]; then
             if handle_collision "$src_file" "$dest_file" "$relpath"; then
-                # Identical — skip
+                # Identical â€” skip
                 log_ok "UNCHANGED: ${relpath} (identical to ${dest_relpath})"
             else
-                # Conflict — was handled
+                # Conflict â€” was handled
                 had_conflicts=1
             fi
             continue
@@ -897,7 +912,7 @@ git_push() {
 
         # Update report
         if [[ -f "$REPORT_FILE" ]]; then
-            sed -i "s/^## Push Status$/## Push Status\n\n**SUCCESS** — pushed to ${remote}\/${branch}/" "$REPORT_FILE"
+            sed -i "s/^## Push Status$/## Push Status\n\n**SUCCESS** â€” pushed to ${remote}\/${branch}/" "$REPORT_FILE"
         fi
     else
         local commit_hash
@@ -916,7 +931,7 @@ git_push() {
         echo "  git push ${remote} ${branch}"
 
         if [[ -f "$REPORT_FILE" ]]; then
-            sed -i "s/^## Push Status$/## Push Status\n\n**FAILED** — commit preserved locally at \`${commit_hash}\`/" "$REPORT_FILE"
+            sed -i "s/^## Push Status$/## Push Status\n\n**FAILED** â€” commit preserved locally at \`${commit_hash}\`/" "$REPORT_FILE"
         fi
 
         return 1
@@ -1048,7 +1063,7 @@ show_manifest() {
 ###############################################################################
 show_help() {
     cat <<'HELP_EOF'
-publish.sh — Deterministic Repository Publisher
+publish.sh â€” Deterministic Repository Publisher
 
 USAGE
   ./publish.sh              Scan .inbox/, classify, organize, verify, commit, push
@@ -1078,7 +1093,7 @@ CLASSIFICATION
     *.ts     -> frontend/     *.adb    -> ada/
     *.md     -> docs/         *.svg    -> assets/
     *.json   -> config-or-data/
-    (and many more — see classify_file() in script)
+    (and many more â€” see classify_file() in script)
 
   Braid-related files route to braid/ subdirectories.
   Mathematics files route to mathematics/ subdirectories.
@@ -1149,7 +1164,7 @@ main() {
     if [[ "$DRY_RUN" -eq 1 ]]; then
         echo ""
         echo "============================================"
-        echo "  DRY RUN COMPLETE — no changes made"
+        echo "  DRY RUN COMPLETE â€” no changes made"
         echo "============================================"
         exit 0
     fi
@@ -1163,7 +1178,7 @@ main() {
         log_info "Nothing new to publish."
         echo ""
         echo "============================================"
-        echo "  NO CHANGES — nothing to commit"
+        echo "  NO CHANGES â€” nothing to commit"
         echo "============================================"
         exit 0
     fi

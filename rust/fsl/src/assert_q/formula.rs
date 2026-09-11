@@ -1,3 +1,18 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum FormulaOp {
     And,
@@ -177,20 +192,20 @@ pub fn pretty(f: &Formula) -> String {
                 FormulaArg::Formula(sub) => pretty(sub),
                 _ => format!("{:?}", a),
             }).collect();
-            format!("({})", parts.join(" ∧ "))
+            format!("({})", parts.join(" âˆ§ "))
         }
         FormulaOp::Or => {
             let parts: Vec<String> = f.args.iter().map(|a| match a {
                 FormulaArg::Formula(sub) => pretty(sub),
                 _ => format!("{:?}", a),
             }).collect();
-            format!("({})", parts.join(" ∨ "))
+            format!("({})", parts.join(" âˆ¨ "))
         }
         FormulaOp::Not => {
             if let Some(FormulaArg::Formula(sub)) = f.args.first() {
-                format!("¬{}", pretty(sub))
+                format!("Â¬{}", pretty(sub))
             } else {
-                format!("¬{:?}", f.args)
+                format!("Â¬{:?}", f.args)
             }
         }
         FormulaOp::Implies => {
@@ -202,7 +217,7 @@ pub fn pretty(f: &Formula) -> String {
                 Some(FormulaArg::Formula(sub)) => pretty(sub),
                 _ => format!("{:?}", f.args.get(1)),
             };
-            format!("({} → {})", a, b)
+            format!("({} â†’ {})", a, b)
         }
         FormulaOp::Eq => format!("{:?} = {:?}", f.args.get(0), f.args.get(1)),
         FormulaOp::AllDifferent => {
@@ -233,13 +248,13 @@ mod tests {
             feq(FormulaArg::var("b"), FormulaArg::num(2)),
         ]);
         let p = pretty(&f);
-        assert!(p.contains("∧"));
+        assert!(p.contains("âˆ§"));
     }
 
     #[test]
     fn test_pretty_not() {
         let f = fnot(feq(FormulaArg::var("x"), FormulaArg::num(0)));
         let p = pretty(&f);
-        assert!(p.contains("¬"));
+        assert!(p.contains("Â¬"));
     }
 }

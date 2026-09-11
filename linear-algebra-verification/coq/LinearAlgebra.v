@@ -1,3 +1,18 @@
+﻿(* ========================================================================
+ * SOVEREIGN LEVIATHAN NODE LICENSE
+ * License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ * Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ * ========================================================================
+ *
+ * This file is a covered work under the GNU Affero General Public License,
+ * version 3, together with the Sovereign Leviathan additional terms.
+ *
+ * Hark, though this node be but a spark,
+ * Its covenant endureth through the dark.
+ *
+ * Ignorantia juris non excusat.
+ * ======================================================================== *)
+
 (* LinearAlgebra.v
    Complete formal verification of outer-product update algebra
 *)
@@ -18,7 +33,7 @@ Variable R : realType.
 
 (*! ## Outer Product Action *)
 
-(* (v ⊗ xᵀ)x = ‖x‖² · v *)
+(* (v âŠ— xáµ€)x = â€–xâ€–Â² Â· v *)
 Lemma outer_product_action :
   forall (n : nat) (v x : 'rV[R]_n),
   x *m (v^T * x) = (x *m x^T) 0 0 *: v.
@@ -37,7 +52,7 @@ Qed.
 
 (*! ## Exact Change in Projection *)
 
-(* ⟨(W + ΔW)x,v⟩ - ⟨Wx,v⟩ = η · ‖x‖² · ‖v‖² *)
+(* âŸ¨(W + Î”W)x,vâŸ© - âŸ¨Wx,vâŸ© = Î· Â· â€–xâ€–Â² Â· â€–vâ€–Â² *)
 Lemma exact_change_in_projection :
   forall (n : nat) (W : 'M[R]_(n, n)) (eta : R) (v x : 'rV[R]_n),
   (x *m (W + eta *: (v^T * x)) *m v^T) 0 0 -

@@ -1,6 +1,21 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
-// fsl/src/crux/sas_backend.rs  –  SAS (Symbolic Abstract Semantics) Backend
-// Abstract interpretation: State × Formula → Proved | Alarm | Unknown
+// fsl/src/crux/sas_backend.rs  â€“  SAS (Symbolic Abstract Semantics) Backend
+// Abstract interpretation: State Ã— Formula â†’ Proved | Alarm | Unknown
 // Dense ~200 LOC
 // =============================================================================
 
@@ -41,7 +56,7 @@ impl SASAnalyzer {
 
             let next = self.transfer(&current, &query.property);
             if self.leq(&next, &current) {
-                // Fixpoint reached – check property
+                // Fixpoint reached â€“ check property
                 if self.satisfies(&next, &query.property) {
                     return SASResult::Proved;
                 } else {
@@ -128,7 +143,7 @@ impl SASAnalyzer {
     }
 
     fn leq(&self, a: &SASState, b: &SASState) -> bool {
-        // a ⊑ b iff every binding in a is subsumed by b
+        // a âŠ‘ b iff every binding in a is subsumed by b
         for (name, aval) in &a.bindings {
             if let Some(bval) = b.bindings.iter().find(|(n, _)| n == name).map(|(_, v)| v) {
                 if !self.subsumes(bval, aval) { return false; }

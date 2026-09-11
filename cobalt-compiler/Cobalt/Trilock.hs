@@ -1,3 +1,18 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 module Cobalt.Trilock
   ( Trilock(..)
   , mkTrilock
@@ -11,7 +26,7 @@ import           Data.List    (foldl')
 import           Data.Word    (Word64)
 
 -- ---------------------------------------------------------------------------
--- Trilock — 3-component structural identity triad
+-- Trilock â€” 3-component structural identity triad
 --   A : structural identity   (functor shape hash)
 --   B : connectivity          (child-count Fibonacci mix)
 --   C : emission constraint   (atom name hash)
@@ -24,7 +39,7 @@ data Trilock = Trilock
   } deriving (Eq, Show)
 
 phi64 :: Word64
-phi64 = 0x9E3779B97F4A7C15   -- 2^64 / φ (Fibonacci hash constant)
+phi64 = 0x9E3779B97F4A7C15   -- 2^64 / Ï† (Fibonacci hash constant)
 
 fibMix :: Word64 -> Word64
 fibMix x = (x `xor` (x `shiftR` 30)) * 0xBF58476D1CE4E5B9

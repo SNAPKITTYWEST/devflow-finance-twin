@@ -1,3 +1,18 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """Additional quantum algorithms: VQE, QAOA, quantum error mitigation, Hamiltonian simulation."""
 import math
 import random
@@ -60,7 +75,7 @@ class PauliString:
     def __rmul__(self, other):
         return self.__mul__(other)
     def __repr__(self):
-        terms_str = " ⊗ ".join(f"{p}({q})" for p, q in self._terms)
+        terms_str = " âŠ— ".join(f"{p}({q})" for p, q in self._terms)
         return f"{self._coefficient} * {terms_str}"
 
 class Hamiltonian:

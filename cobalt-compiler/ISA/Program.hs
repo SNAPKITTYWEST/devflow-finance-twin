@@ -1,5 +1,20 @@
--- ISA.Program — Program assembly, validation, execution, tracing
--- Author: Ahmad Ali Parr — Bel Esprit D'Accord Irrevocable Trust
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
+-- ISA.Program â€” Program assembly, validation, execution, tracing
+-- Author: Ahmad Ali Parr â€” Bel Esprit D'Accord Irrevocable Trust
 
 module ISA.Program where
 
@@ -9,7 +24,7 @@ import Data.Word
 
 type Program = [Instr]
 
--- تحقق من التعليمات / validate instruction registers
+-- ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„ØªØ¹Ù„ÙŠÙ…Ø§Øª / validate instruction registers
 {-@ instrValid :: Instr -> Bool @-}
 instrValid :: Instr -> Bool
 instrValid instr = case instr of
@@ -29,14 +44,14 @@ instrValid instr = case instr of
   Nop                  -> True
   where validR r = r >= 0 && r < 32
 
--- تجميع البرنامج / assemble and validate program
+-- ØªØ¬Ù…ÙŠØ¹ Ø§Ù„Ø¨Ø±Ù†Ø§Ù…Ø¬ / assemble and validate program
 {-@ assembleProgram :: Program -> Either String Program @-}
 assembleProgram :: Program -> Either String Program
 assembleProgram prog
   | all instrValid prog = Right prog
   | otherwise           = Left "invalid instruction sequence"
 
--- تنفيذ البرنامج / run program (step-bounded, terminates)
+-- ØªÙ†ÙÙŠØ° Ø§Ù„Ø¨Ø±Ù†Ø§Ù…Ø¬ / run program (step-bounded, terminates)
 {-@ runProgram :: Program -> MachineState -> {n:Int | n >= 0} -> MachineState @-}
 runProgram :: Program -> MachineState -> Int -> MachineState
 runProgram _ s 0 = s
@@ -46,7 +61,7 @@ runProgram prog s steps
       let instr = prog !! fromIntegral (pc s)
       in  runProgram prog (exec instr s) (steps - 1)
 
--- تتبع التنفيذ / execution trace with state snapshots
+-- ØªØªØ¨Ø¹ Ø§Ù„ØªÙ†ÙÙŠØ° / execution trace with state snapshots
 {-@ traceProgram :: Program -> MachineState -> {n:Int | n >= 0} -> [(Word64, MachineState)] @-}
 traceProgram :: Program -> MachineState -> Int -> [(Word64, MachineState)]
 traceProgram _ s 0 = [(pc s, s)]

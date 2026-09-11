@@ -1,9 +1,24 @@
--- Language.Fixpoint.Solver.Simplify — Recursive LiquidHaskell expression simplifier
--- Author: Ahmad Ali Parr — Bel Esprit D'Accord Irrevocable Trust
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
+-- Language.Fixpoint.Solver.Simplify â€” Recursive LiquidHaskell expression simplifier
+-- Author: Ahmad Ali Parr â€” Bel Esprit D'Accord Irrevocable Trust
 
 module Language.Fixpoint.Solver.Simplify where
 
--- ── Fixpoint expression AST ──────────────────────────────────────────────────
+-- â”€â”€ Fixpoint expression AST â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 data Expr
   = Lit  Int
   | BoolE Bool
@@ -22,7 +37,7 @@ data Expr
   | Ite  Expr Expr Expr
   deriving (Eq, Show)
 
--- ── Size measure ────────────────────────────────────────────────────────────
+-- â”€â”€ Size measure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 {-@ measure exprSize :: Expr -> Nat @-}
 exprSize :: Expr -> Int
 exprSize (Lit _)            = 1
@@ -41,7 +56,7 @@ exprSize (Eq   e1 e2)       = 1 + exprSize e1 + exprSize e2
 exprSize (Lt   e1 e2)       = 1 + exprSize e1 + exprSize e2
 exprSize (Ite  c t f)       = 1 + exprSize c + exprSize t + exprSize f
 
--- ── Constant folding ─────────────────────────────────────────────────────────
+-- â”€â”€ Constant folding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 applyConstantFolding :: Expr -> Expr
 applyConstantFolding (Add (Lit a) (Lit b)) = Lit (a + b)
 applyConstantFolding (Sub (Lit a) (Lit b)) = Lit (a - b)
@@ -56,7 +71,7 @@ applyConstantFolding (Eq (Lit a) (Lit b))  = BoolE (a == b)
 applyConstantFolding (Lt (Lit a) (Lit b))  = BoolE (a <  b)
 applyConstantFolding e                     = e
 
--- ── Boolean folding ──────────────────────────────────────────────────────────
+-- â”€â”€ Boolean folding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 applyBooleanFolding :: Expr -> Expr
 applyBooleanFolding (And (BoolE True)  e)            = e
 applyBooleanFolding (And (BoolE False) _)            = BoolE False
@@ -73,14 +88,14 @@ applyBooleanFolding (Ite (BoolE True)  t _)          = t
 applyBooleanFolding (Ite (BoolE False) _ f)          = f
 applyBooleanFolding e                                = e
 
--- ── Set folding ──────────────────────────────────────────────────────────────
+-- â”€â”€ Set folding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 applySetFolding :: Expr -> Expr
 applySetFolding (SetUnion xs ys) = Set (foldr insert xs ys)
   where insert x acc = if x `elem` acc then acc else x : acc
 applySetFolding (SetInter xs ys) = Set [ x | x <- xs, x `elem` ys ]
 applySetFolding e                = e
 
--- ── Descend: one-level simplification ───────────────────────────────────────
+-- â”€â”€ Descend: one-level simplification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 {-@ descend :: e:Expr -> {v:Expr | exprSize v <= exprSize e} @-}
 descend :: Expr -> Expr
 descend e =
@@ -89,7 +104,7 @@ descend e =
       e3 = applySetFolding      e2
   in  e3
 
--- ── Full recursive simplification ───────────────────────────────────────────
+-- â”€â”€ Full recursive simplification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 {-@ simplifyRecursive :: e:Expr -> Expr / [exprSize e] @-}
 simplifyRecursive :: Expr -> Expr
 simplifyRecursive (Add e1 e2)     = descend (Add  (simplifyRecursive e1) (simplifyRecursive e2))
@@ -107,6 +122,6 @@ simplifyRecursive (SetUnion xs ys) = descend (SetUnion xs ys)
 simplifyRecursive (SetInter xs ys) = descend (SetInter xs ys)
 simplifyRecursive e               = e
 
--- ── Driver ───────────────────────────────────────────────────────────────────
+-- â”€â”€ Driver â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 simplify :: Expr -> Expr
 simplify = simplifyRecursive

@@ -1,6 +1,21 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =============================================================================
-// fsl/src/crux/pipeline.rs  –  Full CRUX Pipeline Driver
-// RussianSyntax → RecursiveStateIR → Backend → OMEGA → ProofClosure → Result
+// fsl/src/crux/pipeline.rs  â€“  Full CRUX Pipeline Driver
+// RussianSyntax â†’ RecursiveStateIR â†’ Backend â†’ OMEGA â†’ ProofClosure â†’ Result
 // Dense ~200 LOC
 // =============================================================================
 
@@ -192,19 +207,19 @@ pub struct CruxPipelineResult {
 impl CruxPipelineResult {
     pub fn report(&self) -> String {
         let mut out = String::new();
-        out.push_str("=== CRUX · SILA · OMEGA-SMASHER Pipeline ===\n\n");
+        out.push_str("=== CRUX Â· SILA Â· OMEGA-SMASHER Pipeline ===\n\n");
         for (i, stage) in self.stages.iter().enumerate() {
             match stage {
-                PipelineStage::Parsed(f) => out.push_str(&format!("Stage {}: Parsed → {:?}\n", i, f)),
+                PipelineStage::Parsed(f) => out.push_str(&format!("Stage {}: Parsed â†’ {:?}\n", i, f)),
                 PipelineStage::Lowered { state, formula } => {
-                    out.push_str(&format!("Stage {}: Lowered → state={:?}, formula={:?}\n", i, state, formula))
+                    out.push_str(&format!("Stage {}: Lowered â†’ state={:?}, formula={:?}\n", i, state, formula))
                 }
-                PipelineStage::BackendSelected(b) => out.push_str(&format!("Stage {}: Backend → {:?}\n", i, b)),
-                PipelineStage::OmegaSmashed(r) => out.push_str(&format!("Stage {}: OMEGA → {:?}\n", i, r)),
+                PipelineStage::BackendSelected(b) => out.push_str(&format!("Stage {}: Backend â†’ {:?}\n", i, b)),
+                PipelineStage::OmegaSmashed(r) => out.push_str(&format!("Stage {}: OMEGA â†’ {:?}\n", i, r)),
                 PipelineStage::ProofClosed(c) => {
-                    out.push_str(&format!("Stage {}: ProofClosure → {} obligations\n", i, c.obligations.len()))
+                    out.push_str(&format!("Stage {}: ProofClosure â†’ {} obligations\n", i, c.obligations.len()))
                 }
-                PipelineStage::Final(r) => out.push_str(&format!("Stage {}: Result → {}\n", i, r)),
+                PipelineStage::Final(r) => out.push_str(&format!("Stage {}: Result â†’ {}\n", i, r)),
             }
         }
         out.push_str(&format!("\nFinal: {}\n", self.result.to_final()));
@@ -229,5 +244,5 @@ pub fn run_crux_auto(state: State, formula: Formula) -> CruxResult {
 }
 
 // End of CRUX pipeline (~200 lines)
-// Covers: 5-stage pipeline (Parse → Lower → Backend → OMEGA → Close),
+// Covers: 5-stage pipeline (Parse â†’ Lower â†’ Backend â†’ OMEGA â†’ Close),
 // Russian form lowering, pipeline reporting, direct/auto entry points.

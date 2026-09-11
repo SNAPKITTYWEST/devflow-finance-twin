@@ -1,12 +1,27 @@
+﻿/* ========================================================================
+ * SOVEREIGN LEVIATHAN NODE LICENSE
+ * License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ * Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ * ========================================================================
+ *
+ * This file is a covered work under the GNU Affero General Public License,
+ * version 3, together with the Sovereign Leviathan additional terms.
+ *
+ * Hark, though this node be but a spark,
+ * Its covenant endureth through the dark.
+ *
+ * Ignorantia juris non excusat.
+ * ======================================================================== */
+
 // Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// DEED-089: Sovereign Treasury Engine — C WORM Commit + FFI Shim
+// DEED-089: Sovereign Treasury Engine â€” C WORM Commit + FFI Shim
 // SHA-256 hashing, append-only disk write, fsync, DPI-C bridge to Chisel.
 
 #include <stdint.h>
 #include <string.h>
 
-// ── WormBlock C struct (matches PL/I WORM_BLOCK_HEADER) ──────────────────────
+// â”€â”€ WormBlock C struct (matches PL/I WORM_BLOCK_HEADER) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 typedef struct {
     char magic[4];          // "WORM"
@@ -16,7 +31,7 @@ typedef struct {
     unsigned char payload[4096];
 } WormBlock;
 
-// ── WORM commit (production uses OpenSSL SHA-256) ────────────────────────────
+// â”€â”€ WORM commit (production uses OpenSSL SHA-256) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 #ifdef USE_OPENSSL
 #include <openssl/sha.h>
@@ -74,7 +89,7 @@ int commit_to_worm_storage(int fd, WormBlock *block) {
 }
 #endif
 
-// ── FFI Shim: C-ABI bridge to Chisel hardware accelerator ────────────────────
+// â”€â”€ FFI Shim: C-ABI bridge to Chisel hardware accelerator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 extern void chisel_hardware_seal_ffi(void* block_ptr, uint32_t len);
 

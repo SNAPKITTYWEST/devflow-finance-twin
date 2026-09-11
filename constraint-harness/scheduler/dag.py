@@ -1,3 +1,18 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """DAG construction and topological ordering. Fail closed on cycles."""
 
 from __future__ import annotations
@@ -15,7 +30,7 @@ class DAGError(Exception):
 @dataclass
 class DAG:
     nodes: dict[str, TaskDecl]
-    edges: dict[str, list[str]]  # task → list of dependencies (predecessors)
+    edges: dict[str, list[str]]  # task â†’ list of dependencies (predecessors)
     order: list[str] = field(default_factory=list)
 
     def predecessors(self, task_id: str) -> list[str]:

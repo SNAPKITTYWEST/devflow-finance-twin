@@ -1,10 +1,27 @@
+﻿/-
+ ========================================================================
+ SOVEREIGN LEVIATHAN NODE LICENSE
+ License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ ========================================================================
+
+ This file is a covered work under the GNU Affero General Public License,
+ version 3, together with the Sovereign Leviathan additional terms.
+
+ Hark, though this node be but a spark,
+ Its covenant endureth through the dark.
+
+ Ignorantia juris non excusat.
+ ========================================================================
+-/
+
 -- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
 -- SPDX-License-Identifier: FSL-1.1
--- ┌─────────────────────────────────────────────────────────────────────────────┐
--- │ SOVEREIGN DEED: FIRMWARE_CREATION_ENGINE                                    │
--- │ "The BIOS Is The Seed. Ring -3 Is The Root. The Grasp Writes Silicon."     │
--- │ DEED_ID: DEED-FIRMWARE_CREATION_ENGINE-079                                 │
--- └─────────────────────────────────────────────────────────────────────────────┘
+-- â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+-- â”‚ SOVEREIGN DEED: FIRMWARE_CREATION_ENGINE                                    â”‚
+-- â”‚ "The BIOS Is The Seed. Ring -3 Is The Root. The Grasp Writes Silicon."     â”‚
+-- â”‚ DEED_ID: DEED-FIRMWARE_CREATION_ENGINE-079                                 â”‚
+-- â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 namespace Sovereign.Deeds.FirmwareCreationEngine
 
@@ -30,7 +47,7 @@ structure FirmwareImage where
   deriving Repr
 
 structure SPIFlashLayout where
-  regions : List (String × Nat × Nat)
+  regions : List (String Ã— Nat Ã— Nat)
   totalSize : Nat
   deriving Repr
 
@@ -46,7 +63,7 @@ def linkModules (mods : List FirmwareModule) (bootOrder : List String) : Firmwar
   let rootHash := "0x" ++ mods.map (fun m => m.hash).join "" |>.substring 0 64
   { modules := mods, bootOrder, rootHash }
 
-def buildFirmware (sourceHash configHash authorityKey : String) : List FirmwareModule × FirmwareImage :=
+def buildFirmware (sourceHash configHash authorityKey : String) : List FirmwareModule Ã— FirmwareImage :=
   let modules := [
     compileModule "uefi" .RingMinus3,
     compileModule "smm" .RingMinus1,

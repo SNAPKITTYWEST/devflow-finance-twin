@@ -1,5 +1,20 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // jit-webllm-toy-transformer.js
-// Tiny decoder-only Transformer – pure JS, typed arrays, ready for WebGPU / WASM port
+// Tiny decoder-only Transformer â€“ pure JS, typed arrays, ready for WebGPU / WASM port
 // Spec: vocab=512, d_model=64, n_heads=4, n_layers=2, d_ff=128, seq=32 (toy)
 // ~180 lines. No FFI, no TensorFlow.js, no ONNX.
 //
@@ -15,11 +30,11 @@
 
 "use strict";
 
-// ─── Utilities ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const f32 = (n) => new Float32Array(n);
 const i32 = (n) => new Int32Array(n);
 
-function matmul(A, B, m, k, n) { // A: m×k, B: k×n → C: m×n
+function matmul(A, B, m, k, n) { // A: mÃ—k, B: kÃ—n â†’ C: mÃ—n
   const C = f32(m * n);
   for (let i = 0; i < m; i++) {
     for (let j = 0; j < n; j++) {
@@ -78,7 +93,7 @@ function gelu(x) {
   return out;
 }
 
-// ─── Causal mask (boolean → large negative) ───────────────────────────────
+// â”€â”€â”€ Causal mask (boolean â†’ large negative) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function causalMask(seq) {
   const m = f32(seq * seq);
   for (let i = 0; i < seq; i++)
@@ -87,7 +102,7 @@ function causalMask(seq) {
   return m;
 }
 
-// ─── Single-head attention ────────────────────────────────────────────────
+// â”€â”€â”€ Single-head attention â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function singleHeadAttn(Q, K, V, seq, dHead) {
   const scale = 1 / Math.sqrt(dHead);
   const scores = matmul(Q, transpose(K, seq, dHead), seq, dHead, seq);
@@ -104,14 +119,14 @@ function singleHeadAttn(Q, K, V, seq, dHead) {
   return matmul(scores, V, seq, seq, dHead);
 }
 
-// ─── Multi-head attention ─────────────────────────────────────────────────
+// â”€â”€â”€ Multi-head attention â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function multiHeadAttn(X, Wq, Wk, Wv, Wo, seq, dModel, nHeads) {
   const dHead = dModel / nHeads;
   const Q = matmul(X, Wq, seq, dModel, dModel);
   const K = matmul(X, Wk, seq, dModel, dModel);
   const V = matmul(X, Wv, seq, dModel, dModel);
 
-  // split heads → nHeads × (seq × dHead)
+  // split heads â†’ nHeads Ã— (seq Ã— dHead)
   const heads = [];
   for (let h = 0; h < nHeads; h++) {
     const Qh = f32(seq * dHead), Kh = f32(seq * dHead), Vh = f32(seq * dHead);
@@ -137,13 +152,13 @@ function multiHeadAttn(X, Wq, Wk, Wv, Wo, seq, dModel, nHeads) {
   return matmul(O, Wo, seq, dModel, dModel);
 }
 
-// ─── MLP ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ MLP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function mlp(X, W1, W2, seq, dModel, dFF) {
   const h = gelu(matmul(X, W1, seq, dModel, dFF));
   return matmul(h, W2, seq, dFF, dModel);
 }
 
-// ─── Transformer block ────────────────────────────────────────────────────
+// â”€â”€â”€ Transformer block â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function transformerBlock(X, params, seq, dModel, nHeads, dFF) {
   const { Wq, Wk, Wv, Wo, W1, W2 } = params;
   let a = multiHeadAttn(X, Wq, Wk, Wv, Wo, seq, dModel, nHeads);
@@ -155,7 +170,7 @@ function transformerBlock(X, params, seq, dModel, nHeads, dFF) {
   return layerNorm(m, dModel);
 }
 
-// ─── Full model ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Full model â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function createModel(cfg) {
   const { vocab, dModel, nHeads, nLayers, dFF, seq } = cfg;
   const rand = (n) => {
@@ -176,7 +191,7 @@ function createModel(cfg) {
   }
   const Unemb = rand(vocab * dModel); // tied or separate
 
-  return function forward(tokens) { // tokens: Int32Array length ≤ seq
+  return function forward(tokens) { // tokens: Int32Array length â‰¤ seq
     const s = tokens.length;
     let X = f32(s * dModel);
     for (let i = 0; i < s; i++) {
@@ -187,12 +202,12 @@ function createModel(cfg) {
     for (const b of blocks) X = transformerBlock(X, b, s, dModel, nHeads, dFF);
     X = layerNorm(X, dModel);
 
-    // logits = X @ Unembᵀ
+    // logits = X @ Unembáµ€
     return matmul(X, transpose(Unemb, vocab, dModel), s, dModel, vocab);
   };
 }
 
-// ─── Demo ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Demo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const cfg = { vocab: 512, dModel: 64, nHeads: 4, nLayers: 2, dFF: 128, seq: 32 };
 const model = createModel(cfg);
 
@@ -202,5 +217,5 @@ for (let i = 0; i < 8; i++) toks[i] = (i * 7 + 3) % 512;
 console.time("forward");
 const logits = model(toks);
 console.timeEnd("forward");
-console.log("logits shape:", toks.length, "×", cfg.vocab);
+console.log("logits shape:", toks.length, "Ã—", cfg.vocab);
 console.log("first 5 logits of token 0:", Array.from(logits.subarray(0, 5)));

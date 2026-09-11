@@ -1,3 +1,18 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """Constitutional evaluation. Hard axioms override quality scores."""
 
 from __future__ import annotations
@@ -46,7 +61,7 @@ def evaluate_constitution(
     Evaluate constitutional predicates against context and optional result.
 
     Precedence: FAILED_CLOSED > REVISE > ACCEPT
-    Hard FAIL or UNKNOWN → FAILED_CLOSED (unless soft axiom allows REVISE).
+    Hard FAIL or UNKNOWN â†’ FAILED_CLOSED (unless soft axiom allows REVISE).
     """
     axioms = requested_axioms or context.get("axioms", [])
     results: list[AxiomResult] = []

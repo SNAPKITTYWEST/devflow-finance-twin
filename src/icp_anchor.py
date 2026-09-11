@@ -1,10 +1,25 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """
-Devflow Finance Twin — ICP Anchor Bridge
+Devflow Finance Twin â€” ICP Anchor Bridge
 Anchors WORM state hashes to the Internet Computer Protocol canister
 for sovereign cross-chain verification.
 
 Architecture:
-  WORM Engine → ICP Anchor → IC Canister → Cross-chain verification
+  WORM Engine â†’ ICP Anchor â†’ IC Canister â†’ Cross-chain verification
 
 The ICP canister stores:
   - WORM root hash (Merkle root)
@@ -24,7 +39,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("devflow.icp_anchor")
 
-# ── Constants ─────────────────────────────────────────────────────────────────
+# â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 CANISTER_HASH_LENGTH = 64  # SHA-256 hex
 ANCHOR_CHAIN_MIN = 1
@@ -98,7 +113,7 @@ class CanisterNotInitializedError(ICPAnchorError):
 
 class ICPAnchorBridge:
     """
-    ICP Anchor Bridge — connects WORM engine to Internet Computer canister.
+    ICP Anchor Bridge â€” connects WORM engine to Internet Computer canister.
 
     Provides:
     - Anchor WORM state to IC canister
@@ -134,7 +149,7 @@ class ICPAnchorBridge:
         self.state.total_anchors = 1
         self._initialized = True
 
-        logger.info("ICP Anchor: Genesis anchor created — %s", genesis_anchor.anchor_hash[:16])
+        logger.info("ICP Anchor: Genesis anchor created â€” %s", genesis_anchor.anchor_hash[:16])
         return self.state
 
     def anchor_state(
@@ -182,7 +197,7 @@ class ICPAnchorBridge:
         self.state.total_anchors += 1
 
         logger.info(
-            "ICP Anchor: State anchored — worm_root=%s, anchor=%s, count=%d",
+            "ICP Anchor: State anchored â€” worm_root=%s, anchor=%s, count=%d",
             worm_root_hash[:16], anchor.anchor_hash[:16], record_count
         )
 
@@ -206,11 +221,11 @@ class ICPAnchorBridge:
                 expected_prev = self.state.anchor_chain[idx - 1].anchor_hash
                 if anchor.previous_anchor_hash != expected_prev:
                     return False, (
-                        f"Anchor {idx}: chain break — "
+                        f"Anchor {idx}: chain break â€” "
                         f"expected prev {expected_prev[:16]}, got {anchor.previous_anchor_hash[:16]}"
                     )
 
-        logger.info("ICP Anchor: Chain verified — %d anchors, all valid", len(self.state.anchor_chain))
+        logger.info("ICP Anchor: Chain verified â€” %d anchors, all valid", len(self.state.anchor_chain))
         return True, None
 
     def get_anchor(self, index: int) -> Optional[AnchorRecord]:
@@ -300,11 +315,11 @@ class ICPAnchorBridge:
             )
 
         except Exception as e:
-            logger.error("ICP Anchor: Sync failed — %s", e)
+            logger.error("ICP Anchor: Sync failed â€” %s", e)
             return None
 
 
-# ── Convenience: Quick Anchor ────────────────────────────────────────────────
+# â”€â”€ Convenience: Quick Anchor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def quick_anchor(
     canister_id: str,

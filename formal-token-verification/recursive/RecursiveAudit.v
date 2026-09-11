@@ -1,3 +1,18 @@
+﻿(* ========================================================================
+ * SOVEREIGN LEVIATHAN NODE LICENSE
+ * License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ * Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ * ========================================================================
+ *
+ * This file is a covered work under the GNU Affero General Public License,
+ * version 3, together with the Sovereign Leviathan additional terms.
+ *
+ * Hark, though this node be but a spark,
+ * Its covenant endureth through the dark.
+ *
+ * Ignorantia juris non excusat.
+ * ======================================================================== *)
+
 (* RecursiveAudit.v
    Recursive counterproof of previous verification conclusions
 *)
@@ -30,7 +45,7 @@ Proof.
   ...
 Qed.
 
-(*! ## THEOREM-B: η > η_critical Is Sufficient *)
+(*! ## THEOREM-B: Î· > Î·_critical Is Sufficient *)
 
 Definition critical_gain (n : nat) (W : 'M[R]_(n, n)) (v x : 'rV[R]_n) (theta : R) : R :=
   (theta - (x *m W *m v^T) 0 0) / (((x *m x^T) 0 0) * ((v *m v^T) 0 0)).

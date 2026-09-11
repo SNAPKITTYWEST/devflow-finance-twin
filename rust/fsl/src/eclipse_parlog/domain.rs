@@ -1,3 +1,18 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -58,7 +73,7 @@ impl Domain {
                 if val == *lo { Some(Domain::Range(lo + 1, *hi)) }
                 else if val == *hi { Some(Domain::Range(*lo, hi - 1)) }
                 else {
-                    // Split into two ranges — approximate with set
+                    // Split into two ranges â€” approximate with set
                     let vals: Vec<i64> = (*lo..=*hi).filter(|v| *v != val).collect();
                     Some(Domain::Set(vals))
                 }

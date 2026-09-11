@@ -1,14 +1,29 @@
--- Core.Group — Algebraic group structures and laws
--- هياكل الزمر الجبرية والقوانين
--- Author: Ahmad Ali Parr — Bel Esprit D'Accord Irrevocable Trust
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
+-- Core.Group â€” Algebraic group structures and laws
+-- Ù‡ÙŠØ§ÙƒÙ„ Ø§Ù„Ø²Ù…Ø± Ø§Ù„Ø¬Ø¨Ø±ÙŠØ© ÙˆØ§Ù„Ù‚ÙˆØ§Ù†ÙŠÙ†
+-- Author: Ahmad Ali Parr â€” Bel Esprit D'Accord Irrevocable Trust
 -- {-@ LIQUID "--typeclass" @-}
 
 module Core.Group where
 
 import Core.Nat
 
--- ── Abstract group record ────────────────────────────────────────────────────
--- سجل الزمرة المجردة / abstract group record (dictionary-passing style)
+-- â”€â”€ Abstract group record â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- Ø³Ø¬Ù„ Ø§Ù„Ø²Ù…Ø±Ø© Ø§Ù„Ù…Ø¬Ø±Ø¯Ø© / abstract group record (dictionary-passing style)
 
 data Group a = Group
   { unitG :: a
@@ -16,37 +31,37 @@ data Group a = Group
   , invG  :: a -> a
   }
 
--- الحياد الأيسر / left identity
+-- Ø§Ù„Ø­ÙŠØ§Ø¯ Ø§Ù„Ø£ÙŠØ³Ø± / left identity
 {-@ leftIdentity :: g:Group a -> x:a -> {v:Bool | v <=> mulG g (unitG g) x == x} @-}
 leftIdentity :: Group a -> a -> Bool
 leftIdentity g x = mulG g (unitG g) x == x
 
--- الحياد الأيمن / right identity
+-- Ø§Ù„Ø­ÙŠØ§Ø¯ Ø§Ù„Ø£ÙŠÙ…Ù† / right identity
 {-@ rightIdentity :: g:Group a -> x:a -> {v:Bool | v <=> mulG g x (unitG g) == x} @-}
 rightIdentity :: Group a -> a -> Bool
 rightIdentity g x = mulG g x (unitG g) == x
 
--- التجميعية / associativity
+-- Ø§Ù„ØªØ¬Ù…ÙŠØ¹ÙŠØ© / associativity
 {-@ associativity :: g:Group a -> x:a -> y:a -> z:a
                   -> {v:Bool | v <=> mulG g x (mulG g y z) == mulG g (mulG g x y) z} @-}
 associativity :: Group a -> a -> a -> a -> Bool
 associativity g x y z =
   mulG g x (mulG g y z) == mulG g (mulG g x y) z
 
--- العكس الأيسر / left inverse
+-- Ø§Ù„Ø¹ÙƒØ³ Ø§Ù„Ø£ÙŠØ³Ø± / left inverse
 {-@ leftInverse :: g:Group a -> x:a
                 -> {v:Bool | v <=> mulG g (invG g x) x == unitG g} @-}
 leftInverse :: Group a -> a -> Bool
 leftInverse g x = mulG g (invG g x) x == unitG g
 
--- العكس الأيمن / right inverse
+-- Ø§Ù„Ø¹ÙƒØ³ Ø§Ù„Ø£ÙŠÙ…Ù† / right inverse
 {-@ rightInverse :: g:Group a -> x:a
                  -> {v:Bool | v <=> mulG g x (invG g x) == unitG g} @-}
 rightInverse :: Group a -> a -> Bool
 rightInverse g x = mulG g x (invG g x) == unitG g
 
--- ── Z/2Z group ───────────────────────────────────────────────────────────────
--- زمرة Z₂ الثنائية / binary group Z_2
+-- â”€â”€ Z/2Z group â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- Ø²Ù…Ø±Ø© Zâ‚‚ Ø§Ù„Ø«Ù†Ø§Ø¦ÙŠØ© / binary group Z_2
 
 data Z2 = Z0 | Z1 deriving (Eq, Show)
 
@@ -81,8 +96,8 @@ z2RightIdentity x = rightIdentity z2Group x
 z2Inverse :: Z2 -> Bool
 z2Inverse x = leftInverse z2Group x && rightInverse z2Group x
 
--- ── Z/7Z cyclic group ────────────────────────────────────────────────────────
--- زمرة Z₇ الدورية / cyclic group Z_7
+-- â”€â”€ Z/7Z cyclic group â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- Ø²Ù…Ø±Ø© Zâ‚‡ Ø§Ù„Ø¯ÙˆØ±ÙŠØ© / cyclic group Z_7
 
 {-@ type Z7 = {v:Int | 0 <= v && v < 7} @-}
 

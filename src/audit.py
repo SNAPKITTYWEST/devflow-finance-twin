@@ -1,3 +1,18 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 import hashlib
 import json
 import logging
@@ -52,7 +67,7 @@ class CryptographicAuditLayer:
         canonical = json.dumps(seal_data, sort_keys=True, separators=(',', ':'), default=str)
         digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-        logger.debug("Generated seal for event %s — digest %s", event_id, digest[:16])
+        logger.debug("Generated seal for event %s â€” digest %s", event_id, digest[:16])
 
         return {
             **seal_data,

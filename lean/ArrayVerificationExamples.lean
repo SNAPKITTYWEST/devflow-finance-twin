@@ -1,3 +1,20 @@
+﻿/-
+ ========================================================================
+ SOVEREIGN LEVIATHAN NODE LICENSE
+ License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ ========================================================================
+
+ This file is a covered work under the GNU Affero General Public License,
+ version 3, together with the Sovereign Leviathan additional terms.
+
+ Hark, though this node be but a spark,
+ Its covenant endureth through the dark.
+
+ Ignorantia juris non excusat.
+ ========================================================================
+-/
+
 -- ============================================================
 -- LEAN 4 FORMAL ARRAY VERIFICATION - COMPLETE EXAMPLES
 -- ============================================================
@@ -17,18 +34,18 @@ namespace ArrayVerificationExamples
 section ConstructionVsVerification
 
 /-- Concrete implementation: safe array indexing with bounds checking -/
-def safeGet (arr : Array α) (i : Nat) : Option α :=
+def safeGet (arr : Array Î±) (i : Nat) : Option Î± :=
   if h : i < arr.size then
-    some (arr.get ⟨i, h⟩)
+    some (arr.get âŸ¨i, hâŸ©)
   else
     none
 
 /-- Array construction from a function (finite domain) -/
-def ofFun {n : Nat} (f : Fin n → α) : Array α :=
+def ofFun {n : Nat} (f : Fin n â†’ Î±) : Array Î± :=
   Array.ofFn f
 
 /-- Initialized array: all elements equal to a value -/
-def replicate (n : Nat) (x : α) : Array α :=
+def replicate (n : Nat) (x : Î±) : Array Î± :=
   Array.mk (List.replicate n x)
 
 -- ============================================================
@@ -36,40 +53,40 @@ def replicate (n : Nat) (x : α) : Array α :=
 -- ============================================================
 
 /-- Axiom 1: Accessing a valid index returns the constructed element -/
-theorem safeGet_valid {arr : Array α} {i : Nat} (h : i < arr.size) :
-    safeGet arr i = some (arr.get ⟨i, h⟩) := by
+theorem safeGet_valid {arr : Array Î±} {i : Nat} (h : i < arr.size) :
+    safeGet arr i = some (arr.get âŸ¨i, hâŸ©) := by
   unfold safeGet
   split
-  · rfl
-  · contradiction
+  Â· rfl
+  Â· contradiction
 
 /-- Axiom 2: Accessing an invalid index returns none -/
-theorem safeGet_invalid {arr : Array α} {i : Nat} (h : ¬(i < arr.size)) :
+theorem safeGet_invalid {arr : Array Î±} {i : Nat} (h : Â¬(i < arr.size)) :
     safeGet arr i = none := by
   unfold safeGet
   split
-  · contradiction
-  · rfl
+  Â· contradiction
+  Â· rfl
 
 /-- Axiom 3: ofFun produces array with correct size -/
-theorem ofFun_size {n : Nat} {f : Fin n → α} :
+theorem ofFun_size {n : Nat} {f : Fin n â†’ Î±} :
     (ofFun f).size = n := by
   unfold ofFun
   exact Array.size_ofFn f
 
 /-- Axiom 4: ofFun correctly embeds the function -/
-theorem ofFun_get {n : Nat} {f : Fin n → α} {i : Fin n} :
+theorem ofFun_get {n : Nat} {f : Fin n â†’ Î±} {i : Fin n} :
     (ofFun f).get i = f i := by
   unfold ofFun
   exact Array.getElem_ofFn f i
 
 /-- Axiom 5: replicate constructs uniform array -/
-theorem replicate_size {n : Nat} {x : α} :
+theorem replicate_size {n : Nat} {x : Î±} :
     (replicate n x).size = n := by
   unfold replicate
   simp [Array.size_mk, List.length_replicate]
 
-theorem replicate_get {n : Nat} {x : α} {i : Fin n} :
+theorem replicate_get {n : Nat} {x : Î±} {i : Fin n} :
     (replicate n x).get i = x := by
   unfold replicate
   simp [Array.get_mk, List.getElem_replicate]
@@ -87,7 +104,7 @@ def zeros (n : Nat) : Array Nat :=
   replicate n 0
 
 /-- Constant array: all elements equal -/
-def constant {α : Type u} (n : Nat) (c : α) : Array α :=
+def constant {Î± : Type u} (n : Nat) (c : Î±) : Array Î± :=
   replicate n c
 
 /-- Identity-indexed array: element i contains i -/
@@ -97,12 +114,12 @@ def identity (n : Nat) : Array Nat :=
 -- PROPERTIES OF CONSTANT ARRAYS
 
 /-- All elements of a constant array are equal -/
-theorem constant_uniform {α : Type u} {n : Nat} {c : α} {i j : Fin n} :
+theorem constant_uniform {Î± : Type u} {n : Nat} {c : Î±} {i j : Fin n} :
     (constant n c).get i = (constant n c).get j := by
   simp [constant, replicate_get]
 
 /-- Constant arrays with same value: data equality -/
-theorem constant_data_eq {α : Type u} {n : Nat} {c : α} :
+theorem constant_data_eq {Î± : Type u} {n : Nat} {c : Î±} :
     (constant n c).data = List.replicate n c := by
   unfold constant replicate
   rfl
@@ -122,15 +139,15 @@ theorem identity_size {n : Nat} :
 -- ARRAY EQUALITY IN FUNCTIONAL MODEL
 
 /-- Extensional equality: arrays are equal if all elements match -/
-def extensional_eq (arr₁ arr₂ : Array α) : Prop :=
-  arr₁.size = arr₂.size ∧ ∀ i : Fin arr₁.size, arr₁.get i = arr₂.get i
+def extensional_eq (arrâ‚ arrâ‚‚ : Array Î±) : Prop :=
+  arrâ‚.size = arrâ‚‚.size âˆ§ âˆ€ i : Fin arrâ‚.size, arrâ‚.get i = arrâ‚‚.get i
 
 /-- Functional equality (data equality) implies behavioral equality -/
-theorem eq_of_data_eq {arr₁ arr₂ : Array α} (h : arr₁.data = arr₂.data) :
-    extensional_eq arr₁ arr₂ := by
+theorem eq_of_data_eq {arrâ‚ arrâ‚‚ : Array Î±} (h : arrâ‚.data = arrâ‚‚.data) :
+    extensional_eq arrâ‚ arrâ‚‚ := by
   constructor
-  · simp [Array.size, h]
-  · intro i
+  Â· simp [Array.size, h]
+  Â· intro i
     simp [Array.get, h]
 
 end ConstantArrays
@@ -142,22 +159,22 @@ end ConstantArrays
 section AxiomaticSpecification
 
 /-- Abstract specification: contract for array behavior -/
-structure ArrayContract (α : Type u) where
+structure ArrayContract (Î± : Type u) where
   size : Nat
-  read : Fin size → α
+  read : Fin size â†’ Î±
 
 /-- An array satisfies its specification -/
-def satisfies (arr : Array α) (spec : ArrayContract α) : Prop :=
-  arr.size = spec.size ∧
-  ∀ i : Fin arr.size,
-    arr.get i = spec.read ⟨i.val, by
-      rw [← Array.Correctness.satisfies]
-      exact i.isLt⟩
+def satisfies (arr : Array Î±) (spec : ArrayContract Î±) : Prop :=
+  arr.size = spec.size âˆ§
+  âˆ€ i : Fin arr.size,
+    arr.get i = spec.read âŸ¨i.val, by
+      rw [â† Array.Correctness.satisfies]
+      exact i.isLtâŸ©
 
 -- SPECIFICATION LIBRARY
 
 /-- Specification: Uniform array -/
-def uniformSpec {α : Type u} (n : Nat) (c : α) : ArrayContract α where
+def uniformSpec {Î± : Type u} (n : Nat) (c : Î±) : ArrayContract Î± where
   size := n
   read _ := c
 
@@ -167,21 +184,21 @@ def identitySpec (n : Nat) : ArrayContract Nat where
   read i := i.val
 
 /-- Specification: Arbitrary function -/
-def functionSpec {α : Type u} (n : Nat) (f : Fin n → α) : ArrayContract α where
+def functionSpec {Î± : Type u} (n : Nat) (f : Fin n â†’ Î±) : ArrayContract Î± where
   size := n
   read := f
 
 -- REFINEMENT NOTATION
 
-notation:25 a " ⊑ " s => satisfies a s
+notation:25 a " âŠ‘ " s => satisfies a s
 
 /-- Refinement is reflexive -/
-theorem refine_refl {arr : Array α} {spec : ArrayContract α} (h : arr ⊑ spec) :
-    arr ⊑ spec := h
+theorem refine_refl {arr : Array Î±} {spec : ArrayContract Î±} (h : arr âŠ‘ spec) :
+    arr âŠ‘ spec := h
 
 /-- Refinement is transitive (partially) -/
-theorem refine_trans {arr : Array α} {s1 s2 : ArrayContract α}
-    (h1 : arr ⊑ s1) (h2 : s1.size = s2.size) :
+theorem refine_trans {arr : Array Î±} {s1 s2 : ArrayContract Î±}
+    (h1 : arr âŠ‘ s1) (h2 : s1.size = s2.size) :
     s1.size = s2.size := h2
 
 end AxiomaticSpecification
@@ -193,33 +210,33 @@ end AxiomaticSpecification
 section RefinementProofs
 
 /-- CLAIM: constant array refines uniform specification -/
-theorem constant_refines_uniform {n : Nat} {c : α} :
-    constant n c ⊑ uniformSpec n c := by
+theorem constant_refines_uniform {n : Nat} {c : Î±} :
+    constant n c âŠ‘ uniformSpec n c := by
   constructor
-  · simp [constant, uniformSpec]; exact replicate_size
-  · intro i
+  Â· simp [constant, uniformSpec]; exact replicate_size
+  Â· intro i
     simp [constant, uniformSpec]; exact replicate_get
 
 /-- CLAIM: ofFun array refines function specification -/
-theorem ofFun_refines_function {n : Nat} {f : Fin n → α} :
-    ofFun f ⊑ functionSpec n f := by
+theorem ofFun_refines_function {n : Nat} {f : Fin n â†’ Î±} :
+    ofFun f âŠ‘ functionSpec n f := by
   constructor
-  · simp [ofFun, functionSpec]; exact ofFun_size
-  · intro i
+  Â· simp [ofFun, functionSpec]; exact ofFun_size
+  Â· intro i
     unfold ofFun functionSpec
     simp [Array.getElem_ofFn]
 
 /-- CLAIM: zeros array contains only zeros -/
 theorem zeros_correct (n : Nat) :
-    zeros n ⊑ uniformSpec n 0 := by
+    zeros n âŠ‘ uniformSpec n 0 := by
   unfold zeros; exact constant_refines_uniform
 
 /-- CLAIM: identity array is correct -/
 theorem identity_refines {n : Nat} :
-    identity n ⊑ identitySpec n := by
+    identity n âŠ‘ identitySpec n := by
   constructor
-  · exact identity_size
-  · intro i; exact identity_correct
+  Â· exact identity_size
+  Â· intro i; exact identity_correct
 
 end RefinementProofs
 
@@ -231,21 +248,21 @@ section ProofTactics
 
 -- TACTIC 1: REWRITING (rw)
 
-example {n : Nat} {c : α} :
+example {n : Nat} {c : Î±} :
     (replicate n c).size = n := by
   unfold replicate
   simp [Array.size_mk, List.length_replicate]
 
-theorem safeGet_valid' {arr : Array α} {i : Nat} (h : i < arr.size) :
-    safeGet arr i = some (arr.get ⟨i, h⟩) := by
+theorem safeGet_valid' {arr : Array Î±} {i : Nat} (h : i < arr.size) :
+    safeGet arr i = some (arr.get âŸ¨i, hâŸ©) := by
   unfold safeGet; rw [dif_pos h]
 
 -- TACTIC 2: INDUCTION
 
 /-- All elements of array equal means uniform array -/
-theorem uniform_of_all_eq {n : Nat} {c : α}
-    (h : ∀ i : Fin n, (replicate n c).get i = c) :
-    ∀ i : Fin n, (replicate n c).get i = c := h
+theorem uniform_of_all_eq {n : Nat} {c : Î±}
+    (h : âˆ€ i : Fin n, (replicate n c).get i = c) :
+    âˆ€ i : Fin n, (replicate n c).get i = c := h
 
 /-- Induction over natural numbers -/
 theorem count_replicate (n : Nat) (c : Nat) :
@@ -259,27 +276,27 @@ theorem count_replicate (n : Nat) (c : Nat) :
 -- TACTIC 3: DECIDABILITY
 
 /-- Bounds checking is decidable -/
-theorem bounds_decidable {arr : Array α} {i : Nat} :
+theorem bounds_decidable {arr : Array Î±} {i : Nat} :
     Decidable (i < arr.size) :=
   Nat.decLt i arr.size
 
 /-- Use `decide` for concrete bounds -/
-example : ¬(10 < 5) := by decide
+example : Â¬(10 < 5) := by decide
 
 -- TACTIC 4: SIMPLIFICATION
 
-@[simp] theorem ofFun_size' {n : Nat} {f : Fin n → α} :
+@[simp] theorem ofFun_size' {n : Nat} {f : Fin n â†’ Î±} :
     (ofFun f).size = n := ofFun_size
 
-@[simp] theorem ofFun_get' {n : Nat} {f : Fin n → α} {i : Fin n} :
+@[simp] theorem ofFun_get' {n : Nat} {f : Fin n â†’ Î±} {i : Fin n} :
     (ofFun f).get i = f i := ofFun_get
 
-theorem composed_after_simp {n : Nat} {f : Fin n → α} {i : Fin n} :
+theorem composed_after_simp {n : Nat} {f : Fin n â†’ Î±} {i : Fin n} :
     (ofFun f).get i = f i := by simp
 
 -- TACTIC 5: OMEGA
 
-theorem bounds_successor {arr : Array α} {i : Nat}
+theorem bounds_successor {arr : Array Î±} {i : Nat}
     (h : i < arr.size) : i < arr.size + 1 := by omega
 
 theorem contradiction_bounds {i : Nat} (h1 : i < 5) (h2 : 10 < i) : False := by
@@ -287,22 +304,22 @@ theorem contradiction_bounds {i : Nat} (h1 : i < 5) (h2 : 10 < i) : False := by
 
 -- TACTIC 6: CASES
 
-theorem get_cases {arr : Array α} {i : Nat} :
-    (safeGet arr i = none) ∨ (∃ x, safeGet arr i = some x) := by
+theorem get_cases {arr : Array Î±} {i : Nat} :
+    (safeGet arr i = none) âˆ¨ (âˆƒ x, safeGet arr i = some x) := by
   unfold safeGet; split
-  · simp
-  · simp; use arr.get ⟨i, by assumption⟩
+  Â· simp
+  Â· simp; use arr.get âŸ¨i, by assumptionâŸ©
 
 -- TACTIC 7: CONSTRUCTOR
 
-theorem explicit_properties {n : Nat} {c : α} :
-    (constant n c).size = n ∧ ∀ i : Fin n, (constant n c).get i = c :=
-  ⟨by simp [constant], fun i => by simp [constant, replicate_get]⟩
+theorem explicit_properties {n : Nat} {c : Î±} :
+    (constant n c).size = n âˆ§ âˆ€ i : Fin n, (constant n c).get i = c :=
+  âŸ¨by simp [constant], fun i => by simp [constant, replicate_get]âŸ©
 
 -- TACTIC 8: CONTRADICTION
 
-theorem by_contra_safe_access {arr : Array α} {i : Nat}
-    (h_valid : i < arr.size) : ¬(safeGet arr i = none) := by
+theorem by_contra_safe_access {arr : Array Î±} {i : Nat}
+    (h_valid : i < arr.size) : Â¬(safeGet arr i = none) := by
   by_contra hn
   unfold safeGet at hn
   simp [dif_pos h_valid] at hn
@@ -316,26 +333,26 @@ end ProofTactics
 section SafeAccess
 
 /-- Safe indexed access with bounds checking -/
-def safeGetFull {α : Type u} (arr : Array α) (i : Nat) : Option α :=
-  if h : i < arr.size then some (arr.get ⟨i, h⟩) else none
+def safeGetFull {Î± : Type u} (arr : Array Î±) (i : Nat) : Option Î± :=
+  if h : i < arr.size then some (arr.get âŸ¨i, hâŸ©) else none
 
 /-- PROPERTY 1: Valid index returns some value -/
-theorem safeGet_some {arr : Array α} {i : Nat} (h : i < arr.size) :
-    ∃ x, safeGetFull arr i = some x := by
-  use arr.get ⟨i, h⟩
+theorem safeGet_some {arr : Array Î±} {i : Nat} (h : i < arr.size) :
+    âˆƒ x, safeGetFull arr i = some x := by
+  use arr.get âŸ¨i, hâŸ©
   unfold safeGetFull; rw [dif_pos h]
 
 /-- PROPERTY 2: Invalid index returns none -/
-theorem safeGet_none {arr : Array α} {i : Nat} (h : ¬(i < arr.size)) :
+theorem safeGet_none {arr : Array Î±} {i : Nat} (h : Â¬(i < arr.size)) :
     safeGetFull arr i = none := by
   unfold safeGetFull; rw [dif_neg h]
 
 /-- PROPERTY 3: Elimination on result -/
-theorem safeGet_elim {arr : Array α} {i : Nat} :
-    (safeGetFull arr i = none) ∨ (∃ x, safeGetFull arr i = some x) := by
+theorem safeGet_elim {arr : Array Î±} {i : Nat} :
+    (safeGetFull arr i = none) âˆ¨ (âˆƒ x, safeGetFull arr i = some x) := by
   by_cases h : i < arr.size
-  · exact Or.inr (safeGet_some h)
-  · exact Or.inl (safeGet_none h)
+  Â· exact Or.inr (safeGet_some h)
+  Â· exact Or.inl (safeGet_none h)
 
 end SafeAccess
 
@@ -346,23 +363,23 @@ end SafeAccess
 section InvariantPreservation
 
 /-- Invariant: predicate holds for all elements -/
-def invariant {α : Type u} (P : α → Prop) (arr : Array α) : Prop :=
-  ∀ i : Fin arr.size, P (arr.get i)
+def invariant {Î± : Type u} (P : Î± â†’ Prop) (arr : Array Î±) : Prop :=
+  âˆ€ i : Fin arr.size, P (arr.get i)
 
 /-- Construction preserves invariant -/
-theorem construct_preserves {P : α → Prop} {n : Nat} {f : Fin n → α}
-    (h : ∀ i : Fin n, P (f i)) :
+theorem construct_preserves {P : Î± â†’ Prop} {n : Nat} {f : Fin n â†’ Î±}
+    (h : âˆ€ i : Fin n, P (f i)) :
     invariant P (ofFun f) := by
   unfold invariant; intro i; simp [ofFun_get]; exact h i
 
 /-- Constant arrays preserve property of constant -/
-theorem constant_invariant {P : α → Prop} {n : Nat} {c : α} (h : P c) :
+theorem constant_invariant {P : Î± â†’ Prop} {n : Nat} {c : Î±} (h : P c) :
     invariant P (constant n c) := by
   unfold invariant constant; intro i; simp [replicate_get]; exact h
 
 /-- Composing invariants -/
-theorem invariant_chain {P Q R : α → Prop} {arr : Array α}
-    (h1 : invariant P arr) (h2 : ∀ x, P x → Q x) (h3 : ∀ x, Q x → R x) :
+theorem invariant_chain {P Q R : Î± â†’ Prop} {arr : Array Î±}
+    (h1 : invariant P arr) (h2 : âˆ€ x, P x â†’ Q x) (h3 : âˆ€ x, Q x â†’ R x) :
     invariant R arr := by
   unfold invariant at *; intro i; exact h3 _ (h2 _ (h1 i))
 
@@ -375,22 +392,22 @@ end InvariantPreservation
 section ArrayTransformations
 
 /-- Map function over array -/
-def arrayMap (f : α → β) (arr : Array α) : Array β := arr.map f
+def arrayMap (f : Î± â†’ Î²) (arr : Array Î±) : Array Î² := arr.map f
 
 /-- Size preserved under map -/
-theorem map_preserves_size {f : α → β} {arr : Array α} :
+theorem map_preserves_size {f : Î± â†’ Î²} {arr : Array Î±} :
     (arrayMap f arr).size = arr.size := by
   unfold arrayMap; exact Array.size_map f arr
 
 /-- Elements correctly mapped -/
-theorem map_correct {f : α → β} {arr : Array α} {i : Fin arr.size} :
+theorem map_correct {f : Î± â†’ Î²} {arr : Array Î±} {i : Fin arr.size} :
     (arrayMap f arr).get i = f (arr.get i) := by
   unfold arrayMap; exact Array.getElem_map f arr i
 
 /-- Map preserves invariants when function does -/
-theorem map_preserves_invariant {P : α → Prop} {Q : β → Prop}
-    {f : α → β} {arr : Array α}
-    (h_inv : invariant P arr) (h_f : ∀ x, P x → Q (f x)) :
+theorem map_preserves_invariant {P : Î± â†’ Prop} {Q : Î² â†’ Prop}
+    {f : Î± â†’ Î²} {arr : Array Î±}
+    (h_inv : invariant P arr) (h_f : âˆ€ x, P x â†’ Q (f x)) :
     invariant Q (arrayMap f arr) := by
   unfold invariant at *; intro i; simp [map_correct]; exact h_f _ (h_inv i)
 
@@ -404,23 +421,23 @@ section EdgeCases
 
 /-- Empty array properties -/
 theorem empty_array_properties :
-    (replicate 0 (x : α)).size = 0 := by
+    (replicate 0 (x : Î±)).size = 0 := by
   simp [replicate, List.replicate_zero]
 
 /-- Single element array -/
-theorem singleton_array {x : α} :
-    (replicate 1 x).size = 1 ∧ (replicate 1 x).get ⟨0, by norm_num⟩ = x := by
+theorem singleton_array {x : Î±} :
+    (replicate 1 x).size = 1 âˆ§ (replicate 1 x).get âŸ¨0, by norm_numâŸ© = x := by
   constructor
-  · simp [replicate_size]
-  · simp [replicate_get]
+  Â· simp [replicate_size]
+  Â· simp [replicate_get]
 
 /-- Boundary index access -/
-theorem boundary_access {n : Nat} {arr : Array α} (h : 0 < n)
+theorem boundary_access {n : Nat} {arr : Array Î±} (h : 0 < n)
     (h_size : arr.size = n) : 0 < arr.size := by omega
 
-theorem last_element {n : Nat} {arr : Array α} (h_size : arr.size = n + 1) :
-    ∃ last_idx : Fin (n + 1), last_idx.val = n := by
-  use ⟨n, by omega⟩; rfl
+theorem last_element {n : Nat} {arr : Array Î±} (h_size : arr.size = n + 1) :
+    âˆƒ last_idx : Fin (n + 1), last_idx.val = n := by
+  use âŸ¨n, by omegaâŸ©; rfl
 
 end EdgeCases
 
@@ -445,22 +462,22 @@ theorem rangeArray_get (n : Nat) (i : Fin n) :
 
 /-- Verification 3: Refinement against specification -/
 theorem rangeArray_refines (n : Nat) :
-    rangeArray n ⊑ identitySpec n := by
+    rangeArray n âŠ‘ identitySpec n := by
   constructor
-  · exact rangeArray_size n
-  · intro i
+  Â· exact rangeArray_size n
+  Â· intro i
     unfold rangeArray identitySpec
     simp [Array.getElem_ofFn]
 
 /-- Verification 4: Safety property -/
 theorem rangeArray_safe (n : Nat) (i : Nat) :
-    i < n → safeGet (rangeArray n) i = some i := by
+    i < n â†’ safeGet (rangeArray n) i = some i := by
   intro h
   unfold safeGet rangeArray
   rw [dif_pos]
-  · simp [Array.getElem_ofFn]
+  Â· simp [Array.getElem_ofFn]
     exact Fin.mk_eq_subtype_mk i h
-  · simp [rangeArray_size]; exact h
+  Â· simp [rangeArray_size]; exact h
 
 end ComprehensiveExample
 
@@ -474,8 +491,8 @@ section SanityChecks
 theorem no_circularity : True := trivial
 
 /-- Type consistency maintained -/
-theorem type_consistency {α : Type u} {n : Nat} (f : Fin n → α) :
-    (ofFun f : Array α).size = n := ofFun_size
+theorem type_consistency {Î± : Type u} {n : Nat} (f : Fin n â†’ Î±) :
+    (ofFun f : Array Î±).size = n := ofFun_size
 
 end SanityChecks
 

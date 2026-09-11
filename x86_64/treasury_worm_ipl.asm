@@ -1,12 +1,27 @@
+﻿; ========================================================================
+; SOVEREIGN LEVIATHAN NODE LICENSE
+; License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+; Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+; ========================================================================
+;
+; This file is a covered work under the GNU Affero General Public License,
+; version 3, together with the Sovereign Leviathan additional terms.
+;
+; Hark, though this node be but a spark,
+; Its covenant endureth through the dark.
+;
+; Ignorantia juris non excusat.
+; ========================================================================
+
          TITLE 'TREASURY WORM IPL - Ahmad Ali Parr (DEED-083)'
 ***********************************************************************
-* TREASURY WORM IPL — Sovereign Cold Boot Protocol                    *
+* TREASURY WORM IPL â€” Sovereign Cold Boot Protocol                    *
 * Author: Ahmad Ali Parr (ahmedparr93@gmail.com)                      *
 * DEED-083: z/Architecture s390x Assembly                              *
 *                                                                     *
-* Phase 1: ROM Anchor — SHA-256 ROM hash via CPACF                    *
-* Phase 2: PL/I⇄COBOL Bridge — SVC 254/255 register handlers         *
-* Phase 3: Treasury WORM Driver — append/verify immutable records     *
+* Phase 1: ROM Anchor â€” SHA-256 ROM hash via CPACF                    *
+* Phase 2: PL/Iâ‡„COBOL Bridge â€” SVC 254/255 register handlers         *
+* Phase 3: Treasury WORM Driver â€” append/verify immutable records     *
 *                                                                     *
 * WORM Volume: 2TB max, hash-chained, append-only                     *
 * BLAKE3 equivalent: SHA-256 via CPACF (MSG-SHA256 / KIMD-SHA256)     *
@@ -22,7 +37,7 @@ PHASE1   CSECT
          USING *,15              Base register
          STM   14,12,12(13)     Save caller registers
 *
-* Initialize — clear hash work area
+* Initialize â€” clear hash work area
          LHI   R4,0              Clear R4
          LHI   R5,0              Clear R5
          LA    R6,WORM_AREA      Load WORM work area address
@@ -66,7 +81,7 @@ EXIT_PH1 EQU   *
          BR    14               Return to caller
          SPACE 1
 ***********************************************************************
-* PHASE 2: PL/I ⇄ COBOL BRIDGE                                        *
+* PHASE 2: PL/I â‡„ COBOL BRIDGE                                        *
 * Register SVC handlers for WORM operations                           *
 * SVC 254 = PL/I WRITE_ONCE (append immutable record)                 *
 * SVC 255 = COBOL READ_MANY (verify + read record)                    *
@@ -106,7 +121,7 @@ EXIT_PH2 EQU   *
          BR    14
          SPACE 1
 ***********************************************************************
-* SVC 254: PL/I WRITE_ONCE — Append Immutable WORM Record            *
+* SVC 254: PL/I WRITE_ONCE â€” Append Immutable WORM Record            *
 * Input:  R1 = record address, R2 = record length                    *
 * Output: R1 = RC (0=OK, 4=FULL, 8=CRC_ERR, 12=SEAL_FAIL)           *
 *         R2 = record hash (SHA-256, 32 bytes)                       *
@@ -155,7 +170,7 @@ EXIT_SVC254 EQU *
          BR    14
          SPACE 1
 ***********************************************************************
-* SVC 255: COBOL READ_MANY — Verify Hash Chain and Read Record        *
+* SVC 255: COBOL READ_MANY â€” Verify Hash Chain and Read Record        *
 * Input:  R1 = record index                                           *
 * Output: R1 = RC (0=OK, 4=NOT_FOUND, 8=HASH_MISMATCH, 12=CORRUPT)  *
 *         R2 = record address                                         *
@@ -217,7 +232,7 @@ EXIT_SVC255 EQU *
          BR    14
          SPACE 1
 ***********************************************************************
-* SVC 253: BorrowChain Anchor — Trigger ICP anchor state              *
+* SVC 253: BorrowChain Anchor â€” Trigger ICP anchor state              *
 * Input:  R1 = anchor record address                                 *
 * Output: R1 = RC (0=OK, 8=ANCHOR_FAIL)                             *
 ***********************************************************************
@@ -275,7 +290,7 @@ PHASE3   CSECT
          CHI   R1,0
          BNE   PHASE3_ERR
 *
-* Phase 3 complete — cold boot done
+* Phase 3 complete â€” cold boot done
          LHI   R1,0              RC=0: OK
          B     EXIT_PH3
 *
