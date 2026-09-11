@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- institutional_architecture.svg -->
+<svg width="1200pt" height="900pt" viewBox="0.00 0.00 1200.00 900.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g id="graph0" class="graph" transform="scale(1 1) translate(4 896)">
+    <title>InstitutionalArchitecture</title>
+    <polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-896 1196,-896 1196,4 -4,4"/>
+    <!-- cluster_org -->
+    <g id="cluster_org" transform="translate(20,-40)">
+      <rect x="0" y="-360" width="360" height="360" rx="10" ry="10" fill="#c6def1" stroke="#000000" stroke-width="1"/>
+      <text x="12" y="-336" font-family="Helvetica" font-size="12" fill="#000000">Organization</text>
+      <!-- DevTeam -->
+      <g transform="translate(12,-56)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">Development Team</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">(Haskell, Quipper) | dev-team@example.com</text>
+      </g>
+      <!-- DataTeam -->
+      <g transform="translate(12,-120)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">Data Engineering</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">(SQL, ETL, SAS) | data-team@example.com</text>
+      </g>
+      <!-- QA -->
+      <g transform="translate(12,-184)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">QA and Verification</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">(Liquid Haskell, Unit Tests) | qa@example.com</text>
+      </g>
+      <!-- Ops -->
+      <g transform="translate(12,-248)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">Operations</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">(CI/CD, Monitoring) | ops@example.com</text>
+      </g>
+      <!-- Legal -->
+      <g transform="translate(12,-312)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">Compliance and Legal</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">(Privacy, Audit) | legal@example.com</text>
+      </g>
+    </g>
+
+    <!-- cluster_platform -->
+    <g id="cluster_platform" transform="translate(420,-40)">
+      <rect x="0" y="-420" width="360" height="420" rx="10" ry="10" fill="#d9ead3" stroke="#000000" stroke-width="1"/>
+      <text x="12" y="-396" font-family="Helvetica" font-size="12" fill="#000000">Platform and Tools</text>
+      <!-- Repo -->
+      <g transform="translate(12,-56)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">Source Repo (Git)</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">Access: repo-read, repo-write (IAM)</text>
+      </g>
+      <!-- CI -->
+      <g transform="translate(12,-120)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">CI/CD</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">(build, liquid, isabelle) Auth: CI service account</text>
+      </g>
+      <!-- ArtifactStore -->
+      <g transform="translate(12,-184)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">Artifact Store (signed bundles)</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">Encryption: AES-256 at rest | Retention: 7yr</text>
+      </g>
+      <!-- Monitoring -->
+      <g transform="translate(12,-248)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">Monitoring and Alerts</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">(Prometheus, Grafana) SLA: 99.9%</text>
+      </g>
+      <!-- Isabelle -->
+      <g transform="translate(12,-312)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">Isabelle (formal proofs)</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">Access: restricted | No network I/O</text>
+      </g>
+    </g>
+
+    <!-- cluster_data -->
+    <g id="cluster_data" transform="translate(820,-40)">
+      <rect x="0" y="-480" width="360" height="480" rx="10" ry="10" fill="#fce5cd" stroke="#000000" stroke-width="1"/>
+      <text x="12" y="-456" font-family="Helvetica" font-size="12" fill="#000000">Data and Pipelines</text>
+      <!-- QuipperSvc -->
+      <g transform="translate(12,-56)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">Quipper Simulation (Haskell)</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">Isolated namespace | No PII</text>
+      </g>
+      <!-- Extractor -->
+      <g transform="translate(12,-120)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">Kraus Extractor</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">Outputs: kraus_out/ | Signed artifacts</text>
+      </g>
+      <!-- Streamer -->
+      <g transform="translate(12,-184)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">TCP Streamer (JSON)</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">TLS: required | Auth: token</text>
+      </g>
+      <!-- JuliaSvc -->
+      <g transform="translate(12,-248)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">Julia EMA Controller</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">RBAC: read-only output | beliefs.csv</text>
+      </g>
+      <!-- SASJobs -->
+      <g transform="translate(12,-312)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">SAS Batch Jobs (ETL, reporting)</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">Data Access: governed | Audit log: on</text>
+      </g>
+      <!-- SQLWarehouse -->
+      <g transform="translate(12,-376)">
+        <rect x="0" y="-24" width="336" height="48" rx="4" ry="4" fill="#ffffff" stroke="#000000"/>
+        <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">SQL Warehouse</text>
+        <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">(schema, lineage) PII: masked/encrypted</text>
+      </g>
+    </g>
+
+    <!-- Compliance badges -->
+    <g transform="translate(20,-760)">
+      <rect x="0" y="-24" width="220" height="48" rx="6" ry="6" fill="#fff2cc" stroke="#c6a700"/>
+      <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">GDPR: Data minimization</text>
+      <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">Consent, DSARs, 30-day deletion SLA</text>
+    </g>
+    <g transform="translate(260,-760)">
+      <rect x="0" y="-24" width="200" height="48" rx="6" ry="6" fill="#fff2cc" stroke="#c6a700"/>
+      <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">HIPAA: PHI controls, BAAs</text>
+      <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">Minimum necessary principle</text>
+    </g>
+    <g transform="translate(480,-760)">
+      <rect x="0" y="-24" width="200" height="48" rx="6" ry="6" fill="#fff2cc" stroke="#c6a700"/>
+      <text x="8" y="-6" font-family="Helvetica" font-size="11" fill="#000000">MGPLv3 License</text>
+      <text x="8" y="8" font-family="Helvetica" font-size="10" fill="#333333">Sovereign Leviathan Covenant</text>
+    </g>
+  </g>
+</svg>

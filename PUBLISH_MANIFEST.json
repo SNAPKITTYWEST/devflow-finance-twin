@@ -1,16 +1,13 @@
 {
-  "timestamp": "2026-09-11T06:31:05Z",
+  "timestamp": "2026-09-11T06:32:16Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "734dccd6e832ce72795793fc8df19dbe0d82341b",
-  "commit_after": "75aebd0418140bce3aa864a06066eb9f857cb185",
+  "commit_before": "b63fdf551b000d441d0a538088b9df21b042c942",
+  "commit_after": "b09188f830b2381913f06984d64fe44d310848e4",
   "files_added": [
-    "src/architecture.dot",
-    "scripts/generate_diagrams.sh",
-    "src/institutional_architecture.dot",
-    "src/pipeline_flowchart.dot",
-    "src/sas_dataflow.dot",
-    "src/sql_schema.dot"
+    "assets/architecture/institutional_architecture.svg",
+    "assets/sas_dataflow.svg",
+    "assets/sql_schema.svg"
   ],
   "files_modified": [
 
@@ -26,6 +23,6 @@
 
   ],
   "sha256": [
-    {"file": "institutional_architecture.dot", "source_hash": "5dd6e3ccc111eb81695076f84820d0c39bd5adee8eae1ff31ac704ead25d637b", "destination_hash": "5dd6e3ccc111eb81695076f84820d0c39bd5adee8eae1ff31ac704ead25d637b", "status": "COPIED"},    {"file": "sas_dataflow.dot", "source_hash": "90b60f7e86fae31ca9bddbc063eb50a205d0ed039fcaa5647dc8eca2745f9bc8", "destination_hash": "90b60f7e86fae31ca9bddbc063eb50a205d0ed039fcaa5647dc8eca2745f9bc8", "status": "COPIED"},    {"file": "generate_diagrams.sh", "source_hash": "0412e2922a196afd17e59c3f4be5054152cf5ff9953c619757d5e41711bfc876", "destination_hash": "0412e2922a196afd17e59c3f4be5054152cf5ff9953c619757d5e41711bfc876", "status": "COPIED"},    {"file": "architecture.dot", "source_hash": "7e943041e3a426f285d362cb15cf20d4da5f94b163c7d9a253f040d50ded0851", "destination_hash": "7e943041e3a426f285d362cb15cf20d4da5f94b163c7d9a253f040d50ded0851", "status": "COPIED"},    {"file": "sql_schema.dot", "source_hash": "954cff63921119180f36fa02c8788862c0ebdc6be0e68130493274e83dcf37f3", "destination_hash": "954cff63921119180f36fa02c8788862c0ebdc6be0e68130493274e83dcf37f3", "status": "COPIED"},    {"file": "pipeline_flowchart.dot", "source_hash": "7950eac743add5740261cfcd059d432a60dbb07524900ec3722a9d432c54524a", "destination_hash": "7950eac743add5740261cfcd059d432a60dbb07524900ec3722a9d432c54524a", "status": "COPIED"}
+    {"file": "sql_schema.svg", "source_hash": "6a9ed70bf350a4a6b23c30379d718f6e7b57058d1de630cfc5392afef341adc7", "destination_hash": "6a9ed70bf350a4a6b23c30379d718f6e7b57058d1de630cfc5392afef341adc7", "status": "COPIED"},    {"file": "sas_dataflow.svg", "source_hash": "6315f229c6c0837ff6a31e8280ee3aa2698dae71a671476277e21c32ca0d4553", "destination_hash": "6315f229c6c0837ff6a31e8280ee3aa2698dae71a671476277e21c32ca0d4553", "status": "COPIED"},    {"file": "institutional_architecture.svg", "source_hash": "da05daea9d45c2c101fdca93bf4f8cb5903693cb70fd4e760ca31cd0122b8d44", "destination_hash": "da05daea9d45c2c101fdca93bf4f8cb5903693cb70fd4e760ca31cd0122b8d44", "status": "COPIED"}
   ]
 }
