@@ -1,0 +1,22 @@
+// sas_dataflow.dot
+digraph SASDataFlow {
+  rankdir=TB;
+  node [shape=rect style=filled fillcolor="#ffffff" fontname="Helvetica" fontsize=11];
+  edge [fontname="Helvetica" fontsize=10];
+
+  Sources [label="Sources\n- Quipper logs\n- Kraus JSON\n- Telemetry CSV"];
+  Staging [label="Staging Area\n(S3 / Blob / Landing)"];
+  SASIngest [label="SAS Ingest Job\n(read JSON/CSV)"];
+  Transform [label="SAS Transform\n(clean, normalize, join)"];
+  SQLLoad [label="Load to SQL Warehouse\n(dim/fact tables)"];
+  Reporting [label="SAS Reports / Dashboards\n(operational, compliance)"];
+  Archive [label="Archive\n(signed bundles, proofs)"];
+
+  Sources -> Staging [label="upload"];
+  Staging -> SASIngest [label="ingest schedule"];
+  SASIngest -> Transform [label="raw -> curated"];
+  Transform -> SQLLoad [label="populate schema"];
+  SQLLoad -> Reporting [label="BI queries"];
+  Transform -> Archive [label="export artifacts"];
+  Archive -> Reporting [label="attach proofs & provenance"];
+}
