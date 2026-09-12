@@ -1,0 +1,34 @@
+-- test.occ
+-- Test suite for RetroGPU blocks
+
+PROC TestRegisterAllocation()
+  -- Test Block 01
+  INT id1, id2 :
+  CHAN INT allocate, alloc.response :
+  SEQ
+    -- Would test register allocation here
+    SKIP
+:
+
+PROC TestALUExecution()
+  -- Test Block 02
+  CHAN ALUInstruction alu.instr :
+  CHAN INT result :
+  SEQ
+    -- Test ALU add: 5 + 3 = 8
+    SKIP
+:
+
+PROC TestWarpExecution()
+  -- Test Block 03
+  SEQ
+    -- Test warp synchronization
+    SKIP
+:
+
+PROC RunAllTests()
+  SEQ
+    TestRegisterAllocation()
+    TestALUExecution()
+    TestWarpExecution()
+:

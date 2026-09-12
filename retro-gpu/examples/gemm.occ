@@ -1,0 +1,70 @@
+-- gemm.occ
+-- Matrix multiply kernel in OCCAM
+-- C = A x B with explicit parallelism
+
+-- Constants
+VAL INT M IS 128 :
+VAL INT N IS 128 :
+VAL INT K IS 128 :
+VAL INT BLOCK.M IS 8 :
+VAL INT BLOCK.N IS 8 :
+VAL INT BLOCK.K IS 8 :
+VAL INT WARP.WIDTH IS 32 :
+
+-- GEMM kernel as parallel process composition
+PROC GemmKernel (
+  [M*K]INT A,
+  [K*N]INT B,
+  [M*N]INT C,
+  INT m, INT n, INT k
+)
+  INT tid.x, tid.y, bid.x, bid.y :
+  INT i, j, kk :
+  [BLOCK.M][BLOCK.N]INT accum :
+  SEQ
+    -- Thread block coordinates (simulated)
+    tid.x := 0
+    tid.y := 0
+    bid.x := 0
+    bid.y := 0
+
+    -- Stage 1: Initialize accumulators (parallel across warp)
+    PAR i = 0 FOR BLOCK.M
+      PAR j = 0 FOR BLOCK.N
+        accum[i][j] := 0
+
+    -- Stage 2: Main compute loop (sequential K dimension, parallel M/N)
+    SEQ kk = 0 FOR k STEP BLOCK.K
+      PAR i = 0 FOR BLOCK.M
+        PAR j = 0 FOR BLOCK.N
+          SEQ k = kk FOR BLOCK.K
+            INT idx.a, idx.b :
+            SEQ
+              -- Index into A
+              idx.a := ((bid.y * BLOCK.M + i) * k) + (kk + tid.x)
+              -- Index into B
+              idx.b := ((kk + tid.y) * n) + (bid.x * BLOCK.N + j)
+              -- Multiply-accumulate
+              accum[i][j] := accum[i][j] + (A[idx.a] * B[idx.b])
+
+    -- Stage 3: Store results (parallel)
+    PAR i = 0 FOR BLOCK.M
+      PAR j = 0 FOR BLOCK.N
+        INT idx.c :
+        SEQ
+          idx.c := ((bid.y * BLOCK.M + i) * n) + (bid.x * BLOCK.N + j)
+          C[idx.c] := accum[i][j]
+:
+
+-- Multi-warp GEMM (128 warps in parallel)
+PROC GemmKernelParallel (
+  [M*K]INT A,
+  [K*N]INT B,
+  [M*N]INT C,
+  INT m, INT n, INT k
+)
+  INT warp.id :
+  SEQ
+    PAR warp.id = 0 FOR (M * N) / (BLOCK.M * BLOCK.N)
+      GemmKernel(A, B, C, m, n, k)
+:

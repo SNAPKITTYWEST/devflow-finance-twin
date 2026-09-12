@@ -1,0 +1,28 @@
+DEFINITION MODULE Warp;
+
+TYPE
+  LaneID = INTEGER;
+  WarpID = INTEGER;
+  WarpWidth = INTEGER;
+
+  LaneState = RECORD
+    id : LaneID;
+    active : BOOLEAN;
+    pred : BOOLEAN;
+    pc : INTEGER;
+  END;
+
+  WarpState = RECORD
+    id : WarpID;
+    width : WarpWidth;
+    activeMask : CARDINAL;
+    predMask : CARDINAL;
+    pc : INTEGER;
+    divergent : BOOLEAN;
+  END;
+
+PROCEDURE MakeWarp (wid : WarpID; width : WarpWidth; VAR w : WarpState);
+PROCEDURE SetActive (VAR w : WarpState; mask : CARDINAL);
+PROCEDURE IsDivergent (w : WarpState) : BOOLEAN;
+
+END Warp.

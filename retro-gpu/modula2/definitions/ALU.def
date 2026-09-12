@@ -1,0 +1,31 @@
+DEFINITION MODULE ALU;
+
+TYPE
+  AluOp = (ADD, SUB, MUL, DIV, MOD, AND, OR, XOR, SHL, SHR, SAR,
+           CMP_EQ, CMP_NE, CMP_LT, CMP_LE, CMP_GT, CMP_GE,
+           FADD, FSUB, FMUL, FDIV, FMA, SEL, NOT, NEG, ABS,
+           POPC, CLZ, BREV);
+
+  OperandKind = (OpReg, OpImm, OpAddr, OpPred, OpNone);
+
+  Operand = RECORD
+    kind : OperandKind;
+    val : INTEGER;
+  END;
+
+  AluInst = RECORD
+    op : AluOp;
+    dst : Operand;
+    src0 : Operand;
+    src1 : Operand;
+    src2 : Operand; (* valid for FMA *)
+    dtype : INTEGER; (* DataType enum *)
+    width : INTEGER;
+    pred : Operand;
+    latency : INTEGER;
+  END;
+
+PROCEDURE EvalInt (op : AluOp; a, b : INTEGER) : INTEGER;
+PROCEDURE ValidateInst (i : AluInst; VAR ok : BOOLEAN; VAR msg : ARRAY OF CHAR);
+
+END ALU.
