@@ -1,0 +1,15 @@
+name: qflow
+version: 0.1.0.0
+synopsis: Qflow – Quantum Dataflow DSL
+license: MIT
+author: Qflow Team
+build-type: Simple
+cabal-version: >=1.10
+
+executable qflow
+  main-is: Main.hs
+  other-modules: Qflow.Lexer, Qflow.AST, Qflow.Parser
+  hs-source-dirs: compiler, parser
+  build-depends: base >=4.14 && <5
+  default-language: Haskell2010
+  ghc-options: -Wall
