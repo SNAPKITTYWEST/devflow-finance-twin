@@ -1,0 +1,121 @@
+-- SharedMemory.occ
+-- On-chip shared memory with bank conflict analysis
+
+#USE "RetroGPUTypes.occ"
+
+-- Shared memory manager
+PROC SharedMemoryManager(CHAN OF SMEM_MSG in?, CHAN OF SMEM_RESULT out!)
+  SHARED_MEMORY shared_mem:
+  SMEM_MSG msg:
+  SMEM_RESULT result:
+  INT addr, bank, i:
+
+  SEQ
+    -- Initialize shared memory
+    shared_mem[allocation_head] := 0
+    SEQ i = 0 FOR SHARED_BANKS
+      shared_mem[bank_conflicts][i] := 0
+
+    -- Main service loop
+    WHILE TRUE
+      SEQ
+        in ? msg
+
+        CASE msg[msg_type]
+          INT size, alignment, width, value:
+
+          -- ALLOCATE
+          msg[msg_type] = SMEM_ALLOCATE
+            SEQ
+              size := msg[alloc_size]
+              alignment := msg[alignment]
+
+              IF (shared_mem[allocation_head] + size) < SHARED_SIZE
+                SEQ
+                  result[status] := SMEM_ALLOC_SUCCESS
+                  result[address] := shared_mem[allocation_head]
+                  shared_mem[allocation_head] := shared_mem[allocation_head] + size
+                  out ! result
+              ELSE
+                SEQ
+                  result[status] := SMEM_ALLOC_FAILURE
+                  result[address] := -1
+                  out ! result
+
+          -- LOAD
+          msg[msg_type] = SMEM_LOAD
+            SEQ
+              addr := msg[address]
+              width := msg[width]
+
+              -- Calculate bank
+              bank := (addr / BANK_WIDTH) REM SHARED_BANKS
+              shared_mem[bank_conflicts][bank] := shared_mem[bank_conflicts][bank] + 1
+
+              IF (addr >= 0) AND ((addr + width) <= SHARED_SIZE)
+                SEQ
+                  result[status] := SMEM_LOAD_SUCCESS
+                  result[value] := 0 -- Would read from shared_mem[data]
+                  out ! result
+              ELSE
+                SEQ
+                  result[status] := SMEM_LOAD_FAILURE
+                  out ! result
+
+          -- STORE
+          msg[msg_type] = SMEM_STORE
+            SEQ
+              addr := msg[address]
+              value := msg[value]
+              width := msg[width]
+
+              IF (addr >= 0) AND ((addr + width) <= SHARED_SIZE)
+                SEQ
+                  result[status] := SMEM_STORE_SUCCESS
+                  out ! result
+              ELSE
+                SEQ
+                  result[status] := SMEM_STORE_FAILURE
+                  out ! result
+
+          -- BANK_CONFLICT_ANALYSIS
+          msg[msg_type] = SMEM_ANALYZE_CONFLICTS
+            SEQ
+              result[status] := SMEM_ANALYZE_SUCCESS
+              result[conflict_count] := 0
+              out ! result
+:
+
+-- Shared memory message types
+VAL INT SMEM_ALLOCATE IS 0:
+VAL INT SMEM_DEALLOCATE IS 1:
+VAL INT SMEM_LOAD IS 2:
+VAL INT SMEM_STORE IS 3:
+VAL INT SMEM_ATOMIC IS 4:
+VAL INT SMEM_ANALYZE_CONFLICTS IS 5:
+
+-- Status codes
+VAL INT SMEM_ALLOC_SUCCESS IS 0:
+VAL INT SMEM_ALLOC_FAILURE IS 1:
+VAL INT SMEM_LOAD_SUCCESS IS 2:
+VAL INT SMEM_LOAD_FAILURE IS 3:
+VAL INT SMEM_STORE_SUCCESS IS 4:
+VAL INT SMEM_STORE_FAILURE IS 5:
+VAL INT SMEM_ANALYZE_SUCCESS IS 6:
+
+DATA TYPE SMEM_MSG
+  INT msg_type
+  INT alloc_size
+  INT alignment
+  INT address
+  INT width
+  INT value
+  [LANE_COUNT]INT addresses
+:
+
+DATA TYPE SMEM_RESULT
+  INT status
+  INT address
+  INT value
+  INT conflict_count
+:

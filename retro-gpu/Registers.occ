@@ -1,0 +1,114 @@
+-- Registers.occ
+-- CSP-based register file manager
+-- Uses channels for concurrent allocation/release
+
+#USE "RetroGPUTypes.occ"
+
+-- Register manager process
+PROC RegisterManager(CHAN OF REGISTER_MSG in?, CHAN OF REGISTER_RESULT out!)
+  REGISTERFILE reg_file:
+  REGISTER_MSG msg:
+  REGISTER_RESULT result:
+  INT i:
+
+  SEQ
+    -- Initialize register file
+    SEQ i = 0 FOR REGISTER_COUNT
+      reg_file[registers][i][id] := i
+      reg_file[registers][i][kind] := REG_GENERAL
+      reg_file[registers][i][width] := W32
+      reg_file[registers][i][state] := REG_UNALLOCATED
+
+    -- Initialize free list
+    SEQ i = 0 FOR GENERAL_REGS
+      reg_file[free_list][i] := i
+    reg_file[free_count] := GENERAL_REGS
+
+    -- Main service loop
+    WHILE TRUE
+      SEQ
+        in ? msg
+
+        -- Dispatch based on request type
+        CASE msg[request_type]
+          INT kind, width:
+          INT idx:
+
+          -- ALLOCATE request
+          msg[request_type] = REQ_ALLOCATE
+            SEQ
+              kind := msg[allocate_kind]
+              width := msg[allocate_width]
+
+              IF
+                reg_file[free_count] > 0
+                  SEQ
+                    idx := reg_file[free_list][reg_file[free_count] - 1]
+                    reg_file[free_count] := reg_file[free_count] - 1
+
+                    reg_file[registers][idx][kind] := kind
+                    reg_file[registers][idx][width] := width
+                    reg_file[registers][idx][state] := REG_ALLOCATED
+
+                    result[status] := ALLOC_SUCCESS
+                    result[register_id] := idx
+                TRUE
+                  SEQ
+                    result[status] := ALLOC_FAILURE
+                    result[register_id] := -1
+
+              out ! result
+
+          -- RELEASE request
+          msg[request_type] = REQ_RELEASE
+            SEQ
+              idx := msg[release_id]
+              reg_file[registers][idx][state] := REG_UNALLOCATED
+
+              IF reg_file[free_count] < GENERAL_REGS
+                SEQ
+                  reg_file[free_list][reg_file[free_count]] := idx
+                  reg_file[free_count] := reg_file[free_count] + 1
+
+              result[status] := RELEASE_SUCCESS
+              out ! result
+
+          -- VALIDATE request
+          msg[request_type] = REQ_VALIDATE
+            SEQ
+              idx := msg[validate_id]
+              IF
+                (idx >= 0) AND (idx < REGISTER_COUNT) AND
+                (reg_file[registers][idx][state] <> REG_UNALLOCATED)
+                  result[status] := VALIDATE_SUCCESS
+                TRUE
+                  result[status] := VALIDATE_FAILURE
+
+              out ! result
+:
+
+-- Message types for register manager
+VAL INT REQ_ALLOCATE IS 0:
+VAL INT REQ_RELEASE IS 1:
+VAL INT REQ_VALIDATE IS 2:
+VAL INT REQ_GET_STATE IS 3:
+
+-- Result codes
+VAL INT ALLOC_SUCCESS IS 0:
+VAL INT ALLOC_FAILURE IS 1:
+VAL INT RELEASE_SUCCESS IS 2:
+VAL INT VALIDATE_SUCCESS IS 3:
+VAL INT VALIDATE_FAILURE IS 4:
+
+DATA TYPE REGISTER_MSG
+  INT request_type
+  INT allocate_kind
+  INT allocate_width
+  INT release_id
+  INT validate_id
+:
+
+DATA TYPE REGISTER_RESULT
+  INT status
+  INT register_id
+:

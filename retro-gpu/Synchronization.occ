@@ -1,0 +1,105 @@
+-- Synchronization.occ
+-- Explicit synchronization with barrier and fence primitives
+-- CSP-based synchronization through channels
+
+#USE "RetroGPUTypes.occ"
+
+-- Barrier synchronization process
+PROC BarrierSync(CHAN OF BARRIER_MSG in?, CHAN OF BARRIER_RESULT out!)
+  BARRIER_MSG msg:
+  BARRIER_RESULT result:
+  INT active_count:
+
+  WHILE TRUE
+    SEQ
+      in ? msg
+
+      -- For ThreadBlockBarrier, all warps must reach
+      -- CSP semantics: each warp sends a message on sync completion
+      -- and waits to receive synchronization confirmation
+
+      CASE msg[barrier_type]
+        msg[barrier_type] = BARRIER_THREAD_BLOCK
+          SEQ
+            active_count := msg[active_threads]
+
+            -- In actual implementation, would count arrivals
+            -- For now, assume synchronization succeeds
+            IF active_count > 0
+              SEQ
+                result[status] := SYNC_SUCCESS
+                result[threads_synced] := active_count
+                out ! result
+            ELSE
+              SEQ
+                result[status] := SYNC_FAILURE
+                out ! result
+
+        msg[barrier_type] = BARRIER_WARP
+          SEQ
+            result[status] := SYNC_SUCCESS
+            result[threads_synced] := LANE_COUNT
+            out ! result
+
+:
+
+-- Memory fence process
+PROC MemoryFence(CHAN OF FENCE_MSG in?, CHAN OF FENCE_RESULT out!)
+  FENCE_MSG msg:
+  FENCE_RESULT result:
+
+  WHILE TRUE
+    SEQ
+      in ? msg
+
+      -- Memory fence ensures visibility across scope
+      CASE msg[fence_type]
+        msg[fence_type] = FENCE_THREAD_BLOCK
+          SEQ
+            result[status] := FENCE_SUCCESS
+            out ! result
+
+        msg[fence_type] = FENCE_GPU
+          SEQ
+            result[status] := FENCE_SUCCESS
+            out ! result
+
+        msg[fence_type] = FENCE_SYSTEM
+          SEQ
+            result[status] := FENCE_SUCCESS
+            out ! result
+
+:
+
+VAL INT BARRIER_THREAD_BLOCK IS 0:
+VAL INT BARRIER_WARP IS 1:
+VAL INT BARRIER_NAMED IS 2:
+
+VAL INT FENCE_THREAD_BLOCK IS 0:
+VAL INT FENCE_GPU IS 1:
+VAL INT FENCE_SYSTEM IS 2:
+
+VAL INT SYNC_SUCCESS IS 0:
+VAL INT SYNC_FAILURE IS 1:
+VAL INT FENCE_SUCCESS IS 0:
+
+DATA TYPE BARRIER_MSG
+  INT barrier_type
+  INT active_threads
+  [32]BYTE barrier_name
+:
+
+DATA TYPE BARRIER_RESULT
+  INT status
+  INT threads_synced
+:
+
+DATA TYPE FENCE_MSG
+  INT fence_type
+  INT mem_scope
+  INT ordering
+:
+
+DATA TYPE FENCE_RESULT
+  INT status
+:

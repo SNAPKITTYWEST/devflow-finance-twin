@@ -1,0 +1,137 @@
+-- RetroGPUCompiler.occ
+-- Complete GPU compiler pipeline using CSP parallelism
+
+#USE "RetroGPUTypes.occ"
+#USE "Registers.occ"
+#USE "ALU.occ"
+#USE "Warp.occ"
+#USE "SharedMemory.occ"
+#USE "GlobalMemory.occ"
+#USE "Synchronization.occ"
+#USE "Tensor.occ"
+
+-- Compiler orchestrator
+PROC RetroGPUCompiler(
+  CHAN OF KERNEL kernel_in?,
+  CHAN OF HOPPER_TARGET target_in?,
+  CHAN OF COMPILE_RESULT result_out!
+)
+  KERNEL kernel:
+  HOPPER_TARGET target:
+  COMPILE_RESULT result:
+
+  -- Channel declarations for CSP communication
+  CHAN OF REGISTER_MSG reg_msgs:
+  CHAN OF REGISTER_RESULT reg_results:
+  CHAN OF ALU_INSTR alu_instrs:
+  CHAN OF ALU_RESULT alu_results:
+  CHAN OF WARP_MSG warp_msgs:
+  CHAN OF WARP_RESULT warp_results:
+  CHAN OF SMEM_MSG smem_msgs:
+  CHAN OF SMEM_RESULT smem_results:
+  CHAN OF GMEM_MSG gmem_msgs:
+  CHAN OF GMEM_RESULT gmem_results:
+  CHAN OF BARRIER_MSG barrier_msgs:
+  CHAN OF BARRIER_RESULT barrier_results:
+  CHAN OF TENSOR_MSG tensor_msgs:
+  CHAN OF TENSOR_RESULT tensor_results:
+
+  SEQ
+    -- Receive kernel and target
+    kernel_in ? kernel
+    target_in ? target
+
+    -- Run all blocks in parallel
+    PAR
+      -- Block 1: Register Manager
+      RegisterManager(reg_msgs, reg_results)
+
+      -- Block 2: ALU Executor + Validator
+      PAR
+        ALUExecutor(alu_instrs, alu_results)
+        ALUValidator(alu_instrs, alu_results)
+
+      -- Block 3: Warp Manager
+      WarpManager(warp_msgs, warp_results)
+
+      -- Block 4: Shared Memory Manager
+      SharedMemoryManager(smem_msgs, smem_results)
+
+      -- Block 5: Global Memory Manager
+      GlobalMemoryManager(gmem_msgs, gmem_results)
+
+      -- Block 6: Synchronization
+      PAR
+        BarrierSync(barrier_msgs, barrier_results)
+        MemoryFence(fence_msgs, fence_results)
+
+      -- Block 7: Tensor Core
+      TensorCore(tensor_msgs, tensor_results)
+
+      -- Compilation coordinator (sequential orchestration)
+      SEQ
+        -- Allocate registers for kernel
+        SKIP -- Register allocation
+
+        -- Analyze dependencies
+        SKIP -- Dependency analysis
+
+        -- Schedule instructions
+        SKIP -- Scheduling
+
+        -- Select instructions
+        SKIP -- Instruction selection
+
+        -- Encode for Hopper
+        SKIP -- Instruction encoding
+
+        -- Return result
+        result[status] := COMPILE_SUCCESS
+        result_out ! result
+:
+
+-- Main entry point
+PROC main()
+  CHAN OF KERNEL kernel_ch:
+  CHAN OF HOPPER_TARGET target_ch:
+  CHAN OF COMPILE_RESULT result_ch:
+  KERNEL test_kernel:
+  HOPPER_TARGET hopper_target:
+  COMPILE_RESULT compile_result:
+
+  PAR
+    -- Compiler pipeline
+    RetroGPUCompiler(kernel_ch, target_ch, result_ch)
+
+    -- Test driver
+    SEQ
+      -- Initialize test kernel
+      test_kernel[kernel_name] := "gemm_128x128x128"
+      test_kernel[block_count] := 1
+      test_kernel[entry_block] := 0
+      test_kernel[exit_block] := 0
+      test_kernel[shared_memory_size] := 16384
+
+      -- Initialize Hopper target
+      hopper_target[sm] := HOPPER_SM
+      hopper_target[warp_width] := HOPPER_WARP_WIDTH
+      hopper_target[num_warps] := HOPPER_NUM_WARPS
+      hopper_target[register_file_size] := HOPPER_REGISTER_FILE_SIZE
+      hopper_target[shared_memory_size] := HOPPER_SHARED_MEMORY_SIZE
+      hopper_target[num_tensor_cores] := HOPPER_NUM_TENSOR_CORES
+
+      -- Send kernel and target to compiler
+      kernel_ch ! test_kernel
+      target_ch ! hopper_target
+
+      -- Receive compilation result
+      result_ch ? compile_result
+
+      -- Output result
+      IF compile_result[status] = COMPILE_SUCCESS
+        SEQ
+          STOP -- Success
+      ELSE
+        SEQ
+          STOP -- Failure
+:

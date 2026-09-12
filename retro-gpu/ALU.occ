@@ -1,0 +1,139 @@
+-- ALU.occ
+-- Arithmetic and Logical Execution Unit
+-- Reference interpreter for semantic validation
+
+#USE "RetroGPUTypes.occ"
+
+-- ALU execution process
+PROC ALUExecutor(CHAN OF ALU_INSTR in?, CHAN OF ALU_RESULT out!)
+  ALU_INSTR instr:
+  ALU_RESULT result:
+  INT val_a, val_b, res:
+
+  WHILE TRUE
+    SEQ
+      in ? instr
+
+      -- Get operand A
+      CASE instr[src_a][op_type]
+        INT reg_id:
+
+        instr[src_a][op_type] = 0 -- Register
+          val_a := instr[src_a][reg_id]
+
+        instr[src_a][op_type] = 1 -- Immediate
+          val_a := instr[src_a][immediate]
+
+        TRUE
+          val_a := 0
+
+      -- Get operand B
+      CASE instr[src_b][op_type]
+        INT reg_id:
+
+        instr[src_b][op_type] = 0 -- Register
+          val_b := instr[src_b][reg_id]
+
+        instr[src_b][op_type] = 1 -- Immediate
+          val_b := instr[src_b][immediate]
+
+        TRUE
+          val_b := 0
+
+      -- Execute operation
+      CASE instr[op]
+        instr[op] = ALU_ADD
+          res := val_a + val_b
+
+        instr[op] = ALU_SUB
+          res := val_a - val_b
+
+        instr[op] = ALU_MUL
+          res := val_a * val_b
+
+        instr[op] = ALU_DIV
+          IF val_b <> 0
+            res := val_a / val_b
+          ELSE
+            res := 0
+
+        instr[op] = ALU_AND
+          res := val_a /\ val_b -- OCCAM bitwise AND
+
+        instr[op] = ALU_OR
+          res := val_a \/ val_b -- OCCAM bitwise OR
+
+        instr[op] = ALU_XOR
+          res := val_a >< val_b -- OCCAM bitwise XOR
+
+        instr[op] = ALU_SHL
+          res := val_a << val_b -- Left shift
+
+        instr[op] = ALU_SHR
+          res := val_a >> val_b -- Right shift
+
+        TRUE
+          res := 0
+
+      -- Apply negate if needed
+      IF instr[negate]
+        res := -res
+
+      -- Return result
+      result[status] := ALU_EXECUTE_SUCCESS
+      result[result_value] := res
+      result[destination] := instr[dst]
+
+      out ! result
+:
+
+-- ALU validation process
+PROC ALUValidator(CHAN OF ALU_INSTR in?, CHAN OF VALIDATION_RESULT out!)
+  ALU_INSTR instr:
+  VALIDATION_RESULT result:
+  INT valid:
+
+  WHILE TRUE
+    SEQ
+      in ? instr
+
+      -- Validate instruction
+      valid := 1
+
+      -- Check destination register
+      IF (instr[dst] < 0) OR (instr[dst] >= REGISTER_COUNT)
+        valid := 0
+
+      -- Check source operands
+      IF instr[src_a][op_type] = 0 -- Register
+        IF (instr[src_a][reg_id] < 0) OR (instr[src_a][reg_id] >= REGISTER_COUNT)
+          valid := 0
+
+      IF instr[src_b][op_type] = 0 -- Register
+        IF (instr[src_b][reg_id] < 0) OR (instr[src_b][reg_id] >= REGISTER_COUNT)
+          valid := 0
+
+      -- Check operation validity
+      IF (instr[op] < ALU_ADD) OR (instr[op] > ALU_CMP)
+        valid := 0
+
+      result[valid] := valid
+      result[instruction_id] := instr[dst]
+
+      out ! result
+:
+
+-- Result types
+VAL INT ALU_EXECUTE_SUCCESS IS 0:
+VAL INT ALU_EXECUTE_FAILURE IS 1:
+
+DATA TYPE ALU_RESULT
+  INT status
+  INT result_value
+  INT destination
+:
+
+DATA TYPE VALIDATION_RESULT
+  INT valid
+  INT instruction_id
+:
