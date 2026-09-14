@@ -1,18 +1,41 @@
 {
-  "timestamp": "2026-09-13T23:27:13Z",
+  "timestamp": "2026-09-14T19:55:51Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "a44163f891cde88b6aec6bc8399f4e9087cbff38",
-  "commit_after": "5487537413ee7a2f36ac4f94207933b558c102b1",
+  "commit_before": "23e696c60ac71007640b4b58dc50a2a0faa6e18d",
+  "commit_after": "9adcee0aa80ab41ded7eef06703ef732813e7644",
   "files_added": [
-    "docs/PHASE_4_DESIGN_COMPLETE.md"
+    "docs/PHASE_2_COMPLETION_REPORT.md",
+    "assembly-120-strict-model/PHASE_2_CPU_EXECUTION_ENGINE.asm",
+    "docs/PHASE_5_BEHAVIORAL_VALIDATION_FRAMEWORK.md",
+    "docs/PHASE_5_DATA_STRUCTURES.md",
+    "docs/PHASE_5_EXECUTION_MODEL.md",
+    "docs/PHASE_5_EXECUTIVE_SUMMARY.md",
+    "docs/PHASE_5_IMPLEMENTATION_GUIDE.md",
+    "docs/PHASE_5_INDEX.md",
+    "docs/PHASE_6_ARTIFACT_SCHEMAS.md",
+    "docs/PHASE_6_ATTACK_EXECUTION_PROTOCOLS.md",
+    "docs/PHASE_6_FORMAL_VERIFICATION_FRAMEWORK.md",
+    "docs/PHASE_6_GPU_VALIDATION_FRAMEWORK.md",
+    "docs/PHASE_6_GPU_WORM_SPECIFICATION.md",
+    "docs/PHASE_6_INTEGRATION_GUIDE.md",
+    "docs/PHASE_7_EXECUTIVE_SUMMARY.md",
+    "docs/PHASE_7_GPU_COMPUTE_KERNELS.md",
+    "docs/PHASE_7_INDEX.md",
+    "docs/PHASE_7_INTERACTIVE_VISUALIZATION.md",
+    "docs/PHASE_7_PROJECTION_ENGINE_SPECIFICATION.md",
+    "docs/PHASE_7_TECHNICAL_SUMMARY.md",
+    "docs/PHASE_7_VISUALIZATION_FORMAL_VERIFICATION.md",
+    "docs/PHASE_7_VISUALIZATION_WORM_PROVENANCE.md",
+    "docs/PHASE_7_VISUAL_EVIDENCE_VALIDATION.md",
+    "assembly-120-strict-model/firmware.asm"
   ],
   "files_modified": [
 
   ],
   "files_moved": [],
   "files_unchanged": [
-
+    "PHASE_4_DESIGN_COMPLETE.md -> docs/PHASE_4_DESIGN_COMPLETE.md [IDENTICAL]"
   ],
   "files_conflicted": [
 
@@ -21,6 +44,6 @@
 
   ],
   "sha256": [
-    {"file": "PHASE_4_DESIGN_COMPLETE.md", "source_hash": "ec169145aed27ee91601945f53265939213b6318a3bd28cbe34272ce2c57b28a", "destination_hash": "ec169145aed27ee91601945f53265939213b6318a3bd28cbe34272ce2c57b28a", "status": "COPIED"}
+    {"file": "PHASE_5_DATA_STRUCTURES.md", "source_hash": "1efcd5e4c8e791028a1ec7a7cbec03fcf030eeb7eb2d0b40acdee6634a18db70", "destination_hash": "1efcd5e4c8e791028a1ec7a7cbec03fcf030eeb7eb2d0b40acdee6634a18db70", "status": "COPIED"},    {"file": "PHASE_7_PROJECTION_ENGINE_SPECIFICATION.md", "source_hash": "45a58abd6648126a2e27805a50d1a239b8db6242122d26e62461d1e39b016a5f", "destination_hash": "45a58abd6648126a2e27805a50d1a239b8db6242122d26e62461d1e39b016a5f", "status": "COPIED"},    {"file": "PHASE_7_INDEX.md", "source_hash": "deb7abaf61de5bfb94d90ebd0c9df1c14a8f62c9cc34385c2d9f0f0824fe93d5", "destination_hash": "deb7abaf61de5bfb94d90ebd0c9df1c14a8f62c9cc34385c2d9f0f0824fe93d5", "status": "COPIED"},    {"file": "PHASE_7_GPU_COMPUTE_KERNELS.md", "source_hash": "4ba27d8f7a8f262635a6e883c44a678df429fa6254a8cddf11f2098d207244c1", "destination_hash": "4ba27d8f7a8f262635a6e883c44a678df429fa6254a8cddf11f2098d207244c1", "status": "COPIED"},    {"file": "PHASE_7_EXECUTIVE_SUMMARY.md", "source_hash": "9fd7ba3e8e6f1a5c90efab9a88da84be59063c0c25f0280405b55d275d87d0df", "destination_hash": "9fd7ba3e8e6f1a5c90efab9a88da84be59063c0c25f0280405b55d275d87d0df", "status": "COPIED"},    {"file": "firmware.asm", "source_hash": "d8bbf997fdc5c69c24102ba0d35101acdfefc8560a0580c7be8261e0471bb4f0", "destination_hash": "d8bbf997fdc5c69c24102ba0d35101acdfefc8560a0580c7be8261e0471bb4f0", "status": "COPIED"},    {"file": "PHASE_6_ATTACK_EXECUTION_PROTOCOLS.md", "source_hash": "34e298bf9f96412dfaf3aaf4216373ccc0709a6ef52ad21d88e33d960509c496", "destination_hash": "34e298bf9f96412dfaf3aaf4216373ccc0709a6ef52ad21d88e33d960509c496", "status": "COPIED"},    {"file": "PHASE_5_EXECUTION_MODEL.md", "source_hash": "d4a09442bff7905cc6ccdc8501418b8d2b7c0756b4db0495a69f0d1a91813637", "destination_hash": "d4a09442bff7905cc6ccdc8501418b8d2b7c0756b4db0495a69f0d1a91813637", "status": "COPIED"},    {"file": "PHASE_7_VISUALIZATION_WORM_PROVENANCE.md", "source_hash": "58756f22cb570da3f2009023f3571b5eb9f0661acc0a30c4567e8da45307e004", "destination_hash": "58756f22cb570da3f2009023f3571b5eb9f0661acc0a30c4567e8da45307e004", "status": "COPIED"},    {"file": "PHASE_5_EXECUTIVE_SUMMARY.md", "source_hash": "6172cb5e00e7305fe4835adab5838ee6ab8a9e96f5ef2fc1f7477384918dc2ea", "destination_hash": "6172cb5e00e7305fe4835adab5838ee6ab8a9e96f5ef2fc1f7477384918dc2ea", "status": "COPIED"},    {"file": "PHASE_2_CPU_EXECUTION_ENGINE.asm", "source_hash": "3b7da999b9e0217a375a55a9b1bd1b01787028e0c7ddd2232bc520b4117665e2", "destination_hash": "3b7da999b9e0217a375a55a9b1bd1b01787028e0c7ddd2232bc520b4117665e2", "status": "COPIED"},    {"file": "PHASE_6_INTEGRATION_GUIDE.md", "source_hash": "e07932b09ac068d0569fe0702d969de94a00ce7171de88758da97fbef42bb18a", "destination_hash": "e07932b09ac068d0569fe0702d969de94a00ce7171de88758da97fbef42bb18a", "status": "COPIED"},    {"file": "PHASE_5_IMPLEMENTATION_GUIDE.md", "source_hash": "9f7af423d656f9a9fdb424e1433312828486e6d39fc9b9e0b1647abf543b7786", "destination_hash": "9f7af423d656f9a9fdb424e1433312828486e6d39fc9b9e0b1647abf543b7786", "status": "COPIED"},    {"file": "PHASE_6_ARTIFACT_SCHEMAS.md", "source_hash": "42845352c245a9cec54380b71b0153bf073a52e571fbf55a7dd6d2b50088066c", "destination_hash": "42845352c245a9cec54380b71b0153bf073a52e571fbf55a7dd6d2b50088066c", "status": "COPIED"},    {"file": "PHASE_7_VISUALIZATION_FORMAL_VERIFICATION.md", "source_hash": "4af65600c3c7d88627c1bb10ce9fc049bf58959ca7cc898102f4a61cfcf36017", "destination_hash": "4af65600c3c7d88627c1bb10ce9fc049bf58959ca7cc898102f4a61cfcf36017", "status": "COPIED"},    {"file": "PHASE_6_FORMAL_VERIFICATION_FRAMEWORK.md", "source_hash": "ca75a3102326d3917590faf1a878755a66f2a34f9e101ff971c70b6c59df4cff", "destination_hash": "ca75a3102326d3917590faf1a878755a66f2a34f9e101ff971c70b6c59df4cff", "status": "COPIED"},    {"file": "PHASE_6_GPU_VALIDATION_FRAMEWORK.md", "source_hash": "392bba1e567fa8e0b8ac1e37fc49e748a6a436b4f866e125a25a63a3dcbd9bbb", "destination_hash": "392bba1e567fa8e0b8ac1e37fc49e748a6a436b4f866e125a25a63a3dcbd9bbb", "status": "COPIED"},    {"file": "PHASE_5_INDEX.md", "source_hash": "b10af3be6adfc36efc68c994ffb3c97d442664cbbcc2b590ae6be336eb551ea7", "destination_hash": "b10af3be6adfc36efc68c994ffb3c97d442664cbbcc2b590ae6be336eb551ea7", "status": "COPIED"},    {"file": "PHASE_7_VISUAL_EVIDENCE_VALIDATION.md", "source_hash": "07060c35060d703316189eb65fd4dfc48dff4b8b23790e12136f9d429c2bdaea", "destination_hash": "07060c35060d703316189eb65fd4dfc48dff4b8b23790e12136f9d429c2bdaea", "status": "COPIED"},    {"file": "PHASE_7_INTERACTIVE_VISUALIZATION.md", "source_hash": "d43ef4c00eda3697c3624458cd8dd27f268a917cea8e6dcfae29a4ed586507a4", "destination_hash": "d43ef4c00eda3697c3624458cd8dd27f268a917cea8e6dcfae29a4ed586507a4", "status": "COPIED"},    {"file": "PHASE_7_TECHNICAL_SUMMARY.md", "source_hash": "4ed639ef12e82b41f20aed7d2865c4eecb1682894441d8967320439b054e2608", "destination_hash": "4ed639ef12e82b41f20aed7d2865c4eecb1682894441d8967320439b054e2608", "status": "COPIED"},    {"file": "PHASE_6_GPU_WORM_SPECIFICATION.md", "source_hash": "2d457ad8f19546dc8e0eec64e0e11dfb3351d34ade6631795cfd8f0571197992", "destination_hash": "2d457ad8f19546dc8e0eec64e0e11dfb3351d34ade6631795cfd8f0571197992", "status": "COPIED"},    {"file": "PHASE_5_BEHAVIORAL_VALIDATION_FRAMEWORK.md", "source_hash": "22aa13c5a34603bdcaf9b4ad70dc6d551d6a0af15d9bf0f11779ee841471db5b", "destination_hash": "22aa13c5a34603bdcaf9b4ad70dc6d551d6a0af15d9bf0f11779ee841471db5b", "status": "COPIED"},    {"file": "PHASE_2_COMPLETION_REPORT.md", "source_hash": "89ef598cf22734f314aa9da3c104e558a8258fc0d96075978e6a13fce103aba1", "destination_hash": "89ef598cf22734f314aa9da3c104e558a8258fc0d96075978e6a13fce103aba1", "status": "COPIED"},    {"file": "PHASE_4_DESIGN_COMPLETE.md", "source_hash": "ec169145aed27ee91601945f53265939213b6318a3bd28cbe34272ce2c57b28a", "destination_hash": "ec169145aed27ee91601945f53265939213b6318a3bd28cbe34272ce2c57b28a", "status": "UNCHANGED"}
   ]
 }
