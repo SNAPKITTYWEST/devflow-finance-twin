@@ -1,50 +1,29 @@
 # Publication Report
 
-**Timestamp:** 2026-09-14T19:56:05Z
+**Timestamp:** 2026-09-14T20:08:54Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 25 |
-| Files Added | 24 |
+| Files Discovered | 4 |
+| Files Added | 3 |
 | Files Modified | 0 |
-| Files Unchanged | 1 |
-| Files Conflicted | 0 |
+| Files Unchanged | 0 |
+| Files Conflicted | 1 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `docs/PHASE_2_COMPLETION_REPORT.md`
-- `assembly-120-strict-model/PHASE_2_CPU_EXECUTION_ENGINE.asm`
-- `docs/PHASE_5_BEHAVIORAL_VALIDATION_FRAMEWORK.md`
-- `docs/PHASE_5_DATA_STRUCTURES.md`
-- `docs/PHASE_5_EXECUTION_MODEL.md`
-- `docs/PHASE_5_EXECUTIVE_SUMMARY.md`
-- `docs/PHASE_5_IMPLEMENTATION_GUIDE.md`
-- `docs/PHASE_5_INDEX.md`
-- `docs/PHASE_6_ARTIFACT_SCHEMAS.md`
-- `docs/PHASE_6_ATTACK_EXECUTION_PROTOCOLS.md`
-- `docs/PHASE_6_FORMAL_VERIFICATION_FRAMEWORK.md`
-- `docs/PHASE_6_GPU_VALIDATION_FRAMEWORK.md`
-- `docs/PHASE_6_GPU_WORM_SPECIFICATION.md`
-- `docs/PHASE_6_INTEGRATION_GUIDE.md`
-- `docs/PHASE_7_EXECUTIVE_SUMMARY.md`
-- `docs/PHASE_7_GPU_COMPUTE_KERNELS.md`
-- `docs/PHASE_7_INDEX.md`
-- `docs/PHASE_7_INTERACTIVE_VISUALIZATION.md`
-- `docs/PHASE_7_PROJECTION_ENGINE_SPECIFICATION.md`
-- `docs/PHASE_7_TECHNICAL_SUMMARY.md`
-- `docs/PHASE_7_VISUALIZATION_FORMAL_VERIFICATION.md`
-- `docs/PHASE_7_VISUALIZATION_WORM_PROVENANCE.md`
-- `docs/PHASE_7_VISUAL_EVIDENCE_VALIDATION.md`
-- `assembly-120-strict-model/firmware.asm`
+- `assembly-120-strict-model/08_neural_accelerator_engine.asm`
+- `assembly-120-strict-model/15_scheduler.asm`
+- `src/PHASE_2_MANIFEST.txt`
 
 ## Files Unchanged
-- `PHASE_4_DESIGN_COMPLETE.md -> docs/PHASE_4_DESIGN_COMPLETE.md [IDENTICAL]`
+_None_
 
 ## Files Conflicted
-_None_
+- `CONFLICT: PHASE_2_CPU_EXECUTION_ENGINE.asm -> assembly-120-strict-model/PHASE_2_CPU_EXECUTION_ENGINE.asm | SRC_HASH=840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25 DEST_HASH=3b7da999b9e0217a375a55a9b1bd1b01787028e0c7ddd2232bc520b4117665e2`
 
 ## Files Rejected
 _None_
