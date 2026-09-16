@@ -1,4 +1,19 @@
-/* ledger.c — Fibonacci-indexed braid ledger */
+﻿/* ========================================================================
+ * SOVEREIGN LEVIATHAN NODE LICENSE
+ * License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ * Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ * ========================================================================
+ *
+ * This file is a covered work under the GNU Affero General Public License,
+ * version 3, together with the Sovereign Leviathan additional terms.
+ *
+ * Hark, though this node be but a spark,
+ * Its covenant endureth through the dark.
+ *
+ * Ignorantia juris non excusat.
+ * ======================================================================== */
+
+/* ledger.c â€” Fibonacci-indexed braid ledger */
 #include <stdint.h>
 #include <string.h>
 
@@ -77,7 +92,7 @@ int append(ledger_t *L, uint8_t n, uint8_t op) {
     e->prev = n ? L->e[n-1].state : 0;
     e->op = op;
 
-    /* schedule: Fibonacci → braid */
+    /* schedule: Fibonacci â†’ braid */
     uint16_t f = FIB[n];
     e->word.len = f % (MAXW+1);
     if (e->word.len > MAXW) e->word.len = MAXW;

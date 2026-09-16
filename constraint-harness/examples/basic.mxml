@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<mxml version="1.0">
+  <runtime id="basic-example">
+    <limits>
+      <max_workers>4</max_workers>
+      <max_revisions>2</max_revisions>
+      <timeout_seconds>30</timeout_seconds>
+    </limits>
+    <constitution>
+      <axiom ref="authorization"/>
+      <axiom ref="schema"/>
+      <axiom ref="provenance"/>
+    </constitution>
+    <commands>
+      <command id="py" type="python" isolation="process"/>
+    </commands>
+    <tasks>
+      <task id="t1" command="py">
+        <input>
+          <code>print(2 + 2)</code>
+        </input>
+      </task>
+    </tasks>
+  </runtime>
+</mxml>

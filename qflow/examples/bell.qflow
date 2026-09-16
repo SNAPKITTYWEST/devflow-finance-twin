@@ -1,0 +1,22 @@
+// Qflow example: Bell state circuit
+// Demonstrates first-class circuits, allocation, gates, and return.
+
+circuit bell() -> Circuit {
+    q : Qubit[2] = allocate(2)
+    H(q[0])
+    CNOT(q[0], q[1])
+    return q
+}
+
+// Higher-order usage
+circuit doubled() -> Circuit {
+    a = bell()
+    b = bell()
+    return a || b
+}
+
+-- Introspection (will be fully typed later)
+c = bell()
+w = width(c)
+d = depth(c)
+g = gate_count(c)

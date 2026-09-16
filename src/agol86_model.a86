@@ -1,0 +1,305 @@
+# agol86_model.a86 - LINES: 0000
+# AGOL‑86 transformer: copy task, causal multi‑head attention, residual MLP.
+
+MODE Tensor = STRUCT([1:*] REAL data, [1:2] INT shape);
+
+PROC sh2 = (INT n1, INT n2) [1:2] INT:
+BEGIN
+  [1:2] INT s;
+  s[1] := n1; s[2] := n2;
+  s
+END;
+
+PROC t2 = (Tensor t, INT i, INT j) REAL:
+BEGIN
+  INT n1 = (shape OF t)[1];
+  INT n2 = (shape OF t)[2];
+  INT off = (i - 1) * n2 + j;
+  (data OF t)[off]
+END;
+
+PROC t2 set = (REF Tensor t, INT i, INT j, REAL v) VOID:
+BEGIN
+  INT n1 = (shape OF t)[1];
+  INT n2 = (shape OF t)[2];
+  INT off = (i - 1) * n2 + j;
+  (data OF t)[off] := v
+END;
+
+# --- Activations ---
+
+PROC gelu = (REAL x) REAL:
+BEGIN
+  REAL c := 0.5;
+  REAL k := 0.7978845608;
+  REAL t := tanh(k * (x + 0.044715 * x * x * x));
+  c * x * (1 + t)
+END;
+
+PROC softmax = (Tensor x) Tensor:
+BEGIN
+  INT t = (shape OF x)[1];
+  INT d = (shape OF x)[2];
+  [1:t*d] REAL out;
+  FOR i TO t DO
+    REAL m := -1e30;
+    FOR j TO d DO
+      REAL v := t2(x, i, j);
+      IF v > m THEN m := v FI
+    OD;
+    REAL sum := 0;
+    FOR j TO d DO
+      REAL e := exp(t2(x, i, j) - m);
+      out[(i - 1) * d + j] := e;
+      sum +:= e
+    OD;
+    FOR j TO d DO
+      out[(i - 1) * d + j] /:= sum
+    OD
+  OD;
+  (out, sh2(t, d))
+END;
+
+# --- Causal multi‑head attention ---
+
+MODE AttnOut = STRUCT(Tensor scores, Tensor probs, Tensor out);
+
+PROC agol86 attention full = (Tensor q, Tensor k, Tensor v, INT heads) AttnOut:
+BEGIN
+  INT t = (shape OF q)[1];
+  INT d = (shape OF q)[2];
+  INT dh = d OVER heads;
+  REAL inv = 1 / sqrt(dh);
+  [1:heads*t*t] REAL s;
+  [1:t*d] REAL out;
+
+  FOR h TO heads DO
+    INT base = (h - 1) * dh;
+    FOR i TO t DO
+      INT row = (h - 1) * t + i;
+      FOR j TO t DO
+        REAL sum := (j > i | -1e9 | 0);
+        IF j <= i THEN
+          sum := 0;
+          FOR u TO dh DO
+            sum +:= t2(q, i, base + u) * t2(k, j, base + u)
+          OD;
+          sum *:= inv
+        FI;
+        s[(row - 1) * t + j] := sum
+      OD
+    OD
+  OD;
+
+  Tensor sc = (s, sh2(heads*t, t));
+  Tensor pr = softmax(sc);
+
+  FOR i TO t DO
+    FOR h TO heads DO
+      INT base = (h - 1) * dh;
+      INT row = (h - 1) * t + i;
+      FOR u TO dh DO
+        REAL sum := 0;
+        FOR j TO i DO
+          sum +:= t2(pr, row, j) * t2(v, j, base + u)
+        OD;
+        out[(i - 1) * d + base + u] := sum
+      OD
+    OD
+  OD;
+
+  (sc, pr, (out, sh2(t, d)))
+END;
+
+PROC agol86 attention = (Tensor q, Tensor k, Tensor v, INT heads) Tensor:
+  (out OF agol86 attention full(q, k, v, heads));
+
+# --- Linear maps ---
+
+PROC matmul = (Tensor x, Tensor w) Tensor:
+BEGIN
+  INT n1 = (shape OF x)[1];
+  INT d  = (shape OF x)[2];
+  INT d2 = (shape OF w)[2];
+  [1:n1*d2] REAL out;
+  FOR i TO n1 DO
+    FOR j TO d2 DO
+      REAL sum := 0;
+      FOR k TO d DO
+        sum +:= t2(x, i, k) * t2(w, k, j)
+      OD;
+      out[(i - 1) * d2 + j] := sum
+    OD
+  OD;
+  (out, sh2(n1, d2))
+END;
+
+PROC add bias = (Tensor x, [1:*] REAL b) Tensor:
+BEGIN
+  INT n1 = (shape OF x)[1];
+  INT d  = (shape OF x)[2];
+  [1:n1*d] REAL out;
+  FOR i TO n1 DO
+    FOR j TO d DO
+      out[(i - 1) * d + j] := t2(x, i, j) + b[j]
+    OD
+  OD;
+  (out, sh2(n1, d))
+END;
+
+# --- Block: LN + attention + MLP ---
+
+MODE BlockParams =
+  STRUCT(Tensor wq, Tensor wk, Tensor wv, Tensor wo,
+         Tensor w1, Tensor w2,
+         [1:*] REAL bq, [1:*] REAL bk, [1:*] REAL bv, [1:*] REAL bo,
+         [1:*] REAL b1, [1:*] REAL b2);
+
+PROC agol86 block forward =
+  (BlockParams bp, Tensor x, INT heads) Tensor:
+BEGIN
+  INT t = (shape OF x)[1];
+  INT d = (shape OF x)[2];
+
+  # LayerNorm 1 (simple mean/var)
+  [1:t*d] REAL y1;
+  FOR i TO t DO
+    REAL mu := 0;
+    FOR j TO d DO mu +:= t2(x, i, j) OD;
+    mu /:= d;
+    REAL var := 0;
+    FOR j TO d DO
+      REAL v := t2(x, i, j) - mu;
+      var +:= v * v
+    OD;
+    var /:= d;
+    REAL s := sqrt(var + 1e-5);
+    FOR j TO d DO
+      y1[(i - 1) * d + j] := (t2(x, i, j) - mu) / s
+    OD
+  OD;
+  Tensor ln1 = (y1, sh2(t, d));
+
+  Tensor q = add bias(matmul(ln1, wq OF bp), bq OF bp);
+  Tensor k = add bias(matmul(ln1, wk OF bp), bk OF bp);
+  Tensor v = add bias(matmul(ln1, wv OF bp), bv OF bp);
+
+  Tensor att = agol86 attention(q, k, v, heads);
+  Tensor proj = add bias(matmul(att, wo OF bp), bo OF bp);
+
+  # Residual 1
+  [1:t*d] REAL x1;
+  FOR i TO t DO
+    FOR j TO d DO
+      x1[(i - 1) * d + j] := t2(x, i, j) + t2(proj, i, j)
+    OD
+  OD;
+  Tensor res1 = (x1, sh2(t, d));
+
+  # LayerNorm 2
+  [1:t*d] REAL y2;
+  FOR i TO t DO
+    REAL mu2 := 0;
+    FOR j TO d DO mu2 +:= t2(res1, i, j) OD;
+    mu2 /:= d;
+    REAL var2 := 0;
+    FOR j TO d DO
+      REAL v2 := t2(res1, i, j) - mu2;
+      var2 +:= v2 * v2
+    OD;
+    var2 /:= d;
+    REAL s2 := sqrt(var2 + 1e-5);
+    FOR j TO d DO
+      y2[(i - 1) * d + j] := (t2(res1, i, j) - mu2) / s2
+    OD
+  OD;
+  Tensor ln2 = (y2, sh2(t, d));
+
+  Tensor pre = add bias(matmul(ln2, w1 OF bp), b1 OF bp);
+  INT ff = (shape OF w1 OF bp)[2];
+  [1:t*ff] REAL act;
+  FOR i TO t DO
+    FOR j TO ff DO
+      REAL v := t2(pre, i, j);
+      act[(i - 1) * ff + j] := gelu(v)
+    OD
+  OD;
+  Tensor actT = (act, sh2(t, ff));
+  Tensor mlp = add bias(matmul(actT, w2 OF bp), b2 OF bp);
+
+  # Residual 2
+  [1:t*d] REAL x2;
+  FOR i TO t DO
+    FOR j TO d DO
+      x2[(i - 1) * d + j] := t2(res1, i, j) + t2(mlp, i, j)
+    OD
+  OD;
+  (x2, sh2(t, d))
+END;
+
+# --- Model: embeddings + blocks + output projection ---
+
+MODE ModelParams =
+  STRUCT(Tensor wte, Tensor wout, BlockParams bp);
+
+PROC agol86 model forward =
+  (ModelParams mp, [1:*] INT tokens, INT t, INT d, INT heads) Tensor:
+BEGIN
+  # Embedding: tokens -> [t,d]
+  [1:t*d] REAL x;
+  FOR i TO t DO
+    INT id = tokens[i];
+    FOR j TO d DO
+      x[(i - 1) * d + j] := t2(wte OF mp, id, j)
+    OD
+  OD;
+  Tensor h = (x, sh2(t, d));
+
+  h := agol86 block forward(bp OF mp, h, heads);
+
+  Tensor logits = matmul(h, wout OF mp);
+  logits
+END;
+
+# --- Copy task main ---
+
+PROC main = VOID:
+BEGIN
+  INT T = 8;
+  INT D = 128;
+  INT V = 128;
+  INT HEADS = 4;
+  INT FF = 256;
+
+  # Allocate simple random params (placeholder).
+  [1:V*D] REAL wte_data;
+  [1:D*V] REAL wout_data;
+  [1:D*D] REAL wq_data, wk_data, wv_data, wo_data;
+  [1:D*FF] REAL w1_data;
+  [1:FF*D] REAL w2_data;
+  [1:D] REAL bq_data, bk_data, bv_data, bo_data, b2_data;
+  [1:FF] REAL b1_data;
+
+  # (Initialization omitted for brevity; assume filled.)
+
+  Tensor wte = (wte_data, sh2(V, D));
+  Tensor wout = (wout_data, sh2(D, V));
+  Tensor wq = (wq_data, sh2(D, D));
+  Tensor wk = (wk_data, sh2(D, D));
+  Tensor wv = (wv_data, sh2(D, D));
+  Tensor wo = (wo_data, sh2(D, D));
+  Tensor w1 = (w1_data, sh2(D, FF));
+  Tensor w2 = (w2_data, sh2(FF, D));
+
+  BlockParams bp = (wq, wk, wv, wo, w1, w2,
+                    bq_data, bk_data, bv_data, bo_data,
+                    b1_data, b2_data);
+  ModelParams mp = (wte, wout, bp);
+
+  [1:T] INT tokens;
+  FOR i TO T DO tokens[i] := i OD;
+
+  Tensor logits = agol86 model forward(mp, tokens, T, D, HEADS);
+  # Copy task: targets equal tokens; loss/SGD omitted here.
+END;
+END

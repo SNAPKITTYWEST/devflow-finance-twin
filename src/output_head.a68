@@ -1,0 +1,243 @@
+! output_head.a68
+! OUTPUT PROJECTION + LOGITS + LOSS COMPONENT — OSS 1230
+! TARGET: FINAL_PROJECTION + CROSS_ENTROPY_LOSS
+! MATH: logits = X * W_unembed^T, loss = -log(softmax(logits)[target])
+! DEPENDENCY: tensor.a68, embedding.a68
+! LICENSE: AGPL-3.0-or-later
+MODULE output_head;
+
+  IMPORT tensor;
+
+  REAL OUT_EPSILON := 1.0e-12;
+  REAL OUT_INF     := 1.0e9;
+
+  ! ============================================================
+  ! SECTION 1: TYPES
+  ! ============================================================
+  ! OutParams: unembedding projection (D_model x V)
+  ! Can be tied to embedding matrix (weight tying) or separate
+  MODE OutParams = STRUCT(
+    [] REAL w_out,
+    INT d_model,
+    INT vocab_size,
+    BOOL tied
+  );
+
+  ! LogitsResult: output logits (N x V) and softmax probs (N x V)
+  MODE LogitsResult = STRUCT(
+    [] REAL logits,
+    [] REAL probs,
+    INT n,
+    INT vocab_size
+  );
+
+  ! ============================================================
+  ! SECTION 2: LOGIT COMPUTATION
+  ! ============================================================
+  ! compute_logits: X (N x D) * W_out (D x V) -> logits (N x V)
+  PROC compute_logits = (OutParams p, [] REAL x, INT n) LogitsResult:
+  BEGIN
+    INT d := p.d_model; INT v := p.vocab_size;
+    [] REAL logits := HEAP [n * v] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR j FROM 1 TO v DO
+        REAL acc := 0.0;
+        FOR k FROM 1 TO d DO
+          acc +:= x[i * d + k] * p.w_out[(k - 1) * v + j]
+        OD;
+        logits[i * v + j] := acc
+      OD
+    OD;
+    ! Softmax over vocab dimension for each position
+    [] REAL probs := HEAP [n * v] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      REAL maxv := logits[i * v + 1];
+      FOR j FROM 2 TO v DO
+        IF logits[i * v + j] > maxv THEN maxv := logits[i * v + j] FI
+      OD;
+      REAL sum := 0.0;
+      FOR j FROM 1 TO v DO
+        REAL ex := EXP(logits[i * v + j] - maxv);
+        probs[i * v + j] := ex;
+        sum +:= ex
+      OD;
+      IF sum > OUT_EPSILON THEN
+        FOR j FROM 1 TO v DO probs[i * v + j] /:= sum OD
+      ELSE
+        FOR j FROM 1 TO v DO probs[i * v + j] := 1.0 / FLOAT(v) OD
+      FI
+    OD;
+    LogitsResult(logits, probs, n, v)
+  END;
+
+  ! ============================================================
+  ! SECTION 3: CROSS-ENTROPY LOSS
+  ! ============================================================
+  ! cross_entropy_loss: -1/N * sum_i log(probs[i, target[i]])
+  ! Input:  probs : [] REAL (N x V), targets : [] INT (N)
+  ! Output: REAL (scalar loss)
+  ! Boundary: if probs[i, target[i]] < EPSILON, clip to EPSILON
+  PROC cross_entropy_loss = ([] REAL probs, [] INT targets, INT n, INT v) REAL:
+  BEGIN
+    REAL loss := 0.0;
+    FOR i FROM 0 TO n - 1 DO
+      INT t := targets[i + 1];
+      IF t >= 1 AND t <= v THEN
+        REAL p := probs[i * v + t];
+        IF p < OUT_EPSILON THEN p := OUT_EPSILON FI;
+        loss -:= LOG(p)
+      FI
+    OD;
+    loss / FLOAT(n)
+  END;
+
+  ! cross_entropy_backward: dL/dlogits[i,j] = (probs[i,j] - 1{j=target[i]}) / N
+  PROC cross_entropy_backward = ([] REAL probs, [] INT targets, INT n, INT v) [] REAL:
+  BEGIN
+    [] REAL dl := HEAP [n * v] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      INT t := targets[i + 1];
+      FOR j FROM 1 TO v DO
+        dl[i * v + j] := probs[i * v + j] / FLOAT(n)
+      OD;
+      IF t >= 1 AND t <= v THEN
+        dl[i * v + t] -:= 1.0 / FLOAT(n)
+      FI
+    OD;
+    dl
+  END;
+
+  ! ============================================================
+  ! SECTION 4: BACKWARD THROUGH PROJECTION
+  ! ============================================================
+  ! out_backward_x: dL/dX = dL/dlogits * W_out^T  (N x D)
+  PROC out_backward_x = (OutParams p, [] REAL dl_dlogits, INT n) [] REAL:
+  BEGIN
+    INT d := p.d_model; INT v := p.vocab_size;
+    [] REAL dl_dx := HEAP [n * d] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR k FROM 1 TO d DO
+        REAL acc := 0.0;
+        FOR j FROM 1 TO v DO
+          acc +:= dl_dlogits[i * v + j] * p.w_out[(k - 1) * v + j]
+        OD;
+        dl_dx[i * d + k] := acc
+      OD
+    OD;
+    dl_dx
+  END;
+
+  ! out_backward_w: dL/dW_out = X^T * dL/dlogits  (D x V)
+  PROC out_backward_w = ([] REAL x, [] REAL dl_dlogits, INT n, INT d, INT v) [] REAL:
+  BEGIN
+    [] REAL dw := HEAP [d * v] REAL;
+    FOR k FROM 1 TO d DO
+      FOR j FROM 1 TO v DO
+        REAL acc := 0.0;
+        FOR i FROM 0 TO n - 1 DO
+          acc +:= x[i * d + k] * dl_dlogits[i * v + j]
+        OD;
+        dw[(k - 1) * v + j] := acc
+      OD
+    OD;
+    dw
+  END;
+
+  ! ============================================================
+  ! SECTION 5: INITIALIZATION
+  ! ============================================================
+  PROC out_params_new = (INT d_model, INT vocab_size) OutParams:
+  BEGIN
+    [] REAL w := HEAP [d_model * vocab_size] REAL;
+    FOR i FROM 1 TO d_model * vocab_size DO w[i] := 0.0 OD;
+    OutParams(w, d_model, vocab_size, FALSE)
+  END;
+
+  PROC out_params_normal_init = (REF OutParams p) VOID:
+  BEGIN
+    INT total := p.d_model * p.vocab_size;
+    REAL stddev := 0.02;
+    FOR i FROM 1 TO total DO
+      REAL u1 := RANDOM + OUT_EPSILON;
+      REAL u2 := RANDOM;
+      p.w_out[i] := stddev * SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159265 * u2)
+    OD
+  END;
+
+  ! ============================================================
+  ! SECTION 6: ACCURACY METRIC
+  ! ============================================================
+  ! top1_accuracy: fraction of positions where argmax(probs) = target
+  PROC top1_accuracy = ([] REAL probs, [] INT targets, INT n, INT v) REAL:
+  BEGIN
+    INT correct := 0;
+    FOR i FROM 0 TO n - 1 DO
+      INT best := 1;
+      FOR j FROM 2 TO v DO
+        IF probs[i * v + j] > probs[i * v + best] THEN best := j FI
+      OD;
+      IF best = targets[i + 1] THEN correct +:= 1 FI
+    OD;
+    FLOAT(correct) / FLOAT(n)
+  END;
+
+  ! ============================================================
+  ! SECTION 7: TESTS
+  ! ============================================================
+  PROC test_logits_shape = () BOOL:
+  BEGIN
+    OutParams p := out_params_new(4, 8);
+    out_params_normal_init(p);
+    [] REAL x := HEAP [3 * 4] REAL;
+    FOR i FROM 1 TO 12 DO x[i] := RANDOM OD;
+    LogitsResult r := compute_logits(p, x, 3);
+    r.n = 3 AND r.vocab_size = 8 AND UPB r.logits = 24
+  END;
+
+  PROC test_probs_sum_one = () BOOL:
+  BEGIN
+    OutParams p := out_params_new(4, 8);
+    out_params_normal_init(p);
+    [] REAL x := HEAP [4] REAL;
+    FOR i FROM 1 TO 4 DO x[i] := RANDOM OD;
+    LogitsResult r := compute_logits(p, x, 1);
+    REAL s := 0.0;
+    FOR j FROM 1 TO 8 DO s +:= r.probs[j] OD;
+    ABS(s - 1.0) < 1.0e-6
+  END;
+
+  PROC test_loss_positive = () BOOL:
+  BEGIN
+    OutParams p := out_params_new(4, 8);
+    out_params_normal_init(p);
+    [] REAL x := HEAP [4] REAL;
+    FOR i FROM 1 TO 4 DO x[i] := RANDOM OD;
+    LogitsResult r := compute_logits(p, x, 1);
+    [] INT targets := HEAP [1] INT; targets[1] := 3;
+    REAL loss := cross_entropy_loss(r.probs, targets, 1, 8);
+    loss > 0.0
+  END;
+
+  PROC test_grad_sums_correct = () BOOL:
+  BEGIN
+    OutParams p := out_params_new(2, 4);
+    [] REAL x := HEAP [2] REAL; x[1] := 0.5; x[2] := 0.5;
+    LogitsResult r := compute_logits(p, x, 1);
+    [] INT targets := HEAP [1] INT; targets[1] := 2;
+    [] REAL dl := cross_entropy_backward(r.probs, targets, 1, 4);
+    REAL s := 0.0;
+    FOR j FROM 1 TO 4 DO s +:= dl[j] OD;
+    ABS(s) < 1.0e-6
+  END;
+
+  PROC run_output_tests = () INT:
+  BEGIN
+    BOOL all :=
+      test_logits_shape() AND
+      test_probs_sum_one() AND
+      test_loss_positive() AND
+      test_grad_sums_correct();
+    IF all THEN 0 ELSE -1 FI
+  END;
+
+END ! MODULE output_head

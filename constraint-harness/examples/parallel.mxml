@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<mxml version="1.0">
+  <runtime id="parallel-example">
+    <limits>
+      <max_workers>4</max_workers>
+      <max_revisions>1</max_revisions>
+      <timeout_seconds>30</timeout_seconds>
+    </limits>
+    <constitution>
+      <axiom ref="authorization"/>
+      <axiom ref="schema"/>
+      <axiom ref="provenance"/>
+    </constitution>
+    <commands>
+      <command id="py" type="python" isolation="process"/>
+    </commands>
+    <tasks>
+      <task id="t1" command="py">
+        <input><code>print("A")</code></input>
+      </task>
+      <task id="t2" command="py">
+        <input><code>print("B")</code></input>
+      </task>
+      <task id="t3" command="py" depends_on="t1,t2">
+        <input><code>print("C after A and B")</code></input>
+      </task>
+    </tasks>
+  </runtime>
+</mxml>

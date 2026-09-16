@@ -1,3 +1,18 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 module SGL (
     -- * Types
     Angle(..), Length(..), Radius(..),
@@ -202,8 +217,8 @@ showHaversine (Length d) = show (round d :: Int) ++ " km"
 
 -- | Show bearing result
 showBearing :: Angle -> String
-showBearing (Angle a) = show (round a :: Int) ++ "°"
+showBearing (Angle a) = show (round a :: Int) ++ "Â°"
 
 -- | Show area result
 showArea :: Double -> String
-showArea a = show (round a :: Int) ++ " km²"
+showArea a = show (round a :: Int) ++ " kmÂ²"

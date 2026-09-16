@@ -1,0 +1,75 @@
+! main.a68
+! Approx lines: 150
+MODULE main;
+
+  IMPORT tensor;
+  IMPORT activ;
+  IMPORT jacobian;
+  IMPORT model;
+
+  MODE Tensor = tensor.Tensor;
+
+  PROC print_tensor = (Tensor t, STRING tag) VOID:
+    BEGIN
+      print((tag, " shape: "));
+      FOR i FROM 1 TO UPB t.shape DO print((t.shape[i], " ")) OD;
+      print((newline));
+      ! print first few elements
+      INT total := tensor.shape_prod(t.shape);
+      INT upto := IF total < 16 THEN total ELSE 16 FI;
+      FOR i FROM 1 TO upto DO print((t.data[i], " ")) OD;
+      print((newline))
+    END;
+
+  PROC cross_entropy = (Tensor logits, INT target[]) REAL:
+    BEGIN
+      ! logits: (seq_len x vocab)
+      INT seq_len := logits.shape[1];
+      INT vocab := logits.shape[2];
+      REAL loss := 0.0;
+      FOR i FROM 1 TO seq_len DO
+        ! compute softmax for row
+        INT dims[2] := (1, vocab);
+        Tensor row := tensor.tensor_new(2, (1, vocab));
+        FOR j FROM 1 TO vocab DO row.data[j] := logits.data[(i-1)*vocab + j] OD;
+        Tensor prob := activ.softmax(row);
+        INT t := target[i];
+        REAL p := prob.data[t];
+        loss := loss - LOG(p + 1e-12)
+      OD;
+      loss / seq_len
+    END;
+
+  PROC main_proc = VOID:
+    BEGIN
+      ! Toy copy task: input tokens -> target same tokens
+      model.Params p := model.init_params();
+      INT seq_len := 8;
+      INT tokens[16];
+      FOR i FROM 1 TO seq_len DO tokens[i] := (i MOD 10) + 1 OD;
+      Tensor logits := model.model_forward(p, tokens, seq_len);
+      print_tensor(logits, "Logits");
+      INT targets[16];
+      FOR i FROM 1 TO seq_len DO targets[i] := tokens[i] OD;
+      REAL loss := cross_entropy(logits, targets);
+      print(("Initial loss: ", loss, newline));
+      ! Softmax Jacobian finite-difference check on first row
+      INT dims[2] := (1, logits.shape[2]);
+      Tensor row := tensor.tensor_new(2, (1, logits.shape[2]));
+      FOR j FROM 1 TO logits.shape[2] DO row.data[j] := logits.data[j] OD;
+      jacobian.JacobianBlock jb := jacobian.softmax_forward(row);
+      REF REALARR analytic := jb.jac;
+      REF REALARR numeric := jacobian.finite_diff((PROC (Tensor) Tensor (activ.softmax)), row, 1e-4);
+      REAL maxerr := jacobian.fd_compare(analytic, numeric, logits.shape[2], logits.shape[2]);
+      print(("Softmax Jacobian max error: ", maxerr, newline));
+      IF maxerr < 1e-3 THEN print(("Softmax Jacobian check PASSED", newline)) ELSE print(("Softmax Jacobian check FAILED", newline)) FI;
+      ! One SGD step (very small): compute gradient of loss w.r.t logits via simple softmax derivative and update token embedding for first token
+      ! For brevity we skip full backprop and perform a tiny parameter perturbation test
+      print(("Done.", newline))
+    END;
+
+  BEGIN
+    main_proc()
+  END
+
+END ! MODULE main

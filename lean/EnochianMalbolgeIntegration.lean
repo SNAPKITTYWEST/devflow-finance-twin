@@ -1,10 +1,27 @@
+﻿/-
+ ========================================================================
+ SOVEREIGN LEVIATHAN NODE LICENSE
+ License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ ========================================================================
+
+ This file is a covered work under the GNU Affero General Public License,
+ version 3, together with the Sovereign Leviathan additional terms.
+
+ Hark, though this node be but a spark,
+ Its covenant endureth through the dark.
+
+ Ignorantia juris non excusat.
+ ========================================================================
+-/
+
 -- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
 -- SPDX-License-Identifier: FSL-1.1
--- ┌─────────────────────────────────────────────────────────────────────────────┐
--- │ SOVEREIGN DEED: ENOCHIAN_MALBOLGE_INTEGRATION                               │
--- │ "Call9 Breathes Chaos. Call16 Scans The Abyss."                             │
--- │ DEED_ID: DEED-ENOCHIAN_MALBOLGE_INTEGRATION-075                            │
--- └─────────────────────────────────────────────────────────────────────────────┘
+-- â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+-- â”‚ SOVEREIGN DEED: ENOCHIAN_MALBOLGE_INTEGRATION                               â”‚
+-- â”‚ "Call9 Breathes Chaos. Call16 Scans The Abyss."                             â”‚
+-- â”‚ DEED_ID: DEED-ENOCHIAN_MALBOLGE_INTEGRATION-075                            â”‚
+-- â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 namespace Sovereign.Deeds.EnochianMalbolgeIntegration
 
@@ -20,7 +37,7 @@ structure Call9State where
   drainCount : Nat
   deriving Repr
 
-def call9Execute (s : Call9State) : Call9State × List Nat :=
+def call9Execute (s : Call9State) : Call9State Ã— List Nat :=
   let proc' := malbolgeRun s.malbolgeProc 1000
   let entropy := proc'.entropy
   let drained := if shannonEntropy entropy > 0.20 then [] else entropy
@@ -28,10 +45,10 @@ def call9Execute (s : Call9State) : Call9State × List Nat :=
   ({ s with malbolgeProc := proc', entropyBuffer := Array.ofList drained, drainCount := newDrain }, drained)
 
 theorem call9_preserves_invariants (s : Call9State) :
-    memory_size_invariant s.malbolgeProc →
-    entropy_bound_invariant s.malbolgeProc →
+    memory_size_invariant s.malbolgeProc â†’
+    entropy_bound_invariant s.malbolgeProc â†’
     entropy_bound_invariant (call9Execute s).1.malbolgeProc := by
-  intro h₁ h₂; exact h₂
+  intro hâ‚ hâ‚‚; exact hâ‚‚
 
 structure Call16State where
   malbolgeProc : MalbolgeProcessor
@@ -40,7 +57,7 @@ structure Call16State where
   ptxStream : String
   deriving Repr
 
-def call16Execute (s : Call16State) (targets : List Nat) : Call16State × List String :=
+def call16Execute (s : Call16State) (targets : List Nat) : Call16State Ã— List String :=
   let seededMem := targets.foldl (fun m t => m.update 0 (natToTryte t)) s.malbolgeProc.mem
   let seeded := { s.malbolgeProc with mem := seededMem }
   let proc' := malbolgeRun seeded 5000
@@ -48,10 +65,10 @@ def call16Execute (s : Call16State) (targets : List Nat) : Call16State × List S
   ({ s with malbolgeProc := proc', scanResults := anomalies }, anomalies)
 
 theorem call16_preserves_invariants (s : Call16State) (targets : List Nat) :
-    memory_size_invariant s.malbolgeProc →
-    entropy_bound_invariant s.malbolgeProc →
+    memory_size_invariant s.malbolgeProc â†’
+    entropy_bound_invariant s.malbolgeProc â†’
     entropy_bound_invariant (call16Execute s targets).1.malbolgeProc := by
-  intro h₁ h₂; exact h₂
+  intro hâ‚ hâ‚‚; exact hâ‚‚
 
 theorem integrated_tick_preserves_all (state : Call9State) (tick : Nat) : True := by trivial
 

@@ -1,0 +1,67 @@
+DEFINITION MODULE RetroGPU;
+
+(* Core RetroGPU compiler module *)
+(* Modula-2 interface for the complete compilation pipeline *)
+
+FROM Registers IMPORT RegisterKind, Register;
+
+TYPE
+  CompilerState;
+  RegistryManager;
+
+  VerificationResult = (Success, Failure, Warning);
+
+  MachineModel = RECORD
+    arch : ARRAY [0..15] OF CHAR;
+    warpWidth : INTEGER;
+    maxRegs : INTEGER;
+    sharedMemKB : INTEGER;
+    tensorCores : BOOLEAN;
+    maxThreadsPerBlock : INTEGER;
+  END;
+
+  CompilationResult = RECORD
+    ok : BOOLEAN;
+    message : ARRAY [0..255] OF CHAR;
+  END;
+
+  Kernel;
+
+(* Kernel creation and management *)
+
+PROCEDURE CreateKernel (name: ARRAY OF CHAR): Kernel;
+PROCEDURE DisposeKernel (VAR k: Kernel);
+PROCEDURE ValidateKernel (k: Kernel): VerificationResult;
+
+(* Register allocation *)
+
+PROCEDURE AllocateRegister (k: Kernel; kind: RegisterKind): Register;
+PROCEDURE ReleaseRegister (k: Kernel; r: Register);
+PROCEDURE ValidateRegisterAllocation (k: Kernel): VerificationResult;
+
+(* Compilation pipeline *)
+
+PROCEDURE Compile (k: Kernel; target: MachineModel): CompilationResult;
+PROCEDURE CompileWithTrace (k: Kernel; target: MachineModel;
+                            VAR trace: ARRAY OF CHAR): CompilationResult;
+
+(* Machine model management *)
+
+PROCEDURE LoadHopperModel (): MachineModel;
+PROCEDURE LoadAdaModel (): MachineModel;
+PROCEDURE DescribeMachine (m: MachineModel; VAR desc: ARRAY OF CHAR);
+
+(* Verification *)
+
+PROCEDURE VerifyAll (k: Kernel; m: MachineModel): VerificationResult;
+PROCEDURE VerifyRegisterUsage (k: Kernel): VerificationResult;
+PROCEDURE VerifyMemoryAccess (k: Kernel): VerificationResult;
+PROCEDURE VerifySynchronization (k: Kernel): VerificationResult;
+
+(* Assembly output *)
+
+PROCEDURE EmitAssembly (k: Kernel; filename: ARRAY OF CHAR);
+PROCEDURE EmitSASS (k: Kernel; filename: ARRAY OF CHAR);
+PROCEDURE EmitPTX (k: Kernel; filename: ARRAY OF CHAR);
+
+END RetroGPU.

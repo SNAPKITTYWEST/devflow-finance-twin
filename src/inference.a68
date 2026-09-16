@@ -1,0 +1,266 @@
+! inference.a68
+! INFERENCE ENGINE — OSS 1230
+! TARGET: GREEDY DECODING + TEMPERATURE SAMPLING + TOP-K + TOP-P
+! MATH: greedy: next = argmax(logits); temperature: logits /= T; softmax; sample
+! DEPENDENCY: transformer_model.a68
+! LICENSE: AGPL-3.0-or-later
+MODULE inference;
+
+  IMPORT tensor;
+
+  REAL INF_EPSILON  := 1.0e-12;
+  REAL INF_NEG_BIG  := -1.0e9;
+  INT  INF_MAX_NEW  := 2048;
+  INT  INF_EOS_ID   := 2;
+  INT  INF_BOS_ID   := 1;
+
+  ! ============================================================
+  ! SECTION 1: TYPES
+  ! ============================================================
+  MODE InferenceConfig = STRUCT(
+    REAL temperature,
+    INT top_k,
+    REAL top_p,
+    INT max_new_tokens,
+    INT eos_id,
+    INT bos_id,
+    BOOL greedy,
+    BOOL do_sample
+  );
+
+  MODE GenerationResult = STRUCT(
+    [] INT tokens,
+    INT length,
+    REAL avg_log_prob,
+    BOOL hit_eos
+  );
+
+  PROC default_infer_cfg = () InferenceConfig:
+    InferenceConfig(1.0, 50, 0.9, 256, INF_EOS_ID, INF_BOS_ID, TRUE, FALSE);
+
+  ! ============================================================
+  ! SECTION 2: GREEDY DECODING
+  ! ============================================================
+  ! greedy_next_token: returns argmax of logits over vocab
+  ! Input:  logits : [] REAL (V), vocab_size : INT
+  ! Output: INT — token id with highest logit
+  PROC greedy_next_token = ([] REAL logits, INT vocab_size) INT:
+  BEGIN
+    INT best := 1; REAL best_val := logits[1];
+    FOR j FROM 2 TO vocab_size DO
+      IF logits[j] > best_val THEN best := j; best_val := logits[j] FI
+    OD;
+    best
+  END;
+
+  ! ============================================================
+  ! SECTION 3: TEMPERATURE SCALING
+  ! ============================================================
+  ! apply_temperature: divides all logits by temperature T
+  ! T > 1.0: softer distribution (more random)
+  ! T < 1.0: sharper distribution (more greedy)
+  ! T = 1.0: no change
+  ! T -> 0.0: approaches greedy (argmax)
+  PROC apply_temperature = (REF [] REAL logits, INT v, REAL temperature) VOID:
+  BEGIN
+    IF ABS(temperature - 1.0) > INF_EPSILON THEN
+      REAL inv_t := 1.0 / (temperature MAX INF_EPSILON);
+      FOR j FROM 1 TO v DO logits[j] *:= inv_t OD
+    FI
+  END;
+
+  ! ============================================================
+  ! SECTION 4: SOFTMAX OVER VOCABULARY
+  ! ============================================================
+  PROC vocab_softmax = ([] REAL logits, INT v) [] REAL:
+  BEGIN
+    REAL mx := logits[1];
+    FOR j FROM 2 TO v DO IF logits[j] > mx THEN mx := logits[j] FI OD;
+    [] REAL probs := HEAP [v] REAL;
+    REAL s := 0.0;
+    FOR j FROM 1 TO v DO probs[j] := EXP(logits[j] - mx); s +:= probs[j] OD;
+    IF s > INF_EPSILON THEN FOR j FROM 1 TO v DO probs[j] /:= s OD FI;
+    probs
+  END;
+
+  ! ============================================================
+  ! SECTION 5: TOP-K FILTERING
+  ! ============================================================
+  ! top_k_filter: sets all logits to INF_NEG_BIG except top k
+  ! Input:  logits : REF [] REAL (V), v : INT, k : INT
+  ! Output: VOID (mutates logits in place)
+  PROC top_k_filter = (REF [] REAL logits, INT v, INT k) VOID:
+  BEGIN
+    IF k < v THEN
+      [] REAL sorted := HEAP [v] REAL;
+      FOR j FROM 1 TO v DO sorted[j] := logits[j] OD;
+      FOR i FROM 1 TO v - 1 DO
+        FOR j FROM 1 TO v - i DO
+          IF sorted[j] < sorted[j + 1] THEN
+            REAL tmp := sorted[j]; sorted[j] := sorted[j + 1]; sorted[j + 1] := tmp
+          FI
+        OD
+      OD;
+      REAL threshold := sorted[k];
+      FOR j FROM 1 TO v DO
+        IF logits[j] < threshold THEN logits[j] := INF_NEG_BIG FI
+      OD
+    FI
+  END;
+
+  ! ============================================================
+  ! SECTION 6: TOP-P (NUCLEUS) FILTERING
+  ! ============================================================
+  ! top_p_filter: keeps only tokens whose cumulative probability <= p
+  ! All other tokens set to INF_NEG_BIG
+  PROC top_p_filter = (REF [] REAL logits, INT v, REAL p) VOID:
+  BEGIN
+    [] REAL probs := vocab_softmax(logits, v);
+    [] INT indices := HEAP [v] INT;
+    FOR j FROM 1 TO v DO indices[j] := j OD;
+    FOR i FROM 1 TO v - 1 DO
+      FOR j FROM 1 TO v - i DO
+        IF probs[indices[j]] < probs[indices[j + 1]] THEN
+          INT tmp := indices[j]; indices[j] := indices[j + 1]; indices[j + 1] := tmp
+        FI
+      OD
+    OD;
+    REAL cumsum := 0.0;
+    BOOL cutoff_reached := FALSE;
+    FOR rank FROM 1 TO v DO
+      INT idx := indices[rank];
+      IF NOT cutoff_reached THEN
+        cumsum +:= probs[idx];
+        IF cumsum > p AND rank > 1 THEN cutoff_reached := TRUE FI
+      FI;
+      IF cutoff_reached THEN logits[idx] := INF_NEG_BIG FI
+    OD
+  END;
+
+  ! ============================================================
+  ! SECTION 7: CATEGORICAL SAMPLING
+  ! ============================================================
+  ! sample_from_probs: samples one token id from probability distribution
+  ! Input:  probs : [] REAL (V, sums to 1.0), v : INT
+  ! Output: INT — sampled token id (1-indexed)
+  ! Algorithm: inverse CDF (sequential scan)
+  PROC sample_from_probs = ([] REAL probs, INT v) INT:
+  BEGIN
+    REAL u := RANDOM;
+    REAL cumsum := 0.0;
+    FOR j FROM 1 TO v DO
+      cumsum +:= probs[j];
+      IF cumsum >= u THEN return j FI
+    OD;
+    v
+  END;
+
+  ! ============================================================
+  ! SECTION 8: LOG PROBABILITY COMPUTATION
+  ! ============================================================
+  ! token_log_prob: computes log P(token | logits)
+  PROC token_log_prob = ([] REAL logits, INT token, INT v) REAL:
+  BEGIN
+    [] REAL probs := vocab_softmax(logits, v);
+    IF token >= 1 AND token <= v THEN
+      REAL p := probs[token];
+      IF p < INF_EPSILON THEN LOG(INF_EPSILON) ELSE LOG(p) FI
+    ELSE
+      LOG(INF_EPSILON)
+    FI
+  END;
+
+  ! ============================================================
+  ! SECTION 9: GENERATION PRIMITIVES
+  ! ============================================================
+  ! prepare_context: builds initial context from prompt tokens
+  PROC prepare_context = ([] INT prompt, INT prompt_len) [] INT:
+  BEGIN
+    [] INT ctx := HEAP [INF_MAX_NEW + prompt_len] INT;
+    FOR i FROM 1 TO prompt_len DO ctx[i] := prompt[i] OD;
+    ctx
+  END;
+
+  ! append_token: adds one token to context buffer
+  PROC append_token = (REF [] INT ctx, INT pos, INT token) VOID:
+    IF pos <= INF_MAX_NEW THEN ctx[pos] := token FI;
+
+  ! check_eos: returns TRUE if last generated token is EOS
+  PROC check_eos = ([] INT tokens, INT len, INT eos_id) BOOL:
+    len > 0 AND tokens[len] = eos_id;
+
+  ! ============================================================
+  ! SECTION 10: INFERENCE DETERMINISM CONTRACT
+  ! ============================================================
+  ! DETERMINISM INVARIANT:
+  ! For greedy decoding (do_sample=FALSE, temperature=1.0):
+  !   identical model weights + identical prompt => identical output
+  ! For sampling (do_sample=TRUE):
+  !   output is stochastic but depends only on RANDOM seed
+  !   seed must be recorded for reproducibility
+  ! This invariant is enforced by:
+  !   1. Using RANDOM (seeded, deterministic given seed)
+  !   2. greedy_next_token is deterministic (argmax, ties broken by lowest index)
+  !   3. No external state dependencies
+
+  ! ============================================================
+  ! SECTION 11: TESTS
+  ! ============================================================
+  PROC test_greedy_picks_max = () BOOL:
+  BEGIN
+    [] REAL logits := HEAP [5] REAL;
+    logits[1] := 1.0; logits[2] := 5.0; logits[3] := 2.0;
+    logits[4] := 0.5; logits[5] := 3.0;
+    greedy_next_token(logits, 5) = 2
+  END;
+
+  PROC test_temperature_scales = () BOOL:
+  BEGIN
+    [] REAL logits := HEAP [3] REAL;
+    logits[1] := 2.0; logits[2] := 1.0; logits[3] := 0.0;
+    apply_temperature(logits, 3, 2.0);
+    ABS(logits[1] - 1.0) < INF_EPSILON AND
+    ABS(logits[2] - 0.5) < INF_EPSILON AND
+    ABS(logits[3] - 0.0) < INF_EPSILON
+  END;
+
+  PROC test_softmax_sums_one = () BOOL:
+  BEGIN
+    [] REAL logits := HEAP [4] REAL;
+    logits[1] := 1.0; logits[2] := 2.0; logits[3] := 3.0; logits[4] := 4.0;
+    [] REAL probs := vocab_softmax(logits, 4);
+    REAL s := 0.0;
+    FOR j FROM 1 TO 4 DO s +:= probs[j] OD;
+    ABS(s - 1.0) < 1.0e-6
+  END;
+
+  PROC test_top_k_limits = () BOOL:
+  BEGIN
+    [] REAL logits := HEAP [5] REAL;
+    FOR j FROM 1 TO 5 DO logits[j] := FLOAT(j) OD;
+    top_k_filter(logits, 5, 2);
+    INT count := 0;
+    FOR j FROM 1 TO 5 DO IF logits[j] > INF_NEG_BIG + 1.0 THEN count +:= 1 FI OD;
+    count = 2
+  END;
+
+  PROC test_log_prob_valid = () BOOL:
+  BEGIN
+    [] REAL logits := HEAP [4] REAL;
+    logits[1] := 0.0; logits[2] := 10.0; logits[3] := 0.0; logits[4] := 0.0;
+    REAL lp := token_log_prob(logits, 2, 4);
+    lp > -1.0 AND lp <= 0.0
+  END;
+
+  PROC run_inference_tests = () INT:
+  BEGIN
+    BOOL all :=
+      test_greedy_picks_max() AND
+      test_temperature_scales() AND
+      test_softmax_sums_one() AND
+      test_top_k_limits() AND
+      test_log_prob_valid();
+    IF all THEN 0 ELSE -1 FI
+  END;
+
+END ! MODULE inference

@@ -1,6 +1,21 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// DEED-089: Sovereign Treasury Engine — Scala + ZIO Effectful Pipeline
+// DEED-089: Sovereign Treasury Engine â€” Scala + ZIO Effectful Pipeline
 // Resource-safe WORM store, streaming, batch processing, effectful execution.
 
 import zio._
@@ -12,7 +27,7 @@ import java.nio.channels.FileChannel
 import java.security.MessageDigest
 import java.time.Instant
 
-// ── 1. Domain model (unchanged — pure) ───────────────────────────────────────
+// â”€â”€ 1. Domain model (unchanged â€” pure) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 final case class TreasuryEntry(
   txId: String,
@@ -45,7 +60,7 @@ final case class WormBlock(
   }
 }
 
-// ── 2. Error ADT ──────────────────────────────────────────────────────────────
+// â”€â”€ 2. Error ADT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 sealed trait TreasuryError extends Throwable
 object TreasuryError {
@@ -65,7 +80,7 @@ object TreasuryError {
   }
 }
 
-// ── 3. Pure serialization & crypto (no effects) ──────────────────────────────
+// â”€â”€ 3. Pure serialization & crypto (no effects) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 object Serializer {
   private val EntrySize = 128
@@ -123,7 +138,7 @@ object Crypto {
   }
 }
 
-// ── 4. ZIO-managed WORM store (resource-safe, append-only) ───────────────────
+// â”€â”€ 4. ZIO-managed WORM store (resource-safe, append-only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 final class WormStore private (channel: FileChannel) {
 
@@ -161,7 +176,7 @@ object WormStore {
       .map(new WormStore(_))
 }
 
-// ── 5. Pipeline stages ──────────────────────────────────────────────────────
+// â”€â”€ 5. Pipeline stages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 object Pipeline {
 
@@ -211,7 +226,7 @@ object Pipeline {
       }
 }
 
-// ── 6. Application layer ────────────────────────────────────────────────────
+// â”€â”€ 6. Application layer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 object SovereignTreasuryZIO extends ZIOAppDefault {
 
@@ -237,7 +252,7 @@ object SovereignTreasuryZIO extends ZIOAppDefault {
 
   val program: ZIO[WormStore, TreasuryError, Unit] =
     for {
-      _ <- Console.printLine("=== Sovereign Treasury Engine – ZIO WORM Pipeline ===")
+      _ <- Console.printLine("=== Sovereign Treasury Engine â€“ ZIO WORM Pipeline ===")
              .orDie
 
       result <- Pipeline.processOne(sampleEntry, "0" * 64)

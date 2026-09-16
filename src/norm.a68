@@ -1,0 +1,151 @@
+! norm.a68
+! LAYER NORMALIZATION COMPONENT — OSS 1230
+! TARGET: LAYER_NORM = (x - mean) / sqrt(var + eps) * gamma + beta
+! MATH: y = gamma * (x - mu) / sqrt(sigma^2 + eps) + beta
+! DEPENDENCY: tensor.a68
+! LICENSE: AGPL-3.0-or-later
+MODULE norm;
+
+  IMPORT tensor;
+
+  REAL LN_EPSILON    := 1.0e-5;
+  REAL LN_INIT_GAMMA := 1.0;
+  REAL LN_INIT_BETA  := 0.0;
+
+  MODE LNParams = STRUCT(
+    [] REAL gamma, [] REAL beta,
+    INT d_model
+  );
+
+  MODE LNCache = STRUCT(
+    [] REAL mean, [] REAL var,
+    [] REAL normalized,
+    [] REAL out
+  );
+
+  MODE LNGrads = STRUCT(
+    [] REAL dgamma, [] REAL dbeta
+  );
+
+  PROC ln_params_new = (INT d) LNParams:
+  BEGIN
+    [] REAL gamma := HEAP [d] REAL;
+    [] REAL beta  := HEAP [d] REAL;
+    FOR i FROM 1 TO d DO gamma[i] := LN_INIT_GAMMA; beta[i] := LN_INIT_BETA OD;
+    LNParams(gamma, beta, d)
+  END;
+
+  ! ln_forward: applies layer norm to X (N x D) along last axis
+  ! For each row i: mu_i = mean(X[i,:]), var_i = var(X[i,:])
+  !   norm_i = (X[i,:] - mu_i) / sqrt(var_i + eps)
+  !   out_i  = gamma * norm_i + beta
+  PROC ln_forward = (LNParams p, [] REAL x, INT n) LNCache:
+  BEGIN
+    INT d := p.d_model;
+    [] REAL mean := HEAP [n] REAL;
+    [] REAL var  := HEAP [n] REAL;
+    [] REAL norm := HEAP [n * d] REAL;
+    [] REAL out  := HEAP [n * d] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      REAL mu := 0.0;
+      FOR dim FROM 1 TO d DO mu +:= x[i * d + dim] OD;
+      mu /:= FLOAT(d);
+      mean[i + 1] := mu;
+      REAL v := 0.0;
+      FOR dim FROM 1 TO d DO
+        REAL diff := x[i * d + dim] - mu;
+        v +:= diff * diff
+      OD;
+      v /:= FLOAT(d);
+      var[i + 1] := v;
+      REAL rstd := 1.0 / SQRT(v + LN_EPSILON);
+      FOR dim FROM 1 TO d DO
+        REAL n_val := (x[i * d + dim] - mu) * rstd;
+        norm[i * d + dim] := n_val;
+        out[i * d + dim] := p.gamma[dim] * n_val + p.beta[dim]
+      OD
+    OD;
+    LNCache(mean, var, norm, out)
+  END;
+
+  ! ln_backward: computes dL/dX, dL/dgamma, dL/dbeta
+  PROC ln_backward = (LNParams p, [] REAL x, LNCache cache,
+                       [] REAL dl_dout, INT n) STRUCT([] REAL, LNGrads):
+  BEGIN
+    INT d := p.d_model;
+    [] REAL dl_dgamma := HEAP [d] REAL;
+    [] REAL dl_dbeta  := HEAP [d] REAL;
+    FOR dim FROM 1 TO d DO dl_dgamma[dim] := 0.0; dl_dbeta[dim] := 0.0 OD;
+    FOR i FROM 0 TO n - 1 DO
+      FOR dim FROM 1 TO d DO
+        dl_dgamma[dim] +:= dl_dout[i * d + dim] * cache.normalized[i * d + dim];
+        dl_dbeta[dim]  +:= dl_dout[i * d + dim]
+      OD
+    OD;
+    [] REAL dl_dx := HEAP [n * d] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      REAL rstd := 1.0 / SQRT(cache.var[i + 1] + LN_EPSILON);
+      REAL fn := FLOAT(d);
+      REAL sum_dl := 0.0; REAL sum_dl_xn := 0.0;
+      FOR dim FROM 1 TO d DO
+        REAL dl_dxi := dl_dout[i * d + dim] * p.gamma[dim];
+        sum_dl    +:= dl_dxi;
+        sum_dl_xn +:= dl_dxi * cache.normalized[i * d + dim]
+      OD;
+      FOR dim FROM 1 TO d DO
+        REAL dl_dxi := dl_dout[i * d + dim] * p.gamma[dim];
+        dl_dx[i * d + dim] := rstd * (dl_dxi - (sum_dl + cache.normalized[i * d + dim] * sum_dl_xn) / fn)
+      OD
+    OD;
+    STRUCT([] REAL, LNGrads)(dl_dx, LNGrads(dl_dgamma, dl_dbeta))
+  END;
+
+  PROC test_ln_output_shape = () BOOL:
+  BEGIN
+    LNParams p := ln_params_new(4);
+    [] REAL x := HEAP [6] REAL;
+    FOR i FROM 1 TO 6 DO x[i] := FLOAT(i) OD;
+    LNCache c := ln_forward(p, x, 1);
+    UPB c.out = 4
+  END;
+
+  PROC test_ln_zero_mean = () BOOL:
+  BEGIN
+    LNParams p := ln_params_new(4);
+    FOR i FROM 1 TO 4 DO p.gamma[i] := 1.0; p.beta[i] := 0.0 OD;
+    [] REAL x := HEAP [4] REAL;
+    x[1] := 1.0; x[2] := 2.0; x[3] := 3.0; x[4] := 4.0;
+    LNCache c := ln_forward(p, x, 1);
+    REAL out_mean := 0.0;
+    FOR i FROM 1 TO 4 DO out_mean +:= c.out[i] OD;
+    out_mean /:= 4.0;
+    ABS(out_mean) < 1.0e-6
+  END;
+
+  PROC test_ln_unit_variance = () BOOL:
+  BEGIN
+    LNParams p := ln_params_new(4);
+    FOR i FROM 1 TO 4 DO p.gamma[i] := 1.0; p.beta[i] := 0.0 OD;
+    [] REAL x := HEAP [4] REAL;
+    x[1] := 1.0; x[2] := 2.0; x[3] := 3.0; x[4] := 4.0;
+    LNCache c := ln_forward(p, x, 1);
+    REAL mean := 0.0;
+    FOR i FROM 1 TO 4 DO mean +:= c.out[i] OD; mean /:= 4.0;
+    REAL var := 0.0;
+    FOR i FROM 1 TO 4 DO
+      REAL d := c.out[i] - mean;
+      var +:= d * d
+    OD; var /:= 4.0;
+    ABS(var - 1.0) < 0.01
+  END;
+
+  PROC run_norm_tests = () INT:
+  BEGIN
+    BOOL all :=
+      test_ln_output_shape() AND
+      test_ln_zero_mean() AND
+      test_ln_unit_variance();
+    IF all THEN 0 ELSE -1 FI
+  END;
+
+END ! MODULE norm

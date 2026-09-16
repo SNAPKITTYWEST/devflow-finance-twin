@@ -1,0 +1,14 @@
+.decl human(name: symbol)
+.decl parent(x: symbol, y: symbol)
+.decl childless(x: symbol)
+
+human("alice").
+human("bob").
+parent("alice", "bob").
+
+// Negation in Datalog requires the negated variable to be bound positively first
+childless(x) :-
+    human(x),
+    !parent(x, _). // The wildcard '_' maps to the Python WILDCARD token
+
+.output childless

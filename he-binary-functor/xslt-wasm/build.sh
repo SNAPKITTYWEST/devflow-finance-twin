@@ -1,10 +1,25 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 #!/bin/bash
-# XSLT → WASM Build Pipeline
+# XSLT â†’ WASM Build Pipeline
 # Requires: rustup target wasm32-unknown-unknown, wasm-bindgen-cli
 
 set -e
 
-echo "=== XSLT → WASM Build Pipeline ==="
+echo "=== XSLT â†’ WASM Build Pipeline ==="
 
 # Step 1: Build Rust compiler
 echo "[1/4] Building Rust XSLT compiler..."
@@ -22,13 +37,13 @@ if [ -f examples/sample.xslt ]; then
     cargo run --release -- compile examples/sample.xslt -o output/xslt_sample.wat
 fi
 
-# Step 3: WAT → WASM (if wabt installed)
-echo "[3/4] Converting WAT → WASM..."
+# Step 3: WAT â†’ WASM (if wabt installed)
+echo "[3/4] Converting WAT â†’ WASM..."
 if command -v wat2wasm &> /dev/null; then
     wat2wasm output/xslt_sample.wat -o output/xslt_sample.wasm
     echo "  Produced: output/xslt_sample.wasm"
 else
-    echo "  wat2wasm not found — install wabt for WASM output"
+    echo "  wat2wasm not found â€” install wabt for WASM output"
     echo "  brew install wabt  OR  apt install wabt"
 fi
 

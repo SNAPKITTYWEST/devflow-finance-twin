@@ -1,0 +1,57 @@
+// institutional_architecture.dot
+digraph InstitutionalArchitecture {
+  rankdir=TB;
+  graph [fontsize=12 fontname="Helvetica"];
+  node [shape=rect style=filled fillcolor="#ffffff" fontname="Helvetica" fontsize=11];
+  edge [fontname="Helvetica" fontsize=10];
+
+  subgraph cluster_org {
+    label="Organization";
+    style=rounded;
+    color="#c6def1";
+    DevTeam [label="Development Team\n(Haskell, Quipper)"];
+    DataTeam [label="Data Engineering\n(SQL, ETL, SAS)"];
+    QA [label="QA & Verification\n(Liquid Haskell, Unit Tests)"];
+    Ops [label="Operations\n(CI/CD, Monitoring)"];
+    Legal [label="Compliance & Legal\n(Privacy, Audit)"];
+  }
+
+  subgraph cluster_platform {
+    label="Platform & Tools";
+    style=rounded;
+    color="#d9ead3";
+    Repo [label="Source Repo\n(Git)"];
+    CI [label="CI/CD\n(build, liquid, isabelle)"];
+    ArtifactStore [label="Artifact Store\n(signed bundles)"];
+    Monitoring [label="Monitoring & Alerts"];
+    Isabelle [label="Isabelle\n(formal proofs)"];
+  }
+
+  subgraph cluster_data {
+    label="Data & Pipelines";
+    style=rounded;
+    color="#fce5cd";
+    QuipperSvc [label="Quipper Simulation\n(Haskell)"];
+    Extractor [label="Kraus Extractor\n(unitary -> Kraus)"];
+    Streamer [label="TCP Streamer\n(JSON messages)"];
+    JuliaSvc [label="Julia EMA Controller\n(beliefs.csv, plots)"];
+    SASJobs [label="SAS Batch Jobs\n(ETL, reporting)"];
+    SQLWarehouse [label="SQL Warehouse\n(schema, lineage)"];
+  }
+
+  DevTeam -> Repo [label="push code"];
+  Repo -> CI [label="trigger builds"];
+  CI -> QA [label="run tests & liquid"];
+  CI -> Isabelle [label="run formal build"];
+  CI -> ArtifactStore [label="publish signed artifacts"];
+  DataTeam -> SQLWarehouse [label="define schema & ETL"];
+  DataTeam -> SASJobs [label="author SAS pipelines"];
+  QuipperSvc -> Extractor [label="simulate basis states"];
+  Extractor -> ArtifactStore [label="write kraus_out/"];
+  Extractor -> Streamer [label="optionally stream ancilla"];
+  Streamer -> JuliaSvc [label="ancilla samples"];
+  JuliaSvc -> ArtifactStore [label="beliefs.csv, plots"];
+  Monitoring -> Ops [label="alerts"];
+  Legal -> CI [label="audit hooks"];
+  QA -> DevTeam [label="bug reports"];
+}

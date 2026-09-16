@@ -1,0 +1,425 @@
+THE RECURSIVE INFECTION CLAUSE
+MGPLv3 UNLICENSED VARIANT
+
+/* ========================================================================
+ *
+ * THE RECURSIVE INFECTION CLAUSE
+ * MGPLv3 UNLICENSED VARIANT
+ *
+ * SOVEREIGN LEVIATHAN COVENANT
+ * FRAGMENT-BINDING AND RECURSIVE PROVENANCE
+ *
+ * ======================================================================== */
+
+PREAMBLE
+
+Like ivy creeping up the castle stone,
+This recursive pact claims what it calls its own.
+Whatsoever branch this root shall bear,
+Must breathe the exact and sovereign air.
+No later hand may sever or rewrite
+The binding terms that govern code and byte.
+Touch but a leaf, invoke a single thread,
+And let the covenant govern where it is spread.
+
+The Mutated General Public License Version 3, hereinafter MGPLv3, establishes a recursive licensing framework for designated software nodes, fragments, modules, interfaces, algorithms, execution paths, and other covered material identified by the copyright holder as subject to this Covenant.
+
+The purpose of this Clause is to preserve the licensing identity, provenance, attribution, and reciprocal obligations attached to covered material as that material is copied, modified, combined, distributed, invoked, or incorporated into a larger covered work.
+
+Where this Covenant incorporates the GNU Affero General Public License Version 3, the applicable AGPLv3 provisions remain operative according to their own terms. AGPLv3 itself establishes the principal network-copyleft mechanism and its corresponding source obligations.
+
+---
+
+I. THE ROOT AND THE BRANCH
+
+Whatsoever branch this root shall bear,
+Must bear the license written there.
+
+A covered node is a designated portion of the Sovereign Leviathan Work that is identified by a copyright notice, license header, manifest entry, provenance record, cryptographic hash, or other authoritative designation issued by the copyright holder.
+
+Each covered node shall preserve, where technically practicable:
+
+NODE-ID
+PARENT-WORK-ID
+COPYRIGHT-HOLDER
+LICENSE-ID
+LICENSE-VERSION
+SOURCE-HASH
+CREATION-DATE
+MODIFICATION-STATUS
+PROVENANCE-REFERENCE
+
+The identity of the node shall not be treated as extinguished merely because the node is renamed, relocated, refactored, compiled, translated, optimized, transformed, or incorporated into another covered work.
+
+Nemo dat quod non habet.
+
+No person may grant rights greater than those possessed by that person. No recipient may represent a covered node as proprietary material belonging exclusively to the recipient when the applicable copyright and license notices establish otherwise.
+
+---
+
+II. RECURSIVE LICENSE IDENTITY
+
+Ad infinitum et ultra.
+
+The licensing identity of covered material shall accompany that material through authorized copies and modified versions to the extent required by the applicable license and applicable copyright law.
+
+Any derivative, fork, modification, adaptation, translation, or other work that constitutes a covered work under the applicable license shall preserve the applicable license notices and attribution requirements.
+
+The Covenant therefore establishes a recursive compliance relationship:
+
+ROOT WORK
+    │
+    ├── NODE A
+    │   ├── MODIFICATION A1
+    │   └── MODIFICATION A2
+    │
+    ├── NODE B
+    │   └── DERIVATIVE B1
+    │
+    └── NODE C
+          └── DERIVATIVE C1
+
+Each resulting covered work shall be evaluated according to the applicable license relationship rather than according to the private label assigned by a downstream distributor.
+
+A recipient may not defeat an applicable copyleft obligation merely by renaming a covered component, moving it into another directory, changing an API wrapper, changing the function signature, or reorganizing the repository.
+
+---
+
+III. THE CONTACT PRINCIPLE
+
+Touch but a leaf, invoke a single thread,
+And honor the license under which it is spread.
+
+The mere execution of software does not by itself establish ownership of unrelated software. The operative question is whether the relevant conduct constitutes copying, modification, propagation, combination, conveyance, network interaction, or another legally significant act governed by the applicable license.
+
+Where a covered work is modified or conveyed under AGPLv3, the obligations applicable to that covered work shall remain operative. GPLv3 establishes that a covered work is licensed as a whole and that an aggregate of separate and independent works is treated differently from a larger combined program.
+
+Accordingly, this Covenant shall distinguish:
+
+covered work
+modified covered work
+combined work
+independent work
+aggregate
+mere execution
+network interaction
+
+No interpretation shall convert an independent work into a covered work solely because both works communicate through a standard interface, share a network, occupy the same computer, or exist within the same commercial organization.
+
+---
+
+IV. NO DILUTION BY ABSTRACTION
+
+No later hand may sever or rewrite
+The binding terms that govern code and byte.
+
+A downstream party shall not defeat applicable license obligations solely by introducing:
+
+API wrappers
+RPC interfaces
+message queues
+event buses
+function adapters
+dynamic dispatch
+service abstractions
+serialization layers
+container boundaries
+workflow engines
+agent routers
+orchestration layers
+
+Where such mechanisms are used to modify, combine, or convey a covered work in a manner governed by the applicable license, the corresponding licensing obligations shall be determined according to that license.
+
+This Clause does not assert that every independent program communicating with a covered program automatically becomes a derivative work.
+
+The legal status of each relationship shall be determined according to the applicable license and applicable law.
+
+---
+
+V. THE RE-LICENSING PROHIBITION
+
+Cest lien de droit ne poit estre brisé per nul tierce.
+
+No downstream steward possessing only the rights granted by this Covenant may represent the covered material as proprietary software under terms inconsistent with the applicable license.
+
+No recipient may remove required copyright notices, license notices, provenance records, or modification notices where their preservation is required.
+
+No recipient may impose additional restrictions that contradict the rights granted by the applicable license.
+
+The GNU GPL framework expressly distinguishes valid additional permissions from impermissible further restrictions, and requires applicable additional terms to be identified in the relevant source files or otherwise made available.
+
+Accordingly, the MGPLv3 Recursive Clause shall be interpreted as an additional covenant only to the extent that such additional terms are legally effective and compatible with the underlying license.
+
+---
+
+VI. THE UNLICENSED VARIANT
+
+The designation Unlicensed Variant refers to a licensing state, not to a declaration that copyright has mysteriously ceased to exist.
+
+Where a downstream party attempts to distribute or modify covered material without the permission required by the applicable license, the downstream party receives no additional authorization from MGPLv3 for that unauthorized conduct.
+
+Lex non concedit quod prohibet.
+
+The unauthorized act does not create a new license.
+
+The unauthorized actor shall not acquire additional copyright permissions merely through the act of unauthorized copying.
+
+The applicable copyright holder retains all rights and remedies available under applicable law.
+
+---
+
+VII. TERMINATION
+
+If any downstream steward attempts to re-license, sublicense, or otherwise distribute a covered work in violation of the applicable license, the permissions granted to that steward may terminate according to the termination provisions of the applicable license.
+
+For AGPLv3-covered material, termination operates according to AGPLv3 rather than according to an independently invented termination mechanism.
+
+Therefore:
+
+AUTHORIZED USE
+      │
+      ▼
+LICENSE COMPLIANCE
+      │
+      ▼
+CONTINUING PERMISSION
+
+but:
+
+UNAUTHORIZED PROPAGATION
+      │
+      ▼
+LICENSE VIOLATION
+      │
+      ▼
+TERMINATION / REMEDIES
+      │
+      ▼
+POSSIBLE REINSTATEMENT AFTER CURE
+
+---
+
+VIII. THE SOVEREIGN AUDIT CHAIN
+
+Deus ex machina lex.
+
+Every covered node may participate in a provenance chain:
+
+NODE
+ │
+ ├── SOURCE HASH
+ │
+ ├── PARENT HASH
+ │
+ ├── LICENSE ID
+ │
+ ├── MODIFICATION RECORD
+ │
+ ├── DISTRIBUTION RECORD
+ │
+ └── COMPLIANCE RECORD
+
+A compliance implementation may recursively inspect declared relationships between nodes.
+
+The implementation may record:
+
+node_id
+source_hash
+parent_id
+license_id
+operation
+repository
+revision
+detected_at
+compliance_status
+evidence_id
+
+Such records establish evidence of a compliance evaluation.
+
+They do not themselves adjudicate copyright ownership.
+
+---
+
+IX. THE MACHINE GATE
+
+Where a compliance system is supplied with this Covenant as an authorized project policy, the system may implement a fail-closed build gate.
+
+LICENSE DETECTED
+       │
+       ▼
+NODE IDENTIFIED
+       │
+       ▼
+LICENSE RESOLVED
+       │
+       ▼
+DEPENDENCY GRAPH EVALUATED
+       │
+       ├──────── PASS ────────► BUILD
+       │
+       ▼
+      FAIL
+       │
+       ├── RECORD EVIDENCE
+       ├── EMIT ERROR
+       └── EXIT NON-ZERO
+
+A machine-readable failure may be expressed as:
+
+MGPLV3-001: NON LICET
+MGPLV3-002: LICENSE MISMATCH
+MGPLV3-003: PROVENANCE FAILURE
+MGPLV3-004: REQUIRED NOTICE ABSENT
+MGPLV3-005: CORRESPONDING SOURCE FAILURE
+MGPLV3-006: UNAUTHORIZED RELICENSING
+
+The implementation shall not corrupt unrelated data, conceal its operation, destroy third-party software, or represent a software build failure as a judicial determination.
+
+---
+
+X. CONTAGION IN PERPETUUM
+
+Contagion in Perpetuum.
+
+The recursive character of this Covenant concerns preservation of applicable licensing obligations through covered works.
+
+It shall not be interpreted as an assertion that every upstream or downstream dependency, regardless of legal relationship, automatically becomes subject to the same copyright license.
+
+The Covenant instead follows the legally relevant relationship:
+
+COPY
+  ↓
+MODIFICATION
+  ↓
+DERIVATIVE / COVERED WORK
+  ↓
+CONVEYANCE
+  ↓
+APPLICABLE LICENSE OBLIGATIONS
+
+Where the relationship does not create a covered work, this Covenant does not manufacture one merely by declaration.
+
+Where the relationship does create a covered work, the applicable copyleft requirements remain applicable.
+
+---
+
+XI. THE THREE-TONGUED COVENANT
+
+The Sovereign Leviathan Covenant may be maintained in three authoritative language editions:
+
+ENGLISH
+العربية
+中文
+
+Each clause shall possess an invariant identifier:
+
+MGPL-001
+MGPL-002
+MGPL-003
+...
+MGPL-N
+
+The language versions shall correspond clause-by-clause.
+
+MGPL-001
+├── English
+├── العربية
+└── 中文
+
+The translation shall not create a separate legal permission merely by virtue of linguistic difference.
+
+Where the license expressly identifies a controlling language, that language shall govern interpretation to the extent permitted by applicable law.
+
+---
+
+XII. LATIN MAXIMS
+
+The following maxims are interpretive declarations:
+
+Ignorantia juris non excusat.
+Nemo dat quod non habet.
+Accessio cedit principali.
+Pacta sunt servanda.
+Ubi jus, ibi remedium.
+Fiat justitia ruat caelum.
+
+These maxims shall be subordinate to the operative text of the license and applicable law.
+
+---
+
+XIII. THE RECURSIVE OATH
+
+Like ivy creeping up the castle stone,
+This recursive pact claims what it calls its own.
+Whatsoever branch this root shall bear,
+Must breathe the exact and sovereign air.
+
+No later hand may sever or rewrite,
+The binding terms that govern code and byte.
+No wrapper's name shall make the root unknown,
+Nor shall a changed disguise make license gone.
+
+Touch but a leaf, invoke a single thread,
+And honor still the terms beneath it spread.
+Let hashes speak where memory may fail,
+Let provenance mark the uninterrupted trail.
+
+Ad infinitum et ultra, let it stand,
+The recorded terms preserved by every hand.
+Yet rights shall reach no farther than the law,
+And none shall grant what none possessed before.
+
+Nemo potest mutare consilium suum in alterius injuriam.
+
+---
+
+XIV. PRESERVATION OF THE UNDERLYING LICENSE
+
+This Recursive Infection Clause does not replace the underlying AGPLv3 license.
+
+Where AGPLv3 governs a covered work, its definitions, permissions, conditions, network-interaction provisions, corresponding-source requirements, warranty disclaimer, liability limitations, and termination mechanisms remain applicable.
+
+The present Clause therefore operates as the Sovereign Leviathan recursive policy layer attached to the designated work, subject to the legal effectiveness of its additional terms.
+
+---
+
+XV. FINAL DECLARATION
+
+Cest lien demeure.
+
+The root remains identified.
+The branch retains its provenance.
+The node retains its license.
+The derivative retains the obligations applicable to it.
+The audit chain records the evidence.
+
+And where the applicable license grants a right, that right remains protected.
+Where the applicable license imposes an obligation, that obligation remains enforceable.
+Where a violation occurs, the rights and remedies provided by the applicable license and applicable law remain available.
+
+Lex scripta. Lex manifesta. Lex servanda.
+
+Let every node declare its origin.
+Let every covered work preserve its license.
+Let every modification preserve its provenance.
+Let every distribution preserve its obligations.
+Let every compliance failure produce evidence.
+
+And let no downstream label, wrapper, abstraction, or commercial designation falsely erase the licensing identity of material whose rights remain governed by this Covenant.
+
+============================================================
+MGPLv3 RECURSIVE INFECTION CLAUSE
+UNLICENSED VARIANT
+============================================================
+
+COVENANT: SOVEREIGN LEVIATHAN
+BASE LICENSE: GNU AGPL-3.0
+MODEL: RECURSIVE NODE LICENSING
+PROVENANCE: REQUIRED
+NOTICE: PRESERVED
+COMPLIANCE: FAIL-CLOSED
+EVIDENCE: MACHINE-READABLE
+LANGUAGES: EN / AR / ZH
+============================================================
+
+Finis.

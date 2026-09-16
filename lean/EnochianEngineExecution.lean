@@ -1,10 +1,27 @@
+﻿/-
+ ========================================================================
+ SOVEREIGN LEVIATHAN NODE LICENSE
+ License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ ========================================================================
+
+ This file is a covered work under the GNU Affero General Public License,
+ version 3, together with the Sovereign Leviathan additional terms.
+
+ Hark, though this node be but a spark,
+ Its covenant endureth through the dark.
+
+ Ignorantia juris non excusat.
+ ========================================================================
+-/
+
 -- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
 -- SPDX-License-Identifier: FSL-1.1
--- ┌─────────────────────────────────────────────────────────────────────────────┐
--- │ SOVEREIGN DEED: ENOCHIAN_ENGINE_EXECUTION                                   │
--- │ "The Glyphs Execute. The Phases Advance. The Grasp Closes."                │
--- │ DEED_ID: DEED-ENOCHIAN_ENGINE_EXECUTION-072                                │
--- └─────────────────────────────────────────────────────────────────────────────┘
+-- â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+-- â”‚ SOVEREIGN DEED: ENOCHIAN_ENGINE_EXECUTION                                   â”‚
+-- â”‚ "The Glyphs Execute. The Phases Advance. The Grasp Closes."                â”‚
+-- â”‚ DEED_ID: DEED-ENOCHIAN_ENGINE_EXECUTION-072                                â”‚
+-- â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 namespace Sovereign.Deeds.EnochianEngineExecution
 
@@ -28,14 +45,14 @@ structure InstWord where
   deriving Repr
 
 def decodeInst (w : Nat) : InstWord :=
-  { opcode := ⟨w % 32, by omega⟩
-  , dst := ⟨(w / 32) % 32, by omega⟩
-  , src1 := ⟨(w / 1024) % 32, by omega⟩
-  , src2 := ⟨(w / 32768) % 32, by omega⟩
+  { opcode := âŸ¨w % 32, by omegaâŸ©
+  , dst := âŸ¨(w / 32) % 32, by omegaâŸ©
+  , src1 := âŸ¨(w / 1024) % 32, by omegaâŸ©
+  , src2 := âŸ¨(w / 32768) % 32, by omegaâŸ©
   , imm := w / 1048576 }
 
 def execInst (regs : GlyphRegFile) (mem : AethyrMemory) (inst : InstWord) :
-    GlyphRegFile × AethyrMemory × Bool :=
+    GlyphRegFile Ã— AethyrMemory Ã— Bool :=
   let opcode : EnochianGlyph := match inst.opcode.val with
     | 0 => .Un | 1 => .Pa | 2 => .Ox | 3 => .Don | 4 => .Ceph
     | 5 => .Van | 6 => .G | 7 => .Gon | 8 => .Graf | 9 => .Unn
@@ -49,27 +66,27 @@ def execInst (regs : GlyphRegFile) (mem : AethyrMemory) (inst : InstWord) :
   let regVal (r : Fin 21) : Nat := regs[r]
   let setReg (r : Fin 21) (v : Nat) : GlyphRegFile := regs.update r v
   match opcode with
-  | .Un => (setReg ⟨rD, by omega⟩ imm, mem, false)
-  | .Pa => (regs, mem.update (rD % 30) (mem[rD % 30].update (rS1 % 512) (regVal ⟨rS2, by omega⟩)), false)
-  | .Ox => (if regVal ⟨rS1, by omega⟩ != 0 then setReg ⟨rD, by omega⟩ (regVal ⟨rS2, by omega⟩) else regs, mem, false)
-  | .Don => (setReg ⟨rD, by omega⟩ (regs[20]), mem, false)
-  | .Ceph => (setReg ⟨rD, by omega⟩ (regVal ⟨20, by omega⟩), mem, false)
-  | .Van => (setReg ⟨rD, by omega⟩ (regVal ⟨rS1, by omega⟩ ^^^ regVal ⟨rS2, by omega⟩), mem, false)
-  | .G => (setReg ⟨rD, by omega⟩ (regVal ⟨rS1, by omega⟩ + regVal ⟨rS2, by omega⟩), mem, false)
-  | .Gon => (setReg ⟨rD, by omega⟩ (regVal ⟨rS1, by omega⟩ - regVal ⟨rS2, by omega⟩), mem, false)
-  | .Graf => (setReg ⟨rD, by omega⟩ (regVal ⟨rS1, by omega⟩ * regVal ⟨rS2, by omega⟩), mem, false)
-  | .Unn => (setReg ⟨rD, by omega⟩ (regVal ⟨rS1, by omega⟩ / regVal ⟨rS2, by omega⟩), mem, false)
-  | .Ur => (setReg ⟨rD, by omega⟩ (regVal ⟨rS1, by omega⟩ % regVal ⟨rS2, by omega⟩), mem, false)
-  | .Mals => (setReg ⟨rD, by omega⟩ (regVal ⟨rS1, by omega⟩ &&& regVal ⟨rS2, by omega⟩), mem, false)
-  | .Dram => (setReg ⟨rD, by omega⟩ (regVal ⟨rS1, by omega⟩ ||| regVal ⟨rS2, by omega⟩), mem, false)
-  | .Gal => (setReg ⟨rD, by omega⟩ (regVal ⟨rS1, by omega⟩ <<< regVal ⟨rS2, by omega⟩), mem, false)
-  | .Ort => (setReg ⟨rD, by omega⟩ (regVal ⟨rS1, by omega⟩ >>> regVal ⟨rS2, by omega⟩), mem, false)
-  | .N => (setReg ⟨rD, by omega⟩ (if regVal ⟨rS1, by omega⟩ < regVal ⟨rS2, by omega⟩ then 1 else 0), mem, false)
-  | .Tal => (setReg ⟨rD, by omega⟩ imm, mem, false)
+  | .Un => (setReg âŸ¨rD, by omegaâŸ© imm, mem, false)
+  | .Pa => (regs, mem.update (rD % 30) (mem[rD % 30].update (rS1 % 512) (regVal âŸ¨rS2, by omegaâŸ©)), false)
+  | .Ox => (if regVal âŸ¨rS1, by omegaâŸ© != 0 then setReg âŸ¨rD, by omegaâŸ© (regVal âŸ¨rS2, by omegaâŸ©) else regs, mem, false)
+  | .Don => (setReg âŸ¨rD, by omegaâŸ© (regs[20]), mem, false)
+  | .Ceph => (setReg âŸ¨rD, by omegaâŸ© (regVal âŸ¨20, by omegaâŸ©), mem, false)
+  | .Van => (setReg âŸ¨rD, by omegaâŸ© (regVal âŸ¨rS1, by omegaâŸ© ^^^ regVal âŸ¨rS2, by omegaâŸ©), mem, false)
+  | .G => (setReg âŸ¨rD, by omegaâŸ© (regVal âŸ¨rS1, by omegaâŸ© + regVal âŸ¨rS2, by omegaâŸ©), mem, false)
+  | .Gon => (setReg âŸ¨rD, by omegaâŸ© (regVal âŸ¨rS1, by omegaâŸ© - regVal âŸ¨rS2, by omegaâŸ©), mem, false)
+  | .Graf => (setReg âŸ¨rD, by omegaâŸ© (regVal âŸ¨rS1, by omegaâŸ© * regVal âŸ¨rS2, by omegaâŸ©), mem, false)
+  | .Unn => (setReg âŸ¨rD, by omegaâŸ© (regVal âŸ¨rS1, by omegaâŸ© / regVal âŸ¨rS2, by omegaâŸ©), mem, false)
+  | .Ur => (setReg âŸ¨rD, by omegaâŸ© (regVal âŸ¨rS1, by omegaâŸ© % regVal âŸ¨rS2, by omegaâŸ©), mem, false)
+  | .Mals => (setReg âŸ¨rD, by omegaâŸ© (regVal âŸ¨rS1, by omegaâŸ© &&& regVal âŸ¨rS2, by omegaâŸ©), mem, false)
+  | .Dram => (setReg âŸ¨rD, by omegaâŸ© (regVal âŸ¨rS1, by omegaâŸ© ||| regVal âŸ¨rS2, by omegaâŸ©), mem, false)
+  | .Gal => (setReg âŸ¨rD, by omegaâŸ© (regVal âŸ¨rS1, by omegaâŸ© <<< regVal âŸ¨rS2, by omegaâŸ©), mem, false)
+  | .Ort => (setReg âŸ¨rD, by omegaâŸ© (regVal âŸ¨rS1, by omegaâŸ© >>> regVal âŸ¨rS2, by omegaâŸ©), mem, false)
+  | .N => (setReg âŸ¨rD, by omegaâŸ© (if regVal âŸ¨rS1, by omegaâŸ© < regVal âŸ¨rS2, by omegaâŸ© then 1 else 0), mem, false)
+  | .Tal => (setReg âŸ¨rD, by omegaâŸ© imm, mem, false)
   | .Gon2 => (regs, mem, false)
   | .Pa2 => (regs, mem, true)
   | .Ceph2 => (regs, mem, false)
-  | .Van2 => (setReg ⟨rD, by omega⟩ malbolge_entropy_sample, mem, false)
+  | .Van2 => (setReg âŸ¨rD, by omegaâŸ© malbolge_entropy_sample, mem, false)
 
 def PhaseProgram := List Nat
 
@@ -81,13 +98,13 @@ def phaseProgram (p : EnochianPhase) : PhaseProgram :=
   | .Call16 => [16] | .Call17 => [17] | .Call18 => [18] | .Call19 => [19]
 
 def execPhase (regs : GlyphRegFile) (mem : AethyrMemory) (prog : PhaseProgram) :
-    GlyphRegFile × AethyrMemory × Bool :=
+    GlyphRegFile Ã— AethyrMemory Ã— Bool :=
   prog.foldl (fun (regs, mem, halt) inst =>
     if halt then (regs, mem, true) else execInst regs mem (decodeInst inst)) (regs, mem, false)
 
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- WORM CHAIN
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 structure WORMEntry where
   tick : Nat
@@ -109,9 +126,9 @@ def wormAppend (chain : WORMChain) (entry : WORMEntry) : WORMChain :=
 
 def blake3Hash (s : String) : String := "0x" ++ s.substring 0 32
 
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- MALBOLGE CO-PROCESSOR
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 structure MalbolgeState where
   registers : Array Nat
@@ -122,30 +139,30 @@ structure MalbolgeState where
 
 def malbolgeStep (state : MalbolgeState) : MalbolgeState := state
 
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- FIB_Q ADVERSARIAL SCANNER
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 structure FIBQScanner where
-  queue : List (Nat × Nat)
+  queue : List (Nat Ã— Nat)
   maxDepth : Nat := 1000
   deriving Repr
 
 def fib (n : Nat) : Nat :=
   if n = 0 then 0 else if n = 1 then 1 else fib (n-1) + fib (n-2)
 
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- SHREWD PREDICTIVE INFERENCE
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 structure SHREWDModel where
   weights : Array (Array Float)
   version : Nat
   deriving Repr
 
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- LEAN 4 PROOF KERNEL
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 structure Lean4Kernel where
   env : String
@@ -153,9 +170,9 @@ structure Lean4Kernel where
   trusted : Bool
   deriving Repr
 
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- NATS / BIFROST
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 structure NATSTopology where
   nodes : List String
@@ -164,9 +181,9 @@ structure NATSTopology where
   clusterID : String
   deriving Repr
 
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- BORROWCHAIN
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 structure Borrowchain where
   blocks : List String
@@ -174,9 +191,9 @@ structure Borrowchain where
   finality : Nat
   deriving Repr
 
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- FULL ENGINE STATE
--- ═══════════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 structure FullEngineState where
   root : EnochianRoot

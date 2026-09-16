@@ -1,0 +1,35 @@
+// --- Relation Store ---
+// Replaces the Python Relation class and tuple sets
+.decl fact(pred: symbol, arg1: symbol, arg2: symbol)
+.decl rule_base(head_pred: symbol, body_pred: symbol)
+.decl rule_transitive(head_pred: symbol, body_pred1: symbol, body_pred2: symbol)
+
+// Populate the EDB
+fact("parent", "alice", "bob").
+fact("parent", "bob", "carol").
+fact("parent", "alice", "dave").
+fact("parent", "eve", "alice").
+
+// Define the IDB logic dynamically as data
+rule_base("ancestor", "parent").
+rule_transitive("ancestor", "parent", "ancestor").
+
+// --- Engine Evaluation ---
+// Replaces Python's Engine.evaluate() and delta merges
+.decl derive(pred: symbol, arg1: symbol, arg2: symbol)
+
+// Base Case: All facts are derived implicitly
+derive(p, a, b) :- fact(p, a, b).
+
+// Rule Resolution 1: Simple Mapping (e.g., ancestor :- parent)
+derive(head, a, b) :-
+    rule_base(head, body),
+    derive(body, a, b).
+
+// Rule Resolution 2: Transitive Joins (e.g., ancestor :- parent, ancestor)
+derive(head, a, b) :-
+    rule_transitive(head, b1, b2),
+    derive(b1, a, z),
+    derive(b2, z, b).
+
+.output derive(IO=stdout)

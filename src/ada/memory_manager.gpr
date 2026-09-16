@@ -1,0 +1,9 @@
+-- memory_manager.gpr
+project Memory_Manager is
+   for Source_Dirs use (".");
+   for Object_Dir use "obj";
+   for Main use ("memory_manager.adb");
+   package Builder is
+      for Default_Switches ("Ada") use ("-gnat2012");
+   end Builder;
+end Memory_Manager;

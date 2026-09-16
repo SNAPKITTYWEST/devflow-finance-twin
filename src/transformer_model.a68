@@ -1,0 +1,372 @@
+! transformer_model.a68
+! FULL TRANSFORMER MODEL — OSS 1230
+! TARGET: COMPLETE DECODER-ONLY TRANSFORMER
+! STRUCTURE: Embed + PosEnc -> N x Block -> LN -> Unembed -> Loss
+! DEPENDENCY: embedding.a68, transformer_block.a68, output_head.a68
+! LICENSE: AGPL-3.0-or-later
+MODULE transformer_model;
+
+  IMPORT tensor;
+
+  ! ============================================================
+  ! SECTION 1: MODEL CONFIGURATION
+  ! ============================================================
+  MODE ModelConfig = STRUCT(
+    INT vocab_size,
+    INT d_model,
+    INT n_heads,
+    INT n_layers,
+    INT d_ff,
+    INT max_seq_len,
+    REAL dropout_rate,
+    INT pad_token_id,
+    INT unk_token_id
+  );
+
+  PROC default_config = () ModelConfig:
+    ModelConfig(512, 128, 4, 2, 512, 64, 0.0, 0, 1);
+
+  PROC small_config = () ModelConfig:
+    ModelConfig(128, 32, 2, 2, 128, 32, 0.0, 0, 1);
+
+  ! ============================================================
+  ! SECTION 2: MODEL STATE
+  ! ============================================================
+  ! ModelWeights: all learnable parameters
+  ! embed_data : V x D embedding matrix
+  ! pos_data   : max_seq x D positional embeddings
+  ! block_wq, wk, wv, wo: per-layer attention weights (n_layers x D*H)
+  ! block_w1, b1, w2, b2: per-layer MLP weights
+  ! block_g1, bt1, g2, bt2: per-layer LN parameters
+  ! out_w : D x V unembedding
+  MODE ModelWeights = STRUCT(
+    [] REAL embed_data,
+    [] REAL pos_data,
+    [] [] REAL layer_wq, [] [] REAL layer_wk,
+    [] [] REAL layer_wv, [] [] REAL layer_wo,
+    [] [] REAL layer_w1, [] [] REAL layer_b1,
+    [] [] REAL layer_w2, [] [] REAL layer_b2,
+    [] [] REAL layer_g1, [] [] REAL layer_bt1,
+    [] [] REAL layer_g2, [] [] REAL layer_bt2,
+    [] REAL final_gamma, [] REAL final_beta,
+    [] REAL out_w
+  );
+
+  ! ModelState: weights + config + training state
+  MODE ModelState = STRUCT(
+    ModelWeights weights,
+    ModelConfig cfg,
+    INT step_count,
+    REAL last_loss,
+    BOOL training
+  );
+
+  ! ============================================================
+  ! SECTION 3: INITIALIZATION
+  ! ============================================================
+  PROC model_alloc = (ModelConfig cfg) ModelState:
+  BEGIN
+    INT v := cfg.vocab_size; INT d := cfg.d_model; INT n := cfg.n_layers;
+    INT dff := cfg.d_ff; INT h := cfg.n_heads; INT dh := d OVER h;
+    INT ms := cfg.max_seq_len;
+    [] REAL embed := HEAP [v * d] REAL;
+    [] REAL pos   := HEAP [ms * d] REAL;
+    FOR i FROM 1 TO v * d DO embed[i] := 0.0 OD;
+    FOR i FROM 1 TO ms * d DO pos[i] := 0.0 OD;
+    [] [] REAL lwq := HEAP [n] [] REAL;
+    [] [] REAL lwk := HEAP [n] [] REAL;
+    [] [] REAL lwv := HEAP [n] [] REAL;
+    [] [] REAL lwo := HEAP [n] [] REAL;
+    [] [] REAL lw1 := HEAP [n] [] REAL;
+    [] [] REAL lb1 := HEAP [n] [] REAL;
+    [] [] REAL lw2 := HEAP [n] [] REAL;
+    [] [] REAL lb2 := HEAP [n] [] REAL;
+    [] [] REAL lg1 := HEAP [n] [] REAL;
+    [] [] REAL lbt1:= HEAP [n] [] REAL;
+    [] [] REAL lg2 := HEAP [n] [] REAL;
+    [] [] REAL lbt2:= HEAP [n] [] REAL;
+    FOR layer FROM 1 TO n DO
+      lwq[layer] := HEAP [dh * d] REAL; lwk[layer] := HEAP [dh * d] REAL;
+      lwv[layer] := HEAP [dh * d] REAL; lwo[layer] := HEAP [d * d] REAL;
+      lw1[layer] := HEAP [dff * d] REAL; lb1[layer] := HEAP [dff] REAL;
+      lw2[layer] := HEAP [d * dff] REAL; lb2[layer] := HEAP [d] REAL;
+      lg1[layer] := HEAP [d] REAL; lbt1[layer] := HEAP [d] REAL;
+      lg2[layer] := HEAP [d] REAL; lbt2[layer] := HEAP [d] REAL;
+      FOR i FROM 1 TO dh * d DO lwq[layer][i] := 0.0; lwk[layer][i] := 0.0; lwv[layer][i] := 0.0 OD;
+      FOR i FROM 1 TO d * d DO lwo[layer][i] := 0.0 OD;
+      FOR i FROM 1 TO dff * d DO lw1[layer][i] := 0.0 OD;
+      FOR i FROM 1 TO dff DO lb1[layer][i] := 0.0 OD;
+      FOR i FROM 1 TO d * dff DO lw2[layer][i] := 0.0 OD;
+      FOR i FROM 1 TO d DO lb2[layer][i] := 0.0 OD;
+      FOR i FROM 1 TO d DO lg1[layer][i] := 1.0; lbt1[layer][i] := 0.0;
+                            lg2[layer][i] := 1.0; lbt2[layer][i] := 0.0 OD
+    OD;
+    [] REAL fg := HEAP [d] REAL; [] REAL fb := HEAP [d] REAL;
+    FOR i FROM 1 TO d DO fg[i] := 1.0; fb[i] := 0.0 OD;
+    [] REAL ow := HEAP [d * v] REAL;
+    FOR i FROM 1 TO d * v DO ow[i] := 0.0 OD;
+    ModelState(
+      ModelWeights(embed, pos, lwq, lwk, lwv, lwo, lw1, lb1, lw2, lb2,
+                   lg1, lbt1, lg2, lbt2, fg, fb, ow),
+      cfg, 0, 0.0, TRUE
+    )
+  END;
+
+  PROC model_normal_init = (REF ModelState m) VOID:
+  BEGIN
+    INT v := m.cfg.vocab_size; INT d := m.cfg.d_model;
+    INT n := m.cfg.n_layers; INT dff := m.cfg.d_ff;
+    INT h := m.cfg.n_heads; INT dh := d OVER h; INT ms := m.cfg.max_seq_len;
+    REAL std := 0.02; REAL eps := 1.0e-12;
+    FOR i FROM 1 TO v * d DO
+      REAL u1 := RANDOM + eps; REAL u2 := RANDOM;
+      m.weights.embed_data[i] := std * SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159 * u2)
+    OD;
+    FOR i FROM 1 TO ms * d DO
+      REAL u1 := RANDOM + eps; REAL u2 := RANDOM;
+      m.weights.pos_data[i] := std * SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159 * u2)
+    OD;
+    FOR layer FROM 1 TO n DO
+      FOR i FROM 1 TO dh * d DO
+        REAL u1 := RANDOM + eps; REAL u2 := RANDOM; REAL z := SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159 * u2);
+        m.weights.layer_wq[layer][i] := std * z;
+        u1 := RANDOM + eps; u2 := RANDOM; z := SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159 * u2);
+        m.weights.layer_wk[layer][i] := std * z;
+        u1 := RANDOM + eps; u2 := RANDOM; z := SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159 * u2);
+        m.weights.layer_wv[layer][i] := std * z
+      OD;
+      FOR i FROM 1 TO d * d DO
+        REAL u1 := RANDOM + eps; REAL u2 := RANDOM;
+        m.weights.layer_wo[layer][i] := std * SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159 * u2)
+      OD;
+      FOR i FROM 1 TO dff * d DO
+        REAL u1 := RANDOM + eps; REAL u2 := RANDOM;
+        m.weights.layer_w1[layer][i] := std * SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159 * u2)
+      OD;
+      FOR i FROM 1 TO d * dff DO
+        REAL u1 := RANDOM + eps; REAL u2 := RANDOM;
+        m.weights.layer_w2[layer][i] := std * SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159 * u2)
+      OD
+    OD;
+    FOR i FROM 1 TO d * v DO
+      REAL u1 := RANDOM + eps; REAL u2 := RANDOM;
+      m.weights.out_w[i] := std * SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159 * u2)
+    OD
+  END;
+
+  ! ============================================================
+  ! SECTION 4: EMBED + POSITIONAL ENCODING
+  ! ============================================================
+  PROC model_embed = (ModelState m, [] INT tokens, INT n) [] REAL:
+  BEGIN
+    INT d := m.cfg.d_model;
+    [] REAL x := HEAP [n * d] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      INT t := tokens[i + 1];
+      IF t >= 0 AND t < m.cfg.vocab_size THEN
+        FOR dim FROM 1 TO d DO
+          x[i * d + dim] := m.weights.embed_data[t * d + dim] + m.weights.pos_data[i * d + dim]
+        OD
+      ELSE
+        FOR dim FROM 1 TO d DO x[i * d + dim] := 0.0 OD
+      FI
+    OD;
+    x
+  END;
+
+  ! ============================================================
+  ! SECTION 5: LAYER NORM (inline)
+  ! ============================================================
+  PROC model_layernorm = ([] REAL gamma, [] REAL beta, [] REAL x, INT n, INT d) [] REAL:
+  BEGIN
+    [] REAL out := HEAP [n * d] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      REAL mu := 0.0;
+      FOR dim FROM 1 TO d DO mu +:= x[i * d + dim] OD; mu /:= FLOAT(d);
+      REAL v := 0.0;
+      FOR dim FROM 1 TO d DO REAL df := x[i * d + dim] - mu; v +:= df * df OD; v /:= FLOAT(d);
+      REAL rstd := 1.0 / SQRT(v + 1.0e-5);
+      FOR dim FROM 1 TO d DO
+        out[i * d + dim] := gamma[dim] * (x[i * d + dim] - mu) * rstd + beta[dim]
+      OD
+    OD;
+    out
+  END;
+
+  ! ============================================================
+  ! SECTION 6: SINGLE LAYER FORWARD
+  ! ============================================================
+  PROC model_layer_forward = (ModelState m, INT layer, [] REAL x, INT n) [] REAL:
+  BEGIN
+    INT d := m.cfg.d_model; INT dh := d OVER m.cfg.n_heads; INT dff := m.cfg.d_ff;
+    [] REAL ln1 := model_layernorm(m.weights.layer_g1[layer], m.weights.layer_bt1[layer], x, n, d);
+    REAL scale := 1.0 / SQRT(FLOAT(dh));
+    [] REAL q := HEAP [n * dh] REAL; [] REAL k := HEAP [n * dh] REAL; [] REAL v := HEAP [n * dh] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR dim FROM 1 TO dh DO
+        REAL aq := 0.0; REAL ak := 0.0; REAL av := 0.0;
+        FOR k2 FROM 1 TO d DO
+          aq +:= ln1[i * d + k2] * m.weights.layer_wq[layer][(dim - 1) * d + k2];
+          ak +:= ln1[i * d + k2] * m.weights.layer_wk[layer][(dim - 1) * d + k2];
+          av +:= ln1[i * d + k2] * m.weights.layer_wv[layer][(dim - 1) * d + k2]
+        OD;
+        q[i * dh + dim] := aq; k[i * dh + dim] := ak; v[i * dh + dim] := av
+      OD
+    OD;
+    [] REAL sc := HEAP [n * n] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR j FROM 1 TO n DO
+        REAL dot := 0.0;
+        FOR dim FROM 1 TO dh DO dot +:= q[i * dh + dim] * k[(j - 1) * dh + dim] OD;
+        sc[i * n + j] := IF j > i + 1 THEN -1.0e9 ELSE dot * scale FI
+      OD
+    OD;
+    [] REAL w := HEAP [n * n] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      REAL mx := sc[i * n + 1];
+      FOR j FROM 2 TO n DO IF sc[i * n + j] > mx THEN mx := sc[i * n + j] FI OD;
+      REAL s := 0.0;
+      FOR j FROM 1 TO n DO REAL ex := EXP(sc[i * n + j] - mx); w[i * n + j] := ex; s +:= ex OD;
+      IF s > 1.0e-12 THEN FOR j FROM 1 TO n DO w[i * n + j] /:= s OD FI
+    OD;
+    [] REAL ao := HEAP [n * dh] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR dim FROM 1 TO dh DO
+        REAL acc := 0.0;
+        FOR j FROM 1 TO n DO acc +:= w[i * n + j] * v[(j - 1) * dh + dim] OD;
+        ao[i * dh + dim] := acc
+      OD
+    OD;
+    [] REAL proj := HEAP [n * d] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR dim FROM 1 TO d DO
+        REAL acc := 0.0;
+        FOR k2 FROM 1 TO dh DO acc +:= ao[i * dh + k2] * m.weights.layer_wo[layer][(dim - 1) * dh + k2] OD;
+        proj[i * d + dim] := acc
+      OD
+    OD;
+    [] REAL res1 := HEAP [n * d] REAL;
+    FOR i FROM 1 TO n * d DO res1[i] := x[i] + proj[i] OD;
+    [] REAL ln2 := model_layernorm(m.weights.layer_g2[layer], m.weights.layer_bt2[layer], res1, n, d);
+    [] REAL pre := HEAP [n * dff] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR dim FROM 1 TO dff DO
+        REAL acc := m.weights.layer_b1[layer][dim];
+        FOR k2 FROM 1 TO d DO acc +:= ln2[i * d + k2] * m.weights.layer_w1[layer][(dim - 1) * d + k2] OD;
+        REAL xv := acc; REAL x3 := xv * xv * xv;
+        REAL inner := 0.7978845608 * (xv + 0.044715 * x3);
+        REAL expv := EXP(2.0 * inner);
+        pre[i * dff + dim] := 0.5 * xv * (1.0 + (expv - 1.0) / (expv + 1.0))
+      OD
+    OD;
+    [] REAL mlp_out := HEAP [n * d] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR dim FROM 1 TO d DO
+        REAL acc := m.weights.layer_b2[layer][dim];
+        FOR k2 FROM 1 TO dff DO acc +:= pre[i * dff + k2] * m.weights.layer_w2[layer][(dim - 1) * dff + k2] OD;
+        mlp_out[i * d + dim] := acc
+      OD
+    OD;
+    [] REAL out := HEAP [n * d] REAL;
+    FOR i FROM 1 TO n * d DO out[i] := res1[i] + mlp_out[i] OD;
+    out
+  END;
+
+  ! ============================================================
+  ! SECTION 7: FULL MODEL FORWARD
+  ! ============================================================
+  ! model_forward: tokens (N) -> logits (N x V)
+  PROC model_forward = (ModelState m, [] INT tokens, INT n) [] REAL:
+  BEGIN
+    INT d := m.cfg.d_model; INT v := m.cfg.vocab_size;
+    [] REAL x := model_embed(m, tokens, n);
+    FOR layer FROM 1 TO m.cfg.n_layers DO
+      x := model_layer_forward(m, layer, x, n)
+    OD;
+    x := model_layernorm(m.weights.final_gamma, m.weights.final_beta, x, n, d);
+    [] REAL logits := HEAP [n * v] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      FOR j FROM 1 TO v DO
+        REAL acc := 0.0;
+        FOR k FROM 1 TO d DO acc +:= x[i * d + k] * m.weights.out_w[(k - 1) * v + j] OD;
+        logits[i * v + j] := acc
+      OD
+    OD;
+    logits
+  END;
+
+  ! ============================================================
+  ! SECTION 8: LOSS
+  ! ============================================================
+  PROC model_loss = ([] REAL logits, [] INT targets, INT n, INT v) REAL:
+  BEGIN
+    REAL total_loss := 0.0;
+    FOR i FROM 0 TO n - 1 DO
+      REAL mx := logits[i * v + 1];
+      FOR j FROM 2 TO v DO IF logits[i * v + j] > mx THEN mx := logits[i * v + j] FI OD;
+      REAL s := 0.0;
+      FOR j FROM 1 TO v DO s +:= EXP(logits[i * v + j] - mx) OD;
+      INT t := targets[i + 1];
+      IF t >= 1 AND t <= v THEN
+        REAL p := EXP(logits[i * v + t] - mx) / s;
+        IF p < 1.0e-12 THEN p := 1.0e-12 FI;
+        total_loss -:= LOG(p)
+      FI
+    OD;
+    total_loss / FLOAT(n)
+  END;
+
+  ! ============================================================
+  ! SECTION 9: TESTS
+  ! ============================================================
+  PROC test_model_forward_shape = () BOOL:
+  BEGIN
+    ModelConfig cfg := small_config();
+    ModelState m := model_alloc(cfg);
+    model_normal_init(m);
+    INT n := 4;
+    [] INT tokens := HEAP [n] INT;
+    FOR i FROM 1 TO n DO tokens[i] := i MOD cfg.vocab_size OD;
+    [] REAL logits := model_forward(m, tokens, n);
+    UPB logits = n * cfg.vocab_size
+  END;
+
+  PROC test_model_loss_positive = () BOOL:
+  BEGIN
+    ModelConfig cfg := small_config();
+    ModelState m := model_alloc(cfg);
+    model_normal_init(m);
+    INT n := 3;
+    [] INT tokens := [1, 2, 3];
+    [] REAL logits := model_forward(m, tokens, n);
+    [] INT targets := [2, 3, 1];
+    REAL loss := model_loss(logits, targets, n, cfg.vocab_size);
+    loss > 0.0
+  END;
+
+  PROC test_model_deterministic = () BOOL:
+  BEGIN
+    ModelConfig cfg := small_config();
+    ModelState m := model_alloc(cfg);
+    model_normal_init(m);
+    INT n := 2;
+    [] INT tokens := [1, 2];
+    [] REAL logits1 := model_forward(m, tokens, n);
+    [] REAL logits2 := model_forward(m, tokens, n);
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO n * cfg.vocab_size DO
+      IF logits1[i] /= logits2[i] THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  PROC run_model_tests = () INT:
+  BEGIN
+    BOOL all :=
+      test_model_forward_shape() AND
+      test_model_loss_positive() AND
+      test_model_deterministic();
+    IF all THEN 0 ELSE -1 FI
+  END;
+
+END ! MODULE transformer_model

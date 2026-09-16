@@ -1,3 +1,18 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 /// JavaScript Host Runtime for XSLT WASM Modules
 /// Loads compiled WASM, provides DOM bridge, handles transform requests.
 
@@ -35,7 +50,7 @@ class XsltWasmHost {
         // Call transform
         const resultPtr = this.instance.exports.transform(ptr, xmlBytes.length);
 
-        // Read result (simplified — real impl reads null-terminated string)
+        // Read result (simplified â€” real impl reads null-terminated string)
         const resultBytes = [];
         for (let i = resultPtr; memView[i] !== 0; i++) {
             resultBytes.push(memView[i]);

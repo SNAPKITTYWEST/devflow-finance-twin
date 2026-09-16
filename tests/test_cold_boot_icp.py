@@ -1,5 +1,20 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 """
-Devflow Finance Twin — Cold Boot + ICP Anchor Integration Tests
+Devflow Finance Twin â€” Cold Boot + ICP Anchor Integration Tests
 """
 import sys
 import os
@@ -22,7 +37,7 @@ from icp_anchor import (
 )
 
 
-# ── Cold Boot Phase 1 Tests ──────────────────────────────────────────────────
+# â”€â”€ Cold Boot Phase 1 Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestColdBootPhase1(unittest.TestCase):
     def setUp(self):
@@ -56,7 +71,7 @@ class TestColdBootPhase1(unittest.TestCase):
         self.assertEqual(protocol._rom_hash, root_hash)
 
 
-# ── Cold Boot Phase 2 Tests ──────────────────────────────────────────────────
+# â”€â”€ Cold Boot Phase 2 Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestColdBootPhase2(unittest.TestCase):
     def setUp(self):
@@ -96,7 +111,7 @@ class TestColdBootPhase2(unittest.TestCase):
         self.assertIn(253, protocol._svc_handlers)
 
 
-# ── Cold Boot Phase 3 Tests ──────────────────────────────────────────────────
+# â”€â”€ Cold Boot Phase 3 Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestColdBootPhase3(unittest.TestCase):
     def setUp(self):
@@ -119,7 +134,7 @@ class TestColdBootPhase3(unittest.TestCase):
         self.assertTrue(protocol._initialized)
 
 
-# ── Cold Boot Full Sequence Tests ────────────────────────────────────────────
+# â”€â”€ Cold Boot Full Sequence Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestColdBootFull(unittest.TestCase):
     def setUp(self):
@@ -152,7 +167,7 @@ class TestColdBootFull(unittest.TestCase):
         self.assertTrue(valid)
 
 
-# ── WORM Record Serialization Tests ──────────────────────────────────────────
+# â”€â”€ WORM Record Serialization Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestWORMRecord(unittest.TestCase):
     def test_serialize_deserialize_roundtrip(self):
@@ -178,7 +193,7 @@ class TestWORMRecord(unittest.TestCase):
             WORMRecord.deserialize(b"BAD_MAGIC" + b"\x00" * 60)
 
 
-# ── ICP Anchor Tests ─────────────────────────────────────────────────────────
+# â”€â”€ ICP Anchor Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestICPAnchor(unittest.TestCase):
     def setUp(self):
@@ -286,7 +301,7 @@ class TestICPAnchorSync(unittest.TestCase):
         self.assertIsNone(anchor)
 
 
-# ── Integration: Cold Boot + ICP Anchor ──────────────────────────────────────
+# â”€â”€ Integration: Cold Boot + ICP Anchor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestColdBootICPIntegration(unittest.TestCase):
     def setUp(self):
@@ -297,7 +312,7 @@ class TestColdBootICPIntegration(unittest.TestCase):
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 
     def test_cold_boot_then_anchor(self):
-        """Full flow: cold boot → write records → anchor to ICP."""
+        """Full flow: cold boot â†’ write records â†’ anchor to ICP."""
         # 1. Cold boot
         protocol = cold_boot(self.worm_path)
 

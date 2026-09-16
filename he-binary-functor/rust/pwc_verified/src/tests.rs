@@ -1,3 +1,18 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =====================================================================
 // PWC_TESTS - Compiled Why3 Proof Obligations
 // =====================================================================
@@ -57,7 +72,7 @@ mod tests {
         let input = vec![1, 2, 1, 2, 1];
         let result = hw_execute_transform_timed(&input);
 
-        assert_eq!(result.cycles, 1, "τ_hardware must be 1 cycle");
+        assert_eq!(result.cycles, 1, "Ï„_hardware must be 1 cycle");
         assert!(result.compressed.len() <= input.len());
     }
 

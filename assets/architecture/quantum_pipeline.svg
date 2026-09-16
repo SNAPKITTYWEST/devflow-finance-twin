@@ -1,0 +1,256 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#555"/>
+    </marker>
+    <style>
+      text { font-family: 'Segoe UI', sans-serif; font-size: 11px; }
+      .title { font-size: 18px; font-weight: bold; }
+      .subtitle { font-size: 12px; fill: #666; }
+      .box { rx: 8; ry: 8; stroke-width: 1.5; }
+      .label { font-size: 10px; fill: #333; }
+      .status { font-size: 9px; font-weight: bold; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="800" fill="#fafafa"/>
+
+  <!-- Title -->
+  <text x="600" y="35" text-anchor="middle" class="title">Quantum Computer Simulator Pipeline</text>
+  <text x="600" y="55" text-anchor="middle" class="subtitle">quantum_computer/ - 27 files, 6,385 LOC | Full-stack quantum simulation</text>
+
+  <!-- Layer 1: Input -->
+  <rect x="20" y="80" width="1160" height="80" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="1"/>
+  <text x="35" y="95" class="label" font-weight="bold" fill="#2980b9">INPUT LAYER</text>
+
+  <rect x="40" y="100" width="180" height="45" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="50" y="128">Circuit Definition</text>
+
+  <rect x="240" y="100" width="180" height="45" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="250" y="128">Gate Sequence</text>
+
+  <rect x="440" y="100" width="180" height="45" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="450" y="128">Initial State |0...0></text>
+
+  <rect x="640" y="100" width="180" height="45" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="650" y="128">Noise Parameters</text>
+
+  <rect x="840" y="100" width="180" height="45" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="850" y="128">Error Correction Config</text>
+
+  <rect x="1040" y="100" width="130" height="45" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="1050" y="128">Algorithm Choice</text>
+
+  <!-- Layer 2: Circuit Builder -->
+  <rect x="20" y="180" width="1160" height="100" rx="10" fill="#e8fde8" stroke="#27ae60" stroke-width="1"/>
+  <text x="35" y="195" class="label" font-weight="bold" fill="#27ae60">CIRCUIT BUILDER (circuit/__init__.py)</text>
+
+  <rect x="40" y="210" width="160" height="55" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="50" y="230">Add Gate</text>
+  <text x="50" y="245" class="label">Single/Multi-qubit</text>
+  <text x="50" y="258" class="label">IMPLEMENTED</text>
+
+  <rect x="220" y="210" width="160" height="55" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="230" y="230">Measure</text>
+  <text x="230" y="245" class="label">Qubit measurement</text>
+  <text x="230" y="258" class="label">IMPLEMENTED</text>
+
+  <rect x="400" y="210" width="160" height="55" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="410" y="230">Barrier</text>
+  <text x="410" y="245" class="label">Circuit separation</text>
+  <text x="410" y="258" class="label">IMPLEMENTED</text>
+
+  <rect x="580" y="210" width="160" height="55" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="590" y="230">Build Circuit</text>
+  <text x="590" y="245" class="label">Finalize operations</text>
+  <text x="590" y="258" class="label">IMPLEMENTED</text>
+
+  <rect x="760" y="210" width="160" height="55" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="770" y="230">Serialize</text>
+  <text x="770" y="245" class="label">JSON/dict export</text>
+  <text x="770" y="258" class="label">IMPLEMENTED</text>
+
+  <rect x="940" y="210" width="220" height="55" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="950" y="230">Deserialization</text>
+  <text x="950" y="245" class="label">Reconstruct from data</text>
+  <text x="950" y="258" class="label">IMPLEMENTED</text>
+
+  <!-- Layer 3: Gate Library -->
+  <rect x="20" y="300" width="1160" height="120" rx="10" fill="#fde8e8" stroke="#e74c3c" stroke-width="1"/>
+  <text x="35" y="315" class="label" font-weight="bold" fill="#e74c3c">GATE LIBRARY (gates/__init__.py - 24 gates)</text>
+
+  <!-- Row 1 -->
+  <rect x="40" y="325" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="50" y="347">Pauli X</text>
+
+  <rect x="150" y="325" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="160" y="347">Pauli Y</text>
+
+  <rect x="260" y="325" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="270" y="347">Pauli Z</text>
+
+  <rect x="370" y="325" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="380" y="347">Hadamard</text>
+
+  <rect x="480" y="325" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="490" y="347">Phase (S)</text>
+
+  <rect x="590" y="325" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="600" y="347">T Gate</text>
+
+  <rect x="700" y="325" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="710" y="347">CNOT</text>
+
+  <rect x="810" y="325" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="820" y="347">Toffoli</text>
+
+  <rect x="920" y="325" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="930" y="347">SWAP</text>
+
+  <rect x="1030" y="325" width="140" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="1040" y="347">Rx, Ry, Rz</text>
+
+  <!-- Row 2 -->
+  <rect x="40" y="370" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="50" y="392">CZ</text>
+
+  <rect x="150" y="370" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="160" y="392">CH</text>
+
+  <rect x="260" y="370" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="270" y="392">CSWAP</text>
+
+  <rect x="370" y="370" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="380" y="392">iSWAP</text>
+
+  <rect x="480" y="370" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="490" y="392">SqrtX</text>
+
+  <rect x="590" y="370" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="600" y="392">SqrtY</text>
+
+  <rect x="700" y="370" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="710" y="392">SqrtZ</text>
+
+  <rect x="810" y="370" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="820" y="392">Rxx</text>
+
+  <rect x="920" y="370" width="100" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="930" y="392">Ryy</text>
+
+  <rect x="1030" y="370" width="140" height="35" rx="4" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="1040" y="392">Rzz</text>
+
+  <!-- Layer 4: Simulator -->
+  <rect x="20" y="440" width="560" height="140" rx="10" fill="#f0e8fd" stroke="#9b59b6" stroke-width="1"/>
+  <text x="35" y="455" class="label" font-weight="bold" fill="#9b59b6">DENSITY MATRIX SIMULATOR (vm/simulator.py - 455 lines)</text>
+
+  <rect x="40" y="470" width="165" height="95" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="50" y="490">DensityMatrix</text>
+  <text x="50" y="505" class="label">Class initialization</text>
+  <text x="50" y="520" class="label">apply_gate()</text>
+  <text x="50" y="535" class="label">measure()</text>
+  <text x="50" y="550" class="label">fidelity() [DIAGONAL]</text>
+
+  <rect x="220" y="470" width="165" height="95" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="230" y="490">State Management</text>
+  <text x="230" y="505" class="label">initial_state()</text>
+  <text x="230" y="520" class="label">partial_trace()</text>
+  <text x="230" y="535" class="label">expectation_value()</text>
+  <text x="230" y="550" class="label">von_neumann_entropy()</text>
+
+  <rect x="400" y="470" width="165" height="95" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="410" y="490">MPS (Matrix Product)</text>
+  <text x="410" y="505" class="label">Tensor network state</text>
+  <text x="410" y="520" class="label">apply_gate_mps()</text>
+  <text x="410" y="535" class="label">[PARTIAL: boundary]</text>
+  <text x="410" y="550" class="label">[NEEDS: middle qubits]</text>
+
+  <!-- Layer 4b: Algorithms -->
+  <rect x="600" y="440" width="580" height="140" rx="10" fill="#e8fde8" stroke="#27ae60" stroke-width="1"/>
+  <text x="615" y="455" class="label" font-weight="bold" fill="#27ae60">ALGORITHMS (algorithms/ - 700+ lines)</text>
+
+  <rect x="620" y="470" width="170" height="95" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="630" y="490">VQE</text>
+  <text x="630" y="505" class="label">Variational Quantum</text>
+  <text x="630" y="520" class="label">Eigensolver</text>
+  <text x="630" y="535" class="label">IMPLEMENTED</text>
+  <text x="630" y="550" class="label">with noise models</text>
+
+  <rect x="800" y="470" width="170" height="95" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="810" y="490">QAOA</text>
+  <text x="810" y="505" class="label">Quantum Approximate</text>
+  <text x="810" y="520" class="label">Optimization</text>
+  <text x="810" y="535" class="label">IMPLEMENTED</text>
+  <text x="810" y="550" class="label">with cost Hamiltonian</text>
+
+  <rect x="980" y="470" width="180" height="95" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="990" y="490">Grover / Shor</text>
+  <text x="990" y="505" class="label">Search / Factoring</text>
+  <text x="990" y="520" class="label">IMPLEMENTED</text>
+  <text x="990" y="535" class="label">Topological variants</text>
+  <text x="990" y="550" class="label">Fibonacci anyons</text>
+
+  <!-- Layer 5: Error Correction + Noise -->
+  <rect x="20" y="600" width="560" height="100" rx="10" fill="#fdf8e8" stroke="#f39c12" stroke-width="1"/>
+  <text x="35" y="615" class="label" font-weight="bold" fill="#f39c12">ERROR CORRECTION (error_correction/)</text>
+
+  <rect x="40" y="625" width="165" height="60" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="50" y="645">Bit Flip Code</text>
+  <text x="50" y="660" class="label">3-qubit repetition</text>
+  <text x="50" y="672" class="label status" fill="#27ae60">IMPLEMENTED</text>
+
+  <rect x="220" y="625" width="165" height="60" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="230" y="645">Phase Flip Code</text>
+  <text x="230" y="660" class="label">3-qubit phase</text>
+  <text x="230" y="672" class="label status" fill="#27ae60">IMPLEMENTED</text>
+
+  <rect x="400" y="625" width="165" height="60" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="410" y="645">Surface Code</text>
+  <text x="410" y="660" class="label">Stabilizers [STUB]</text>
+  <text x="410" y="672" class="label status" fill="#e74c3c">INCOMPLETE</text>
+
+  <!-- Layer 5b: Noise Models -->
+  <rect x="600" y="600" width="580" height="100" rx="10" fill="#fde8e8" stroke="#e74c3c" stroke-width="1"/>
+  <text x="615" y="615" class="label" font-weight="bold" fill="#e74c3c">NOISE MODELS (noise/__init__.py - 300 lines)</text>
+
+  <rect x="620" y="625" width="170" height="60" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="630" y="645">Depolarizing</text>
+  <text x="630" y="660" class="label">Channel simulation</text>
+  <text x="630" y="672" class="label status" fill="#27ae60">IMPLEMENTED</text>
+
+  <rect x="800" y="625" width="170" height="60" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="810" y="645">Amplitude Damping</text>
+  <text x="810" y="660" class="label">T1 decay simulation</text>
+  <text x="810" y="672" class="label status" fill="#27ae60">IMPLEMENTED</text>
+
+  <rect x="980" y="625" width="180" height="60" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="990" y="645">Phase Damping</text>
+  <text x="990" y="660" class="label">T2 dephasing simulation</text>
+  <text x="990" y="672" class="label status" fill="#27ae60">IMPLEMENTED</text>
+
+  <!-- Layer 6: Tests -->
+  <rect x="20" y="720" width="1160" height="60" rx="10" fill="#f0f0f0" stroke="#95a5a6" stroke-width="1"/>
+  <text x="35" y="735" class="label" font-weight="bold" fill="#7f8c8d">TEST SUITE (tests/ - 3 files)</text>
+
+  <rect x="40" y="730" width="250" height="35" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="50" y="752" class="label">test_simulator.py - Density matrix tests</text>
+
+  <rect x="310" y="730" width="250" height="35" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="320" y="752" class="label">test_gates.py - Gate application tests</text>
+
+  <rect x="580" y="730" width="250" height="35" rx="6" fill="#ffffff" stroke="#95a5a6"/>
+  <text x="590" y="752" class="label">test_algorithms.py - Algorithm tests</text>
+
+  <rect x="850" y="730" width="310" height="35" rx="6" fill="#fff2cc" stroke="#c6a700"/>
+  <text x="860" y="752" class="label" fill="#c6a700">KNOWN BUGS: fidelity (diagonal), power_gate (empty)</text>
+
+  <!-- Flow arrows -->
+  <line x1="600" y1="160" x2="600" y2="180" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="600" y1="280" x2="600" y2="300" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="300" y1="420" x2="300" y2="440" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="900" y1="420" x2="900" y2="440" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="300" y1="580" x2="300" y2="600" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="900" y1="580" x2="900" y2="600" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="600" y1="700" x2="600" y2="720" stroke="#555" marker-end="url(#arrow)"/>
+</svg>

@@ -1,0 +1,315 @@
+-- RetroGPUTypes.occ
+-- Complete type definitions for RetroGPU system
+-- CSP-based architecture for GPU compilation
+
+-- Register abstraction
+VAL INT REGISTER_COUNT IS 256:
+VAL INT PREDICATE_COUNT IS 8:
+VAL INT GENERAL_REGS IS 248:
+
+-- Register kinds enumeration
+VAL INT REG_GENERAL IS 0:
+VAL INT REG_PREDICATE IS 1:
+VAL INT REG_ACCUMULATOR IS 2:
+VAL INT REG_SPECIAL IS 3:
+
+-- Register widths
+VAL INT W32 IS 32:
+VAL INT W64 IS 64:
+VAL INT W128 IS 128:
+
+-- Register states
+VAL INT REG_UNALLOCATED IS 0:
+VAL INT REG_ALLOCATED IS 1:
+VAL INT REG_SPILLED IS 2:
+VAL INT REG_RESERVED IS 3:
+
+-- Register record
+DATA TYPE REGISTER
+  INT id
+  INT kind
+  INT width
+  INT state
+  [32]BYTE name
+:
+
+-- Register file
+DATA TYPE REGISTERFILE
+  [REGISTER_COUNT]REGISTER registers
+  [GENERAL_REGS]INT free_list
+  INT free_count
+:
+
+-- Memory spaces
+VAL INT MEM_GLOBAL IS 0:
+VAL INT MEM_SHARED IS 1:
+VAL INT MEM_REGISTER IS 2:
+VAL INT MEM_LOCAL IS 3:
+VAL INT MEM_CONSTANT IS 4:
+VAL INT MEM_TENSOR IS 5:
+
+-- Operand types
+DATA TYPE OPERAND
+  INT op_type
+  INT reg_id
+  INT immediate
+  INT address_base
+  INT address_offset
+  INT mem_space
+:
+
+-- ALU operations
+VAL INT ALU_ADD IS 0:
+VAL INT ALU_SUB IS 1:
+VAL INT ALU_MUL IS 2:
+VAL INT ALU_DIV IS 3:
+VAL INT ALU_MOD IS 4:
+VAL INT ALU_AND IS 5:
+VAL INT ALU_OR IS 6:
+VAL INT ALU_XOR IS 7:
+VAL INT ALU_SHL IS 8:
+VAL INT ALU_SHR IS 9:
+VAL INT ALU_FADD IS 10:
+VAL INT ALU_FMUL IS 11:
+VAL INT ALU_FDIV IS 12:
+VAL INT ALU_FMA IS 13:
+VAL INT ALU_CMP IS 14:
+
+-- Data types
+VAL INT TYPE_INT32 IS 0:
+VAL INT TYPE_INT64 IS 1:
+VAL INT TYPE_FLOAT32 IS 2:
+VAL INT TYPE_FLOAT64 IS 3:
+VAL INT TYPE_PREDICATE IS 4:
+
+-- ALU instruction record
+DATA TYPE ALU_INSTR
+  INT op
+  INT data_type
+  OPERAND src_a
+  OPERAND src_b
+  INT dst
+  INT predicate
+  INT negate
+:
+
+-- Lane and warp states
+VAL INT LANE_COUNT IS 32:
+VAL INT WARP_ACTIVE IS 1:
+VAL INT WARP_INACTIVE IS 0:
+
+-- Warp record
+DATA TYPE WARP
+  INT warp_id
+  [LANE_COUNT]INT lane_state
+  INT active_mask
+  INT pc
+  REGISTERFILE registers
+  [PREDICATE_COUNT]INT predicates
+:
+
+-- Shared memory
+VAL INT SHARED_SIZE IS 98304:
+VAL INT SHARED_BANKS IS 32:
+VAL INT BANK_WIDTH IS 4:
+
+DATA TYPE SHARED_MEMORY
+  [SHARED_SIZE]BYTE data
+  [SHARED_BANKS]INT bank_conflicts
+  INT allocation_head
+:
+
+-- Global memory
+VAL INT GLOBAL_SIZE IS 2147483647:
+
+DATA TYPE GLOBAL_MEMORY
+  [GLOBAL_SIZE]BYTE data
+  INT allocated_bytes
+:
+
+-- Synchronization primitives
+VAL INT BARRIER_THREAD_BLOCK IS 0:
+VAL INT BARRIER_WARP IS 1:
+VAL INT BARRIER_NAMED IS 2:
+
+DATA TYPE BARRIER
+  INT kind
+  INT domain
+  [32]BYTE name
+:
+
+DATA TYPE SYNC_INSTR
+  INT sync_type
+  BARRIER barrier
+  INT mem_fence
+  INT mem_scope
+  INT mem_order
+:
+
+-- Tensor types
+VAL INT TENSOR_SHAPE_SIZE IS 3:
+
+DATA TYPE TENSOR_SHAPE
+  INT rows
+  INT cols
+  INT depth
+:
+
+VAL INT LAYOUT_ROW_MAJOR IS 0:
+VAL INT LAYOUT_COL_MAJOR IS 1:
+
+VAL INT ELEM_TF32 IS 0:
+VAL INT ELEM_FLOAT16 IS 1:
+VAL INT ELEM_FLOAT32 IS 2:
+VAL INT ELEM_FLOAT64 IS 3:
+VAL INT ELEM_INT32 IS 4:
+VAL INT ELEM_INT64 IS 5:
+
+DATA TYPE TENSOR_FRAGMENT
+  TENSOR_SHAPE shape
+  INT layout
+  INT element_type
+  [16]INT registers
+  [32]BYTE matrix_type
+:
+
+DATA TYPE TENSOR_INSTR
+  INT op_type
+  TENSOR_FRAGMENT accum
+  TENSOR_FRAGMENT op_a
+  TENSOR_FRAGMENT op_b
+:
+
+-- Memory movement
+DATA TYPE TILE
+  INT m
+  INT n
+  INT k
+:
+
+DATA TYPE TRANSFER
+  INT source
+  INT destination
+  OPERAND source_addr
+  OPERAND dest_addr
+  INT size
+  INT async
+  [16]INT depends_on
+:
+
+-- Dependencies
+VAL INT DEP_DATA IS 0:
+VAL INT DEP_CONTROL IS 1:
+VAL INT DEP_MEMORY IS 2:
+VAL INT DEP_SYNC IS 3:
+
+DATA TYPE DEPENDENCY
+  INT dep_type
+  INT producer_id
+  INT consumer_id
+  INT kind
+:
+
+-- Scheduling
+DATA TYPE SCHEDULE_ENTRY
+  INT instruction_id
+  INT time
+  INT warp
+  [32]BYTE resource
+:
+
+DATA TYPE SCHEDULE
+  [256]SCHEDULE_ENTRY entries
+  INT makespan
+  [256]INT register_pressure
+  [256]INT memory_latency
+:
+
+-- Instructions
+VAL INT INSTR_ALU IS 0:
+VAL INT INSTR_MEMORY IS 1:
+VAL INT INSTR_TENSOR IS 2:
+VAL INT INSTR_SYNC IS 3:
+VAL INT INSTR_BRANCH IS 4:
+VAL INT INSTR_LABEL IS 5:
+
+DATA TYPE INSTRUCTION
+  INT instr_type
+  ALU_INSTR alu
+  INT mem_space
+  TENSOR_INSTR tensor
+  SYNC_INSTR sync
+  [32]BYTE label
+  INT branch_target
+:
+
+-- Kernel block
+DATA TYPE BLOCK
+  INT block_id
+  [128]INSTRUCTION instructions
+  INT instr_count
+  [8]INT predecessors
+  [8]INT successors
+  [256]INT live_in
+  [256]INT live_out
+:
+
+-- Complete kernel
+VAL INT MAX_BLOCKS IS 16:
+
+DATA TYPE KERNEL
+  [64]BYTE kernel_name
+  [MAX_BLOCKS]BLOCK blocks
+  INT block_count
+  INT entry_block
+  INT exit_block
+  [16][64]BYTE parameters
+  INT param_count
+  INT shared_memory_size
+  REGISTERFILE registers
+  [16]TENSOR_FRAGMENT tensor_info
+  INT tensor_count
+:
+
+-- Launch configuration
+DATA TYPE LAUNCH_CONFIG
+  INT grid_x
+  INT grid_y
+  INT grid_z
+  INT block_x
+  INT block_y
+  INT block_z
+  INT shared_memory
+  INT stream
+:
+
+-- Hopper target
+VAL INT HOPPER_SM IS 90:
+VAL INT HOPPER_WARP_WIDTH IS 32:
+VAL INT HOPPER_NUM_WARPS IS 128:
+VAL INT HOPPER_REGISTER_FILE_SIZE IS 256:
+VAL INT HOPPER_SHARED_MEMORY_SIZE IS 98304:
+VAL INT HOPPER_NUM_TENSOR_CORES IS 144:
+
+DATA TYPE HOPPER_TARGET
+  INT sm
+  INT warp_width
+  INT num_warps
+  INT register_file_size
+  INT shared_memory_size
+  INT num_tensor_cores
+  [32]BYTE instruction_set
+:
+
+-- Compilation result
+VAL INT COMPILE_SUCCESS IS 0:
+VAL INT COMPILE_FAILURE IS 1:
+
+DATA TYPE COMPILE_RESULT
+  INT status
+  KERNEL kernel
+  SCHEDULE schedule
+  [512]INSTRUCTION instructions
+  INT instruction_count
+  [256]BYTE error_message
+:

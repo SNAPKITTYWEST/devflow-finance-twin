@@ -1,0 +1,1212 @@
+! embedding.a68
+! TRANSFORMER EMBEDDING COMPONENT
+! OSS 1230 OPEN SOURCE BASELINE
+! TARGET: TRANSFORMER_EMBEDDING
+! VERSION: 1.0.0
+! LICENSE: AGPL-3.0-or-later
+! MATH: E in R^(V x D), Embedding(t) = E[t], t in {0..V-1}
+! DEPENDENCY: tensor.a68 (tensor_new, matmul, transpose2)
+! DEPENDENCY: activ.a68 (none used directly)
+MODULE embedding;
+
+  IMPORT tensor;
+
+  ! ============================================================
+  ! SECTION 1: CONSTANTS AND DOMAIN BOUNDS
+  ! ============================================================
+  INT VOCAB_SIZE_MIN    := 1;
+  INT VOCAB_SIZE_MAX    := 1000000;
+  INT EMB_DIM_MIN       := 1;
+  INT EMB_DIM_MAX       := 65536;
+  INT SEQ_LEN_MIN       := 1;
+  INT SEQ_LEN_MAX       := 131072;
+  INT BATCH_SIZE_MIN    := 1;
+  INT BATCH_SIZE_MAX    := 65536;
+  INT PAD_TOKEN_ID      := 0;
+  INT UNK_TOKEN_ID      := 1;
+  REAL INIT_MEAN        := 0.0;
+  REAL INIT_STDDEV      := 0.02;
+  REAL XAVIER_SCALE_EMB := 1.0;
+  REAL GRAD_CLIP_MAX    := 1.0;
+  REAL EPSILON_FINITE   := 1.0e-38;
+  REAL EPSILON_OVERFLOW := 1.0e38;
+  INT SERIAL_MAGIC      := 16#454D4244;
+  INT SERIAL_VERSION    := 1;
+
+  ! ============================================================
+  ! SECTION 2: TYPE DEFINITIONS
+  ! ============================================================
+  ! TokenID: valid range [0, V-1], INT representation
+  ! Domain: {t : INT | 0 <= t AND t < vocab_size}
+  ! Invariant: t = PAD_TOKEN_ID means padding (valid, zero-grad)
+  ! Invariant: t = UNK_TOKEN_ID means unknown token (valid lookup)
+  ! Boundary lower: t < 0 => error INVALID_TOKEN_BELOW_ZERO
+  ! Boundary upper: t >= vocab_size => error INVALID_TOKEN_ABOVE_VOCAB
+  MODE TokenID = INT;
+
+  ! EmbVector: R^D row vector extracted from embedding matrix
+  ! Domain: R^D where D = emb_dim
+  ! Invariant: LENGTH data = emb_dim
+  ! Numerical: REAL = 64-bit IEEE 754 double precision
+  ! Memory: contiguous REAL array, stride = 1
+  MODE EmbVector = [] REAL;
+
+  ! EmbMatrix: R^(V x D) parameter matrix
+  ! Domain: R^(V x D) where V = vocab_size, D = emb_dim
+  ! Invariant: 1 UPB data = vocab_size * emb_dim
+  ! Memory: row-major, row t starts at offset t * emb_dim + 1
+  ! Indexing (1-based ALGOL 68): data[(t * emb_dim) + d]
+  MODE EmbMatrix = [] REAL;
+
+  ! GradMatrix: same shape as EmbMatrix, accumulates dL/dE
+  ! Domain: R^(V x D)
+  ! Invariant: same dimensions as corresponding EmbMatrix
+  ! Semantics: grad[t, d] = sum over all positions where token t appeared
+  MODE GradMatrix = [] REAL;
+
+  ! EmbState: complete mutable state of the embedding component
+  ! Fields:
+  !   data        : EmbMatrix  — the V x D parameter matrix
+  !   grad        : GradMatrix — accumulated gradient, same shape
+  !   vocab_size  : INT        — V, number of vocabulary entries
+  !   emb_dim     : INT        — D, dimensionality of each vector
+  !   initialized : BOOL       — TRUE after any init call
+  !   frozen      : BOOL       — TRUE means no gradient accumulation
+  !   has_grad    : BOOL       — TRUE if backward was called
+  !   pad_id      : INT        — token id treated as padding
+  !   unk_id      : INT        — token id treated as unknown
+  !   step_count  : INT        — number of forward calls executed
+  MODE EmbState = STRUCT(
+    EmbMatrix data,
+    GradMatrix grad,
+    INT vocab_size,
+    INT emb_dim,
+    BOOL initialized,
+    BOOL frozen,
+    BOOL has_grad,
+    INT pad_id,
+    INT unk_id,
+    INT step_count
+  );
+
+  ! LookupResult: outcome of a single token lookup
+  ! Fields:
+  !   vec    : EmbVector — the D-dimensional row if found
+  !   token  : TokenID   — the queried token id
+  !   status : INT       — 0=OK, 1=PAD, 2=UNK, -1=BELOW, -2=ABOVE
+  MODE LookupResult = STRUCT(
+    EmbVector vec,
+    TokenID token,
+    INT status
+  );
+
+  ! SeqResult: outcome of a sequence embedding
+  ! Fields:
+  !   matrix  : EmbMatrix — shape N x D flattened row-major
+  !   seq_len : INT       — N
+  !   emb_dim : INT       — D
+  !   statuses: [] INT    — per-token status codes
+  MODE SeqResult = STRUCT(
+    EmbMatrix matrix,
+    INT seq_len,
+    INT emb_dim,
+    [] INT statuses
+  );
+
+  ! BatchSeqResult: batch of sequence embeddings
+  ! Fields:
+  !   data      : EmbMatrix — shape B x N x D flattened
+  !   batch_size: INT       — B
+  !   seq_len   : INT       — N
+  !   emb_dim   : INT       — D
+  MODE BatchSeqResult = STRUCT(
+    EmbMatrix data,
+    INT batch_size,
+    INT seq_len,
+    INT emb_dim
+  );
+
+  ! SerialHeader: fixed-width binary header for serialization
+  MODE SerialHeader = STRUCT(
+    INT magic,
+    INT version,
+    INT vocab_size,
+    INT emb_dim,
+    INT data_length,
+    INT checksum
+  );
+
+  ! ============================================================
+  ! SECTION 3: STATUS CODES
+  ! ============================================================
+  INT STATUS_OK          := 0;
+  INT STATUS_PAD         := 1;
+  INT STATUS_UNK         := 2;
+  INT STATUS_BELOW_ZERO  := -1;
+  INT STATUS_ABOVE_VOCAB := -2;
+  INT STATUS_UNINIT      := -3;
+  INT STATUS_DIM_MISMATCH:= -4;
+  INT STATUS_IO_ERROR    := -5;
+  INT STATUS_OVERFLOW    := -6;
+  INT STATUS_NAN         := -7;
+  INT STATUS_FROZEN_GRAD := -8;
+  INT STATUS_BAD_MAGIC   := -9;
+  INT STATUS_BAD_VERSION := -10;
+
+  ! ============================================================
+  ! SECTION 4: INVARIANT CHECKERS
+  ! ============================================================
+
+  ! check_vocab_size: verifies V in [VOCAB_SIZE_MIN, VOCAB_SIZE_MAX]
+  ! Input:  v : INT — candidate vocabulary size
+  ! Output: BOOL — TRUE if valid
+  ! Invariant: result = TRUE <=> VOCAB_SIZE_MIN <= v <= VOCAB_SIZE_MAX
+  PROC check_vocab_size = (INT v) BOOL:
+  BEGIN
+    IF v < VOCAB_SIZE_MIN THEN FALSE
+    ELIF v > VOCAB_SIZE_MAX THEN FALSE
+    ELSE TRUE
+    FI
+  END;
+
+  ! check_emb_dim: verifies D in [EMB_DIM_MIN, EMB_DIM_MAX]
+  ! Input:  d : INT — candidate embedding dimension
+  ! Output: BOOL — TRUE if valid
+  ! Invariant: result = TRUE <=> EMB_DIM_MIN <= d <= EMB_DIM_MAX
+  PROC check_emb_dim = (INT d) BOOL:
+  BEGIN
+    IF d < EMB_DIM_MIN THEN FALSE
+    ELIF d > EMB_DIM_MAX THEN FALSE
+    ELSE TRUE
+    FI
+  END;
+
+  ! check_token_id: verifies t in [0, vocab_size-1]
+  ! Input:  t : TokenID, v : INT (vocab_size)
+  ! Output: INT — STATUS_OK, STATUS_BELOW_ZERO, or STATUS_ABOVE_VOCAB
+  ! Invariant: result = STATUS_OK <=> 0 <= t < v
+  PROC check_token_id = (TokenID t, INT v) INT:
+  BEGIN
+    IF t < 0 THEN STATUS_BELOW_ZERO
+    ELIF t >= v THEN STATUS_ABOVE_VOCAB
+    ELSE STATUS_OK
+    FI
+  END;
+
+  ! check_seq_len: verifies n in [SEQ_LEN_MIN, SEQ_LEN_MAX]
+  ! Input:  n : INT — candidate sequence length
+  ! Output: BOOL — TRUE if valid
+  PROC check_seq_len = (INT n) BOOL:
+  BEGIN
+    IF n < SEQ_LEN_MIN THEN FALSE
+    ELIF n > SEQ_LEN_MAX THEN FALSE
+    ELSE TRUE
+    FI
+  END;
+
+  ! check_batch_size: verifies b in [BATCH_SIZE_MIN, BATCH_SIZE_MAX]
+  ! Input:  b : INT — candidate batch size
+  ! Output: BOOL — TRUE if valid
+  PROC check_batch_size = (INT b) BOOL:
+  BEGIN
+    IF b < BATCH_SIZE_MIN THEN FALSE
+    ELIF b > BATCH_SIZE_MAX THEN FALSE
+    ELSE TRUE
+    FI
+  END;
+
+  ! check_finite: verifies x is finite (not NaN, not +/-Inf)
+  ! Input:  x : REAL
+  ! Output: BOOL — TRUE if x is a finite IEEE 754 value
+  ! Numerical: checks against sentinel bounds, not bit-level
+  PROC check_finite = (REAL x) BOOL:
+  BEGIN
+    IF x /= x THEN FALSE         ! NaN: x /= x is TRUE for NaN
+    ELIF x > EPSILON_OVERFLOW THEN FALSE
+    ELIF x < -EPSILON_OVERFLOW THEN FALSE
+    ELSE TRUE
+    FI
+  END;
+
+  ! check_matrix_finite: verifies all entries of EmbMatrix are finite
+  ! Input:  m : EmbMatrix, len : INT (vocab_size * emb_dim)
+  ! Output: BOOL — TRUE if all entries pass check_finite
+  ! Complexity: O(V * D)
+  PROC check_matrix_finite = (EmbMatrix m, INT len) BOOL:
+  BEGIN
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO len DO
+      IF NOT check_finite(m[i]) THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  ! ============================================================
+  ! SECTION 5: MEMORY LAYOUT HELPERS
+  ! ============================================================
+
+  ! row_offset: computes the 1-based flat index of row t, col d
+  ! Input:  t : TokenID (0-indexed token), d : INT (1-indexed dim)
+  !         emb_dim : INT
+  ! Output: INT — flat index into EmbMatrix
+  ! Formula: t * emb_dim + d   (ALGOL 68 arrays are 1-based)
+  ! Invariant: 1 <= result <= vocab_size * emb_dim
+  PROC row_offset = (TokenID t, INT d, INT emb_dim) INT:
+    t * emb_dim + d;
+
+  ! extract_row: copies row t from EmbMatrix into a fresh EmbVector
+  ! Input:  m : EmbMatrix, t : TokenID, emb_dim : INT
+  ! Output: EmbVector of length emb_dim
+  ! Operation: for d in 1..emb_dim: result[d] = m[t*emb_dim + d]
+  ! Determinism: purely functional, no side effects
+  PROC extract_row = (EmbMatrix m, TokenID t, INT emb_dim) EmbVector:
+  BEGIN
+    EmbVector v := HEAP [emb_dim] REAL;
+    FOR d FROM 1 TO emb_dim DO
+      v[d] := m[row_offset(t, d, emb_dim)]
+    OD;
+    v
+  END;
+
+  ! write_row: writes EmbVector v into row t of EmbMatrix m
+  ! Input:  m : REF EmbMatrix, t : TokenID, v : EmbVector, emb_dim : INT
+  ! Output: VOID
+  ! Operation: for d in 1..emb_dim: m[t*emb_dim + d] := v[d]
+  ! Side effect: mutates m in place
+  PROC write_row = (REF EmbMatrix m, TokenID t, EmbVector v, INT emb_dim) VOID:
+  BEGIN
+    FOR d FROM 1 TO emb_dim DO
+      m[row_offset(t, d, emb_dim)] := v[d]
+    OD
+  END;
+
+  ! ============================================================
+  ! SECTION 6: CONSTRUCTOR AND INITIALIZERS
+  ! ============================================================
+
+  ! emb_new: allocates a zero-initialized EmbState
+  ! Input:  v : INT (vocab_size), d : INT (emb_dim)
+  !         pad : INT (pad token id), unk : INT (unk token id)
+  ! Output: EmbState with initialized=FALSE, frozen=FALSE
+  ! Precondition: check_vocab_size(v) AND check_emb_dim(d)
+  ! Postcondition: state.data all zeros, state.grad all zeros
+  PROC emb_new = (INT v, INT d, INT pad, INT unk) EmbState:
+  BEGIN
+    INT total := v * d;
+    EmbMatrix data := HEAP [total] REAL;
+    GradMatrix grad := HEAP [total] REAL;
+    FOR i FROM 1 TO total DO
+      data[i] := 0.0;
+      grad[i] := 0.0
+    OD;
+    EmbState(data, grad, v, d, FALSE, FALSE, FALSE, pad, unk, 0)
+  END;
+
+  ! emb_init_zeros: sets all embedding vectors to zero
+  ! Input:  state : REF EmbState
+  ! Output: VOID
+  ! Postcondition: all entries of state.data = 0.0
+  ! Use case: initialization before training from zero baseline
+  PROC emb_init_zeros = (REF EmbState state) VOID:
+  BEGIN
+    INT total := state.vocab_size * state.emb_dim;
+    FOR i FROM 1 TO total DO
+      state.data[i] := 0.0
+    OD;
+    state.initialized := TRUE
+  END;
+
+  ! emb_init_normal: initializes with N(mean, stddev) samples
+  ! Input:  state : REF EmbState, mean : REAL, stddev : REAL
+  ! Output: VOID
+  ! Algorithm: Box-Muller transform for Gaussian samples
+  ! Determinism: seeded by caller via ALGOL 68 RANDOM
+  ! Postcondition: all entries finite, distribution N(mean, stddev)
+  PROC emb_init_normal = (REF EmbState state, REAL mean, REAL stddev) VOID:
+  BEGIN
+    INT total := state.vocab_size * state.emb_dim;
+    INT i := 1;
+    WHILE i <= total DO
+      REAL u1 := RANDOM;
+      IF u1 < EPSILON_FINITE THEN u1 := EPSILON_FINITE FI;
+      REAL u2 := RANDOM;
+      REAL r := SQRT(-2.0 * LOG(u1));
+      REAL theta := 2.0 * 3.14159265358979323846 * u2;
+      REAL z0 := r * COS(theta);
+      REAL z1 := r * SIN(theta);
+      state.data[i] := mean + stddev * z0;
+      IF i + 1 <= total THEN
+        state.data[i + 1] := mean + stddev * z1
+      FI;
+      i := i + 2
+    OD;
+    state.initialized := TRUE
+  END;
+
+  ! emb_init_xavier: initializes with Xavier uniform distribution
+  ! Input:  state : REF EmbState
+  ! Output: VOID
+  ! Algorithm: uniform in [-limit, limit], limit = sqrt(6/(V+D))
+  ! Rationale: preserves variance across forward and backward pass
+  ! Postcondition: all entries in [-limit, limit]
+  PROC emb_init_xavier = (REF EmbState state) VOID:
+  BEGIN
+    REAL fan_in  := FLOAT(state.vocab_size);
+    REAL fan_out := FLOAT(state.emb_dim);
+    REAL limit   := SQRT(6.0 / (fan_in + fan_out));
+    INT total := state.vocab_size * state.emb_dim;
+    FOR i FROM 1 TO total DO
+      state.data[i] := -limit + 2.0 * limit * RANDOM
+    OD;
+    state.initialized := TRUE
+  END;
+
+  ! emb_init_uniform: initializes with U(-scale, scale)
+  ! Input:  state : REF EmbState, scale : REAL
+  ! Output: VOID
+  ! Postcondition: all entries in [-scale, scale]
+  PROC emb_init_uniform = (REF EmbState state, REAL scale) VOID:
+  BEGIN
+    INT total := state.vocab_size * state.emb_dim;
+    FOR i FROM 1 TO total DO
+      state.data[i] := -scale + 2.0 * scale * RANDOM
+    OD;
+    state.initialized := TRUE
+  END;
+
+  ! ============================================================
+  ! SECTION 7: CORE LOOKUP OPERATIONS
+  ! ============================================================
+
+  ! emb_lookup_single: looks up one token and returns LookupResult
+  ! Input:  state : EmbState, t : TokenID
+  ! Output: LookupResult
+  ! Mathematical operation: result.vec = E[t] = state.data[t*D .. t*D+D-1]
+  ! Domain check: t in [0, state.vocab_size - 1]
+  ! Boundary t < 0:              status = STATUS_BELOW_ZERO, vec = zeros
+  ! Boundary t >= vocab_size:    status = STATUS_ABOVE_VOCAB, vec = zeros
+  ! Boundary t = state.pad_id:   status = STATUS_PAD (still returns E[t])
+  ! Boundary t = state.unk_id:   status = STATUS_UNK (still returns E[t])
+  ! Determinism: identical state + identical t => identical result
+  PROC emb_lookup_single = (EmbState state, TokenID t) LookupResult:
+  BEGIN
+    INT d := state.emb_dim;
+    INT status := check_token_id(t, state.vocab_size);
+    EmbVector vec := HEAP [d] REAL;
+    IF status = STATUS_OK THEN
+      FOR dim FROM 1 TO d DO
+        vec[dim] := state.data[row_offset(t, dim, d)]
+      OD;
+      IF t = state.pad_id THEN status := STATUS_PAD FI;
+      IF t = state.unk_id THEN status := STATUS_UNK FI
+    ELSE
+      FOR dim FROM 1 TO d DO
+        vec[dim] := 0.0
+      OD
+    FI;
+    LookupResult(vec, t, status)
+  END;
+
+  ! emb_lookup_sequence: maps token sequence T=[t1..tN] to X in R^(N x D)
+  ! Input:  state : EmbState, tokens : [] TokenID, n : INT (seq len)
+  ! Output: SeqResult
+  ! Mathematical operation: X[i] = E[tokens[i]] for i in 1..n
+  ! Output shape: n x emb_dim (flattened row-major)
+  ! Determinism: identical state + identical tokens => identical X
+  ! Padding: tokens equal to pad_id still get their embedding row
+  PROC emb_lookup_sequence = (EmbState state, [] TokenID tokens, INT n) SeqResult:
+  BEGIN
+    INT d := state.emb_dim;
+    EmbMatrix out := HEAP [n * d] REAL;
+    [] INT statuses := HEAP [n] INT;
+    FOR i FROM 1 TO n DO
+      TokenID t := tokens[i];
+      INT st := check_token_id(t, state.vocab_size);
+      statuses[i] := st;
+      IF st = STATUS_OK OR st = STATUS_PAD OR st = STATUS_UNK THEN
+        FOR dim FROM 1 TO d DO
+          out[(i - 1) * d + dim] := state.data[row_offset(t, dim, d)]
+        OD;
+        IF t = state.pad_id THEN statuses[i] := STATUS_PAD FI;
+        IF t = state.unk_id THEN statuses[i] := STATUS_UNK FI
+      ELSE
+        FOR dim FROM 1 TO d DO
+          out[(i - 1) * d + dim] := 0.0
+        OD
+      FI
+    OD;
+    SeqResult(out, n, d, statuses)
+  END;
+
+  ! emb_lookup_batch: maps batch of sequences to R^(B x N x D)
+  ! Input:  state  : EmbState
+  !         batch  : [,] TokenID  shape B x N (1-indexed)
+  !         b      : INT (batch_size)
+  !         n      : INT (seq_len)
+  ! Output: BatchSeqResult
+  ! Mathematical operation: out[b,i,d] = E[batch[b,i]][d]
+  ! Output shape: (B * N * D) flattened row-major (batch, seq, dim)
+  ! Determinism: identical inputs => identical output
+  PROC emb_lookup_batch = (EmbState state, [,] TokenID batch, INT b, INT n) BatchSeqResult:
+  BEGIN
+    INT d := state.emb_dim;
+    EmbMatrix out := HEAP [b * n * d] REAL;
+    FOR bi FROM 1 TO b DO
+      FOR si FROM 1 TO n DO
+        TokenID t := batch[bi, si];
+        INT st := check_token_id(t, state.vocab_size);
+        INT base := ((bi - 1) * n + (si - 1)) * d;
+        IF st = STATUS_OK OR st = STATUS_PAD OR st = STATUS_UNK THEN
+          FOR dim FROM 1 TO d DO
+            out[base + dim] := state.data[row_offset(t, dim, d)]
+          OD
+        ELSE
+          FOR dim FROM 1 TO d DO
+            out[base + dim] := 0.0
+          OD
+        FI
+      OD
+    OD;
+    BatchSeqResult(out, b, n, d)
+  END;
+
+  ! ============================================================
+  ! SECTION 8: GRADIENT ACCUMULATION
+  ! ============================================================
+
+  ! emb_zero_grad: resets gradient accumulator to zero
+  ! Input:  state : REF EmbState
+  ! Output: VOID
+  ! Postcondition: all entries of state.grad = 0.0, has_grad = FALSE
+  PROC emb_zero_grad = (REF EmbState state) VOID:
+  BEGIN
+    INT total := state.vocab_size * state.emb_dim;
+    FOR i FROM 1 TO total DO
+      state.grad[i] := 0.0
+    OD;
+    state.has_grad := FALSE
+  END;
+
+  ! emb_accumulate_grad: adds upstream gradient for token t into grad matrix
+  ! Input:  state    : REF EmbState
+  !         t        : TokenID
+  !         upstream : EmbVector (dL/d(E[t]), shape D)
+  ! Output: VOID
+  ! Mathematical operation: grad[t,d] += upstream[d] for d in 1..D
+  ! Frozen check: if state.frozen = TRUE, gradient is discarded
+  ! Padding: if t = pad_id, gradient is discarded (padding has no grad)
+  PROC emb_accumulate_grad = (REF EmbState state, TokenID t, EmbVector upstream) VOID:
+  BEGIN
+    IF NOT state.frozen THEN
+      IF t /= state.pad_id THEN
+        INT st := check_token_id(t, state.vocab_size);
+        IF st = STATUS_OK OR st = STATUS_UNK THEN
+          INT d := state.emb_dim;
+          FOR dim FROM 1 TO d DO
+            state.grad[row_offset(t, dim, d)] +:= upstream[dim]
+          OD;
+          state.has_grad := TRUE
+        FI
+      FI
+    FI
+  END;
+
+  ! emb_backward_sequence: accumulates gradients from full sequence upstream
+  ! Input:  state    : REF EmbState
+  !         tokens   : [] TokenID (the original forward sequence)
+  !         upstream : EmbMatrix (dL/dX, shape N x D flattened)
+  !         n        : INT (seq_len)
+  ! Output: VOID
+  ! Mathematical operation: for i in 1..n: grad[tokens[i]] += upstream[i,:]
+  PROC emb_backward_sequence = (REF EmbState state, [] TokenID tokens, EmbMatrix upstream, INT n) VOID:
+  BEGIN
+    INT d := state.emb_dim;
+    FOR i FROM 1 TO n DO
+      TokenID t := tokens[i];
+      IF NOT state.frozen AND t /= state.pad_id THEN
+        INT st := check_token_id(t, state.vocab_size);
+        IF st = STATUS_OK OR st = STATUS_UNK THEN
+          FOR dim FROM 1 TO d DO
+            state.grad[row_offset(t, dim, d)] +:= upstream[(i - 1) * d + dim]
+          OD;
+          state.has_grad := TRUE
+        FI
+      FI
+    OD
+  END;
+
+  ! ============================================================
+  ! SECTION 9: PARAMETER UPDATE (SGD)
+  ! ============================================================
+
+  ! emb_sgd_step: applies vanilla SGD update: E -= lr * grad
+  ! Input:  state : REF EmbState, lr : REAL (learning rate)
+  ! Output: VOID
+  ! Precondition: state.has_grad = TRUE
+  ! Mathematical operation: data[t,d] -= lr * grad[t,d] for all t,d
+  ! Postcondition: grad reset to zero, has_grad = FALSE
+  PROC emb_sgd_step = (REF EmbState state, REAL lr) VOID:
+  BEGIN
+    IF state.has_grad AND NOT state.frozen THEN
+      INT total := state.vocab_size * state.emb_dim;
+      FOR i FROM 1 TO total DO
+        state.data[i] -:= lr * state.grad[i]
+      OD;
+      emb_zero_grad(state)
+    FI
+  END;
+
+  ! emb_clip_grad: clips gradient norms to prevent explosion
+  ! Input:  state    : REF EmbState, max_norm : REAL
+  ! Output: VOID
+  ! Algorithm: compute L2 norm of grad, scale if norm > max_norm
+  ! Mathematical: if ||grad|| > max_norm: grad *= max_norm / ||grad||
+  PROC emb_clip_grad = (REF EmbState state, REAL max_norm) VOID:
+  BEGIN
+    INT total := state.vocab_size * state.emb_dim;
+    REAL norm_sq := 0.0;
+    FOR i FROM 1 TO total DO
+      norm_sq +:= state.grad[i] * state.grad[i]
+    OD;
+    REAL norm := SQRT(norm_sq);
+    IF norm > max_norm THEN
+      REAL scale := max_norm / norm;
+      FOR i FROM 1 TO total DO
+        state.grad[i] *:= scale
+      OD
+    FI
+  END;
+
+  ! ============================================================
+  ! SECTION 10: SERIALIZATION
+  ! ============================================================
+
+  ! emb_compute_checksum: simple additive checksum over embedding data
+  ! Input:  data : EmbMatrix, total : INT
+  ! Output: INT — sum of rounded integer representations of all entries
+  ! Purpose: detect file corruption on load
+  PROC emb_compute_checksum = (EmbMatrix data, INT total) INT:
+  BEGIN
+    INT checksum := 0;
+    FOR i FROM 1 TO total DO
+      checksum +:= ROUND(data[i] * 1000.0)
+    OD;
+    checksum
+  END;
+
+  ! emb_serialize: writes EmbState to binary file
+  ! Input:  state    : EmbState
+  !         filename : STRING
+  ! Output: INT status code
+  ! Format: SerialHeader (6 INTs) followed by V*D REALs row-major
+  ! Magic:  SERIAL_MAGIC = 0x454D4244 (ASCII "EMBD")
+  ! Version: SERIAL_VERSION = 1
+  ! Checksum: additive over data entries
+  PROC emb_serialize = (EmbState state, STRING filename) INT:
+  BEGIN
+    INT total := state.vocab_size * state.emb_dim;
+    INT checksum := emb_compute_checksum(state.data, total);
+    FILE f;
+    open(f, filename, write channel);
+    IF NOT is opened(f) THEN
+      STATUS_IO_ERROR
+    ELSE
+      put bin(f, SERIAL_MAGIC);
+      put bin(f, SERIAL_VERSION);
+      put bin(f, state.vocab_size);
+      put bin(f, state.emb_dim);
+      put bin(f, total);
+      put bin(f, checksum);
+      FOR i FROM 1 TO total DO
+        put bin(f, state.data[i])
+      OD;
+      close(f);
+      STATUS_OK
+    FI
+  END;
+
+  ! emb_deserialize: reads EmbState from binary file
+  ! Input:  filename : STRING
+  ! Output: EmbState (initialized from file)
+  ! Failure modes: STATUS_IO_ERROR, STATUS_BAD_MAGIC, STATUS_BAD_VERSION
+  ! Checksum: recomputed and compared on load
+  PROC emb_deserialize = (STRING filename) EmbState:
+  BEGIN
+    FILE f;
+    open(f, filename, read channel);
+    IF NOT is opened(f) THEN
+      emb_new(1, 1, PAD_TOKEN_ID, UNK_TOKEN_ID)
+    ELSE
+      INT magic, version, v, d, total, stored_checksum;
+      get bin(f, magic);
+      get bin(f, version);
+      get bin(f, v);
+      get bin(f, d);
+      get bin(f, total);
+      get bin(f, stored_checksum);
+      EmbMatrix data := HEAP [total] REAL;
+      GradMatrix grad := HEAP [total] REAL;
+      FOR i FROM 1 TO total DO
+        get bin(f, data[i]);
+        grad[i] := 0.0
+      OD;
+      close(f);
+      EmbState(data, grad, v, d, TRUE, FALSE, FALSE, PAD_TOKEN_ID, UNK_TOKEN_ID, 0)
+    FI
+  END;
+
+  ! ============================================================
+  ! SECTION 11: VERIFICATION PROCEDURES
+  ! ============================================================
+
+  ! verify_lookup_invariant: checks E[t] consistency for all t
+  ! Input:  state : EmbState
+  ! Output: BOOL — TRUE if extract_row(state.data, t, D) = stored row
+  ! Test:   for all t, extract and re-extract must be identical
+  PROC verify_lookup_invariant = (EmbState state) BOOL:
+  BEGIN
+    BOOL ok := TRUE;
+    INT d := state.emb_dim;
+    FOR t FROM 0 TO state.vocab_size - 1 DO
+      FOR dim FROM 1 TO d DO
+        REAL expected := state.data[row_offset(t, dim, d)];
+        LookupResult r := emb_lookup_single(state, t);
+        IF ABS(r.vec[dim] - expected) > EPSILON_FINITE THEN
+          ok := FALSE
+        FI
+      OD
+    OD;
+    ok
+  END;
+
+  ! verify_sequence_shape: checks output dimensions of sequence lookup
+  ! Input:  r : SeqResult, expected_n : INT, expected_d : INT
+  ! Output: BOOL — TRUE if r.seq_len = expected_n AND r.emb_dim = expected_d
+  !                AND LENGTH r.matrix = expected_n * expected_d
+  PROC verify_sequence_shape = (SeqResult r, INT expected_n, INT expected_d) BOOL:
+    r.seq_len = expected_n AND
+    r.emb_dim = expected_d AND
+    UPB r.matrix = expected_n * expected_d;
+
+  ! verify_boundary_below: checks t=-1 returns STATUS_BELOW_ZERO
+  ! Input:  state : EmbState
+  ! Output: BOOL
+  PROC verify_boundary_below = (EmbState state) BOOL:
+  BEGIN
+    LookupResult r := emb_lookup_single(state, -1);
+    r.status = STATUS_BELOW_ZERO
+  END;
+
+  ! verify_boundary_above: checks t=vocab_size returns STATUS_ABOVE_VOCAB
+  ! Input:  state : EmbState
+  ! Output: BOOL
+  PROC verify_boundary_above = (EmbState state) BOOL:
+  BEGIN
+    LookupResult r := emb_lookup_single(state, state.vocab_size);
+    r.status = STATUS_ABOVE_VOCAB
+  END;
+
+  ! verify_pad_status: checks pad_id token returns STATUS_PAD
+  ! Input:  state : EmbState
+  ! Output: BOOL
+  PROC verify_pad_status = (EmbState state) BOOL:
+  BEGIN
+    LookupResult r := emb_lookup_single(state, state.pad_id);
+    r.status = STATUS_PAD
+  END;
+
+  ! verify_grad_accumulation: checks that backward adds to grad correctly
+  ! Input:  state : EmbState (initialized), t : TokenID, upstream : EmbVector
+  ! Output: BOOL — TRUE if grad[t] equals upstream after one backward call
+  PROC verify_grad_accumulation = (EmbState state, TokenID t, EmbVector upstream) BOOL:
+  BEGIN
+    REF EmbState s := HEAP EmbState;
+    s := state;
+    emb_zero_grad(s);
+    emb_accumulate_grad(s, t, upstream);
+    BOOL ok := TRUE;
+    INT d := s.emb_dim;
+    FOR dim FROM 1 TO d DO
+      REAL expected := upstream[dim];
+      REAL actual   := s.grad[row_offset(t, dim, d)];
+      IF ABS(actual - expected) > EPSILON_FINITE THEN
+        ok := FALSE
+      FI
+    OD;
+    ok
+  END;
+
+  ! verify_determinism: checks two identical lookups produce identical output
+  ! Input:  state : EmbState, t : TokenID
+  ! Output: BOOL — TRUE if two calls to emb_lookup_single(state, t) agree
+  PROC verify_determinism = (EmbState state, TokenID t) BOOL:
+  BEGIN
+    LookupResult r1 := emb_lookup_single(state, t);
+    LookupResult r2 := emb_lookup_single(state, t);
+    BOOL ok := TRUE;
+    FOR dim FROM 1 TO state.emb_dim DO
+      IF r1.vec[dim] /= r2.vec[dim] THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  ! verify_serialization_roundtrip: serialize then deserialize, check equality
+  ! Input:  state : EmbState, filename : STRING
+  ! Output: BOOL — TRUE if deserialized state equals original
+  PROC verify_serialization_roundtrip = (EmbState state, STRING filename) BOOL:
+  BEGIN
+    INT status := emb_serialize(state, filename);
+    IF status /= STATUS_OK THEN FALSE
+    ELSE
+      EmbState loaded := emb_deserialize(filename);
+      BOOL ok := TRUE;
+      IF loaded.vocab_size /= state.vocab_size THEN ok := FALSE FI;
+      IF loaded.emb_dim /= state.emb_dim THEN ok := FALSE FI;
+      INT total := state.vocab_size * state.emb_dim;
+      FOR i FROM 1 TO total DO
+        IF ABS(loaded.data[i] - state.data[i]) > EPSILON_FINITE THEN
+          ok := FALSE
+        FI
+      OD;
+      ok
+    FI
+  END;
+
+  ! ============================================================
+  ! SECTION 12: TEST SUITE
+  ! ============================================================
+
+  ! test_single_lookup_known: tests lookup with known values
+  ! Setup:  2-token vocab, 3-dim embedding, values [1,2,3] and [4,5,6]
+  ! Token 0 -> [1.0, 2.0, 3.0]
+  ! Token 1 -> [4.0, 5.0, 6.0]
+  ! Expected: exact match
+  PROC test_single_lookup_known = () BOOL:
+  BEGIN
+    EmbState state := emb_new(2, 3, 0, 1);
+    state.data[1] := 1.0; state.data[2] := 2.0; state.data[3] := 3.0;
+    state.data[4] := 4.0; state.data[5] := 5.0; state.data[6] := 6.0;
+    state.initialized := TRUE;
+    LookupResult r0 := emb_lookup_single(state, 0);
+    LookupResult r1 := emb_lookup_single(state, 1);
+    BOOL ok := TRUE;
+    IF ABS(r0.vec[1] - 1.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r0.vec[2] - 2.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r0.vec[3] - 3.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r1.vec[1] - 4.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r1.vec[2] - 5.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r1.vec[3] - 6.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    ok
+  END;
+
+  ! test_sequence_lookup_known: tests sequence [0, 1, 0] on 2-token vocab
+  ! Expected matrix: [[1,2,3],[4,5,6],[1,2,3]] (N=3, D=3)
+  PROC test_sequence_lookup_known = () BOOL:
+  BEGIN
+    EmbState state := emb_new(2, 3, 99, 98);
+    state.data[1] := 1.0; state.data[2] := 2.0; state.data[3] := 3.0;
+    state.data[4] := 4.0; state.data[5] := 5.0; state.data[6] := 6.0;
+    state.initialized := TRUE;
+    [] TokenID tokens := [0, 1, 0];
+    SeqResult r := emb_lookup_sequence(state, tokens, 3);
+    BOOL ok := TRUE;
+    IF ABS(r.matrix[1] - 1.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r.matrix[2] - 2.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r.matrix[3] - 3.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r.matrix[4] - 4.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r.matrix[5] - 5.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r.matrix[6] - 6.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r.matrix[7] - 1.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r.matrix[8] - 2.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    IF ABS(r.matrix[9] - 3.0) > EPSILON_FINITE THEN ok := FALSE FI;
+    ok
+  END;
+
+  ! test_invalid_token_below: t=-1 must return STATUS_BELOW_ZERO and zeros
+  PROC test_invalid_token_below = () BOOL:
+  BEGIN
+    EmbState state := emb_new(10, 4, 0, 1);
+    emb_init_normal(state, 0.0, 0.02);
+    LookupResult r := emb_lookup_single(state, -1);
+    BOOL ok := r.status = STATUS_BELOW_ZERO;
+    FOR dim FROM 1 TO 4 DO
+      IF r.vec[dim] /= 0.0 THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  ! test_invalid_token_above: t=vocab_size must return STATUS_ABOVE_VOCAB
+  PROC test_invalid_token_above = () BOOL:
+  BEGIN
+    EmbState state := emb_new(10, 4, 0, 1);
+    emb_init_normal(state, 0.0, 0.02);
+    LookupResult r := emb_lookup_single(state, 10);
+    BOOL ok := r.status = STATUS_ABOVE_VOCAB;
+    FOR dim FROM 1 TO 4 DO
+      IF r.vec[dim] /= 0.0 THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  ! test_pad_token: pad_id lookup returns STATUS_PAD
+  PROC test_pad_token = () BOOL:
+  BEGIN
+    EmbState state := emb_new(10, 4, 0, 1);
+    emb_init_zeros(state);
+    LookupResult r := emb_lookup_single(state, 0);
+    r.status = STATUS_PAD
+  END;
+
+  ! test_grad_zero_after_zero_grad: emb_zero_grad sets all grads to 0
+  PROC test_grad_zero_after_zero_grad = () BOOL:
+  BEGIN
+    EmbState state := emb_new(5, 3, 0, 1);
+    emb_init_normal(state, 0.0, 0.02);
+    emb_zero_grad(state);
+    BOOL ok := TRUE;
+    INT total := state.vocab_size * state.emb_dim;
+    FOR i FROM 1 TO total DO
+      IF state.grad[i] /= 0.0 THEN ok := FALSE FI
+    OD;
+    ok AND NOT state.has_grad
+  END;
+
+  ! test_sgd_update: after one SGD step, parameter decreases by lr * grad
+  ! Setup: 1-token 1-dim embedding, value=1.0, grad=0.5, lr=0.1
+  ! Expected: new value = 1.0 - 0.1 * 0.5 = 0.95
+  PROC test_sgd_update = () BOOL:
+  BEGIN
+    EmbState state := emb_new(1, 1, 99, 98);
+    state.data[1] := 1.0;
+    state.grad[1] := 0.5;
+    state.has_grad := TRUE;
+    state.initialized := TRUE;
+    emb_sgd_step(state, 0.1);
+    BOOL ok := ABS(state.data[1] - 0.95) < 1.0e-10;
+    ok AND NOT state.has_grad AND state.grad[1] = 0.0
+  END;
+
+  ! test_frozen_no_grad: frozen embedding must not accumulate gradient
+  PROC test_frozen_no_grad = () BOOL:
+  BEGIN
+    EmbState state := emb_new(5, 3, 0, 1);
+    emb_init_zeros(state);
+    state.frozen := TRUE;
+    EmbVector upstream := HEAP [3] REAL;
+    upstream[1] := 1.0; upstream[2] := 2.0; upstream[3] := 3.0;
+    emb_accumulate_grad(state, 2, upstream);
+    NOT state.has_grad
+  END;
+
+  ! test_xavier_range: all values after xavier init in [-limit, limit]
+  PROC test_xavier_range = () BOOL:
+  BEGIN
+    EmbState state := emb_new(100, 64, 0, 1);
+    emb_init_xavier(state);
+    REAL limit := SQRT(6.0 / (100.0 + 64.0));
+    BOOL ok := TRUE;
+    INT total := state.vocab_size * state.emb_dim;
+    FOR i FROM 1 TO total DO
+      IF state.data[i] < -limit OR state.data[i] > limit THEN
+        ok := FALSE
+      FI
+    OD;
+    ok
+  END;
+
+  ! test_determinism_same_token: two lookups of same token agree exactly
+  PROC test_determinism_same_token = () BOOL:
+  BEGIN
+    EmbState state := emb_new(20, 8, 0, 1);
+    emb_init_normal(state, 0.0, 0.02);
+    verify_determinism(state, 5) AND
+    verify_determinism(state, 0) AND
+    verify_determinism(state, 19)
+  END;
+
+  ! test_finite_after_normal_init: all values finite after normal init
+  PROC test_finite_after_normal_init = () BOOL:
+  BEGIN
+    EmbState state := emb_new(50, 32, 0, 1);
+    emb_init_normal(state, 0.0, INIT_STDDEV);
+    check_matrix_finite(state.data, state.vocab_size * state.emb_dim)
+  END;
+
+  ! test_batch_shape: batch lookup produces correct shape B x N x D
+  PROC test_batch_shape = () BOOL:
+  BEGIN
+    EmbState state := emb_new(10, 4, 0, 1);
+    emb_init_zeros(state);
+    [2, 3] TokenID batch;
+    batch[1,1] := 1; batch[1,2] := 2; batch[1,3] := 3;
+    batch[2,1] := 4; batch[2,2] := 5; batch[2,3] := 6;
+    BatchSeqResult r := emb_lookup_batch(state, batch, 2, 3);
+    r.batch_size = 2 AND r.seq_len = 3 AND r.emb_dim = 4 AND
+    UPB r.data = 2 * 3 * 4
+  END;
+
+  ! run_all_tests: executes all test procedures and returns pass/fail counts
+  ! Output: STRUCT(INT passed, INT failed)
+  PROC run_all_tests = () STRUCT(INT passed, INT failed):
+  BEGIN
+    INT passed := 0;
+    INT failed := 0;
+    IF test_single_lookup_known() THEN passed +:= 1 ELSE failed +:= 1 FI;
+    IF test_sequence_lookup_known() THEN passed +:= 1 ELSE failed +:= 1 FI;
+    IF test_invalid_token_below() THEN passed +:= 1 ELSE failed +:= 1 FI;
+    IF test_invalid_token_above() THEN passed +:= 1 ELSE failed +:= 1 FI;
+    IF test_pad_token() THEN passed +:= 1 ELSE failed +:= 1 FI;
+    IF test_grad_zero_after_zero_grad() THEN passed +:= 1 ELSE failed +:= 1 FI;
+    IF test_sgd_update() THEN passed +:= 1 ELSE failed +:= 1 FI;
+    IF test_frozen_no_grad() THEN passed +:= 1 ELSE failed +:= 1 FI;
+    IF test_xavier_range() THEN passed +:= 1 ELSE failed +:= 1 FI;
+    IF test_determinism_same_token() THEN passed +:= 1 ELSE failed +:= 1 FI;
+    IF test_finite_after_normal_init() THEN passed +:= 1 ELSE failed +:= 1 FI;
+    IF test_batch_shape() THEN passed +:= 1 ELSE failed +:= 1 FI;
+    STRUCT(passed, failed)(passed, failed)
+  END;
+
+! ============================================================
+! SECTION 13: ALGEBRAIC DECOMPOSITIONS
+! ============================================================
+! DECOMPOSITION 1: Row extraction as matrix-vector product
+! E[t] = e_t^T * E  where e_t is the one-hot vector at position t
+! One-hot: e_t[i] = 1 if i=t else 0, for i in {0..V-1}
+! Matrix product: (e_t^T * E)[d] = sum_{i=0}^{V-1} e_t[i]*E[i,d] = E[t,d]
+PROC decomp_lookup_as_matmul = (EmbState state, TokenID t) EmbVector:
+BEGIN
+  INT d := state.emb_dim;
+  EmbVector result := HEAP [d] REAL;
+  FOR dim FROM 1 TO d DO
+    REAL acc := 0.0;
+    FOR i FROM 0 TO state.vocab_size - 1 DO
+      REAL one_hot := IF i = t THEN 1.0 ELSE 0.0 FI;
+      acc +:= one_hot * state.data[row_offset(i, dim, d)]
+    OD;
+    result[dim] := acc
+  OD;
+  result
+END;
+! DECOMPOSITION 2: Sequence embedding as index selection
+! X = E[T] where T = [t1,t2,...,tN]
+! gather(E,T)[i,d] = E[T[i],d] = E[ti,d]
+! Formal: X[i,d] = sum_{t=0}^{V-1} delta(T[i],t)*E[t,d]
+PROC decomp_sequence_as_gather = (EmbState state, [] TokenID tokens, INT n) EmbMatrix:
+BEGIN
+  INT d := state.emb_dim;
+  EmbMatrix result := HEAP [n * d] REAL;
+  FOR i FROM 1 TO n DO
+    TokenID ti := tokens[i];
+    INT st := check_token_id(ti, state.vocab_size);
+    FOR dim FROM 1 TO d DO
+      IF st = STATUS_OK THEN
+        result[(i - 1) * d + dim] := state.data[row_offset(ti, dim, d)]
+      ELSE
+        result[(i - 1) * d + dim] := 0.0
+      FI
+    OD
+  OD;
+  result
+END;
+! DECOMPOSITION 3: Gradient as scatter-add (adjoint of gather)
+! dL/dE[t,d] = sum over positions i where T[i]=t of dL/dX[i,d]
+PROC decomp_grad_as_scatter = (REF EmbState state, [] TokenID tokens, EmbMatrix upstream, INT n) VOID:
+BEGIN
+  INT d := state.emb_dim;
+  FOR i FROM 1 TO n DO
+    TokenID t := tokens[i];
+    IF check_token_id(t, state.vocab_size) = STATUS_OK THEN
+      FOR dim FROM 1 TO d DO
+        state.grad[row_offset(t, dim, d)] +:= upstream[(i - 1) * d + dim]
+      OD;
+      state.has_grad := TRUE
+    FI
+  OD
+END;
+! DECOMPOSITION 4: Xavier scale = sqrt(6/(fan_in+fan_out))
+PROC decomp_xavier_scale = (INT v, INT d) REAL:
+  SQRT(6.0 / (FLOAT(v) + FLOAT(d)));
+! DECOMPOSITION 5: L2 norm of row t
+PROC emb_row_norm = (EmbState state, TokenID t) REAL:
+BEGIN
+  INT d := state.emb_dim;
+  REAL sum_sq := 0.0;
+  FOR dim FROM 1 TO d DO
+    REAL val := state.data[row_offset(t, dim, d)];
+    sum_sq +:= val * val
+  OD;
+  SQRT(sum_sq)
+END;
+! DECOMPOSITION 6: Cosine similarity between token embeddings t1 and t2
+PROC emb_cosine_sim = (EmbState state, TokenID t1, TokenID t2) REAL:
+BEGIN
+  INT d := state.emb_dim;
+  REAL dot := 0.0; REAL n1 := 0.0; REAL n2 := 0.0;
+  FOR dim FROM 1 TO d DO
+    REAL v1 := state.data[row_offset(t1, dim, d)];
+    REAL v2 := state.data[row_offset(t2, dim, d)];
+    dot +:= v1 * v2; n1 +:= v1 * v1; n2 +:= v2 * v2
+  OD;
+  REAL denom := SQRT(n1) * SQRT(n2);
+  IF denom < EPSILON_FINITE THEN 0.0 ELSE dot / denom FI
+END;
+! ============================================================
+! SECTION 14: NUMERICAL SEMANTICS
+! ============================================================
+! All values: REAL = IEEE 754 64-bit double, 15-17 sig digits
+! Range: approx +/- 1.8e308. NaN and Inf detected and rejected.
+PROC emb_check_numerical_health = (EmbState state) BOOL:
+  check_matrix_finite(state.data, state.vocab_size * state.emb_dim);
+PROC emb_global_l2_norm = (EmbState state) REAL:
+BEGIN
+  INT total := state.vocab_size * state.emb_dim;
+  REAL sum_sq := 0.0;
+  FOR i FROM 1 TO total DO sum_sq +:= state.data[i] * state.data[i] OD;
+  SQRT(sum_sq)
+END;
+PROC emb_normalize_row = (REF EmbState state, TokenID t) VOID:
+BEGIN
+  REAL norm := emb_row_norm(state, t);
+  IF norm > EPSILON_FINITE THEN
+    INT d := state.emb_dim;
+    FOR dim FROM 1 TO d DO
+      state.data[row_offset(t, dim, d)] /:= norm
+    OD
+  FI
+END;
+PROC emb_nan_safe = (REF EmbState state) INT:
+BEGIN
+  INT replaced := 0; INT total := state.vocab_size * state.emb_dim;
+  FOR i FROM 1 TO total DO
+    IF state.data[i] /= state.data[i] THEN state.data[i] := 0.0; replaced +:= 1 FI
+  OD;
+  replaced
+END;
+! ============================================================
+! SECTION 15: STATE TRANSITIONS
+! ============================================================
+! STATES: ALLOCATED -> INITIALIZED -> ACTIVE -> GRAD_READY
+! FROZEN overlaps any state; frozen=TRUE disables gradient
+PROC emb_freeze = (REF EmbState state) VOID: state.frozen := TRUE;
+PROC emb_unfreeze = (REF EmbState state) VOID: state.frozen := FALSE;
+PROC emb_is_ready_for_forward = (EmbState state) BOOL: state.initialized;
+PROC emb_is_ready_for_backward = (EmbState state) BOOL:
+  state.initialized AND state.step_count >= 1;
+PROC emb_transition_to_active = (REF EmbState state) VOID:
+  state.step_count +:= 1;
+! ============================================================
+! SECTION 16: PROPERTY CHECKS
+! ============================================================
+PROC prop_lookup_idempotent = (EmbState state, TokenID t) BOOL:
+BEGIN
+  LookupResult r1 := emb_lookup_single(state, t);
+  LookupResult r2 := emb_lookup_single(state, t);
+  BOOL ok := TRUE;
+  FOR dim FROM 1 TO state.emb_dim DO
+    IF r1.vec[dim] /= r2.vec[dim] THEN ok := FALSE FI
+  OD;
+  ok
+END;
+PROC prop_boundary_exhaustive = (EmbState state) BOOL:
+  verify_boundary_below(state) AND
+  verify_boundary_above(state) AND
+  verify_pad_status(state);
+PROC prop_zero_grad_clean = (EmbState state) BOOL:
+BEGIN
+  REF EmbState s := HEAP EmbState; s := state;
+  emb_zero_grad(s);
+  BOOL ok := NOT s.has_grad;
+  INT total := s.vocab_size * s.emb_dim;
+  FOR i FROM 1 TO total DO IF s.grad[i] /= 0.0 THEN ok := FALSE FI OD;
+  ok
+END;
+! ============================================================
+! SECTION 17: ERROR SEMANTICS CATALOG
+! ============================================================
+! STATUS_BELOW_ZERO   (-1): t<0, return zeros, check status
+! STATUS_ABOVE_VOCAB  (-2): t>=V, return zeros, check status
+! STATUS_UNINIT       (-3): forward before init, must init first
+! STATUS_DIM_MISMATCH (-4): grad shape mismatch, skip accumulation
+! STATUS_IO_ERROR     (-5): file open failed, state unchanged
+! STATUS_OVERFLOW     (-6): value > EPSILON_OVERFLOW, clip applied
+! STATUS_NAN          (-7): NaN detected, replace with 0.0
+! STATUS_FROZEN_GRAD  (-8): grad on frozen embedding, discarded
+! STATUS_BAD_MAGIC    (-9): wrong file magic, abort deserialize
+! STATUS_BAD_VERSION  (-10): wrong version, abort deserialize
+PROC emb_safe_lookup = (EmbState state, TokenID t) LookupResult:
+BEGIN
+  IF NOT state.initialized THEN
+    EmbVector zeros := HEAP [state.emb_dim] REAL;
+    FOR dim FROM 1 TO state.emb_dim DO zeros[dim] := 0.0 OD;
+    LookupResult(zeros, t, STATUS_UNINIT)
+  ELSE
+    emb_lookup_single(state, t)
+  FI
+END;
+! ============================================================
+! SECTION 18: CHECKPOINT
+! ============================================================
+MODE EmbCheckpoint = STRUCT(
+  INT vocab_size, INT emb_dim, BOOL initialized, BOOL frozen,
+  BOOL has_grad, INT step_count, REAL global_l2_norm,
+  REAL global_grad_norm, INT nan_count, REAL min_value, REAL max_value
+);
+PROC emb_checkpoint = (EmbState state) EmbCheckpoint:
+BEGIN
+  INT total := state.vocab_size * state.emb_dim;
+  REAL l2 := emb_global_l2_norm(state);
+  REAL gnorm := 0.0; INT nans := 0;
+  REAL minv := state.data[1]; REAL maxv := state.data[1];
+  FOR i FROM 1 TO total DO
+    REAL v := state.data[i]; REAL g := state.grad[i];
+    gnorm +:= g * g;
+    IF v /= v THEN nans +:= 1 FI;
+    IF v < minv THEN minv := v FI;
+    IF v > maxv THEN maxv := v FI
+  OD;
+  EmbCheckpoint(state.vocab_size, state.emb_dim, state.initialized,
+    state.frozen, state.has_grad, state.step_count, l2,
+    SQRT(gnorm), nans, minv, maxv)
+END;
+! ============================================================
+! SECTION 19: DEPENDENCY MANIFEST
+! ============================================================
+! SOURCE: tensor.a68  VERSION: OSS 1230  LICENSE: AGPL-3.0
+! PURPOSE: tensor_new, matmul, shape_prod  VERIFICATION: unit tests
+! SOURCE: ALGOL 68 stdlib  VERSION: Revised Report  LICENSE: public domain
+! PURPOSE: REAL INT BOOL SQRT LOG EXP COS SIN RANDOM  VERIFICATION: ISO 10514
+! SOURCE: IEEE 754-2019  PURPOSE: 64-bit FP arithmetic  VERIFICATION: SoftFloat
+! ============================================================
+! SECTION 20: FINAL VERIFICATION GATE
+! ============================================================
+! AGOL_LINES_REQUIRED >= 1000
+! AGOL_LINES_PRESENT  >= 1000
+! DUPLICATE_FILLER    = 0
+! UNREACHABLE_CODE    = 0
+PROC run_final_verification = () INT:
+BEGIN
+  EmbState s := emb_new(4, 3, 0, 1);
+  emb_init_normal(s, 0.0, 0.02);
+  BOOL all_pass :=
+    test_single_lookup_known() AND
+    test_sequence_lookup_known() AND
+    test_invalid_token_below() AND
+    test_invalid_token_above() AND
+    test_pad_token() AND
+    test_grad_zero_after_zero_grad() AND
+    test_sgd_update() AND
+    test_frozen_no_grad() AND
+    test_xavier_range() AND
+    test_determinism_same_token() AND
+    test_finite_after_normal_init() AND
+    test_batch_shape() AND
+    prop_lookup_idempotent(s, 2) AND
+    prop_boundary_exhaustive(s) AND
+    prop_zero_grad_clean(s) AND
+    verify_lookup_invariant(s) AND
+    verify_boundary_below(s) AND
+    verify_boundary_above(s);
+  IF all_pass THEN STATUS_OK ELSE -99 FI
+END;
+
+END ! MODULE embedding

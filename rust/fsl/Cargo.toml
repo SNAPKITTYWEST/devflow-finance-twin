@@ -1,0 +1,7 @@
+[package]
+name = "fsl"
+version = "0.1.0"
+edition = "2021"
+description = "FSL Formal Solver Language Kernel – Rust assert_eq! → Equality Obligation → BV/Arith IR → Solver"
+
+[dependencies]

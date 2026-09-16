@@ -22,3 +22,9 @@ lib/
 *.a
 generated/
 data/
+
+# Rust build output
+target/
+
+# Publisher inbox (staging area for publish.sh)
+.inbox/

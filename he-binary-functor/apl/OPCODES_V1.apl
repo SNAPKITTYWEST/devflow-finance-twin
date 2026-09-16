@@ -1,49 +1,64 @@
-⍝ Opcodes:
-⍝ 0 halt
-⍝ 1 add immediate: 1 x
-⍝ 2 mul immediate: 2 x
-⍝ 3 recurse: 3 n subprogram
-⍝ 4 contract: apply Contract to state
-⍝ 9 verify: 9 id → runs check id, returns success flag
+﻿â ========================================================================
+â SOVEREIGN LEVIATHAN NODE LICENSE
+â License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+â Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+â ========================================================================
+â
+â This file is a covered work under the GNU Affero General Public License,
+â version 3, together with the Sovereign Leviathan additional terms.
+â
+â Hark, though this node be but a spark,
+â Its covenant endureth through the dark.
+â
+â Ignorantia juris non excusat.
+â ========================================================================
 
-⍝ Verification registry: dictionary of checks
-⍝ index → function that takes state and returns 1/0
+â Opcodes:
+â 0 halt
+â 1 add immediate: 1 x
+â 2 mul immediate: 2 x
+â 3 recurse: 3 n subprogram
+â 4 contract: apply Contract to state
+â 9 verify: 9 id â†’ runs check id, returns success flag
 
-⍝ Example checks
-OS_Check ← { state → 1 }    ⍝ placeholder pass/fail logic
-Vacuum_Check ← { state → 1 }
-CorrDecay_Check ← { state → 1 }
+â Verification registry: dictionary of checks
+â index â†’ function that takes state and returns 1/0
 
-checkRegistry ← Checks (OS_Check Vacuum_Check CorrDecay_Check)
+â Example checks
+OS_Check â† { state â†’ 1 }    â placeholder pass/fail logic
+Vacuum_Check â† { state â†’ 1 }
+CorrDecay_Check â† { state â†’ 1 }
 
-⍝ Exec: ⍺ is state, ⍵ is a two-item vector: blob and ip
-Exec ← {
-    state ← ⍺
-    blob ip ← ⍵
+checkRegistry â† Checks (OS_Check Vacuum_Check CorrDecay_Check)
 
-    :If ip ≥ ≢blob
-        (state 1) ⍝ success if reached end normally
+â Exec: âº is state, âµ is a two-item vector: blob and ip
+Exec â† {
+    state â† âº
+    blob ip â† âµ
+
+    :If ip â‰¥ â‰¢blob
+        (state 1) â success if reached end normally
     :Return
     :EndIf
 
-    op ← blob[ip]
+    op â† blob[ip]
 
     :Select op
     :Case 0
         (state 1)
 
     :Case 1
-        x ← blob[ip+1]
+        x â† blob[ip+1]
         Exec (state + x) (blob ip+2)
 
     :Case 2
-        x ← blob[ip+1]
-        Exec (state × x) (blob ip+2)
+        x â† blob[ip+1]
+        Exec (state Ã— x) (blob ip+2)
 
     :Case 3
-        n ← blob[ip+1]
-        sub ← blob[(ip+2) + ⍳n]
-        subState success ← Exec state (sub 0)
+        n â† blob[ip+1]
+        sub â† blob[(ip+2) + â³n]
+        subState success â† Exec state (sub 0)
         :If success = 0
             (subState 0)
         :Else
@@ -54,9 +69,9 @@ Exec ← {
         Exec (Contract state) (blob ip+1)
 
     :Case 9
-        cid ← blob[ip+1]
-        checkFn ← checkRegistry[cid]
-        pass ← checkFn state
+        cid â† blob[ip+1]
+        checkFn â† checkRegistry[cid]
+        pass â† checkFn state
         :If pass = 0
             (state 0)
         :Else
@@ -68,35 +83,35 @@ Exec ← {
     :EndSelect
 }
 
-⍝ Taylor-like contraction
-Contract ← {
-    a ← ⍵
-    r ← 0.5
-    r × a ÷ (1+⍳≢a)
+â Taylor-like contraction
+Contract â† {
+    a â† âµ
+    r â† 0.5
+    r Ã— a Ã· (1+â³â‰¢a)
 }
 
-⍝ Braid encoding for A01 (using check ids)
-σ1 ← 1 3
-σ2 ← 2 2
-σ3inv ← 9 0      ⍝ OS gate id 0
-σ4 ← 3 3 1 2 0
-σ5 ← 1 5
-σ6inv ← 9 1      ⍝ Vacuum gate id 1
-σ7 ← 2 3
-σ8 ← 4
-σ9inv ← 9 2      ⍝ Correlation decay id 2
-σ10 ← 3 2 1 4
+â Braid encoding for A01 (using check ids)
+Ïƒ1 â† 1 3
+Ïƒ2 â† 2 2
+Ïƒ3inv â† 9 0      â OS gate id 0
+Ïƒ4 â† 3 3 1 2 0
+Ïƒ5 â† 1 5
+Ïƒ6inv â† 9 1      â Vacuum gate id 1
+Ïƒ7 â† 2 3
+Ïƒ8 â† 4
+Ïƒ9inv â† 9 2      â Correlation decay id 2
+Ïƒ10 â† 3 2 1 4
 
-B_blob ← σ1,σ2,σ3inv,σ4,σ5,σ6inv,σ7,σ8,σ9inv,σ10
+B_blob â† Ïƒ1,Ïƒ2,Ïƒ3inv,Ïƒ4,Ïƒ5,Ïƒ6inv,Ïƒ7,Ïƒ8,Ïƒ9inv,Ïƒ10
 
-⍝ Run braid
-initState ← 10 8 6 4 2
-state success ← Exec initState (B_blob 0)
+â Run braid
+initState â† 10 8 6 4 2
+state success â† Exec initState (B_blob 0)
 
-⍝ LEDGER_STATE
-LEDGER_STATE ← 'LOCKED'
+â LEDGER_STATE
+LEDGER_STATE â† 'LOCKED'
 :If success = 1
-    LEDGER_STATE ← 'UNLOCKED'
+    LEDGER_STATE â† 'UNLOCKED'
 :EndIf
 
 LEDGER_STATE

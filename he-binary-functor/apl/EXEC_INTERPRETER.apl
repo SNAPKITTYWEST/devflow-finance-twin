@@ -1,31 +1,46 @@
-⍝ --- Exec interpreter (returns state successFlag) ---
-Exec ← {
-    state ← ⍺
-    blob ip evidence ← ⍵
+﻿â ========================================================================
+â SOVEREIGN LEVIATHAN NODE LICENSE
+â License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+â Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+â ========================================================================
+â
+â This file is a covered work under the GNU Affero General Public License,
+â version 3, together with the Sovereign Leviathan additional terms.
+â
+â Hark, though this node be but a spark,
+â Its covenant endureth through the dark.
+â
+â Ignorantia juris non excusat.
+â ========================================================================
 
-    :If ip ≥ ≢blob
+â --- Exec interpreter (returns state successFlag) ---
+Exec â† {
+    state â† âº
+    blob ip evidence â† âµ
+
+    :If ip â‰¥ â‰¢blob
         (state 1)
     :Return
     :EndIf
 
-    op ← blob[ip]
+    op â† blob[ip]
 
     :Select op
     :Case 0
         (state 1)
 
     :Case 1
-        x ← blob[ip+1]
+        x â† blob[ip+1]
         Exec (state + x) (blob ip+2 evidence)
 
     :Case 2
-        x ← blob[ip+1]
-        Exec (state × x) (blob ip+2 evidence)
+        x â† blob[ip+1]
+        Exec (state Ã— x) (blob ip+2 evidence)
 
     :Case 3
-        n ← blob[ip+1]
-        sub ← blob[(ip+2) + ⍳n]
-        subState success ← Exec state (sub 0 evidence)
+        n â† blob[ip+1]
+        sub â† blob[(ip+2) + â³n]
+        subState success â† Exec state (sub 0 evidence)
         :If success = 0
             (subState 0)
         :Else
@@ -36,9 +51,9 @@ Exec ← {
         Exec (Contract state) (blob ip+1 evidence)
 
     :Case 9
-        cid ← blob[ip+1] ⍝ check id index into checkRegistry
-        checkFn ← checkRegistry[cid]
-        pass ← checkFn ( ( (cid=3) / (evidence.gap) ) , state ) ⍝ pass evidence and state
+        cid â† blob[ip+1] â check id index into checkRegistry
+        checkFn â† checkRegistry[cid]
+        pass â† checkFn ( ( (cid=3) / (evidence.gap) ) , state ) â pass evidence and state
         :If pass = 0
             (state 0)
         :Else
@@ -50,34 +65,34 @@ Exec ← {
     :EndSelect
 }
 
-⍝ --- Contract function (Taylor-like) ---
-Contract ← {
-    a ← ⍵
-    r ← 0.5
-    r × a ÷ (1+⍳≢a)
+â --- Contract function (Taylor-like) ---
+Contract â† {
+    a â† âµ
+    r â† 0.5
+    r Ã— a Ã· (1+â³â‰¢a)
 }
 
-⍝ --- Braid encoding for A01 (using check ids) ---
-σ1 ← 1 3
-σ2 ← 2 2
-σ3inv ← 9 0      ⍝ OS gate id 0
-σ4 ← 3 3 1 2 0
-σ5 ← 1 5
-σ6inv ← 9 1      ⍝ Vacuum gate id 1
-σ7 ← 2 3
-σ8 ← 4
-σ9inv ← 9 2      ⍝ Correlation decay id 2
-σ10 ← 3 2 1 4
+â --- Braid encoding for A01 (using check ids) ---
+Ïƒ1 â† 1 3
+Ïƒ2 â† 2 2
+Ïƒ3inv â† 9 0      â OS gate id 0
+Ïƒ4 â† 3 3 1 2 0
+Ïƒ5 â† 1 5
+Ïƒ6inv â† 9 1      â Vacuum gate id 1
+Ïƒ7 â† 2 3
+Ïƒ8 â† 4
+Ïƒ9inv â† 9 2      â Correlation decay id 2
+Ïƒ10 â† 3 2 1 4
 
-B_blob ← σ1,σ2,σ3inv,σ4,σ5,σ6inv,σ7,σ8,σ9inv,σ10
+B_blob â† Ïƒ1,Ïƒ2,Ïƒ3inv,Ïƒ4,Ïƒ5,Ïƒ6inv,Ïƒ7,Ïƒ8,Ïƒ9inv,Ïƒ10
 
-⍝ --- Run braid with evidence ---
-initState ← 10 8 6 4 2
-state success ← Exec initState (B_blob 0 evidence)
+â --- Run braid with evidence ---
+initState â† 10 8 6 4 2
+state success â† Exec initState (B_blob 0 evidence)
 
-LEDGER_STATE ← 'LOCKED'
+LEDGER_STATE â† 'LOCKED'
 :If success = 1
-    LEDGER_STATE ← 'UNLOCKED'
+    LEDGER_STATE â† 'UNLOCKED'
 :EndIf
 
 LEDGER_STATE

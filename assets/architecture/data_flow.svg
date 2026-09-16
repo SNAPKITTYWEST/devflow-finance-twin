@@ -1,0 +1,236 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#555"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#27ae60"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#e74c3c"/>
+    </marker>
+    <style>
+      text { font-family: 'Segoe UI', sans-serif; font-size: 11px; }
+      .title { font-size: 18px; font-weight: bold; }
+      .subtitle { font-size: 12px; fill: #666; }
+      .box { rx: 8; ry: 8; stroke-width: 1.5; }
+      .label { font-size: 10px; fill: #333; }
+      .flow-label { font-size: 9px; fill: #666; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="900" fill="#fafafa"/>
+
+  <!-- Title -->
+  <text x="600" y="35" text-anchor="middle" class="title">Transaction Data Flow</text>
+  <text x="600" y="55" text-anchor="middle" class="subtitle">End-to-end flow from ingestion to audit verification</text>
+
+  <!-- Phase 1: Ingestion -->
+  <rect x="20" y="80" width="250" height="200" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="1"/>
+  <text x="35" y="100" class="label" font-weight="bold" fill="#2980b9">PHASE 1: INGESTION</text>
+
+  <rect x="40" y="110" width="210" height="40" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="50" y="135">Transaction Input (JSON/CSV/API)</text>
+
+  <rect x="40" y="160" width="210" height="40" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="50" y="185">Schema Validation (MXML)</text>
+
+  <rect x="40" y="210" width="210" height="40" rx="6" fill="#ffffff" stroke="#3498db"/>
+  <text x="50" y="235">Cold Boot Defense Check</text>
+
+  <!-- Phase 2: Core Processing -->
+  <rect x="310" y="80" width="280" height="200" rx="10" fill="#e8fde8" stroke="#27ae60" stroke-width="1"/>
+  <text x="325" y="100" class="label" font-weight="bold" fill="#27ae60">PHASE 2: CORE PROCESSING</text>
+
+  <rect x="330" y="110" width="240" height="40" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="340" y="135">FinanceTwinEngine.process()</text>
+
+  <rect x="330" y="160" width="240" height="40" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="340" y="185">Braid Word Generation</text>
+
+  <rect x="330" y="210" width="240" height="40" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="340" y="235">Cryptographic Seal</text>
+
+  <!-- Phase 3: Braid Operations -->
+  <rect x="630" y="80" width="280" height="200" rx="10" fill="#fde8e8" stroke="#e74c3c" stroke-width="1"/>
+  <text x="645" y="100" class="label" font-weight="bold" fill="#e74c3c">PHASE 3: BRAID OPERATIONS</text>
+
+  <rect x="650" y="110" width="240" height="40" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="660" y="135">Workerman Calculus Transform</text>
+
+  <rect x="650" y="160" width="240" height="40" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="660" y="185">Yang-Baxter Symmetry</text>
+
+  <rect x="650" y="210" width="240" height="40" rx="6" fill="#ffffff" stroke="#e74c3c"/>
+  <text x="660" y="235">Normal Form Reduction</text>
+
+  <!-- Phase 4: Storage -->
+  <rect x="950" y="80" width="230" height="200" rx="10" fill="#f0e8fd" stroke="#9b59b6" stroke-width="1"/>
+  <text x="965" y="100" class="label" font-weight="bold" fill="#9b59b6">PHASE 4: STORAGE</text>
+
+  <rect x="965" y="110" width="200" height="40" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="975" y="135">WORM Storage Write</text>
+
+  <rect x="965" y="160" width="200" height="40" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="975" y="185">ICP Anchor Commit</text>
+
+  <rect x="965" y="210" width="200" height="40" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="975" y="235">Audit Trail Seal</text>
+
+  <!-- Phase 5: Verification -->
+  <rect x="20" y="320" width="560" height="200" rx="10" fill="#fdf8e8" stroke="#f39c12" stroke-width="1"/>
+  <text x="35" y="340" class="label" font-weight="bold" fill="#f39c12">PHASE 5: VERIFICATION (7 Proof Systems)</text>
+
+  <rect x="40" y="355" width="155" height="60" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="50" y="375">Lean 4</text>
+  <text x="50" y="390" class="label">sovereign_attractor</text>
+  <text x="50" y="405" class="label">Banach contraction</text>
+
+  <rect x="210" y="355" width="155" height="60" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="220" y="375">Coq / Agda</text>
+  <text x="220" y="390" class="label">RecursiveAudit</text>
+  <text x="220" y="405" class="label">Token verification</text>
+
+  <rect x="380" y="355" width="155" height="60" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="390" y="375">F* / Isabelle</text>
+  <text x="390" y="390" class="label">Type-safe proofs</text>
+  <text x="390" y="405" class="label">Theorem prover</text>
+
+  <rect x="40" y="430" width="155" height="60" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="50" y="450">Kani (Rust)</text>
+  <text x="50" y="465" class="label">13 proof files</text>
+  <text x="50" y="480" class="label">Formal verification</text>
+
+  <rect x="210" y="430" width="155" height="60" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="220" y="450">Why3</text>
+  <text x="220" y="465" class="label">5+ proof files</text>
+  <text x="220" y="480" class="label">Multi-prover</text>
+
+  <rect x="380" y="430" width="155" height="60" rx="6" fill="#ffffff" stroke="#f39c12"/>
+  <text x="390" y="450">CBMC / CRUX</text>
+  <text x="390" y="465" class="label">Bounded model check</text>
+  <text x="390" y="480" class="label">Symbolic execution</text>
+
+  <!-- Phase 5b: Quantum Verification -->
+  <rect x="620" y="320" width="560" height="200" rx="10" fill="#f0e8fd" stroke="#9b59b6" stroke-width="1"/>
+  <text x="635" y="340" class="label" font-weight="bold" fill="#9b59b6">PHASE 5b: QUANTUM VERIFICATION</text>
+
+  <rect x="640" y="355" width="165" height="60" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="650" y="375">Density Matrix</text>
+  <text x="650" y="390" class="label">State verification</text>
+  <text x="650" y="405" class="label">Fidelity check</text>
+
+  <rect x="820" y="355" width="165" height="60" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="830" y="375">Gate Verification</text>
+  <text x="830" y="390" class="label">24 gates validated</text>
+  <text x="830" y="405" class="label">Unitarity check</text>
+
+  <rect x="1000" y="355" width="165" height="60" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="1010" y="375">Error Correction</text>
+  <text x="1010" y="390" class="label">Surface code</text>
+  <text x="1010" y="405" class="label">Logical qubit</text>
+
+  <rect x="640" y="430" width="165" height="60" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="650" y="450">Noise Model</text>
+  <text x="650" y="465" class="label">Depolarizing</text>
+  <text x="650" y="480" class="label">Amplitude damping</text>
+
+  <rect x="820" y="430" width="165" height="60" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="830" y="450">VQE / QAOA</text>
+  <text x="830" y="465" class="label">Variational algorithms</text>
+  <text x="830" y="480" class="label">Optimization</text>
+
+  <rect x="1000" y="430" width="165" height="60" rx="6" fill="#ffffff" stroke="#9b59b6"/>
+  <text x="1010" y="450">Topological</text>
+  <text x="1010" y="465" class="label">Fibonacci anyons</text>
+  <text x="1010" y="480" class="label">Braid statistics</text>
+
+  <!-- Phase 6: Output -->
+  <rect x="20" y="560" width="1160" height="120" rx="10" fill="#e8fde8" stroke="#27ae60" stroke-width="1"/>
+  <text x="35" y="580" class="label" font-weight="bold" fill="#27ae60">PHASE 6: OUTPUT / REPORTING</text>
+
+  <rect x="40" y="595" width="180" height="65" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="50" y="615">Transaction Receipt</text>
+  <text x="50" y="630" class="label">Cryptographic proof</text>
+  <text x="50" y="645" class="label">Braid word + seal</text>
+
+  <rect x="240" y="595" width="180" height="65" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="250" y="615">Audit Report</text>
+  <text x="250" y="630" class="label">WORM-compliant</text>
+  <text x="250" y="645" class="label">Regulatory ready</text>
+
+  <rect x="440" y="595" width="180" height="65" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="450" y="615">Compliance Export</text>
+  <text x="450" y="630" class="label">ACH/RTP formats</text>
+  <text x="450" y="645" class="label">GDPR/HIPAA</text>
+
+  <rect x="640" y="595" width="180" height="65" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="650" y="615">Formal Certificate</text>
+  <text x="650" y="630" class="label">Lean 4 / Coq proof</text>
+  <text x="650" y="645" class="label">Machine-checked</text>
+
+  <rect x="840" y="595" width="180" height="65" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="850" y="615">Quantum State</text>
+  <text x="850" y="630" class="label">Density matrix export</text>
+  <text x="850" y="645" class="label">Simulation results</text>
+
+  <rect x="1040" y="595" width="130" height="65" rx="6" fill="#ffffff" stroke="#27ae60"/>
+  <text x="1050" y="615">CSV / PNG</text>
+  <text x="1050" y="630" class="label">beliefs.csv</text>
+  <text x="1050" y="645" class="label">plots.png</text>
+
+  <!-- Phase 7: Audit Trail -->
+  <rect x="20" y="720" width="1160" height="160" rx="10" fill="#fde8f4" stroke="#e91e63" stroke-width="1"/>
+  <text x="35" y="740" class="label" font-weight="bold" fill="#e91e63">PHASE 7: AUDIT TRAIL (WORM + ICP)</text>
+
+  <rect x="40" y="755" width="220" height="100" rx="6" fill="#ffffff" stroke="#e91e63"/>
+  <text x="50" y="775">WORM Storage</text>
+  <text x="50" y="790" class="label">Write-once-read-many</text>
+  <text x="50" y="805" class="label">Tamper-proof records</text>
+  <text x="50" y="820" class="label">7-year retention</text>
+  <text x="50" y="835" class="label">AES-256 at rest</text>
+
+  <rect x="280" y="755" width="220" height="100" rx="6" fill="#ffffff" stroke="#e91e63"/>
+  <text x="290" y="775">ICP Anchor</text>
+  <text x="290" y="790" class="label">InterContinental Payment</text>
+  <text x="290" y="805" class="label">Cross-border verification</text>
+  <text x="290" y="820" class="label">Cryptographic commitment</text>
+  <text x="290" y="835" class="label">Blockchain-style anchor</text>
+
+  <rect x="520" y="755" width="220" height="100" rx="6" fill="#ffffff" stroke="#e91e63"/>
+  <text x="530" y="775">Cryptographic Seal</text>
+  <text x="530" y="790" class="label">SealChain implementation</text>
+  <text x="530" y="805" class="label">Chain of custody</text>
+  <text x="530" y="820" class="label">Malleability detection</text>
+  <text x="530" y="835" class="label">Convergence proof</text>
+
+  <rect x="760" y="755" width="200" height="100" rx="6" fill="#ffffff" stroke="#e91e63"/>
+  <text x="770" y="775">Formal Proof Chain</text>
+  <text x="770" y="790" class="label">RecursiveAudit.v/.lean</text>
+  <text x="770" y="805" class="label">Machine-checked</text>
+  <text x="770" y="820" class="label">Multi-system</text>
+  <text x="770" y="835" class="label">5 proof systems</text>
+
+  <rect x="980" y="755" width="180" height="100" rx="6" fill="#ffffff" stroke="#e91e63"/>
+  <text x="990" y="775">Compliance</text>
+  <text x="990" y="790" class="label">GDPR: 30-day deletion</text>
+  <text x="990" y="805" class="label">HIPAA: PHI controls</text>
+  <text x="990" y="820" class="label">SOX: Audit trail</text>
+  <text x="990" y="835" class="label">PCI-DSS: Card data</text>
+
+  <!-- Flow arrows between phases -->
+  <line x1="270" y1="180" x2="310" y2="180" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="590" y1="180" x2="630" y2="180" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="910" y1="180" x2="950" y2="180" stroke="#555" marker-end="url(#arrow)"/>
+
+  <!-- Down arrows -->
+  <line x1="145" y1="280" x2="145" y2="320" stroke="#555" marker-end="url(#arrow)"/>
+  <line x1="770" y1="280" x2="770" y2="320" stroke="#555" marker-end="url(#arrow)"/>
+
+  <!-- Flow to output -->
+  <line x1="300" y1="520" x2="300" y2="560" stroke="#27ae60" marker-end="url(#arrow-green)"/>
+  <line x1="900" y1="520" x2="900" y2="560" stroke="#27ae60" marker-end="url(#arrow-green)"/>
+
+  <!-- Flow to audit -->
+  <line x1="600" y1="680" x2="600" y2="720" stroke="#e91e63" marker-end="url(#arrow-red)"/>
+</svg>

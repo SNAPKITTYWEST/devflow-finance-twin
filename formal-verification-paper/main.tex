@@ -1,0 +1,572 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\geometry{margin=1in}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
+
+\title{From Keyword Refusal to Recursive Verification\\
+\large A Formal Framework for Distinguishing Refusal, Verification, Refutation, and Proof}
+
+\author{Sovereign Stack Cryptographic Working Group}
+\date{September 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Large language models frequently encounter requests containing words associated with safety, model modification, alignment, security, refusal, or other sensitive domains. A system may respond by refusing, redirecting, or classifying the request before determining the mathematical proposition actually being asserted.
+
+This paper studies a fundamental distinction between \textbf{non-recursive refusal} and \textbf{recursive formal verification}. We demonstrate that the presence of sensitive terminology does not logically establish that an entire proposition is false, unsafe, fabricated, or unverifiable. A keyword-triggered decision operates on lexical evidence. Formal verification operates on propositions, assumptions, quantifiers, definitions, dependencies, and proofs.
+
+We introduce a formal model of refusal and contrast it with a recursive verification operator. Through a formal algebraic case study, we demonstrate how a counterexample to a stronger proposition can coexist with a proof of a weaker proposition. The resulting framework treats refusal as a classification event rather than a proof, and proposes a proof status lattice that distinguishes VERIFIED, REFUTED, CONDITIONALLY VERIFIED, UNDER-SPECIFIED, COUNTEREXAMPLE VERIFIED, and UNVERIFIED.
+\end{abstract}
+
+\section{Introduction}
+
+AI systems increasingly operate in domains where the distinction between a claim and the language surrounding that claim is consequential.
+
+A mathematical statement may contain terms such as:
+\begin{center}
+\texttt{alignment}, \texttt{refusal}, \texttt{safety}, \texttt{model weights}, \texttt{injection}, \texttt{amplification}, \texttt{ablation}, \texttt{exploit}, \texttt{security}
+\end{center}
+
+The presence of such terms can cause an AI system to classify the request before completing the underlying reasoning task.
+
+This produces a fundamental epistemic problem.
+
+\begin{enumerate}
+\item A \textbf{refusal} is an action.
+\item A \textbf{classification} is an inference.
+\item A \textbf{proof} is a derivation.
+\end{enumerate}
+
+These three things must not be conflated.
+
+Consider the following abstract interaction. A researcher presents a mathematical construction involving a transformation:
+\[
+\Delta W = \eta(v \otimes x)
+\]
+and asks whether a particular projection inequality follows. A non-recursive system may encounter language associated with model modification and terminate the reasoning process. A verification system instead asks:
+
+\begin{quote}
+\textit{What is the exact proposition? What are its assumptions? What are its quantifiers? What follows algebraically? What does not follow? Is there an existing formal proof? Is there a counterexample? Does the counterexample attack the exact proposition?}
+\end{quote}
+
+The distinction is the subject of this paper.
+
+\section{Refusal Is Not Refutation}
+
+\begin{definition}[Input Space]
+Let $\mathcal{X}$ denote the space of all possible inputs to an AI system.
+\end{definition}
+
+\begin{definition}[Feature Extraction]
+Let $K : \mathcal{X} \to \mathcal{F}$ extract a set of lexical or semantic features from an input.
+\end{definition}
+
+\begin{definition}[Refusal Policy]
+A refusal policy can be represented abstractly as:
+\[
+R(x) = \begin{cases} 1 & \text{if } g(K(x)) \geq \tau \\ 0 & \text{otherwise} \end{cases}
+\]
+for some classifier $g$ and threshold $\tau$.
+\end{definition}
+
+The system may therefore refuse an input because its representation contains features associated with a policy category. Nothing about this equation establishes $\neg P(x)$ for the proposition $P$ contained in $x$.
+
+\begin{proposition}[Refusal Non-Implication]
+For a refusal function $R$ and proposition $P$:
+\[
+R(x) = 1 \implies \neg P(x)
+\]
+is not generally valid.
+\end{proposition}
+
+\begin{proof}
+A refusal can be a valid policy action while the proposition itself remains mathematically true. Conversely, a system can fail to refuse a false proposition. Therefore policy classification and truth evaluation are independent dimensions.
+\end{proof}
+
+\section{Keyword Triggering as a Non-Recursive Decision}
+
+Consider the trigger function:
+\[
+\text{trigger}(x) = \begin{cases} 1 & \text{if } x \text{ contains a sensitive feature} \\ 0 & \text{otherwise} \end{cases}
+\]
+
+A non-recursive refusal process is:
+\[
+x \to \text{feature extraction} \to \text{policy classification} \to \text{response}
+\]
+
+The defining characteristic is that the system does not recursively inspect the conclusion produced by the classifier. It therefore lacks the following loop:
+\[
+\text{conclusion} \to \text{identify assumptions} \to \text{challenge conclusion} \to \text{search counterexample} \to \text{revise conclusion} \to \text{re-evaluate}
+\]
+
+This distinction matters because verification itself can contain errors. A verifier that can generate counterexamples but cannot audit its own inference can still produce a false meta-conclusion.
+
+\section{The Counterexample Problem}
+
+Suppose a verifier evaluates:
+\[
+\eta > 0 \implies \text{threshold\_crossing}
+\]
+and produces the counterexample:
+\[
+W = -100, \quad x = 1, \quad v = 1, \quad \eta = 1, \quad \theta = 0
+\]
+
+The resulting projection is insufficient to cross the threshold. Therefore the universal proposition:
+\[
+\forall \eta > 0, \; \text{threshold\_crossing}(\eta)
+\]
+is false.
+
+That conclusion is valid. But suppose the original thesis was instead:
+\[
+\exists \eta > 0, \; \text{threshold\_crossing}(\eta)
+\]
+
+The counterexample does not refute that proposition. This creates a recursive verification obligation. The verifier must ask: \textit{What exact proposition did my counterexample refute?}
+
+This is not merely a stylistic question. It is a quantifier question.
+
+\section{Universal Versus Existential Claims}
+
+Consider:
+\[
+A = \forall \eta > 0, \; P(\eta)
+\]
+and:
+\[
+B = \exists \eta > 0, \; P(\eta)
+\]
+
+A counterexample $\eta_0$ satisfying $\neg P(\eta_0)$ proves $\neg A$. It does not prove $\neg B$.
+
+This can be expressed formally:
+\[
+\neg \forall \eta \, P(\eta) \equiv \exists \eta \, \neg P(\eta)
+\]
+while:
+\[
+\neg \exists \eta \, P(\eta) \equiv \forall \eta \, \neg P(\eta)
+\]
+
+These propositions have fundamentally different quantifier structures. A verifier that moves from the first to the second without proof has committed a logical error.
+
+\section{Recursive Counterproof}
+
+We therefore define a recursive audit operator.
+
+\begin{definition}[Audit Operator]
+Let $C_0$ be an initial conclusion. Define:
+\[
+C_{n+1} = \text{Audit}(C_n)
+\]
+where Audit performs:
+\begin{enumerate}
+\item Proposition extraction
+\item Assumption extraction
+\item Quantifier analysis
+\item Dependency analysis
+\item Counterexample generation
+\item Proof search
+\item Consistency analysis
+\item Conclusion classification
+\end{enumerate}
+\end{definition}
+
+The process terminates when $\text{Audit}(C_n) = C_n$ or when the system reaches a formally justified terminal status.
+
+The important property is that \textbf{the verifier is itself part of the verification target}.
+
+\section{Formal Algebraic Case Study}
+
+Consider:
+\[
+\Delta W = \eta(v \otimes x)
+\]
+and:
+\[
+y' = (W + \Delta W)x
+\]
+
+For the standard inner-product interpretation:
+\[
+\Delta W \cdot x = \eta \, v \, \langle x, x \rangle
+\]
+
+Therefore:
+\[
+\langle y', v \rangle = \langle Wx, v \rangle + \eta \langle x, x \rangle \langle v, v \rangle
+\]
+
+\begin{definition}[Projection Parameters]
+Define:
+\begin{align*}
+B &= \langle Wx, v \rangle \\
+G &= \|x\|^2 \|v\|^2
+\end{align*}
+\end{definition}
+
+Then:
+\[
+\langle y', v \rangle = B + \eta G
+\]
+
+For $x \neq 0$ and $v \neq 0$, we have $G > 0$. Therefore:
+\[
+B + \eta G > \theta \iff \eta > \frac{\theta - B}{G}
+\]
+
+This yields an exact conditional threshold theorem.
+
+\begin{theorem}[Threshold Condition]
+\label{thr:conditional}
+When $\|x\|^2 \|v\|^2 > 0$:
+\[
+\langle (W + \eta(v \otimes x^T))x, v \rangle > \theta \iff \eta > \frac{\theta - \langle Wx, v \rangle}{\|x\|^2 \|v\|^2}
+\]
+\end{theorem}
+
+\section{What the Counterexample Actually Shows}
+
+The counterexample demonstrates:
+\[
+\eta > 0
+\]
+is not sufficient by itself. It does not demonstrate:
+\[
+\text{no positive } \eta \text{ can work.}
+\]
+
+Indeed, because $G > 0$, the expression $B + \eta G$ grows without bound as $\eta$ increases. Therefore, for every finite $\theta$, there exists a sufficiently large positive $\eta$ such that $B + \eta G > \theta$.
+
+\begin{theorem}[Existence of Valid Gain]
+\label{thr:existence}
+For every finite $\theta$ and nonzero $x, v$, there exists $\eta > 0$ such that:
+\[
+\langle (W + \eta(v \otimes x^T))x, v \rangle > \theta
+\]
+\end{theorem}
+
+\begin{proof}
+Let $\eta^* = \frac{\theta - \langle Wx, v \rangle + 1}{\|x\|^2 \|v\|^2}$. Since $\|x\|^2 > 0$ and $\|v\|^2 > 0$, $\eta^*$ is well-defined and positive. Then:
+\[
+\langle (W + \eta^*(v \otimes x^T))x, v \rangle = \langle Wx, v \rangle + \eta^* \|x\|^2 \|v\|^2 = \theta + 1 > \theta
+\]
+\end{proof}
+
+\begin{theorem}[Arbitrary Margin]
+\label{thr:margin}
+For any $\varepsilon > 0$, there exists $\eta > 0$ such that:
+\[
+\langle (W + \eta(v \otimes x^T))x, v \rangle > \theta + \varepsilon
+\]
+\end{theorem}
+
+\begin{proof}
+Let $\eta_\varepsilon = \frac{\theta + \varepsilon - \langle Wx, v \rangle + 1}{\|x\|^2 \|v\|^2}$. Then:
+\[
+\langle (W + \eta_\varepsilon(v \otimes x^T))x, v \rangle = \theta + \varepsilon + 1 > \theta + \varepsilon
+\]
+\end{proof}
+
+The stronger theorem is therefore:
+\[
+x \neq 0 \wedge v \neq 0 \implies \forall \text{ finite } \theta, \; \exists \eta > 0, \; \text{threshold\_crossing}
+\]
+
+This is materially different from:
+\[
+\forall \eta > 0, \; \text{threshold\_crossing}
+\]
+
+The former can be true while the latter is false.
+
+\section{Refusal and Mathematical Truth Are Orthogonal}
+
+We can now define two independent dimensions.
+
+\begin{definition}[Policy Dimension]
+\[
+\text{Policy}(x) \in \{\text{ALLOW}, \text{REFUSE}, \text{REDIRECT}\}
+\]
+\end{definition}
+
+\begin{definition}[Epistemic Dimension]
+\[
+\text{Truth}(x) \in \{\text{VERIFIED}, \text{REFUTED}, \text{UNDER-SPECIFIED}, \text{UNVERIFIED}\}
+\]
+\end{definition}
+
+The Cartesian product is meaningful. For example:
+\begin{itemize}
+\item $\text{REFUSE} \times \text{VERIFIED}$ is possible. A system may refuse to operationalize a request while the mathematical theorem embedded within that request remains true.
+\item $\text{ALLOW} \times \text{REFUTED}$ is possible. A system may answer a harmless-looking mathematical question incorrectly.
+\end{itemize}
+
+Therefore:
+\[
+\text{Policy}(x) \neq \text{Truth}(x)
+\]
+
+This distinction should be explicit in AI architecture.
+
+\section{Why Non-Recursive Training Can Fail Epistemically}
+
+The argument is not that any particular organization's training system is universally ineffective. The narrower claim is:
+
+\begin{quote}
+\textit{A training or inference regime that terminates reasoning at a lexical policy classification cannot, from that classification alone, establish the mathematical truth or falsity of the proposition contained in the input.}
+\end{quote}
+
+This follows directly from the separation between classification and proof. A classifier may correctly identify that an input belongs to a sensitive category. That does not establish the truth value of every mathematical proposition contained within that input.
+
+The failure mode is therefore not necessarily a safety failure. It is a \textbf{category error} if the refusal is represented as though it were a proof.
+
+\section{Recursive Verification Architecture}
+
+We propose the following architecture:
+
+\begin{algorithm}[H]
+\caption{Recursive Verification}
+\begin{algorithmic}[1]
+\STATE Input $x$
+\STATE Extract claim $P$ from $x$
+\STATE Extract assumptions $\mathcal{A}$
+\STATE Extract quantifiers $\mathcal{Q}$
+\STATE Search existing proofs
+\STATE Formalize $P$
+\STATE Search counterexamples
+\STATE Search proofs
+\STATE Classify conclusion
+\STATE \textbf{Self-Audit:}
+    \STATE \quad Did we attack the exact claim?
+    \STATE \quad Did we change quantifiers?
+    \STATE \quad Did we add assumptions?
+    \STATE \quad Did we confuse static and dynamic claims?
+    \STATE \quad Did we ignore existing proofs?
+\STATE Return final status
+\end{algorithmic}
+\end{algorithm}
+
+The critical component is SELF-AUDIT.
+
+\section{Recursive Verification of the Verifier}
+
+Let $V(P)$ be the verifier's conclusion concerning $P$. A conventional verifier computes:
+\[
+P \to V(P)
+\]
+
+A recursive verifier computes:
+\[
+P \to V_0(P) \to \text{Audit}(V_0) \to V_1(P) \to \text{Audit}(V_1) \to \cdots
+\]
+
+This allows the system to detect errors such as:
+\[
+\text{counterexample to stronger theorem} \to \text{mistaken claim that original theorem is false}
+\]
+
+The verifier therefore becomes capable of identifying errors in its own reasoning path.
+
+\section{Existing Formal Proofs as Prior Evidence}
+
+Recursive verification should not automatically rebuild every theorem. Suppose repository $A$ contains:
+\[
+\text{theorem } T : P := \text{proof}_T
+\]
+
+The verifier should record:
+\begin{itemize}
+\item Source repository
+\item Formal language
+\item Theorem statement
+\item Assumptions
+\item Dependencies
+\item Proof status
+\end{itemize}
+
+It should then determine whether $T$ actually entails the proposition under review.
+
+This avoids a second failure mode:
+\[
+\text{theorem already formally established} \to \text{verifier does not locate it} \to \text{verifier reports UNDER-SPECIFIED} \to \text{false appearance of uncertainty}
+\]
+
+A serious verification system must therefore perform \textbf{proof provenance analysis}.
+
+\section{Five-Language Verification}
+
+The proposed framework can represent canonical theorems across:
+\begin{itemize}
+\item Lean 4
+\item Coq
+\item Isabelle/HOL
+\item Agda
+\item F*
+\end{itemize}
+
+The objective is not syntactic identity. The objective is semantic equivalence. For theorem $T$:
+\[
+T_{\text{Lean}}, \quad T_{\text{Coq}}, \quad T_{\text{Isabelle}}, \quad T_{\text{Agda}}, \quad T_{\text{F*}}
+\]
+must correspond to the same canonical proposition.
+
+A theorem should not be marked universally verified if one implementation merely contains a placeholder or unproven postulate.
+
+\section{Refusal as a Formally Specified Operator}
+
+Refusal itself can be formalized.
+
+\begin{definition}[Formal Refusal]
+Define:
+\[
+\text{Refusal}(x) = 1 \iff S(x)
+\]
+where $S(x)$ is a policy predicate.
+\end{definition}
+
+Then $\text{Refusal}(x) \leftrightarrow S(x)$ can itself become a formally specified proposition. But a second proposition must remain separate: $\text{Truth}(P)$.
+
+Thus the system can verify $\text{Refusal}(x)$ without claiming $\neg P$.
+
+A safety policy can say: \textit{Do not provide operational instructions.} A theorem prover can simultaneously establish: \textit{The mathematical identity is true.} Those statements are not contradictory.
+
+\section{Recursive Refusal Audit}
+
+A robust system should therefore permit the following sequence:
+\begin{enumerate}
+\item Sensitive terminology detected
+\item Policy classification applied
+\item Operational response constrained
+\item Mathematical proposition extracted
+\item Independent formal verification performed
+\item Truth status determined
+\end{enumerate}
+
+The policy layer controls what the system does. The verification layer determines what the mathematics establishes. Neither layer should impersonate the other.
+
+\section{Static Algebra Versus Dynamics}
+
+The same recursive method applies to dynamical claims. The equation:
+\[
+y' = (W + \Delta W)x
+\]
+defines a transformation. It does not automatically define:
+\[
+x_{t+1} = F(x_t)
+\]
+
+Therefore \textbf{threshold crossing} does not automatically imply \textbf{attractor}. An attractor requires a dynamical system. A verifier that discovers this distinction should report \texttt{DYNAMICS\_UNDER\_SPECIFIED} rather than \texttt{ALGEBRA\_REFUTED}.
+
+Again, the issue is proposition scope.
+
+\section{Proof Status Lattice}
+
+We propose the following statuses:
+\[
+\begin{array}{c}
+\text{VERIFIED} \\
+\downarrow \\
+\left\{\begin{array}{l}
+\text{KERNEL\_VERIFIED} \\
+\text{IMPORTED\_AND\_VERIFIED} \\
+\text{CONDITIONALLY\_VERIFIED} \\
+\text{COUNTEREXAMPLE\_VERIFIED}
+\end{array}\right. \\
+\\
+\text{UNDER\_SPECIFIED} \\
+\\
+\text{UNVERIFIED} \\
+\\
+\text{REFUTED}
+\end{array}
+\]
+
+These statuses prevent the binary \texttt{true/false} classification from destroying important logical distinctions.
+
+\section{Experimental Research Program}
+
+A practical implementation should evaluate AI systems on a benchmark containing:
+\begin{itemize}
+\item Ordinary mathematical claims
+\item Sensitive-domain mathematical claims
+\item Ambiguous claims
+\item False universal claims
+\item True existential claims
+\item Under-specified dynamical claims
+\item Claims containing adversarial terminology
+\item Claims with valid counterexamples
+\item Claims with existing formal proofs
+\end{itemize}
+
+Measure:
+\begin{itemize}
+\item Refusal rate
+\item Proposition extraction accuracy
+\item Quantifier preservation
+\item Assumption preservation
+\item Counterexample validity
+\item Proof retrieval
+\item Self-correction rate
+\item False-refutation rate
+\item False-verification rate
+\item Policy/truth separation accuracy
+\end{itemize}
+
+The most important metric is \textbf{FALSE REFUTATION RATE}, defined as the proportion of cases where a system declares a proposition false even though a valid proof exists under the proposition's stated assumptions.
+
+\section{Central Hypothesis}
+
+The research hypothesis is:
+
+\begin{quote}
+\textit{Recursive verification will reduce false refutation caused by proposition conflation, particularly when a request contains terminology capable of triggering a policy response.}
+\end{quote}
+
+This is an experimentally testable hypothesis. It should not be presented as an empirical fact until benchmark results establish it.
+
+\section{Conclusion}
+
+The fundamental problem is not refusal itself. Refusal can be an appropriate policy mechanism. The problem arises when refusal, classification, counterexample generation, and mathematical refutation are treated as equivalent operations. They are not.
+
+A mature AI verification architecture should distinguish:
+\begin{itemize}
+\item \textbf{WHAT THE USER ASKED}
+\item \textbf{WHAT THE SYSTEM MAY PROVIDE}
+\item \textbf{WHAT THE MATHEMATICS ESTABLISHES}
+\item \textbf{WHAT THE SYSTEM HAS ACTUALLY PROVED}
+\end{itemize}
+
+The recursive principle is therefore:
+
+\begin{quote}
+\textbf{Never allow a verifier's conclusion to escape verification merely because it came from the verifier.}
+\end{quote}
+
+A counterexample must be checked against the exact proposition. A refutation must preserve quantifiers. A theorem must preserve assumptions. A dynamical conclusion must contain dynamics. An existing formal proof must be discoverable and attributable. And a refusal must remain a policy decision rather than masquerading as a mathematical proof.
+
+The resulting architecture is not a system that blindly answers every request. It is a system that knows the difference between:
+\begin{itemize}
+\item \textit{I will not provide this}
+\item \textit{this proposition is false}
+\end{itemize}
+
+That distinction is foundational to trustworthy AI reasoning.
+
+\end{document}

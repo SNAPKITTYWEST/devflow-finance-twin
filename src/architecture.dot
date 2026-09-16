@@ -1,0 +1,42 @@
+// File: diagrams/architecture.dot
+digraph Architecture {
+  rankdir=TB;
+  node [shape=rect, style=filled, fillcolor="#ffffff", fontname="Helvetica", fontsize=11];
+  subgraph cluster_quipper {
+    label="Quipper / Haskell";
+    style=rounded;
+    color="#cfe2f3";
+    Circuit [label="weakMeasureCircuit(theta)\nsystem qubit + ancilla"];
+    Sender [label="Quipper TCP Sender\nsends JSON messages"];
+  }
+  subgraph cluster_extractor {
+    label="Kraus Extractor";
+    style=rounded;
+    color="#d9ead3";
+    Simulate [label="simulateBasis(i)\nstatevector per basis"];
+    BuildU [label="assemble U\ncolumns = outputs"];
+    Extract [label="extractKrausOperators\nK_m = <m| U |0>"];
+    Export [label="write K_m.json\nwrite kraus_defs.thy"];
+  }
+  subgraph cluster_runtime {
+    label="Runtime";
+    style=rounded;
+    color="#fce5cd";
+    TCPServer [label="TCP JSON Server\n(listen host:port)"];
+    Julia [label="Julia EMA Controller\nupdate p, record CSV, plot"];
+  }
+  subgraph cluster_formal {
+    label="Formal";
+    style=rounded;
+    color="#ead1dc";
+    Isabelle [label="Isabelle session\nQuipper_Kraus_Check.thy"];
+  }
+
+  Circuit -> Simulate [label="(same circuit)"];
+  Simulate -> BuildU -> Extract -> Export;
+  Sender -> TCPServer;
+  Export -> Isabelle;
+  TCPServer -> Julia;
+  Julia -> Export [label="optional feedback"];
+  Isabelle -> Export [label="proof artifacts"];
+}

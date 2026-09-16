@@ -1,0 +1,21 @@
+// sql_schema.dot
+digraph SQLSchema {
+  rankdir=LR;
+  node [shape=record fontname="Helvetica" fontsize=11];
+  edge [fontname="Helvetica" fontsize=10];
+
+  KrausArtifact [label="{KrausArtifact | id PK | theta | created_at | commit_hash | artifact_path}"];
+  KrausMatrix [label="{KrausMatrix | id PK | artifact_id FK | m_index | row | col | re | im}"];
+  Provenance [label="{Provenance | id PK | artifact_id FK | seed | toolchain | env_json}"];
+  Trials [label="{Trials | id PK | artifact_id FK | trial_no | timestamp | bits_json}"];
+  EMAState [label="{EMAState | id PK | trial_id FK | archetype_id | p_value}"];
+  Archetype [label="{Archetype | id PK | name | description}"];
+  Users [label="{Users | id PK | name | role}"];
+
+  KrausArtifact -> KrausMatrix [label="1..*"];
+  KrausArtifact -> Provenance [label="1..1"];
+  KrausArtifact -> Trials [label="1..*"];
+  Trials -> EMAState [label="1..*"];
+  EMAState -> Archetype [label="FK"];
+  Users -> KrausArtifact [label="owner"];
+}

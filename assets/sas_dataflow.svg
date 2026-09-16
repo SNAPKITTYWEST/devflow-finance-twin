@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- sas_dataflow.svg -->
+<svg width="1000pt" height="440pt" viewBox="0.00 0.00 1000.00 440.00" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L6,3 z" fill="#000"/>
+    </marker>
+  </defs>
+  <g font-family="Helvetica" font-size="11">
+    <!-- Sources -->
+    <g transform="translate(40,40)">
+      <rect x="0" y="0" width="220" height="80" rx="6" ry="6" fill="#ffffff" stroke="#000"/>
+      <text x="12" y="20" font-weight="bold">Sources</text>
+      <text x="12" y="36">- Quipper logs</text>
+      <text x="12" y="52">- Kraus JSON</text>
+      <text x="12" y="68">- Telemetry CSV</text>
+    </g>
+    <!-- Staging -->
+    <g transform="translate(320,40)">
+      <rect x="0" y="0" width="220" height="80" rx="6" ry="6" fill="#ffffff" stroke="#000"/>
+      <text x="12" y="20" font-weight="bold">Staging Area</text>
+      <text x="12" y="36">(S3 / Blob / Landing)</text>
+    </g>
+    <!-- SASIngest -->
+    <g transform="translate(600,40)">
+      <rect x="0" y="0" width="220" height="80" rx="6" ry="6" fill="#ffffff" stroke="#000"/>
+      <text x="12" y="20" font-weight="bold">SAS Ingest Job</text>
+      <text x="12" y="36">(read JSON/CSV)</text>
+    </g>
+    <!-- Transform -->
+    <g transform="translate(320,160)">
+      <rect x="0" y="0" width="220" height="80" rx="6" ry="6" fill="#ffffff" stroke="#000"/>
+      <text x="12" y="20" font-weight="bold">SAS Transform</text>
+      <text x="12" y="36">(clean, normalize, join)</text>
+    </g>
+    <!-- SQLLoad -->
+    <g transform="translate(600,160)">
+      <rect x="0" y="0" width="220" height="80" rx="6" ry="6" fill="#ffffff" stroke="#000"/>
+      <text x="12" y="20" font-weight="bold">Load to SQL Warehouse</text>
+      <text x="12" y="36">(dim/fact tables)</text>
+    </g>
+    <!-- Reporting -->
+    <g transform="translate(320,280)">
+      <rect x="0" y="0" width="220" height="80" rx="6" ry="6" fill="#ffffff" stroke="#000"/>
+      <text x="12" y="20" font-weight="bold">SAS Reports / Dashboards</text>
+      <text x="12" y="36">(operational, compliance)</text>
+    </g>
+    <!-- Archive -->
+    <g transform="translate(600,280)">
+      <rect x="0" y="0" width="220" height="80" rx="6" ry="6" fill="#ffffff" stroke="#000"/>
+      <text x="12" y="20" font-weight="bold">Archive</text>
+      <text x="12" y="36">(signed bundles, proofs)</text>
+    </g>
+    <!-- Arrows -->
+    <line x1="260" y1="80" x2="320" y2="80" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="270" y="75" font-size="9">upload</text>
+    <line x1="540" y1="80" x2="600" y2="80" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="548" y="75" font-size="9">ingest schedule</text>
+    <line x1="710" y1="120" x2="430" y2="160" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="540" y="145" font-size="9">raw to curated</text>
+    <line x1="540" y1="200" x2="600" y2="200" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="548" y="195" font-size="9">populate schema</text>
+    <line x1="430" y1="240" x2="430" y2="280" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="435" y="265" font-size="9">BI queries</text>
+    <line x1="540" y1="320" x2="600" y2="320" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="548" y="315" font-size="9">export artifacts</text>
+    <line x1="710" y1="320" x2="540" y2="320" stroke="none"/>
+    <line x1="600" y1="320" x2="540" y2="320" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="548" y="355" font-size="9">attach proofs</text>
+  </g>
+</svg>

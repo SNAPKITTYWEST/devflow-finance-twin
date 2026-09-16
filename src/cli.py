@@ -1,3 +1,18 @@
+﻿# ========================================================================
+# SOVEREIGN LEVIATHAN NODE LICENSE
+# License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+# Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+# ========================================================================
+#
+# This file is a covered work under the GNU Affero General Public License,
+# version 3, together with the Sovereign Leviathan additional terms.
+#
+# Hark, though this node be but a spark,
+# Its covenant endureth through the dark.
+#
+# Ignorantia juris non excusat.
+# ========================================================================
+
 import argparse
 import logging
 import signal
@@ -33,7 +48,7 @@ def main():
     signal.signal(signal.SIGTERM, signal_handler)
 
     parser = argparse.ArgumentParser(
-        description="Devflow Finance Twin — Sovereign Deterministic Finance Engine"
+        description="Devflow Finance Twin â€” Sovereign Deterministic Finance Engine"
     )
     parser.add_argument("--storage", default="ledger.worm", help="Path to WORM storage file")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable debug logging")

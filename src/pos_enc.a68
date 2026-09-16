@@ -1,0 +1,228 @@
+! pos_enc.a68
+! POSITIONAL ENCODING COMPONENT — OSS 1230
+! TARGET: SINUSOIDAL + LEARNED POSITIONAL ENCODING
+! MATH: PE(pos,2i) = sin(pos/10000^(2i/D)), PE(pos,2i+1) = cos(...)
+! DEPENDENCY: tensor.a68
+! LICENSE: AGPL-3.0-or-later
+MODULE pos_enc;
+
+  IMPORT tensor;
+
+  ! ============================================================
+  ! SECTION 1: CONSTANTS
+  ! ============================================================
+  REAL PE_BASE          := 10000.0;
+  REAL PE_INIT_STDDEV   := 0.02;
+  REAL PE_EPSILON       := 1.0e-12;
+  INT  PE_MAX_SEQ       := 131072;
+  INT  PE_MAX_DIM       := 65536;
+
+  ! ============================================================
+  ! SECTION 2: TYPES
+  ! ============================================================
+  ! SinPETable: precomputed sinusoidal table, shape (max_seq x D)
+  MODE SinPETable = [] REAL;
+
+  ! LearnedPE: learnable position embedding matrix (max_seq x D)
+  MODE LearnedPEState = STRUCT(
+    [] REAL data,
+    [] REAL grad,
+    INT max_seq,
+    INT d_model,
+    BOOL frozen,
+    BOOL has_grad
+  );
+
+  ! ============================================================
+  ! SECTION 3: SINUSOIDAL ENCODING
+  ! ============================================================
+  ! sin_pe_build: builds the full sinusoidal table for positions 0..max_seq-1
+  ! PE(pos, 2i)   = sin(pos / 10000^(2i/D))
+  ! PE(pos, 2i+1) = cos(pos / 10000^(2i/D))
+  ! Domain: pos in {0..max_seq-1}, i in {0..D/2-1}
+  ! Invariant: table has shape (max_seq x D), all entries finite
+  PROC sin_pe_build = (INT max_seq, INT d_model) SinPETable:
+  BEGIN
+    SinPETable table := HEAP [max_seq * d_model] REAL;
+    FOR pos FROM 0 TO max_seq - 1 DO
+      FOR i FROM 0 TO d_model OVER 2 - 1 DO
+        REAL div_term := EXP(FLOAT(2 * i) * (-LOG(PE_BASE)) / FLOAT(d_model));
+        REAL angle := FLOAT(pos) * div_term;
+        table[pos * d_model + 2 * i + 1] := SIN(angle);
+        IF 2 * i + 2 <= d_model THEN
+          table[pos * d_model + 2 * i + 2] := COS(angle)
+        FI
+      OD
+    OD;
+    table
+  END;
+
+  ! sin_pe_apply: adds positional encoding to sequence X (N x D)
+  ! Input:  x : [] REAL (N x D), table : SinPETable (max_seq x D)
+  !         n : INT (seq_len), d : INT (d_model), offset : INT (start pos)
+  ! Output: [] REAL (N x D) with PE added
+  ! Operation: out[i, dim] = x[i, dim] + table[(offset+i) * d + dim]
+  PROC sin_pe_apply = ([] REAL x, SinPETable table, INT n, INT d, INT offset) [] REAL:
+  BEGIN
+    [] REAL out := HEAP [n * d] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      INT pos := offset + i;
+      FOR dim FROM 1 TO d DO
+        out[i * d + dim] := x[i * d + dim] + table[pos * d + dim]
+      OD
+    OD;
+    out
+  END;
+
+  ! sin_pe_get_row: extracts the PE vector for one position
+  PROC sin_pe_get_row = (SinPETable table, INT pos, INT d) [] REAL:
+  BEGIN
+    [] REAL row := HEAP [d] REAL;
+    FOR dim FROM 1 TO d DO row[dim] := table[pos * d + dim] OD;
+    row
+  END;
+
+  ! ============================================================
+  ! SECTION 4: LEARNED POSITIONAL ENCODING
+  ! ============================================================
+  PROC learned_pe_new = (INT max_seq, INT d_model) LearnedPEState:
+  BEGIN
+    INT total := max_seq * d_model;
+    [] REAL data := HEAP [total] REAL;
+    [] REAL grad := HEAP [total] REAL;
+    FOR i FROM 1 TO total DO data[i] := 0.0; grad[i] := 0.0 OD;
+    LearnedPEState(data, grad, max_seq, d_model, FALSE, FALSE)
+  END;
+
+  PROC learned_pe_normal_init = (REF LearnedPEState s) VOID:
+  BEGIN
+    INT total := s.max_seq * s.d_model;
+    FOR i FROM 1 TO total DO
+      REAL u1 := RANDOM + PE_EPSILON;
+      REAL u2 := RANDOM;
+      s.data[i] := PE_INIT_STDDEV * SQRT(-2.0 * LOG(u1)) * COS(2.0 * 3.14159265 * u2)
+    OD
+  END;
+
+  PROC learned_pe_apply = (LearnedPEState s, [] REAL x, INT n, INT d, INT offset) [] REAL:
+  BEGIN
+    [] REAL out := HEAP [n * d] REAL;
+    FOR i FROM 0 TO n - 1 DO
+      INT pos := offset + i;
+      FOR dim FROM 1 TO d DO
+        out[i * d + dim] := x[i * d + dim] + s.data[pos * d + dim]
+      OD
+    OD;
+    out
+  END;
+
+  PROC learned_pe_backward = (REF LearnedPEState s, [] REAL dl_dout,
+                               INT n, INT d, INT offset) VOID:
+  BEGIN
+    IF NOT s.frozen THEN
+      FOR i FROM 0 TO n - 1 DO
+        INT pos := offset + i;
+        FOR dim FROM 1 TO d DO
+          s.grad[pos * d + dim] +:= dl_dout[i * d + dim]
+        OD
+      OD;
+      s.has_grad := TRUE
+    FI
+  END;
+
+  PROC learned_pe_zero_grad = (REF LearnedPEState s) VOID:
+  BEGIN
+    INT total := s.max_seq * s.d_model;
+    FOR i FROM 1 TO total DO s.grad[i] := 0.0 OD;
+    s.has_grad := FALSE
+  END;
+
+  PROC learned_pe_sgd = (REF LearnedPEState s, REAL lr) VOID:
+  BEGIN
+    IF s.has_grad AND NOT s.frozen THEN
+      INT total := s.max_seq * s.d_model;
+      FOR i FROM 1 TO total DO s.data[i] -:= lr * s.grad[i] OD;
+      learned_pe_zero_grad(s)
+    FI
+  END;
+
+  ! ============================================================
+  ! SECTION 5: VERIFICATION AND PROPERTIES
+  ! ============================================================
+  ! prop_sinusoidal_magnitude: |PE(pos,d)| <= 1.0 for all pos,d
+  PROC prop_sin_pe_bounded = (SinPETable table, INT max_seq, INT d) BOOL:
+  BEGIN
+    BOOL ok := TRUE;
+    FOR pos FROM 0 TO max_seq - 1 DO
+      FOR dim FROM 1 TO d DO
+        REAL v := table[pos * d + dim];
+        IF ABS(v) > 1.0 + PE_EPSILON THEN ok := FALSE FI
+      OD
+    OD;
+    ok
+  END;
+
+  ! prop_pe_deterministic: same pos always produces same PE vector
+  PROC prop_sin_pe_deterministic = (INT max_seq, INT d) BOOL:
+  BEGIN
+    SinPETable t1 := sin_pe_build(max_seq, d);
+    SinPETable t2 := sin_pe_build(max_seq, d);
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO max_seq * d DO
+      IF t1[i] /= t2[i] THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  ! ============================================================
+  ! SECTION 6: TESTS
+  ! ============================================================
+  PROC test_pe_shape = () BOOL:
+  BEGIN
+    SinPETable t := sin_pe_build(16, 8);
+    UPB t = 16 * 8
+  END;
+
+  PROC test_pe_bounded = () BOOL:
+  BEGIN
+    SinPETable t := sin_pe_build(32, 16);
+    prop_sin_pe_bounded(t, 32, 16)
+  END;
+
+  PROC test_pe_pos0_dim0_is_zero = () BOOL:
+  BEGIN
+    SinPETable t := sin_pe_build(8, 8);
+    ABS(t[1]) < PE_EPSILON
+  END;
+
+  PROC test_pe_deterministic = () BOOL:
+    prop_sin_pe_deterministic(8, 8);
+
+  PROC test_learned_pe_shape = () BOOL:
+  BEGIN
+    LearnedPEState s := learned_pe_new(16, 8);
+    UPB s.data = 16 * 8
+  END;
+
+  PROC test_learned_pe_apply_adds = () BOOL:
+  BEGIN
+    LearnedPEState s := learned_pe_new(4, 2);
+    s.data[1] := 1.0; s.data[2] := 2.0;
+    [] REAL x := HEAP [2] REAL; x[1] := 3.0; x[2] := 4.0;
+    [] REAL out := learned_pe_apply(s, x, 1, 2, 0);
+    ABS(out[1] - 4.0) < PE_EPSILON AND ABS(out[2] - 6.0) < PE_EPSILON
+  END;
+
+  PROC run_pos_enc_tests = () INT:
+  BEGIN
+    BOOL all :=
+      test_pe_shape() AND
+      test_pe_bounded() AND
+      test_pe_pos0_dim0_is_zero() AND
+      test_pe_deterministic() AND
+      test_learned_pe_shape() AND
+      test_learned_pe_apply_adds();
+    IF all THEN 0 ELSE -1 FI
+  END;
+
+END ! MODULE pos_enc

@@ -1,6 +1,21 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // =====================================================================
 // TAU_MODEL - Polymorphic Cost Model
-// Verified: τ_monotonic_transform across all domains
+// Verified: Ï„_monotonic_transform across all domains
 // =====================================================================
 
 use crate::pwc_core::{BraidWord, word_length};
@@ -36,7 +51,7 @@ pub fn verify_tau_monotonic(original: &BraidWord, compressed: &BraidWord) {
         let tau_comp = domain.tau(compressed);
         debug_assert!(
             tau_comp <= tau_orig,
-            "τ violation in {:?}: {} -> {}",
+            "Ï„ violation in {:?}: {} -> {}",
             domain, tau_orig, tau_comp
         );
     }

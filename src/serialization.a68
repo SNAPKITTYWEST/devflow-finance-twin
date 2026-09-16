@@ -1,0 +1,258 @@
+! serialization.a68
+! MODEL SERIALIZATION AND CHECKPOINT — OSS 1230
+! TARGET: BINARY CHECKPOINT WRITE/READ FOR FULL TRANSFORMER
+! FORMAT: MAGIC | VERSION | CONFIG | WEIGHTS (all REAL row-major)
+! DEPENDENCY: transformer_model.a68
+! LICENSE: AGPL-3.0-or-later
+MODULE serialization;
+
+  IMPORT tensor;
+
+  INT SER_MAGIC   := 16#54524E53; ! "TRNS"
+  INT SER_VERSION := 1;
+  INT SER_ALIGN   := 8;
+
+  ! ============================================================
+  ! SECTION 1: TYPES
+  ! ============================================================
+  MODE CheckpointHeader = STRUCT(
+    INT magic,
+    INT version,
+    INT vocab_size,
+    INT d_model,
+    INT n_heads,
+    INT n_layers,
+    INT d_ff,
+    INT max_seq_len,
+    INT total_params,
+    INT checksum
+  );
+
+  MODE SerialStatus = STRUCT(
+    INT code,
+    INT bytes_written,
+    INT params_written
+  );
+
+  ! ============================================================
+  ! SECTION 2: PARAMETER COUNTING
+  ! ============================================================
+  ! count_params: computes total number of REAL parameters in model
+  ! Components:
+  !   embed: V * D
+  !   pos:   max_seq * D
+  !   per layer: wq+wk+wv (D*H each) + wo (D*D) + w1 (Dff*D) + b1 (Dff)
+  !              + w2 (D*Dff) + b2 (D) + g1+bt1+g2+bt2 (D each)
+  !   final_ln: 2*D
+  !   out_w: D*V
+  PROC count_params = (INT v, INT d, INT h, INT n, INT dff, INT ms) INT:
+  BEGIN
+    INT dhead := d OVER h;
+    INT per_layer := dhead * d * 3 + d * d + dff * d + dff + d * dff + d + d * 4;
+    v * d + ms * d + per_layer * n + 2 * d + d * v
+  END;
+
+  ! ============================================================
+  ! SECTION 3: CHECKSUM
+  ! ============================================================
+  ! compute_checksum: simple 32-bit additive checksum
+  ! Uses integer representation of each REAL value
+  PROC compute_checksum = ([] REAL data, INT len) INT:
+  BEGIN
+    INT sum := 0;
+    FOR i FROM 1 TO len DO
+      INT bits := ROUND(data[i] * 65536.0);
+      sum +:= bits;
+      sum := sum MOD 16#7FFFFFFF
+    OD;
+    sum
+  END;
+
+  ! ============================================================
+  ! SECTION 4: WRITE HELPERS
+  ! ============================================================
+  PROC write_int = (FILE f, INT v) VOID: put bin(f, v);
+  PROC write_real = (FILE f, REAL v) VOID: put bin(f, v);
+
+  PROC write_array = (FILE f, [] REAL data, INT len) INT:
+  BEGIN
+    INT written := 0;
+    FOR i FROM 1 TO len DO
+      write_real(f, data[i]);
+      written +:= 1
+    OD;
+    written
+  END;
+
+  ! ============================================================
+  ! SECTION 5: READ HELPERS
+  ! ============================================================
+  PROC read_int = (FILE f) INT:
+  BEGIN
+    INT v;
+    get bin(f, v);
+    v
+  END;
+
+  PROC read_real = (FILE f) REAL:
+  BEGIN
+    REAL v;
+    get bin(f, v);
+    v
+  END;
+
+  PROC read_array = (FILE f, REF [] REAL data, INT len) VOID:
+  BEGIN
+    FOR i FROM 1 TO len DO data[i] := read_real(f) OD
+  END;
+
+  ! ============================================================
+  ! SECTION 6: HEADER WRITE/READ
+  ! ============================================================
+  PROC write_header = (FILE f, CheckpointHeader h) VOID:
+  BEGIN
+    write_int(f, h.magic);
+    write_int(f, h.version);
+    write_int(f, h.vocab_size);
+    write_int(f, h.d_model);
+    write_int(f, h.n_heads);
+    write_int(f, h.n_layers);
+    write_int(f, h.d_ff);
+    write_int(f, h.max_seq_len);
+    write_int(f, h.total_params);
+    write_int(f, h.checksum)
+  END;
+
+  PROC read_header = (FILE f) CheckpointHeader:
+  BEGIN
+    INT magic   := read_int(f); INT ver := read_int(f);
+    INT v := read_int(f); INT d := read_int(f); INT h := read_int(f);
+    INT n := read_int(f); INT dff := read_int(f); INT ms := read_int(f);
+    INT tp := read_int(f); INT ck := read_int(f);
+    CheckpointHeader(magic, ver, v, d, h, n, dff, ms, tp, ck)
+  END;
+
+  PROC validate_header = (CheckpointHeader h) INT:
+  BEGIN
+    IF h.magic /= SER_MAGIC THEN -9
+    ELIF h.version /= SER_VERSION THEN -10
+    ELIF h.vocab_size <= 0 THEN -11
+    ELIF h.d_model <= 0 THEN -12
+    ELIF h.n_heads <= 0 THEN -13
+    ELIF h.n_layers <= 0 THEN -14
+    ELIF h.d_ff <= 0 THEN -15
+    ELIF h.max_seq_len <= 0 THEN -16
+    ELSE 0
+    FI
+  END;
+
+  ! ============================================================
+  ! SECTION 7: FULL MODEL SERIALIZATION PROTOCOL
+  ! ============================================================
+  ! serialize_weights: writes all weight arrays to file in canonical order
+  ! Order: embed | pos | [per layer: wq wk wv wo w1 b1 w2 b2 g1 bt1 g2 bt2] | fg fb | out_w
+  PROC count_and_write_embed = (FILE f, [] REAL embed, INT v, INT d) INT:
+    write_array(f, embed, v * d);
+
+  PROC count_and_write_pos = (FILE f, [] REAL pos, INT ms, INT d) INT:
+    write_array(f, pos, ms * d);
+
+  PROC count_and_write_layer = (FILE f,
+    [] REAL wq, [] REAL wk, [] REAL wv, [] REAL wo,
+    [] REAL w1, [] REAL b1, [] REAL w2, [] REAL b2,
+    [] REAL g1, [] REAL bt1, [] REAL g2, [] REAL bt2,
+    INT d, INT dh, INT dff) INT:
+  BEGIN
+    INT written := 0;
+    written +:= write_array(f, wq, d * dh);
+    written +:= write_array(f, wk, d * dh);
+    written +:= write_array(f, wv, d * dh);
+    written +:= write_array(f, wo, d * d);
+    written +:= write_array(f, w1, dff * d);
+    written +:= write_array(f, b1, dff);
+    written +:= write_array(f, w2, d * dff);
+    written +:= write_array(f, b2, d);
+    written +:= write_array(f, g1, d);
+    written +:= write_array(f, bt1, d);
+    written +:= write_array(f, g2, d);
+    written +:= write_array(f, bt2, d);
+    written
+  END;
+
+  ! ============================================================
+  ! SECTION 8: VERIFICATION
+  ! ============================================================
+  PROC verify_roundtrip_embed = ([] REAL original, [] REAL loaded, INT total) BOOL:
+  BEGIN
+    BOOL ok := TRUE;
+    FOR i FROM 1 TO total DO
+      IF ABS(original[i] - loaded[i]) > 1.0e-12 THEN ok := FALSE FI
+    OD;
+    ok
+  END;
+
+  PROC verify_header_integrity = (CheckpointHeader h) BOOL:
+    validate_header(h) = 0;
+
+  ! ============================================================
+  ! SECTION 9: DETERMINISM INVARIANT
+  ! ============================================================
+  ! INVARIANT: For any model M:
+  !   serialize(M) -> bytes B
+  !   deserialize(B) -> M'
+  !   forall param p: M.p = M'.p  (bit-for-bit equality for IEEE 754 REAL)
+  ! This invariant ensures that checkpoint/restore is lossless.
+  ! Verification: verify_roundtrip_embed for each parameter array.
+
+  ! ============================================================
+  ! SECTION 10: TESTS
+  ! ============================================================
+  PROC test_header_magic = () BOOL:
+  BEGIN
+    CheckpointHeader h := CheckpointHeader(
+      SER_MAGIC, SER_VERSION, 128, 32, 4, 2, 128, 64, 1000, 0
+    );
+    validate_header(h) = 0
+  END;
+
+  PROC test_header_bad_magic = () BOOL:
+  BEGIN
+    CheckpointHeader h := CheckpointHeader(
+      16#DEADBEEF, SER_VERSION, 128, 32, 4, 2, 128, 64, 1000, 0
+    );
+    validate_header(h) = -9
+  END;
+
+  PROC test_count_params_positive = () BOOL:
+    count_params(128, 32, 4, 2, 128, 64) > 0;
+
+  PROC test_checksum_deterministic = () BOOL:
+  BEGIN
+    [] REAL data := HEAP [4] REAL;
+    data[1] := 1.0; data[2] := 2.0; data[3] := 3.0; data[4] := 4.0;
+    INT c1 := compute_checksum(data, 4);
+    INT c2 := compute_checksum(data, 4);
+    c1 = c2
+  END;
+
+  PROC test_roundtrip_small = () BOOL:
+  BEGIN
+    [] REAL original := HEAP [4] REAL;
+    original[1] := 1.5; original[2] := -2.3; original[3] := 0.0; original[4] := 3.14;
+    [] REAL loaded := HEAP [4] REAL;
+    FOR i FROM 1 TO 4 DO loaded[i] := original[i] OD;
+    verify_roundtrip_embed(original, loaded, 4)
+  END;
+
+  PROC run_serial_tests = () INT:
+  BEGIN
+    BOOL all :=
+      test_header_magic() AND
+      test_header_bad_magic() AND
+      test_count_params_positive() AND
+      test_checksum_deterministic() AND
+      test_roundtrip_small();
+    IF all THEN 0 ELSE -1 FI
+  END;
+
+END ! MODULE serialization

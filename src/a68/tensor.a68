@@ -1,0 +1,181 @@
+! tensor.a68
+! Approx lines: 300
+! MODE Tensor = STRUCT([ ] REAL data, [ ] INT shape).
+MODULE tensor;
+
+  MODE INTARR = [] INT;
+  MODE REALARR = [] REAL;
+
+  MODE Tensor = STRUCT(REF REALARR data, REF INTARR shape);
+
+  PROC make_shape = (INT n, INT dims[]) REF INTARR:
+    BEGIN
+      REF INTARR s := HEAP [n]INT;
+      FOR i FROM 1 TO n DO s[i] := dims[i] OD;
+      s
+    END;
+
+  PROC tensor_new = (INT dims_len, INT dims[]) Tensor:
+    BEGIN
+      INT total := 1;
+      FOR i FROM 1 TO dims_len DO total := total * dims[i] OD;
+      REF REALARR d := HEAP [total]REAL;
+      FOR i FROM 1 TO total DO d[i] := 0.0 OD;
+      Tensor(REF d, REF make_shape(dims_len, dims))
+    END;
+
+  PROC tensor_zeros = (INT dims_len, INT dims[]) Tensor:
+    BEGIN
+      tensor_new(dims_len, dims)
+    END;
+
+  PROC tensor_copy = (Tensor t) Tensor:
+    BEGIN
+      INT total := 1;
+      FOR i FROM 1 TO UPB t.shape DO total := total * t.shape[i] OD;
+      REF REALARR d := HEAP [total]REAL;
+      FOR i FROM 1 TO total DO d[i] := t.data[i] OD;
+      Tensor(REF d, REF make_shape(UPB t.shape, (t.shape)))
+    END;
+
+  PROC idx_flat = (REF INTARR shape, INT indices[]) INT:
+    BEGIN
+      INT rank := UPB shape;
+      INT idx := 1;
+      INT stride := 1;
+      FOR i FROM rank DOWNTO 1 DO
+        idx := idx + (indices[i]-1)*stride;
+        stride := stride * shape[i]
+      OD;
+      idx
+    END;
+
+  PROC tensor_get = (Tensor t, INT indices[]) REAL:
+    BEGIN
+      INT pos := idx_flat(t.shape, indices);
+      t.data[pos]
+    END;
+
+  PROC tensor_set = (REF Tensor t, INT indices[], REAL v) VOID:
+    BEGIN
+      INT pos := idx_flat(t.shape, indices);
+      t.data[pos] := v
+    END;
+
+  PROC shape_prod = (REF INTARR s) INT:
+    BEGIN
+      INT p := 1;
+      FOR i FROM 1 TO UPB s DO p := p * s[i] OD;
+      p
+    END;
+
+  PROC transpose2 = (Tensor a) Tensor:
+    BEGIN
+      ! Only support 2D transpose
+      INT rows := a.shape[1]; INT cols := a.shape[2];
+      INT dims[2] := (cols, rows);
+      Tensor out := tensor_new(2, dims);
+      FOR i FROM 1 TO rows DO
+        FOR j FROM 1 TO cols DO
+          out.data[(j-1)*rows + i] := a.data[(i-1)*cols + j]
+        OD
+      OD;
+      out
+    END;
+
+  PROC matmul = (Tensor A, Tensor B) Tensor:
+    BEGIN
+      ! A: (m x k), B: (k x n) -> out (m x n)
+      INT m := A.shape[1]; INT k := A.shape[2];
+      INT k2 := B.shape[1]; INT n := B.shape[2];
+      IF k /= k2 THEN print(("matmul: inner dims mismatch", newline)) FI;
+      INT dims[2] := (m, n);
+      Tensor C := tensor_new(2, dims);
+      FOR i FROM 1 TO m DO
+        FOR j FROM 1 TO n DO
+          REAL s := 0.0;
+          FOR t FROM 1 TO k DO
+            s := s + A.data[(i-1)*k + t] * B.data[(t-1)*n + j]
+          OD;
+          C.data[(i-1)*n + j] := s
+        OD
+      OD;
+      C
+    END;
+
+  PROC add = (Tensor A, Tensor B) Tensor:
+    BEGIN
+      INT total := shape_prod(A.shape);
+      Tensor C := tensor_new(UPB A.shape, (A.shape));
+      FOR i FROM 1 TO total DO C.data[i] := A.data[i] + B.data[i] OD;
+      C
+    END;
+
+  PROC add_inplace = (REF Tensor A, Tensor B) VOID:
+    BEGIN
+      INT total := shape_prod(A.shape);
+      FOR i FROM 1 TO total DO A.data[i] := A.data[i] + B.data[i] OD
+    END;
+
+  PROC scale = (Tensor A, REAL s) Tensor:
+    BEGIN
+      INT total := shape_prod(A.shape);
+      Tensor C := tensor_new(UPB A.shape, (A.shape));
+      FOR i FROM 1 TO total DO C.data[i] := A.data[i] * s OD;
+      C
+    END;
+
+  PROC randn = (INT dims_len, INT dims[], REAL mean, REAL std) Tensor:
+    BEGIN
+      INT total := 1;
+      FOR i FROM 1 TO dims_len DO total := total * dims[i] OD;
+      REF REALARR d := HEAP [total]REAL;
+      ! Box-Muller
+      INT i := 1;
+      WHILE i <= total DO
+        REAL u1 := (RAND() + 1.0) / (REAL(RANDMAX) + 1.0);
+        REAL u2 := (RAND() + 1.0) / (REAL(RANDMAX) + 1.0);
+        REAL r := SQRT(-2.0 * LOG(u1));
+        REAL theta := 2.0 * 3.141592653589793 * u2;
+        d[i] := mean + std * r * COS(theta);
+        IF i+1 <= total THEN d[i+1] := mean + std * r * SIN(theta) FI;
+        i := i + 2
+      OD;
+      Tensor(REF d, REF make_shape(dims_len, dims))
+    END;
+
+  PROC print_shape = (Tensor t) VOID:
+    BEGIN
+      print(("shape: ", newline));
+      FOR i FROM 1 TO UPB t.shape DO
+        print((t.shape[i], " "))
+      OD;
+      print((newline))
+    END;
+
+  PROC flatten = (Tensor t) Tensor:
+    BEGIN
+      INT total := shape_prod(t.shape);
+      INT dims[1] := (total);
+      Tensor out := tensor_new(1, dims);
+      FOR i FROM 1 TO total DO out.data[i] := t.data[i] OD;
+      out
+    END;
+
+  PROC from_array = (REF REALARR arr, INT rows, INT cols) Tensor:
+    BEGIN
+      INT dims[2] := (rows, cols);
+      REF REALARR d := HEAP [rows*cols]REAL;
+      FOR i FROM 1 TO rows*cols DO d[i] := arr[i] OD;
+      Tensor(REF d, REF make_shape(2, dims))
+    END;
+
+  PROC zeros_like = (Tensor a) Tensor:
+    BEGIN
+      INT dims_len := UPB a.shape;
+      INT dims[16];
+      FOR i FROM 1 TO dims_len DO dims[i] := a.shape[i] OD;
+      tensor_zeros(dims_len, dims)
+    END;
+
+END ! MODULE tensor

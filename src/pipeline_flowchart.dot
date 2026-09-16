@@ -1,0 +1,25 @@
+// File: diagrams/pipeline_flowchart.dot
+digraph JungianQuantumPipeline {
+  rankdir=LR;
+  node [shape=rect, style=filled, fillcolor="#f7f7f9", fontname="Helvetica", fontsize=12];
+  edge [fontname="Helvetica", fontsize=11];
+
+  Quipper [label="Quipper Circuit\n(system + ancilla)\ncontrolled-Ry(theta)"];
+  Simulator [label="Statevector Simulator\n(run_generic_io or fallback)"];
+  Unitary [label="Unitary U\n(assembled from basis sims)"];
+  Kraus [label="Kraus Extractor\nK_m = <m|_A U |0>_A\nexport JSON + kraus_defs.thy"];
+  TCP [label="TCP JSON Stream\nnewline-delimited messages\n{\"trial\":n,\"bits\":[...]}"];
+  Julia [label="Julia EMA Controller\np <- p + eta (m - p)\nrecord beliefs.csv"];
+  Isabelle [label="Isabelle Verifier\nimport kraus_defs.thy\nprove CPTP and PSD"];
+  Artifacts [label="Artifacts\nkraus_out/, beliefs.csv, proofs"];
+
+  Quipper -> Simulator [label="simulate basis states"];
+  Simulator -> Unitary [label="collect columns"];
+  Unitary -> Kraus [label="extract K_m"];
+  Kraus -> Artifacts [label="write JSON + .thy"];
+  Kraus -> TCP [label="(optional) stream ancilla samples"];
+  TCP -> Julia [label="ancilla samples"];
+  Julia -> Artifacts [label="beliefs.csv, plots"];
+  Kraus -> Isabelle [label="kraus_defs.thy"];
+  Isabelle -> Artifacts [label="proof_report.txt"];
+}

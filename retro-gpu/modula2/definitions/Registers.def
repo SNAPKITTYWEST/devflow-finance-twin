@@ -1,0 +1,53 @@
+DEFINITION MODULE Registers;
+
+(* Register abstraction: Complete register file management *)
+
+TYPE
+  RegisterKind = (General, Predicate, Accumulator, Special);
+  RegisterWidth = (W32, W64, W128);
+  RegisterID = [0..255];
+  RegisterState = (Unallocated, Allocated, Spilled, Reserved);
+
+  Register = RECORD
+    id : RegisterID;
+    kind : RegisterKind;
+    width : RegisterWidth;
+    name : ARRAY [0..31] OF CHAR;
+    state : RegisterState;
+  END;
+
+  RegisterFile = POINTER TO ARRAY [0..255] OF Register;
+
+PROCEDURE AllocateRegister(
+  kind : RegisterKind;
+  width : RegisterWidth
+): RegisterID;
+(* Allocate next available register of given kind/width *)
+(* FAIL if none available *)
+
+PROCEDURE ReleaseRegister(id : RegisterID);
+(* Release register back to free pool *)
+
+PROCEDURE ValidateRegister(id : RegisterID): BOOLEAN;
+(* Check register exists and is in valid state *)
+
+PROCEDURE GetRegisterState(id : RegisterID): RegisterState;
+
+PROCEDURE SetRegisterState(id : RegisterID; state : RegisterState);
+
+PROCEDURE ReserveRegister(id : RegisterID);
+(* Reserve register for special use (e.g., %tid) *)
+
+PROCEDURE SpillRegister(id : RegisterID; location : INTEGER);
+(* Mark register as spilled to memory at location *)
+
+PROCEDURE RestoreRegister(id : RegisterID): INTEGER;
+(* Return spill location *)
+
+PROCEDURE InitializeRegisterFile();
+(* Initialize all registers to Unallocated *)
+
+PROCEDURE RegisterFileToString(): ARRAY OF CHAR;
+(* Debug representation *)
+
+END Registers.

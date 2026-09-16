@@ -1,10 +1,27 @@
+﻿/-
+ ========================================================================
+ SOVEREIGN LEVIATHAN NODE LICENSE
+ License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+ Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+ ========================================================================
+
+ This file is a covered work under the GNU Affero General Public License,
+ version 3, together with the Sovereign Leviathan additional terms.
+
+ Hark, though this node be but a spark,
+ Its covenant endureth through the dark.
+
+ Ignorantia juris non excusat.
+ ========================================================================
+-/
+
 -- Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
 -- SPDX-License-Identifier: FSL-1.1
--- ┌─────────────────────────────────────────────────────────────────────────────┐
--- │ SOVEREIGN DEED: BIFROST_CAPABILITY_EXCHANGE                                 │
--- │ "The Rainbow Bridge Carries Trust. Capabilities Flow Both Ways."            │
--- │ DEED_ID: DEED-BIFROST_CAPABILITY_EXCHANGE-076                              │
--- └─────────────────────────────────────────────────────────────────────────────┘
+-- â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+-- â”‚ SOVEREIGN DEED: BIFROST_CAPABILITY_EXCHANGE                                 â”‚
+-- â”‚ "The Rainbow Bridge Carries Trust. Capabilities Flow Both Ways."            â”‚
+-- â”‚ DEED_ID: DEED-BIFROST_CAPABILITY_EXCHANGE-076                              â”‚
+-- â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 namespace Sovereign.Deeds.BifrostCapabilityExchange
 
@@ -66,7 +83,7 @@ theorem handshake_establishes (local remote : String) (lc rc : CapabilityStore) 
   simp [bifrostHandshake, handshakeStep]
   decide
 
-theorem session_key_valid (s : BifrostSession) : s.established → s.sessionKey.length > 0 := by
+theorem session_key_valid (s : BifrostSession) : s.established â†’ s.sessionKey.length > 0 := by
   intro h; simp [BifrostSession] at h; omega
 
 end Sovereign.Deeds.BifrostCapabilityExchange

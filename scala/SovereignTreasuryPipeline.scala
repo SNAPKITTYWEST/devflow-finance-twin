@@ -1,6 +1,21 @@
+﻿// ========================================================================
+// SOVEREIGN LEVIATHAN NODE LICENSE
+// License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+// Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+// ========================================================================
+//
+// This file is a covered work under the GNU Affero General Public License,
+// version 3, together with the Sovereign Leviathan additional terms.
+//
+// Hark, though this node be but a spark,
+// Its covenant endureth through the dark.
+//
+// Ignorantia juris non excusat.
+// ========================================================================
+
 // Copyright (c) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// DEED-089: Sovereign Treasury Engine — Scala Pure Pipeline
+// DEED-089: Sovereign Treasury Engine â€” Scala Pure Pipeline
 // Functor-driven deterministic serialization, SHA-256 chain, append-only WORM store.
 
 import java.nio.{ByteBuffer, ByteOrder}
@@ -10,7 +25,7 @@ import java.security.MessageDigest
 import java.time.Instant
 import scala.util.{Try, Success, Failure}
 
-// ── 1. Core domain — mirrors the PL/I TREASURY_LEDGER_ENTRY ──────────────────
+// â”€â”€ 1. Core domain â€” mirrors the PL/I TREASURY_LEDGER_ENTRY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 final case class TreasuryEntry(
   txId: String,
@@ -23,7 +38,7 @@ final case class TreasuryEntry(
   complianceFlag: Byte
 )
 
-// ── 2. WORM block — exact analogue of the PL/I / C WormBlock ─────────────────
+// â”€â”€ 2. WORM block â€” exact analogue of the PL/I / C WormBlock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 final case class WormBlock(
   magic: String,
@@ -44,7 +59,7 @@ final case class WormBlock(
   }
 }
 
-// ── 3. Functor layer (explicit, no external Cats dependency) ─────────────────
+// â”€â”€ 3. Functor layer (explicit, no external Cats dependency) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 trait Functor[F[_]] {
   def map[A, B](fa: F[A])(f: A => B): F[B]
@@ -68,7 +83,7 @@ object Chained {
 def fmap[F[_], A, B](fa: F[A])(f: A => B)(implicit F: Functor[F]): F[B] =
   F.map(fa)(f)
 
-// ── 4. Deterministic serialization (byte-level, fixed offsets) ───────────────
+// â”€â”€ 4. Deterministic serialization (byte-level, fixed offsets) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 object Serializer {
   private val EntrySize = 128
@@ -111,7 +126,7 @@ object Serializer {
   }
 }
 
-// ── 5. Cryptographic hashing (SHA-256, deterministic) ────────────────────────
+// â”€â”€ 5. Cryptographic hashing (SHA-256, deterministic) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 object Crypto {
   def sha256Hex(data: Array[Byte]): String = {
@@ -125,7 +140,7 @@ object Crypto {
   }
 }
 
-// ── 6. VSAM-style append-only WORM store ──────────────────────────────────────
+// â”€â”€ 6. VSAM-style append-only WORM store â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class WormStore(path: Path) {
   if (!Files.exists(path)) Files.createFile(path)
@@ -148,7 +163,7 @@ class WormStore(path: Path) {
   def lastHash: String = "0" * 64
 }
 
-// ── 7. Full pipeline — functor-driven, deterministic ─────────────────────────
+// â”€â”€ 7. Full pipeline â€” functor-driven, deterministic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 object TreasuryPipeline {
 
@@ -188,7 +203,7 @@ object TreasuryPipeline {
   }
 }
 
-// ── 8. Demonstration ─────────────────────────────────────────────────────────
+// â”€â”€ 8. Demonstration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 object SovereignTreasuryApp extends App {
   val storePath = Paths.get("data/treasury-worm.bin")
@@ -206,7 +221,7 @@ object SovereignTreasuryApp extends App {
     complianceFlag = 0xc0.toByte
   )
 
-  println("=== Sovereign Treasury Engine – Scala WORM Pipeline ===")
+  println("=== Sovereign Treasury Engine â€“ Scala WORM Pipeline ===")
 
   val result = TreasuryPipeline.process(sample, "0" * 64, store)
 

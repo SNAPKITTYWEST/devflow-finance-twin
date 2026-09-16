@@ -1,3 +1,18 @@
+﻿-- ========================================================================
+-- SOVEREIGN LEVIATHAN NODE LICENSE
+-- License-ID: SL-AGPL3-001 | Covenant-Version: 1.0
+-- Copyright (C) 2026 SnapKittyWest. Ahmad Ali Parr, Bel Esprit D'Accord Irrevocable Trust.
+-- ========================================================================
+--
+-- This file is a covered work under the GNU Affero General Public License,
+-- version 3, together with the Sovereign Leviathan additional terms.
+--
+-- Hark, though this node be but a spark,
+-- Its covenant endureth through the dark.
+--
+-- Ignorantia juris non excusat.
+-- ========================================================================
+
 module Main where
 
 import SGL
@@ -11,16 +26,16 @@ main = do
     let nyc = point2 40.7128 (-74.0060)   -- New York City
 
     let dist = haversine earth sf nyc
-    putStrLn $ "SF → NYC distance: " ++ showHaversine dist
+    putStrLn $ "SF â†’ NYC distance: " ++ showHaversine dist
 
     let brng = bearing sf nyc
-    putStrLn $ "SF → NYC bearing:  " ++ showBearing brng
+    putStrLn $ "SF â†’ NYC bearing:  " ++ showBearing brng
 
     let mid = midpoint sf nyc
     putStrLn $ "Midpoint:          (" ++ show (p2Lat mid) ++ ", " ++ show (p2Lon mid) ++ ")"
 
     let dest = destinationPoint sf (deg 45) (km 1000)
-    putStrLn $ "1000km @ 45° from SF: (" ++ show (p2Lat dest) ++ ", " ++ show (p2Lon dest) ++ ")"
+    putStrLn $ "1000km @ 45Â° from SF: (" ++ show (p2Lat dest) ++ ", " ++ show (p2Lon dest) ++ ")"
 
     let lon1 = point2 0 (-122.4194)
     let lon2 = point2 0 (-74.0060)

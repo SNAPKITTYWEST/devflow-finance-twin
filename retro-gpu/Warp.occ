@@ -1,0 +1,90 @@
+-- Warp.occ
+-- GPU execution group (32 lanes) with CSP synchronization
+
+#USE "RetroGPUTypes.occ"
+
+-- Warp manager process
+PROC WarpManager(CHAN OF WARP_MSG in?, CHAN OF WARP_RESULT out!)
+  WARP warp:
+  WARP_MSG msg:
+  WARP_RESULT result:
+  INT i:
+
+  SEQ
+    -- Initialize warp
+    warp[warp_id] := 0
+    SEQ i = 0 FOR LANE_COUNT
+      warp[lane_state][i] := WARP_ACTIVE
+    warp[active_mask] := -1 -- All lanes active (0xFFFFFFFF)
+    warp[pc] := 0
+
+    -- Main service loop
+    WHILE TRUE
+      SEQ
+        in ? msg
+
+        CASE msg[msg_type]
+          INT lane:
+          INT value:
+
+          -- ACTIVATE_LANE
+          msg[msg_type] = WARP_ACTIVATE_LANE
+            SEQ
+              lane := msg[lane_id]
+              warp[lane_state][lane] := WARP_ACTIVE
+              result[status] := WARP_SUCCESS
+              out ! result
+
+          -- DEACTIVATE_LANE
+          msg[msg_type] = WARP_DEACTIVATE_LANE
+            SEQ
+              lane := msg[lane_id]
+              warp[lane_state][lane] := WARP_INACTIVE
+              result[status] := WARP_SUCCESS
+              out ! result
+
+          -- BROADCAST
+          msg[msg_type] = WARP_BROADCAST
+            SEQ
+              lane := msg[source_lane]
+              value := msg[broadcast_value]
+              result[status] := WARP_SUCCESS
+              result[result_value] := value
+              out ! result
+
+          -- SYNCHRONIZE
+          msg[msg_type] = WARP_SYNC
+            SEQ
+              -- Wait for all active lanes to reach this point
+              -- In CSP, this is implicit through channel handshakes
+              result[status] := WARP_SUCCESS
+              out ! result
+
+:
+
+-- Warp message types
+VAL INT WARP_ACTIVATE_LANE IS 0:
+VAL INT WARP_DEACTIVATE_LANE IS 1:
+VAL INT WARP_BROADCAST IS 2:
+VAL INT WARP_SHUFFLE IS 3:
+VAL INT WARP_REDUCE IS 4:
+VAL INT WARP_SYNC IS 5:
+
+-- Warp status
+VAL INT WARP_SUCCESS IS 0:
+VAL INT WARP_FAILURE IS 1:
+
+DATA TYPE WARP_MSG
+  INT msg_type
+  INT lane_id
+  INT source_lane
+  INT broadcast_value
+  INT shuffle_dist
+  [32]BYTE reduce_op
+:
+
+DATA TYPE WARP_RESULT
+  INT status
+  INT result_value
+  [32]INT lane_values
+:
