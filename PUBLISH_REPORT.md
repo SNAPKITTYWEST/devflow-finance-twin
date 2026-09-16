@@ -1,28 +1,22 @@
 # Publication Report
 
-**Timestamp:** 2026-09-16T11:08:36Z
+**Timestamp:** 2026-09-16T11:10:29Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 9 |
-| Files Added | 8 |
+| Files Discovered | 3 |
+| Files Added | 2 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 1 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `src/asp/incremental/incremental.go`
-- `src/ground_advanced.go`
-- `src/ground_optimization.go`
-- `src/grounder.go`
-- `src/gui-main.go`
-- `src/ir_types.go`
-- `src/safety.go`
-- `src/substitution.go`
+- `src/asp/incremental/incremental_advanced.go`
+- `src/asp/incremental/incremental_utils.go`
 
 ## Files Unchanged
 _None_

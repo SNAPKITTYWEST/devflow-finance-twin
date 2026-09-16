@@ -1,18 +1,12 @@
 {
-  "timestamp": "2026-09-16T11:08:28Z",
+  "timestamp": "2026-09-16T11:10:26Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "13b1f93ab5c3e192abeba6f2946e634cd33f9977",
-  "commit_after": "ce2db90ae1389035d45619c5061b9e4ed0315595",
+  "commit_before": "22538f2d628c0d05daad95350a88f7ef2bfc8438",
+  "commit_after": "1c8f6bc715f18ee7d3887cfe5699421089b1ce37",
   "files_added": [
-    "src/asp/incremental/incremental.go",
-    "src/ground_advanced.go",
-    "src/ground_optimization.go",
-    "src/grounder.go",
-    "src/gui-main.go",
-    "src/ir_types.go",
-    "src/safety.go",
-    "src/substitution.go"
+    "src/asp/incremental/incremental_advanced.go",
+    "src/asp/incremental/incremental_utils.go"
   ],
   "files_modified": [
 
@@ -28,6 +22,6 @@
 
   ],
   "sha256": [
-    {"file": "safety.go", "source_hash": "b65bb387806ac2b1b8dd1f1815fa744ca4a828348aa2ca0c1248f7f98c06972e", "destination_hash": "b65bb387806ac2b1b8dd1f1815fa744ca4a828348aa2ca0c1248f7f98c06972e", "status": "COPIED"},    {"file": "gui-main.go", "source_hash": "dafd906aee98eb59984d2d457f37d9fcd5c9f2fa5f979f5edc65c7fe167cc12a", "destination_hash": "dafd906aee98eb59984d2d457f37d9fcd5c9f2fa5f979f5edc65c7fe167cc12a", "status": "COPIED"},    {"file": "ground_optimization.go", "source_hash": "97636bcec6519c1d3f0f7e5b50a7914ed404485ea8e8236e04cfec65cf90f4d6", "destination_hash": "97636bcec6519c1d3f0f7e5b50a7914ed404485ea8e8236e04cfec65cf90f4d6", "status": "COPIED"},    {"file": "grounder.go", "source_hash": "5820568a4c37d856c2a8a8f65b16f8c6b47249699dfbcce214c7839fe6bbef4f", "destination_hash": "5820568a4c37d856c2a8a8f65b16f8c6b47249699dfbcce214c7839fe6bbef4f", "status": "COPIED"},    {"file": "PHASE_2_CPU_EXECUTION_ENGINE.asm", "source_hash": "840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25", "destination_hash": "3b7da999b9e0217a375a55a9b1bd1b01787028e0c7ddd2232bc520b4117665e2", "status": "CONFLICT"},    {"file": "ground_advanced.go", "source_hash": "1816c44cf784c95b1a7ca5d780c022b1bafa398a9339f5fd3c782204bb2a758d", "destination_hash": "1816c44cf784c95b1a7ca5d780c022b1bafa398a9339f5fd3c782204bb2a758d", "status": "COPIED"},    {"file": "ir_types.go", "source_hash": "a8f51f3f434065ba88a8c6dd6d8b93d4deb7a50724a71bbac57c800db72cc885", "destination_hash": "a8f51f3f434065ba88a8c6dd6d8b93d4deb7a50724a71bbac57c800db72cc885", "status": "COPIED"},    {"file": "asp/incremental/incremental.go", "source_hash": "0a27ea727802a7edd1f683f6b17b5580df7b5a3cd3d249d2b68a50cc85fa6752", "destination_hash": "0a27ea727802a7edd1f683f6b17b5580df7b5a3cd3d249d2b68a50cc85fa6752", "status": "COPIED"},    {"file": "substitution.go", "source_hash": "6ba6a77958bde3e58eaa82a559fd6381e16ac5fee2780029707f55f99c79bff4", "destination_hash": "6ba6a77958bde3e58eaa82a559fd6381e16ac5fee2780029707f55f99c79bff4", "status": "COPIED"}
+    {"file": "asp/incremental/incremental_utils.go", "source_hash": "2ac9db9725f24da562f0e7be4d48b2fc3844f212eddb20a844ac4f17e0a0a0e4", "destination_hash": "2ac9db9725f24da562f0e7be4d48b2fc3844f212eddb20a844ac4f17e0a0a0e4", "status": "COPIED"},    {"file": "PHASE_2_CPU_EXECUTION_ENGINE.asm", "source_hash": "840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25", "destination_hash": "3b7da999b9e0217a375a55a9b1bd1b01787028e0c7ddd2232bc520b4117665e2", "status": "CONFLICT"},    {"file": "asp/incremental/incremental_advanced.go", "source_hash": "efda9380b0bb172e9ad68ba544ddd0f7291edb4af6541e54cea4ccb843f0c161", "destination_hash": "efda9380b0bb172e9ad68ba544ddd0f7291edb4af6541e54cea4ccb843f0c161", "status": "COPIED"}
   ]
 }
