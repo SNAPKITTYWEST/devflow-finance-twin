@@ -1,37 +1,25 @@
 {
-  "timestamp": "2026-09-15T09:51:41Z",
+  "timestamp": "2026-09-16T11:08:28Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "ced9b924dfd91929acc4cf875b1bd7f71a64898a",
-  "commit_after": "feecb0ef3a69c8c89e6c8b6a87d5d682c10927ab",
+  "commit_before": "13b1f93ab5c3e192abeba6f2946e634cd33f9977",
+  "commit_after": "ce2db90ae1389035d45619c5061b9e4ed0315595",
   "files_added": [
-    "assembly-120-strict-model/11_toolbox.asm",
-    "assembly-120-strict-model/20_diagnostics.asm",
-    "docs/AGENT5_DELIVERY_SUMMARY.md",
-    "src/CONTROL_IMPLEMENTATION_SUMMARY.txt",
-    "src/CONTROL_PACKAGE_READY.txt",
-    "src/INTEGRATION_ACCEPTANCE_DELIVERY.txt",
-    "src/acceptance-tests.go",
-    "src/acceptance_test.go",
-    "src/archive-extract-verify.go",
-    "src/archive-tools.go",
-    "src/audit-module.go",
-    "src/audit-seal.go",
-    "src/audit-verify.go",
-    "src/control-dag.go",
-    "src/control-policy.go",
-    "src/main-app.go",
-    "src/sandbox-boundary.go",
-    "src/sandbox-module.go"
+    "src/asp/incremental/incremental.go",
+    "src/ground_advanced.go",
+    "src/ground_optimization.go",
+    "src/grounder.go",
+    "src/gui-main.go",
+    "src/ir_types.go",
+    "src/safety.go",
+    "src/substitution.go"
   ],
   "files_modified": [
 
   ],
   "files_moved": [],
   "files_unchanged": [
-    "08_neural_accelerator_engine.asm -> assembly-120-strict-model/08_neural_accelerator_engine.asm [IDENTICAL]",
-    "15_scheduler.asm -> assembly-120-strict-model/15_scheduler.asm [IDENTICAL]",
-    "PHASE_2_MANIFEST.txt -> src/PHASE_2_MANIFEST.txt [IDENTICAL]"
+
   ],
   "files_conflicted": [
     "CONFLICT: PHASE_2_CPU_EXECUTION_ENGINE.asm -> assembly-120-strict-model/PHASE_2_CPU_EXECUTION_ENGINE.asm | SRC_HASH=840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25 DEST_HASH=3b7da999b9e0217a375a55a9b1bd1b01787028e0c7ddd2232bc520b4117665e2"
@@ -40,6 +28,6 @@
 
   ],
   "sha256": [
-    {"file": "audit-module.go", "source_hash": "865922fdb3dc2201476fe11fcf98f2eb4e45b782ebfda18a22fa937442f1ce7d", "destination_hash": "865922fdb3dc2201476fe11fcf98f2eb4e45b782ebfda18a22fa937442f1ce7d", "status": "COPIED"},    {"file": "acceptance_test.go", "source_hash": "bd25088a7d181bb4ca4a4202d855dc9df99fd7d1e608ac5885da338dc357a941", "destination_hash": "bd25088a7d181bb4ca4a4202d855dc9df99fd7d1e608ac5885da338dc357a941", "status": "COPIED"},    {"file": "08_neural_accelerator_engine.asm", "source_hash": "fe43a9eb96f3b79849472ec391dd1811ca44e755dbc078b090c5af3d3352b27b", "destination_hash": "fe43a9eb96f3b79849472ec391dd1811ca44e755dbc078b090c5af3d3352b27b", "status": "UNCHANGED"},    {"file": "main-app.go", "source_hash": "ac544ee53c68cb74c4ce8a6da3788f49d8003ef5d0447db75112f0c209c811e2", "destination_hash": "ac544ee53c68cb74c4ce8a6da3788f49d8003ef5d0447db75112f0c209c811e2", "status": "COPIED"},    {"file": "acceptance-tests.go", "source_hash": "7cda06829bbd60c63785fd85c057d28f9f43af92e0ef47dd1ec34aabc2d89985", "destination_hash": "7cda06829bbd60c63785fd85c057d28f9f43af92e0ef47dd1ec34aabc2d89985", "status": "COPIED"},    {"file": "control-policy.go", "source_hash": "c8a745df24dfb21391e5fb30fc28f1da59b0f27e57056bdc438a01d8fbd8ef19", "destination_hash": "c8a745df24dfb21391e5fb30fc28f1da59b0f27e57056bdc438a01d8fbd8ef19", "status": "COPIED"},    {"file": "sandbox-boundary.go", "source_hash": "f4257549d2b94dadcd3a1f68d7ccb1fe4f44a4715a5500606f2fd07c61afac46", "destination_hash": "f4257549d2b94dadcd3a1f68d7ccb1fe4f44a4715a5500606f2fd07c61afac46", "status": "COPIED"},    {"file": "archive-extract-verify.go", "source_hash": "b13a5ac38246a141de375521ef664afdf906572e1de98e1ffeb605dcaa51ed88", "destination_hash": "b13a5ac38246a141de375521ef664afdf906572e1de98e1ffeb605dcaa51ed88", "status": "COPIED"},    {"file": "11_toolbox.asm", "source_hash": "360a80edf8c331c58e08c62dd6689387350cc8d5767702f9cb563ee9c323b44e", "destination_hash": "360a80edf8c331c58e08c62dd6689387350cc8d5767702f9cb563ee9c323b44e", "status": "COPIED"},    {"file": "audit-verify.go", "source_hash": "0567e9328dff9caded7a3b0e4cb18ce46de0f54829ea7673601d69f0db7ad809", "destination_hash": "0567e9328dff9caded7a3b0e4cb18ce46de0f54829ea7673601d69f0db7ad809", "status": "COPIED"},    {"file": "sandbox-module.go", "source_hash": "de3963ffb39fe94f112192b70f72f0f8e70c92b1d60a9829a1f3c41996503789", "destination_hash": "de3963ffb39fe94f112192b70f72f0f8e70c92b1d60a9829a1f3c41996503789", "status": "COPIED"},    {"file": "PHASE_2_CPU_EXECUTION_ENGINE.asm", "source_hash": "840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25", "destination_hash": "3b7da999b9e0217a375a55a9b1bd1b01787028e0c7ddd2232bc520b4117665e2", "status": "CONFLICT"},    {"file": "15_scheduler.asm", "source_hash": "ee8be65b4db767304941cb595e1c3abed15e68d06b3f14cd496cba4acfadca75", "destination_hash": "ee8be65b4db767304941cb595e1c3abed15e68d06b3f14cd496cba4acfadca75", "status": "UNCHANGED"},    {"file": "audit-seal.go", "source_hash": "ce880f67be4ac2fa5b549ae168a5ff66dc40c74fdb8b4c4e3c916bdb1d49ae1b", "destination_hash": "ce880f67be4ac2fa5b549ae168a5ff66dc40c74fdb8b4c4e3c916bdb1d49ae1b", "status": "COPIED"},    {"file": "INTEGRATION_ACCEPTANCE_DELIVERY.txt", "source_hash": "f3d476c2d98e54c03a82d59d3181f0b1567d67288930ee669b6e344ce5d76fd9", "destination_hash": "f3d476c2d98e54c03a82d59d3181f0b1567d67288930ee669b6e344ce5d76fd9", "status": "COPIED"},    {"file": "AGENT5_DELIVERY_SUMMARY.md", "source_hash": "a327027f45a81de70fd1ac873e1c22d153ebb6589d7124a779581eaebe7ce14a", "destination_hash": "a327027f45a81de70fd1ac873e1c22d153ebb6589d7124a779581eaebe7ce14a", "status": "COPIED"},    {"file": "PHASE_2_MANIFEST.txt", "source_hash": "4e95013b075c99159d8944317607e3bca17092596a8739fbf3bf68de4926d6c5", "destination_hash": "4e95013b075c99159d8944317607e3bca17092596a8739fbf3bf68de4926d6c5", "status": "UNCHANGED"},    {"file": "control-dag.go", "source_hash": "4bcf8bc0cd24c8c0fd92a2eedc3765b66b5cdda89eb2fadaa443b1bb5d67fed4", "destination_hash": "4bcf8bc0cd24c8c0fd92a2eedc3765b66b5cdda89eb2fadaa443b1bb5d67fed4", "status": "COPIED"},    {"file": "CONTROL_IMPLEMENTATION_SUMMARY.txt", "source_hash": "e0af32d736e808a19c282aaeeded5dc463bf1ac7a02165b6111b4ea07cac18d8", "destination_hash": "e0af32d736e808a19c282aaeeded5dc463bf1ac7a02165b6111b4ea07cac18d8", "status": "COPIED"},    {"file": "20_diagnostics.asm", "source_hash": "78b608a7b47dd0d5de2d40a9ef32b7ffa5c66488b22f09a14a56a9642c159d3e", "destination_hash": "78b608a7b47dd0d5de2d40a9ef32b7ffa5c66488b22f09a14a56a9642c159d3e", "status": "COPIED"},    {"file": "CONTROL_PACKAGE_READY.txt", "source_hash": "4261fe53bfa71f6dc2e6764409b7384c93d610a0c50c95fd3790b5c5bcc8d65c", "destination_hash": "4261fe53bfa71f6dc2e6764409b7384c93d610a0c50c95fd3790b5c5bcc8d65c", "status": "COPIED"},    {"file": "archive-tools.go", "source_hash": "bff8e788690eccf2149ba3ddda0ca101b26569e585a3c73173cb156502c48f84", "destination_hash": "bff8e788690eccf2149ba3ddda0ca101b26569e585a3c73173cb156502c48f84", "status": "COPIED"}
+    {"file": "safety.go", "source_hash": "b65bb387806ac2b1b8dd1f1815fa744ca4a828348aa2ca0c1248f7f98c06972e", "destination_hash": "b65bb387806ac2b1b8dd1f1815fa744ca4a828348aa2ca0c1248f7f98c06972e", "status": "COPIED"},    {"file": "gui-main.go", "source_hash": "dafd906aee98eb59984d2d457f37d9fcd5c9f2fa5f979f5edc65c7fe167cc12a", "destination_hash": "dafd906aee98eb59984d2d457f37d9fcd5c9f2fa5f979f5edc65c7fe167cc12a", "status": "COPIED"},    {"file": "ground_optimization.go", "source_hash": "97636bcec6519c1d3f0f7e5b50a7914ed404485ea8e8236e04cfec65cf90f4d6", "destination_hash": "97636bcec6519c1d3f0f7e5b50a7914ed404485ea8e8236e04cfec65cf90f4d6", "status": "COPIED"},    {"file": "grounder.go", "source_hash": "5820568a4c37d856c2a8a8f65b16f8c6b47249699dfbcce214c7839fe6bbef4f", "destination_hash": "5820568a4c37d856c2a8a8f65b16f8c6b47249699dfbcce214c7839fe6bbef4f", "status": "COPIED"},    {"file": "PHASE_2_CPU_EXECUTION_ENGINE.asm", "source_hash": "840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25", "destination_hash": "3b7da999b9e0217a375a55a9b1bd1b01787028e0c7ddd2232bc520b4117665e2", "status": "CONFLICT"},    {"file": "ground_advanced.go", "source_hash": "1816c44cf784c95b1a7ca5d780c022b1bafa398a9339f5fd3c782204bb2a758d", "destination_hash": "1816c44cf784c95b1a7ca5d780c022b1bafa398a9339f5fd3c782204bb2a758d", "status": "COPIED"},    {"file": "ir_types.go", "source_hash": "a8f51f3f434065ba88a8c6dd6d8b93d4deb7a50724a71bbac57c800db72cc885", "destination_hash": "a8f51f3f434065ba88a8c6dd6d8b93d4deb7a50724a71bbac57c800db72cc885", "status": "COPIED"},    {"file": "asp/incremental/incremental.go", "source_hash": "0a27ea727802a7edd1f683f6b17b5580df7b5a3cd3d249d2b68a50cc85fa6752", "destination_hash": "0a27ea727802a7edd1f683f6b17b5580df7b5a3cd3d249d2b68a50cc85fa6752", "status": "COPIED"},    {"file": "substitution.go", "source_hash": "6ba6a77958bde3e58eaa82a559fd6381e16ac5fee2780029707f55f99c79bff4", "destination_hash": "6ba6a77958bde3e58eaa82a559fd6381e16ac5fee2780029707f55f99c79bff4", "status": "COPIED"}
   ]
 }
