@@ -1,39 +1,34 @@
 # Publication Report
 
-**Timestamp:** 2026-09-17T00:12:31Z
+**Timestamp:** 2026-09-17T05:58:54Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 16 |
-| Files Added | 6 |
+| Files Discovered | 10 |
+| Files Added | 8 |
 | Files Modified | 0 |
-| Files Unchanged | 9 |
-| Files Conflicted | 1 |
+| Files Unchanged | 0 |
+| Files Conflicted | 2 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `docs/docs/API.md`
-- `docs/docs/ARCHITECTURE.md`
-- `docs/docs/AUDIT_PROTOCOL.md`
-- `docs/docs/MATHEMATICAL_MODEL.md`
-- `docs/docs/README.md`
-- `docs/docs/VERIFICATION.md`
+- `docs/EXAMPLES.md`
+- `docs/PRIMITIVES.md`
+- `docs/README_API.md`
+- `src/api.go`
+- `src/example_abstention.go`
+- `src/example_consistency_validator.go`
+- `src/example_math_routing.go`
+- `src/example_test.go`
 
 ## Files Unchanged
-- `examples/snapkitty.transducerDemo.m -> examples/examples/snapkitty.transducerDemo.m [IDENTICAL]`
-- `tests/testAuditSeal.m -> tests/tests/testAuditSeal.m [IDENTICAL]`
-- `tests/testConservation.m -> tests/tests/testConservation.m [IDENTICAL]`
-- `tests/testDissipation.m -> tests/tests/testDissipation.m [IDENTICAL]`
-- `tests/testMassInvariance.m -> tests/tests/testMassInvariance.m [IDENTICAL]`
-- `tests/testOmegaEST.m -> tests/tests/testOmegaEST.m [IDENTICAL]`
-- `tests/testResonance.m -> tests/tests/testResonance.m [IDENTICAL]`
-- `tests/testSpiralConsistency.m -> tests/tests/testSpiralConsistency.m [IDENTICAL]`
-- `tests/testTorsionPhase.m -> tests/tests/testTorsionPhase.m [IDENTICAL]`
+_None_
 
 ## Files Conflicted
+- `CONFLICT: ARCHITECTURE.md -> docs/ARCHITECTURE.md | SRC_HASH=175c1d9f5065f5da9cbb12071ebfd49aba5d06d1fed7dbc46bd3b9efab9e00c4 DEST_HASH=9896f6609468487178bbe913f0103d4bb061cf9dd86b0845b41931971108ad08`
 - `CONFLICT: PHASE_2_CPU_EXECUTION_ENGINE.asm -> assembly-120-strict-model/PHASE_2_CPU_EXECUTION_ENGINE.asm | SRC_HASH=840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25 DEST_HASH=311ceaa6f33a84c8262110677c206acbda52a02d70f35df64ebbf7b83d64d946`
 
 ## Files Rejected
@@ -41,9 +36,5 @@ _None_
 
 ## Commit
 
-`30f8401dd071559757256e28818689b09908c332`
-
 ## Push Status
-
-**FAILED** â€” commit preserved locally at `70ebcf9d344226054ae7a2716eb6a9da049398ce`
 

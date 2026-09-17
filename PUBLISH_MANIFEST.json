@@ -1,39 +1,34 @@
 {
-  "timestamp": "2026-09-17T00:12:29Z",
+  "timestamp": "2026-09-17T05:58:52Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "ee97be234252f78ee611a7d751bc2bfa3a13a93f",
-  "commit_after": "30f8401dd071559757256e28818689b09908c332",
+  "commit_before": "33367700d2278dbfe36f443a1b6ddaa2c5a0fc24",
+  "commit_after": "8aed5121be73cb7f66be52f66955f1c6b8e90a39",
   "files_added": [
-    "docs/docs/API.md",
-    "docs/docs/ARCHITECTURE.md",
-    "docs/docs/AUDIT_PROTOCOL.md",
-    "docs/docs/MATHEMATICAL_MODEL.md",
-    "docs/docs/README.md",
-    "docs/docs/VERIFICATION.md"
+    "docs/EXAMPLES.md",
+    "docs/PRIMITIVES.md",
+    "docs/README_API.md",
+    "src/api.go",
+    "src/example_abstention.go",
+    "src/example_consistency_validator.go",
+    "src/example_math_routing.go",
+    "src/example_test.go"
   ],
   "files_modified": [
 
   ],
   "files_moved": [],
   "files_unchanged": [
-    "examples/snapkitty.transducerDemo.m -> examples/examples/snapkitty.transducerDemo.m [IDENTICAL]",
-    "tests/testAuditSeal.m -> tests/tests/testAuditSeal.m [IDENTICAL]",
-    "tests/testConservation.m -> tests/tests/testConservation.m [IDENTICAL]",
-    "tests/testDissipation.m -> tests/tests/testDissipation.m [IDENTICAL]",
-    "tests/testMassInvariance.m -> tests/tests/testMassInvariance.m [IDENTICAL]",
-    "tests/testOmegaEST.m -> tests/tests/testOmegaEST.m [IDENTICAL]",
-    "tests/testResonance.m -> tests/tests/testResonance.m [IDENTICAL]",
-    "tests/testSpiralConsistency.m -> tests/tests/testSpiralConsistency.m [IDENTICAL]",
-    "tests/testTorsionPhase.m -> tests/tests/testTorsionPhase.m [IDENTICAL]"
+
   ],
   "files_conflicted": [
+    "CONFLICT: ARCHITECTURE.md -> docs/ARCHITECTURE.md | SRC_HASH=175c1d9f5065f5da9cbb12071ebfd49aba5d06d1fed7dbc46bd3b9efab9e00c4 DEST_HASH=9896f6609468487178bbe913f0103d4bb061cf9dd86b0845b41931971108ad08",
     "CONFLICT: PHASE_2_CPU_EXECUTION_ENGINE.asm -> assembly-120-strict-model/PHASE_2_CPU_EXECUTION_ENGINE.asm | SRC_HASH=840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25 DEST_HASH=311ceaa6f33a84c8262110677c206acbda52a02d70f35df64ebbf7b83d64d946"
   ],
   "files_rejected": [
 
   ],
   "sha256": [
-    {"file": "tests/testTorsionPhase.m", "source_hash": "913a724eb8139c613eb197f8fa351159497bc7cfd05a42aa21c51fce0cb04777", "destination_hash": "913a724eb8139c613eb197f8fa351159497bc7cfd05a42aa21c51fce0cb04777", "status": "UNCHANGED"},    {"file": "tests/testResonance.m", "source_hash": "774ec18833dbe745183168c8a0cb0dac15a72d74d3cba66344209b81ddeff3f4", "destination_hash": "774ec18833dbe745183168c8a0cb0dac15a72d74d3cba66344209b81ddeff3f4", "status": "UNCHANGED"},    {"file": "tests/testConservation.m", "source_hash": "31876e50bacd9f1b8fa24008d6eaec0b106c9fe644b22f6287e7a9777314bbea", "destination_hash": "31876e50bacd9f1b8fa24008d6eaec0b106c9fe644b22f6287e7a9777314bbea", "status": "UNCHANGED"},    {"file": "tests/testAuditSeal.m", "source_hash": "7440f3bb59d913edbc5d0627b60f56e3576df72a1ecbda5b9bcb5daa43cb99db", "destination_hash": "7440f3bb59d913edbc5d0627b60f56e3576df72a1ecbda5b9bcb5daa43cb99db", "status": "UNCHANGED"},    {"file": "docs/README.md", "source_hash": "90ec74aecd5cc999e18e642c66512e7dc5143595ec6c4bcb1f7a645ffedb443c", "destination_hash": "90ec74aecd5cc999e18e642c66512e7dc5143595ec6c4bcb1f7a645ffedb443c", "status": "COPIED"},    {"file": "docs/API.md", "source_hash": "e3d533df147b2d5093519d782c00fa850823404eb0b45eadfc79d915d73cfc40", "destination_hash": "e3d533df147b2d5093519d782c00fa850823404eb0b45eadfc79d915d73cfc40", "status": "COPIED"},    {"file": "tests/testMassInvariance.m", "source_hash": "ae5188e2b622f3c10722a32821c56bc320616deaa7897145953a33a3650c6714", "destination_hash": "ae5188e2b622f3c10722a32821c56bc320616deaa7897145953a33a3650c6714", "status": "UNCHANGED"},    {"file": "docs/ARCHITECTURE.md", "source_hash": "4219b26c11100dcbf469ab01620dc00e1bf90b33bbf8be554c9d193a4f7ccdde", "destination_hash": "4219b26c11100dcbf469ab01620dc00e1bf90b33bbf8be554c9d193a4f7ccdde", "status": "COPIED"},    {"file": "docs/AUDIT_PROTOCOL.md", "source_hash": "4e32b020b929e83e7ad01f3b51973f33e350f380b0e05e421e85512d1b86ae04", "destination_hash": "4e32b020b929e83e7ad01f3b51973f33e350f380b0e05e421e85512d1b86ae04", "status": "COPIED"},    {"file": "PHASE_2_CPU_EXECUTION_ENGINE.asm", "source_hash": "840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25", "destination_hash": "311ceaa6f33a84c8262110677c206acbda52a02d70f35df64ebbf7b83d64d946", "status": "CONFLICT"},    {"file": "examples/snapkitty.transducerDemo.m", "source_hash": "cca746ac7e88d4477e2951c2171394414e97ee5dcf31933515b6fb185c9d986a", "destination_hash": "cca746ac7e88d4477e2951c2171394414e97ee5dcf31933515b6fb185c9d986a", "status": "UNCHANGED"},    {"file": "docs/MATHEMATICAL_MODEL.md", "source_hash": "862046ffc635624cdf1a24bd29f89df2a38078a344937183b4b3a822587a6c2e", "destination_hash": "862046ffc635624cdf1a24bd29f89df2a38078a344937183b4b3a822587a6c2e", "status": "COPIED"},    {"file": "docs/VERIFICATION.md", "source_hash": "6f4c00c47310f1768b87353b6b1c60493c700d7961e66f318ca9cca65e200dfa", "destination_hash": "6f4c00c47310f1768b87353b6b1c60493c700d7961e66f318ca9cca65e200dfa", "status": "COPIED"},    {"file": "tests/testOmegaEST.m", "source_hash": "b16b298fd0fc3544f550c5e0cceb4c11552d1942fa42b07dd024cfaa23fc14ee", "destination_hash": "b16b298fd0fc3544f550c5e0cceb4c11552d1942fa42b07dd024cfaa23fc14ee", "status": "UNCHANGED"},    {"file": "tests/testDissipation.m", "source_hash": "c10b5dee05c2e83fb409791184cb8beaf04489d2e0c2ee486f25eb05311c5255", "destination_hash": "c10b5dee05c2e83fb409791184cb8beaf04489d2e0c2ee486f25eb05311c5255", "status": "UNCHANGED"},    {"file": "tests/testSpiralConsistency.m", "source_hash": "44f51e2fa7a5b5a6ed208da351e2301f3903aaec9a90d40ef52bd7d88ee2667f", "destination_hash": "44f51e2fa7a5b5a6ed208da351e2301f3903aaec9a90d40ef52bd7d88ee2667f", "status": "UNCHANGED"}
+    {"file": "example_test.go", "source_hash": "c36b92f331813f7a72ca3fe2235d2813fa911f69a843a2f03587b01975f88631", "destination_hash": "c36b92f331813f7a72ca3fe2235d2813fa911f69a843a2f03587b01975f88631", "status": "COPIED"},    {"file": "PRIMITIVES.md", "source_hash": "adea5d4873589b60900fe32043f43a4b9f01b2f7b0fad4ffa83e35d1bbe6aff3", "destination_hash": "adea5d4873589b60900fe32043f43a4b9f01b2f7b0fad4ffa83e35d1bbe6aff3", "status": "COPIED"},    {"file": "api.go", "source_hash": "4b074fc4e1be0bf10224dd06fb5020ad36d5caff78bf1fd4e9e6754e48e8eb48", "destination_hash": "4b074fc4e1be0bf10224dd06fb5020ad36d5caff78bf1fd4e9e6754e48e8eb48", "status": "COPIED"},    {"file": "example_abstention.go", "source_hash": "789b2b4bed34e69cde7cb921d72f0e1d9803205b5ddb0eecd024c981a6eceba0", "destination_hash": "789b2b4bed34e69cde7cb921d72f0e1d9803205b5ddb0eecd024c981a6eceba0", "status": "COPIED"},    {"file": "example_consistency_validator.go", "source_hash": "10d81bc4ab85a5937a66333537ffe30bc4a16224d459a424e53edc803c8ece70", "destination_hash": "10d81bc4ab85a5937a66333537ffe30bc4a16224d459a424e53edc803c8ece70", "status": "COPIED"},    {"file": "example_math_routing.go", "source_hash": "36226fc3809ad87e1677ffa65cdb5c916440d66a86777b4cdb6bf3252c99657a", "destination_hash": "36226fc3809ad87e1677ffa65cdb5c916440d66a86777b4cdb6bf3252c99657a", "status": "COPIED"},    {"file": "EXAMPLES.md", "source_hash": "33665dcc6dd98dc2bc5e874e760445a35d5ed2e1cafb5b88a77352637b7c55f4", "destination_hash": "33665dcc6dd98dc2bc5e874e760445a35d5ed2e1cafb5b88a77352637b7c55f4", "status": "COPIED"},    {"file": "PHASE_2_CPU_EXECUTION_ENGINE.asm", "source_hash": "840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25", "destination_hash": "311ceaa6f33a84c8262110677c206acbda52a02d70f35df64ebbf7b83d64d946", "status": "CONFLICT"},    {"file": "README_API.md", "source_hash": "d549bc6138c7825417c21d5208c889e6c09fe10f150323293fef443e9ddbecac", "destination_hash": "d549bc6138c7825417c21d5208c889e6c09fe10f150323293fef443e9ddbecac", "status": "COPIED"},    {"file": "ARCHITECTURE.md", "source_hash": "175c1d9f5065f5da9cbb12071ebfd49aba5d06d1fed7dbc46bd3b9efab9e00c4", "destination_hash": "9896f6609468487178bbe913f0103d4bb061cf9dd86b0845b41931971108ad08", "status": "CONFLICT"}
   ]
 }
