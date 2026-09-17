@@ -1,0 +1,26 @@
+! Parallel kernel - CORAL structure + explicit PARALLEL + barrier
+! Lowers to KERNEL IR warp/CTA constructs for SM_86
+MODULE ParallelAdd;
+
+PRIORITY 1
+DEADLINE 1000
+ROUTINE vector_add KERNEL
+BEGIN
+    LOCAL WORD tid;
+    LOCAL WORD n;
+    LOCAL WORD val;
+
+    tid = 0;
+    n = 1024;
+
+    PARALLEL 256
+    BEGIN
+        IF tid < n THEN
+            val = tid * 2 + 1;
+        FI;
+
+        BARRIER(0);
+    END;
+
+    EXIT;
+END

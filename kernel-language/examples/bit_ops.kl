@@ -1,0 +1,25 @@
+! PL/M style bit manipulation + BLISS expressions
+MODULE BitOps;
+
+ROUTINE extract_flags KERNEL
+BEGIN
+    LOCAL WORD status;
+    LOCAL WORD flag_a;
+    LOCAL WORD flag_b;
+    LOCAL BIT(1) ready;
+
+    status = 0xA5;
+
+    flag_a = BIT(status, 0, 1);
+    flag_b = BIT(status, 5, 3);
+
+    ready = flag_a AND NOT flag_b;
+
+    IF ready THEN
+        status = status OR 0x100
+    ELSE
+        status = status AND 0xFFFE
+    FI;
+
+    RETURN status;
+END

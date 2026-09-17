@@ -1,0 +1,22 @@
+! Word-oriented arithmetic - BLISS expression style + CORAL structure
+MODULE WordArith;
+
+ROUTINE add_words KERNEL
+BEGIN
+    LOCAL WORD a;
+    LOCAL WORD b;
+    LOCAL WORD c;
+
+    a = 40;
+    b = 2;
+    c = a + b;
+    c = c * 2 + (a - b);
+
+    IF c > 80 THEN
+        c = c - 1
+    ELSE
+        c = c + 1
+    FI;
+
+    RETURN c;
+END

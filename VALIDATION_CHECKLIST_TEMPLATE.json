@@ -1,0 +1,460 @@
+{
+  "validation_framework": {
+    "phase": 4,
+    "mission": "Validate biological fidelity preservation from Phase 3 to Phase 4",
+    "officer": "ORCHESTRATOR-1, Biological Evidence + Validation Officer",
+    "timestamp": "2026-09-13",
+    "status": "IN_PROGRESS"
+  },
+  "evidence_ledger": {
+    "total_claims": 70,
+    "verified_claims": 0,
+    "neuron_type_claims": {
+      "total": 20,
+      "verified": 0,
+      "claims": [
+        {
+          "claim_id": "NEU-001",
+          "neuron_type": "pyramidal",
+          "assertion": "Primary excitatory neurons in mammalian cortex; large soma (20-30 µm); dense dendritic arbor",
+          "evidence_source": "Cajal (1894), DeFelipe & Fariñas (1992)",
+          "verification_checkpoint": "Record verifies soma_coordinates, dendrite_compartments >= 5, neurotransmitter_profile contains glutamate",
+          "verified": false,
+          "notes": ""
+        }
+      ]
+    },
+    "neurotransmitter_specificity_claims": {
+      "total": 15,
+      "verified": 0
+    },
+    "recurrent_connectivity_claims": {
+      "total": 15,
+      "verified": 0
+    },
+    "circuit_specificity_claims": {
+      "total": 20,
+      "verified": 0
+    }
+  },
+  "firing_model_validation": {
+    "total_neurons": 158,
+    "validated_neurons": 0,
+    "models_by_type": {
+      "pyramidal": {
+        "expected_model": "HodgkinHuxley",
+        "count": 0,
+        "validated": 0,
+        "evidence_support": "Complex dendritic integration; action potential requires accurate channel kinetics"
+      },
+      "inhibitory": {
+        "expected_model": "LeakyIntegrateFire",
+        "count": 0,
+        "validated": 0,
+        "evidence_support": "Fast, reliable inhibition; perisomatic synapses 3-5 ms"
+      },
+      "dopaminergic": {
+        "expected_model": "IntegrateFireWithModulation",
+        "count": 0,
+        "validated": 0,
+        "evidence_support": "State-dependent firing; tonic (1-10 Hz) and burst (>100 Hz)"
+      },
+      "sensory_receptor": {
+        "expected_model": "SimpleSpikegenerator",
+        "count": 0,
+        "validated": 0,
+        "evidence_support": "Directly stimulus-driven; rate coding sufficient"
+      },
+      "motor": {
+        "expected_model": "HodgkinHuxley",
+        "count": 0,
+        "validated": 0,
+        "evidence_support": "Precise timing outputs; accurate action potential kinetics critical"
+      },
+      "other": {
+        "count": 0,
+        "validated": 0
+      }
+    }
+  },
+  "connectivity_validation": {
+    "total_synapses": 102,
+    "verified_synapses": 0,
+    "conservation_checks": {
+      "initial_neuron_count": 158,
+      "final_neuron_count": 0,
+      "neurons_lost": 0,
+      "neurons_created_synthetically": 0,
+      "initial_synapse_count": 102,
+      "final_synapse_count": 0,
+      "synapses_lost": 0,
+      "synapses_added_spuriously": 0
+    },
+    "synapse_type_distribution": {
+      "glutamatergic_excitatory": {
+        "expected_count": 65,
+        "verified_count": 0,
+        "receptor_types": ["NMDA", "AMPA"]
+      },
+      "gabaergic_inhibitory": {
+        "expected_count": 30,
+        "verified_count": 0,
+        "receptor_types": ["GABA-A", "GABA-B"]
+      },
+      "dopaminergic_modulatory": {
+        "expected_count": 5,
+        "verified_count": 0,
+        "receptor_types": ["D1", "D2"]
+      },
+      "cholinergic": {
+        "expected_count": 2,
+        "verified_count": 0,
+        "receptor_types": ["Nicotinic", "Muscarinic"]
+      }
+    },
+    "biologically_implausible_patterns": {
+      "self_loops": 0,
+      "duplicate_synapses": 0,
+      "anatomically_impossible": 0
+    }
+  },
+  "circuit_validation": {
+    "total_circuits": 10,
+    "intact_circuits": 0,
+    "circuits": [
+      {
+        "circuit_id": "CIRC-OA",
+        "circuit_name": "olfactory-amygdala",
+        "expected_neuron_count": 15,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 20,
+        "verified_synapse_count": 0,
+        "status": "NOT_VERIFIED",
+        "behavioral_association": "Odor-driven approach/avoidance",
+        "critical_components": [
+          "olfactory_receptor_neurons",
+          "olfactory_bulb_mitral_cells",
+          "piriform_cortex_pyramidal",
+          "lateral_amygdala_pyramidal",
+          "basolateral_amygdala",
+          "central_amygdala",
+          "hypothalamic_output"
+        ]
+      },
+      {
+        "circuit_id": "CIRC-VO",
+        "circuit_name": "visual-orienting",
+        "expected_neuron_count": 12,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 15,
+        "verified_synapse_count": 0,
+        "status": "NOT_VERIFIED",
+        "behavioral_association": "Head/eye orienting reflex",
+        "critical_components": [
+          "retinal_neurons",
+          "superior_colliculus_excitatory",
+          "superior_colliculus_inhibitory",
+          "lateral_intralaminar_thalamus",
+          "motor_neurons"
+        ]
+      },
+      {
+        "circuit_id": "CIRC-SN",
+        "circuit_name": "spatial-navigation",
+        "expected_neuron_count": 20,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 30,
+        "verified_synapse_count": 0,
+        "status": "NOT_VERIFIED",
+        "behavioral_association": "Place cell firing, grid navigation",
+        "critical_components": [
+          "hippocampal_ca3_pyramidal",
+          "hippocampal_ca1_place_cells",
+          "ca1_inhibitory_interneurons",
+          "subicular_neurons",
+          "postsubiculum_head_direction_cells",
+          "entorhinal_cortex_grid_cells",
+          "medial_septal_cholinergic"
+        ]
+      },
+      {
+        "circuit_id": "CIRC-FC",
+        "circuit_name": "fear-conditioning",
+        "expected_neuron_count": 15,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 22,
+        "verified_synapse_count": 0,
+        "status": "NOT_VERIFIED",
+        "behavioral_association": "Conditioned fear response",
+        "critical_components": [
+          "thalamus_sensory_relay",
+          "sensory_cortex",
+          "lateral_amygdala",
+          "basolateral_amygdala",
+          "central_amygdala",
+          "periaqueductal_gray",
+          "prefrontal_cortex_infralimbic"
+        ]
+      },
+      {
+        "circuit_id": "CIRC-RS",
+        "circuit_name": "reward-seeking",
+        "expected_neuron_count": 18,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 25,
+        "verified_synapse_count": 0,
+        "status": "NOT_VERIFIED",
+        "behavioral_association": "Dopamine-driven approach, goal-seeking",
+        "critical_components": [
+          "vta_dopaminergic",
+          "nucleus_accumbens_core_d1_msn",
+          "nucleus_accumbens_core_d2_msn",
+          "dorsal_striatum_d1_msn",
+          "dorsal_striatum_d2_msn",
+          "ventral_pallidum",
+          "thalamus",
+          "prefrontal_cortex",
+          "lateral_hypothalamus"
+        ]
+      },
+      {
+        "circuit_id": "CIRC-SM",
+        "circuit_name": "sensorimotor",
+        "expected_neuron_count": 16,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 20,
+        "verified_synapse_count": 0,
+        "status": "NOT_VERIFIED",
+        "behavioral_association": "Motor output; reflex control",
+        "critical_components": [
+          "somatosensory_cortex_s1",
+          "motor_cortex_m1",
+          "brainstem_motor_nuclei",
+          "spinal_motor_neurons",
+          "sensory_interneurons",
+          "renshaw_cells"
+        ]
+      },
+      {
+        "circuit_id": "CIRC-CB",
+        "circuit_name": "cerebellar",
+        "expected_neuron_count": 14,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 18,
+        "verified_synapse_count": 0,
+        "status": "NOT_VERIFIED",
+        "behavioral_association": "Motor learning, timing",
+        "critical_components": [
+          "granule_cells",
+          "purkinje_cells",
+          "cerebellar_interneurons",
+          "dentate_nucleus_neurons",
+          "climbing_fiber_neurons",
+          "mossy_fiber_neurons"
+        ]
+      },
+      {
+        "circuit_id": "CIRC-PM",
+        "circuit_name": "predatory-motivation",
+        "expected_neuron_count": 12,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 16,
+        "verified_synapse_count": 0,
+        "status": "NOT_VERIFIED",
+        "behavioral_association": "Hunting drive, prey capture",
+        "critical_components": [
+          "lateral_hypothalamus",
+          "ventromedial_hypothalamus",
+          "periaqueductal_gray_predatory",
+          "brainstem_motor_nuclei",
+          "amygdala"
+        ]
+      },
+      {
+        "circuit_id": "CIRC-SC",
+        "circuit_name": "social-cognition",
+        "expected_neuron_count": 10,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 14,
+        "verified_synapse_count": 0,
+        "status": "NOT_VERIFIED",
+        "behavioral_association": "Social hierarchy, conspecific recognition",
+        "critical_components": [
+          "superior_temporal_sulcus",
+          "amygdala_basolateral",
+          "prefrontal_cortex_ventromedial",
+          "temporal_cortex",
+          "anterior_cingulate_cortex"
+        ]
+      },
+      {
+        "circuit_id": "CIRC-TR",
+        "circuit_name": "thalamic-relay",
+        "expected_neuron_count": 11,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 15,
+        "verified_synapse_count": 0,
+        "status": "NOT_VERIFIED",
+        "behavioral_association": "Sensory gating; filtering",
+        "critical_components": [
+          "thalamic_relay_neurons",
+          "thalamic_reticular_nucleus",
+          "cortical_layer_iv",
+          "brainstem_driver_neurons"
+        ]
+      }
+    ]
+  },
+  "behavioral_output_mapping": {
+    "total_domains": 7,
+    "mapped_domains": 0,
+    "domains": [
+      {
+        "domain": "predatory_behavior",
+        "expected_neuron_count": 7,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 8,
+        "verified_synapse_count": 0,
+        "evidence_level": "Experimental (lesion, recording)",
+        "source_populations": [
+          "lateral_hypothalamus_lh",
+          "periaqueductal_gray_pag_lateral",
+          "brainstem_motor_nuclei"
+        ],
+        "traceability_chain": "LH_motivation -> PAG_motor -> brainstem_motor -> muscles",
+        "verified": false
+      },
+      {
+        "domain": "social_behavior",
+        "expected_neuron_count": 9,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 10,
+        "verified_synapse_count": 0,
+        "evidence_level": "Experimental (lesion, recording)",
+        "source_populations": [
+          "superior_temporal_sulcus_sts",
+          "amygdala_basolateral_bla",
+          "ventromedial_prefrontal_cortex_vmpfc",
+          "hypothalamus_ventromedial_vmh"
+        ],
+        "traceability_chain": "STS_social_perception -> amygdala_valence -> vmPFC_decision -> motor_output",
+        "verified": false
+      },
+      {
+        "domain": "spatial_navigation",
+        "expected_neuron_count": 9,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 15,
+        "verified_synapse_count": 0,
+        "evidence_level": "Experimental (single-unit recording)",
+        "source_populations": [
+          "hippocampal_place_cells_ca1",
+          "entorhinal_grid_cells",
+          "postsubiculum_head_direction_cells",
+          "motor_cortex"
+        ],
+        "traceability_chain": "place_cells + grid_cells + HD_cells -> motor_cortex -> navigation",
+        "verified": false
+      },
+      {
+        "domain": "fear_response",
+        "expected_neuron_count": 10,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 12,
+        "verified_synapse_count": 0,
+        "evidence_level": "Experimental (lesion, electrophys)",
+        "source_populations": [
+          "lateral_amygdala_la",
+          "basolateral_amygdala_bla",
+          "central_amygdala_cea",
+          "periaqueductal_gray_pag",
+          "prefrontal_cortex_infralimbic_il"
+        ],
+        "traceability_chain": "threat_stimulus -> LA_detection -> BLA_consolidation -> CeA_expression -> PAG_freezing",
+        "verified": false
+      },
+      {
+        "domain": "motor_control",
+        "expected_neuron_count": 8,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 10,
+        "verified_synapse_count": 0,
+        "evidence_level": "Experimental (motor recording)",
+        "source_populations": [
+          "somatosensory_cortex_s1",
+          "motor_cortex_m1",
+          "brainstem_motor_nuclei",
+          "spinal_motor_neurons"
+        ],
+        "traceability_chain": "S1_sensory -> M1_planning -> brainstem_relay -> motor_output",
+        "verified": false
+      },
+      {
+        "domain": "olfactory_behavior",
+        "expected_neuron_count": 10,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 12,
+        "verified_synapse_count": 0,
+        "evidence_level": "Experimental (behavior + recording)",
+        "source_populations": [
+          "olfactory_receptor_neurons_orn",
+          "piriform_cortex",
+          "lateral_amygdala",
+          "hypothalamus"
+        ],
+        "traceability_chain": "ORN_odor_detection -> piriform_integration -> amygdala_valence -> hypothalamus_output",
+        "verified": false
+      },
+      {
+        "domain": "visual_orienting",
+        "expected_neuron_count": 7,
+        "verified_neuron_count": 0,
+        "expected_synapse_count": 10,
+        "verified_synapse_count": 0,
+        "evidence_level": "Experimental (eye-tracking + lesion)",
+        "source_populations": [
+          "retinal_neurons",
+          "superior_colliculus",
+          "brainstem_motor_nuclei"
+        ],
+        "traceability_chain": "retinal_input -> SC_reflex -> motor_output",
+        "latency_ms": 30,
+        "verified": false
+      }
+    ]
+  },
+  "integrity_checks": {
+    "neuron_id_format_validation": {
+      "pattern": "^CAT-N-[0-9A-Fa-f]{16}$",
+      "total_neurons": 158,
+      "valid_format": 0,
+      "invalid_format": 0
+    },
+    "synapse_id_format_validation": {
+      "pattern": "^CAT-S-[0-9A-Fa-f]{16}$",
+      "total_synapses": 102,
+      "valid_format": 0,
+      "invalid_format": 0
+    },
+    "morphology_traceability": {
+      "dendrite_compartments_with_valid_parent": 0,
+      "dendrite_compartments_orphaned": 0,
+      "axon_segments_with_valid_parent": 0,
+      "axon_segments_orphaned": 0
+    },
+    "worm_seal": {
+      "trace_sealed": false,
+      "sealed_hash": null,
+      "seal_timestamp": null
+    }
+  },
+  "summary": {
+    "total_checks": 70,
+    "passed_checks": 0,
+    "failed_checks": 0,
+    "warned_checks": 0,
+    "validation_status": "NOT_STARTED",
+    "pass_criteria_met": false,
+    "notes": ""
+  }
+}

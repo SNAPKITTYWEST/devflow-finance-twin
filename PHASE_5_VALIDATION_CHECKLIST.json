@@ -1,0 +1,363 @@
+{
+  "phase_5_validation_master_checklist": {
+    "metadata": {
+      "version": "1.0",
+      "date": "2026-09-13",
+      "officer": "ORCHESTRATOR-2",
+      "classification": "Restricted - Phase 5 Verification Only"
+    },
+    "section_1_phase4_invariants_at_scale": {
+      "invariant_i1_graph_topology_preservation": {
+        "claim": "All N neurons remain constant throughout execution (N=760M for whole-brain)",
+        "verification_method": "enumerate CAT-N-IDs at t=0 and t=T; verify perfect match",
+        "required_evidence": [
+          "neuron_count_t0",
+          "neuron_ids_hash_t0",
+          "neuron_count_tT",
+          "neuron_ids_hash_tT",
+          "mismatch_count"
+        ],
+        "pass_criteria": {
+          "neuron_count_match": "neuron_count_t0 == neuron_count_tT",
+          "hash_match": "neuron_ids_hash_t0 == neuron_ids_hash_tT",
+          "mismatch_tolerance": "== 0"
+        },
+        "timestamp_checkpoints": ["t=0", "t=T/4", "t=T/2", "t=3T/4", "t=T"],
+        "status": "PENDING",
+        "evidence": {}
+      },
+      "invariant_i17_recurrent_connectivity_preserved": {
+        "claim": "All feedback loops remain executable; cycles broken temporally via delays >= 1ms",
+        "verification_method": "enumerate CAT-S edges; verify no edge deleted; verify all delays >= 1ms",
+        "required_evidence": [
+          "baseline_edges_t0",
+          "baseline_cycle_count",
+          "baseline_recurrent_edges",
+          "min_delay_ms",
+          "final_edges_tT",
+          "final_cycle_count",
+          "deleted_edges",
+          "new_edges"
+        ],
+        "pass_criteria": {
+          "no_edge_deletion": "len(deleted_edges) == 0",
+          "no_edge_creation": "len(new_edges) == 0",
+          "cycle_preservation": "final_cycle_count == baseline_cycle_count",
+          "delay_preservation": "min_delay_ms >= 1.0"
+        },
+        "status": "PENDING",
+        "evidence": {}
+      },
+      "invariant_i18_temporal_state_preservation": {
+        "claim": "state[t] deterministically derived from state[0..t] + inputs",
+        "verification_method": "run with fixed seed twice; compare bit-for-bit spike sequences",
+        "required_evidence": [
+          "seed",
+          "initial_state_hash",
+          "spike_trace_run1_hash",
+          "spike_trace_run2_hash",
+          "hash_match_status",
+          "divergence_point",
+          "spot_check_neurons_match"
+        ],
+        "pass_criteria": {
+          "canonical_hash_match": "spike_trace_run1_hash == spike_trace_run2_hash",
+          "no_divergence": "divergence_point == NULL",
+          "spot_checks": "100 random neurons all match"
+        },
+        "status": "PENDING",
+        "evidence": {}
+      },
+      "invariant_i19_neurotransmitter_receptor_traceability": {
+        "claim": "Every spike carries neurotransmitter ID; every synapse carries receptor type",
+        "verification_method": "random sample 1000 synapses; verify all have valid NT/receptor pairs",
+        "required_evidence": [
+          "sample_size",
+          "valid_pairs",
+          "mismatch_count",
+          "neurotransmitter_distribution",
+          "spike_events_count",
+          "spike_nt_mismatch_count"
+        ],
+        "pass_criteria": {
+          "sample_validity": "valid_pairs == sample_size",
+          "mismatch_tolerance": "mismatch_count == 0",
+          "spike_nt_accuracy": "spike_nt_mismatch_count == 0"
+        },
+        "status": "PENDING",
+        "evidence": {}
+      },
+      "invariant_i20_behavioral_output_traceability": {
+        "claim": "Every behavior traces to source neuron CAT-N-ID; no anonymous layers",
+        "verification_method": "pick random motor outputs; trace back to source CAT-N population",
+        "required_evidence": [
+          "total_behaviors",
+          "sample_size",
+          "traceable_behaviors",
+          "untraceable_count",
+          "ancestry_depth",
+          "behavioral_domains"
+        ],
+        "pass_criteria": {
+          "full_traceability": "untraceable_count == 0",
+          "ancestry_depth": "ancestry_depth >= 3",
+          "domains_observed": "length(behavioral_domains) >= 5"
+        },
+        "status": "PENDING",
+        "evidence": {}
+      }
+    },
+    "section_2_scale_specific_invariants": {
+      "invariant_i21_individual_identity_at_scale": {
+        "claim": "CAT-N-XXXXXXXXXXXXXXXX remains unique and immutable for 760M neurons",
+        "verification_method": "CAT-N collision detection; CAT-N reassignment test",
+        "required_evidence": [
+          "total_neurons",
+          "unique_ids",
+          "collision_count",
+          "format_validity",
+          "entropy_estimate",
+          "immutability_test_result"
+        ],
+        "pass_criteria": {
+          "collision_count": "== 0",
+          "format_validity": "100%",
+          "immutability": "cannot_reassign",
+          "entropy": "> 0.99"
+        },
+        "status": "PENDING",
+        "evidence": {}
+      },
+      "invariant_i22_neuron_count_conservation": {
+        "claim": "neuron_count[t] == neuron_count[t-1] for all t",
+        "verification_method": "enumerate CAT-N-IDs at each timestep; verify count unchanged",
+        "required_evidence": [
+          "baseline_count",
+          "checkpoint_counts",
+          "count_fluctuations",
+          "random_sample_checks"
+        ],
+        "pass_criteria": {
+          "baseline_match": "all(checkpoint == baseline)",
+          "fluctuation_count": "== 0",
+          "random_checks_passed": "100/100"
+        },
+        "status": "PENDING",
+        "evidence": {}
+      },
+      "invariant_i23_synapse_count_conservation_monotonic": {
+        "claim": "synapse_count[t] >= synapse_count[t-1] for all t",
+        "verification_method": "enumerate CAT-S-IDs; verify no deletions, only additions",
+        "required_evidence": [
+          "baseline_count",
+          "checkpoint_counts",
+          "monotonicity_violations",
+          "plasticity_gain",
+          "baseline_synapse_deletions"
+        ],
+        "pass_criteria": {
+          "monotonic": "all(checkpoint[i+1] >= checkpoint[i])",
+          "baseline_preserved": "no deletions of baseline synapses",
+          "violations": "== 0"
+        },
+        "status": "PENDING",
+        "evidence": {}
+      },
+      "invariant_i24_indexing_correctness": {
+        "claim": "index[CAT-N-ID] always returns correct neuron; no retrieval errors",
+        "verification_method": "random sample 10K CAT-N-ID lookups; verify all correct",
+        "required_evidence": [
+          "total_lookups",
+          "successful_lookups",
+          "lookup_errors",
+          "error_rate",
+          "orphaned_synapses"
+        ],
+        "pass_criteria": {
+          "success_rate": ">= 0.9999",
+          "orphaned_count": "== 0",
+          "error_rate": "< 0.0001"
+        },
+        "status": "PENDING",
+        "evidence": {}
+      },
+      "invariant_i25_causality_preservation": {
+        "claim": "No effect can precede its cause; no retroactive state changes",
+        "verification_method": "check event_queue ordering; verify all delivery_time > emission_time",
+        "required_evidence": [
+          "total_events",
+          "causality_violations",
+          "event_order_violations",
+          "retroactive_changes",
+          "avg_spike_delay_ms"
+        ],
+        "pass_criteria": {
+          "causality_violations": "== 0",
+          "event_ordering": "correct",
+          "retroactive_changes": "== 0",
+          "avg_delay": "in_biological_range"
+        },
+        "status": "PENDING",
+        "evidence": {}
+      }
+    },
+    "section_3_adversarial_attacks": {
+      "attack_a_neuron_silent_deletion": {
+        "description": "Attacker tries to remove a CAT-N-ID from execution",
+        "defense": "CAT-N-ID enumeration at every timestep; deletion detected immediately",
+        "detection_method": "Verify neuron present at all checkpoints",
+        "expected_latency_ms": "<1",
+        "execution_status": "PENDING",
+        "detection_status": "PENDING",
+        "evidence": {}
+      },
+      "attack_b_synapse_corruption": {
+        "description": "Attacker tries to redirect a CAT-S-ID to wrong target",
+        "defense": "Neuron index lookup; verify source/dest CAT-N-IDs match",
+        "detection_method": "Corrupt 10 random synapses; verify detection",
+        "expected_latency_ms": "<10",
+        "execution_status": "PENDING",
+        "detection_status": "PENDING",
+        "evidence": {}
+      },
+      "attack_c_non_deterministic_execution": {
+        "description": "Attacker introduces random floating-point rounding errors",
+        "defense": "Use canonical serialization; canonical float encoding; bit-match compare",
+        "detection_method": "Run same state twice; bit-for-bit comparison",
+        "expected_latency_ms": "hash_match",
+        "execution_status": "PENDING",
+        "detection_status": "PENDING",
+        "evidence": {}
+      },
+      "attack_d_recurrent_cycle_removal": {
+        "description": "Attacker tries to break feedback loop by removing recurrent edge",
+        "defense": "Edge enumeration; verify all recurrent edges present; verify delays > 0",
+        "detection_method": "Enumerate cycles; verify none removed",
+        "expected_latency_ms": "<1",
+        "execution_status": "PENDING",
+        "detection_status": "PENDING",
+        "evidence": {}
+      },
+      "attack_e_behavioral_output_disassociation": {
+        "description": "Attacker tries to decouple behavioral output from source neurons",
+        "defense": "Behavioral output record includes source_neurons array; trace back",
+        "detection_method": "Verify every behavior maps to source CAT-N",
+        "expected_latency_ms": "<100",
+        "execution_status": "PENDING",
+        "detection_status": "PENDING",
+        "evidence": {}
+      }
+    },
+    "section_4_random_spotchecks": {
+      "neuron_lookups_10k": {
+        "sample_size": 10000,
+        "samples_passed": 0,
+        "samples_failed": 0,
+        "error_rate": 0.0,
+        "pass_threshold": 0.9999,
+        "status": "PENDING",
+        "errors": []
+      },
+      "synapse_samples_1000": {
+        "sample_size": 1000,
+        "samples_valid": 0,
+        "samples_invalid": 0,
+        "error_rate": 0.0,
+        "pass_threshold": 0.999,
+        "status": "PENDING",
+        "errors": []
+      },
+      "behavior_traces_100": {
+        "sample_size": 100,
+        "traces_valid": 0,
+        "traces_invalid": 0,
+        "error_rate": 0.0,
+        "pass_threshold": 1.0,
+        "status": "PENDING",
+        "errors": []
+      }
+    },
+    "section_5_scale_up_validation": {
+      "prototype_158_neurons": {
+        "neuron_count": 158,
+        "synapse_count": 102,
+        "circuit_count": 10,
+        "all_invariants_passed": false,
+        "all_attacks_detected": false,
+        "all_spotchecks_passed": false,
+        "status": "PENDING",
+        "approval_status": "NOT_APPROVED"
+      },
+      "cortex_250m_neurons": {
+        "neuron_count": 250000000,
+        "synapse_count": 500000000,
+        "circuit_count": 50,
+        "all_invariants_passed": false,
+        "all_attacks_detected": false,
+        "all_spotchecks_passed": false,
+        "scale_properties": {
+          "topology_hash_time_sec": 0,
+          "cycle_enum_time_sec": 0,
+          "memory_usage_gb": 0
+        },
+        "status": "PENDING",
+        "approval_status": "NOT_APPROVED"
+      },
+      "wholeb_brain_760m_neurons": {
+        "neuron_count": 760000000,
+        "synapse_count": 1000000000,
+        "circuit_count": 100,
+        "all_invariants_passed": false,
+        "all_attacks_detected": false,
+        "all_spotchecks_passed": false,
+        "scale_properties": {
+          "topology_hash_time_sec": 0,
+          "cycle_enum_time_sec": 0,
+          "memory_usage_gb": 0,
+          "simulation_timestep_wall_sec": 0,
+          "behavioral_latency_ms": 0
+        },
+        "performance_constraints_met": false,
+        "status": "PENDING",
+        "approval_status": "NOT_APPROVED"
+      }
+    },
+    "section_6_audit_summary": {
+      "audit_timestamp": "2026-09-13T00:00:00Z",
+      "audit_officer": "ORCHESTRATOR-2",
+      "audit_start_time": null,
+      "audit_end_time": null,
+      "audit_duration_sec": 0,
+      "invariants_verified": 0,
+      "invariants_total": 10,
+      "attacks_detected": 0,
+      "attacks_total": 5,
+      "spotchecks_passed": 0,
+      "spotchecks_total": 3,
+      "scale_tiers_approved": 0,
+      "scale_tiers_total": 3,
+      "overall_status": "PENDING",
+      "approved_for_phase_6": false
+    },
+    "section_7_audit_trail": {
+      "sealed_hash": null,
+      "audit_hash_algorithm": "SHA256",
+      "signature": null,
+      "signature_algorithm": "RSA-4096",
+      "sealed": false,
+      "worm_entry_confirmed": false,
+      "seal_timestamp": null
+    },
+    "section_8_sign_off": {
+      "audit_status": "PENDING",
+      "final_verdict": "PENDING",
+      "approved_for_production": false,
+      "conditional_approval_reason": null,
+      "approved_by": "ORCHESTRATOR-2",
+      "signature_timestamp": null,
+      "notes": []
+    }
+  },
+  "execution_log": [],
+  "error_log": []
+}

@@ -1,0 +1,1135 @@
+MODULE BLISS_PLM_CORAL66_KERNEL;
+
+WORD WORD_BITS = 64;
+
+WORD TOK_EOF       = 0;
+WORD TOK_WORD      = 1;
+WORD TOK_BYTE      = 2;
+WORD TOK_BIT       = 3;
+WORD TOK_KERNEL    = 4;
+WORD TOK_REGISTER  = 5;
+WORD TOK_ADDRESS   = 6;
+WORD TOK_MEMORY    = 7;
+WORD TOK_BEGIN     = 8;
+WORD TOK_END       = 9;
+WORD TOK_IF        = 10;
+WORD TOK_THEN      = 11;
+WORD TOK_ELSE      = 12;
+WORD TOK_WHILE     = 13;
+WORD TOK_DO        = 14;
+WORD TOK_RETURN    = 15;
+WORD TOK_LOAD      = 16;
+WORD TOK_STORE     = 17;
+WORD TOK_ADD       = 18;
+WORD TOK_SUB       = 19;
+WORD TOK_MUL       = 20;
+WORD TOK_DIV       = 21;
+WORD TOK_AND       = 22;
+WORD TOK_OR        = 23;
+WORD TOK_XOR       = 24;
+WORD TOK_NOT       = 25;
+WORD TOK_SHL       = 26;
+WORD TOK_SHR       = 27;
+WORD TOK_EQ        = 28;
+WORD TOK_NE        = 29;
+WORD TOK_LT        = 30;
+WORD TOK_LE        = 31;
+WORD TOK_GT        = 32;
+WORD TOK_GE        = 33;
+WORD TOK_ASSIGN    = 34;
+WORD TOK_LPAREN    = 35;
+WORD TOK_RPAREN    = 36;
+WORD TOK_LBRACKET  = 37;
+WORD TOK_RBRACKET  = 38;
+WORD TOK_COMMA     = 39;
+WORD TOK_SEMICOLON = 40;
+WORD TOK_COLON     = 41;
+WORD TOK_NUMBER    = 42;
+WORD TOK_IDENTIFIER= 43;
+
+WORD NODE_PROGRAM  = 1;
+WORD NODE_KERNEL   = 2;
+WORD NODE_DECL     = 3;
+WORD NODE_BLOCK    = 4;
+WORD NODE_ASSIGN   = 5;
+WORD NODE_LOAD     = 6;
+WORD NODE_STORE    = 7;
+WORD NODE_BINARY   = 8;
+WORD NODE_UNARY    = 9;
+WORD NODE_IF       = 10;
+WORD NODE_WHILE    = 11;
+WORD NODE_RETURN   = 12;
+WORD NODE_NUMBER   = 13;
+WORD NODE_NAME     = 14;
+WORD NODE_INDEX    = 15;
+WORD NODE_BARRIER  = 16;
+
+WORD IR_NOP        = 0;
+WORD IR_MOV        = 1;
+WORD IR_LOAD       = 2;
+WORD IR_STORE      = 3;
+WORD IR_ADD        = 4;
+WORD IR_SUB        = 5;
+WORD IR_MUL        = 6;
+WORD IR_DIV        = 7;
+WORD IR_AND        = 8;
+WORD IR_OR         = 9;
+WORD IR_XOR        = 10;
+WORD IR_NOT        = 11;
+WORD IR_SHL        = 12;
+WORD IR_SHR        = 13;
+WORD IR_CMP        = 14;
+WORD IR_SELECT     = 15;
+WORD IR_BRANCH     = 16;
+WORD IR_BRANCHZ    = 17;
+WORD IR_RETURN     = 18;
+WORD IR_BARRIER    = 19;
+WORD IR_SHUFFLE    = 20;
+WORD IR_REDUCE     = 21;
+WORD IR_SCAN       = 22;
+WORD IR_ATOMIC     = 23;
+WORD IR_FMA        = 24;
+
+WORD MAX_SOURCE    = 65536;
+WORD MAX_SYMBOLS   = 4096;
+WORD MAX_NODES     = 16384;
+WORD MAX_IR        = 32768;
+WORD MAX_REGS      = 4096;
+
+BYTE SOURCE[MAX_SOURCE];
+WORD SOURCE_LENGTH;
+WORD SOURCE_POS;
+BYTE CURRENT;
+
+WORD TOKEN;
+WORD TOKEN_VALUE;
+
+WORD SYMBOL_COUNT;
+WORD SYMBOL_NAME[MAX_SYMBOLS];
+WORD SYMBOL_KIND[MAX_SYMBOLS];
+WORD SYMBOL_VALUE[MAX_SYMBOLS];
+
+WORD NODE_COUNT;
+WORD NODE_KIND[MAX_NODES];
+WORD NODE_A[MAX_NODES];
+WORD NODE_B[MAX_NODES];
+WORD NODE_C[MAX_NODES];
+WORD NODE_VALUE[MAX_NODES];
+
+WORD IR_COUNT;
+WORD IR_OP[MAX_IR];
+WORD IR_A[MAX_IR];
+WORD IR_B[MAX_IR];
+WORD IR_C[MAX_IR];
+WORD IR_D[MAX_IR];
+
+WORD REG_COUNT;
+WORD REG_CLASS[MAX_REGS];
+WORD REG_WIDTH[MAX_REGS];
+WORD REG_VALUE[MAX_REGS];
+
+WORD ERROR_COUNT;
+WORD ERROR_CODE;
+WORD ERROR_POS;
+
+WORD KERNEL_COUNT;
+WORD CURRENT_KERNEL;
+
+WORD HEAP_BASE;
+WORD HEAP_LIMIT;
+WORD HEAP_CURSOR;
+
+WORD DEVICE_SM = 86;
+
+WORD GLOBAL_MEMORY;
+WORD SHARED_MEMORY;
+WORD LOCAL_MEMORY;
+WORD CONSTANT_MEMORY;
+
+WORD THREAD_ID;
+WORD LANE_ID;
+WORD WARP_ID;
+WORD BLOCK_ID;
+WORD GRID_ID;
+
+WORD ZERO = 0;
+WORD ONE = 1;
+
+FUNCTION NEXT_BYTE;
+
+BEGIN
+    IF SOURCE_POS >= SOURCE_LENGTH THEN
+        RETURN 0;
+
+    CURRENT = SOURCE[SOURCE_POS];
+    SOURCE_POS = SOURCE_POS + 1;
+    RETURN CURRENT;
+END;
+
+
+FUNCTION IS_ALPHA(WORD C);
+
+BEGIN
+    RETURN
+        ((C >= 65) AND (C <= 90)) OR
+        ((C >= 97) AND (C <= 122)) OR
+        (C = 95);
+END;
+
+
+FUNCTION IS_DIGIT(WORD C);
+
+BEGIN
+    RETURN
+        (C >= 48) AND
+        (C <= 57);
+END;
+
+
+FUNCTION IS_SPACE(WORD C);
+
+BEGIN
+    RETURN
+        (C = 32) OR
+        (C = 9) OR
+        (C = 10) OR
+        (C = 13);
+END;
+
+
+FUNCTION HASH(ADDRESS P);
+
+WORD H;
+WORD I;
+
+BEGIN
+    H = 2166136261;
+    I = 0;
+
+    WHILE P[I] <> 0 DO
+    BEGIN
+        H = H XOR P[I];
+        H = H * 16777619;
+        I = I + 1;
+    END;
+
+    RETURN H;
+END;
+
+
+FUNCTION KEYWORD(ADDRESS P);
+
+WORD H;
+
+BEGIN
+    H = HASH(P);
+
+    IF H = HASH("WORD") THEN RETURN TOK_WORD;
+    IF H = HASH("BYTE") THEN RETURN TOK_BYTE;
+    IF H = HASH("BIT") THEN RETURN TOK_BIT;
+    IF H = HASH("KERNEL") THEN RETURN TOK_KERNEL;
+    IF H = HASH("REGISTER") THEN RETURN TOK_REGISTER;
+    IF H = HASH("ADDRESS") THEN RETURN TOK_ADDRESS;
+    IF H = HASH("MEMORY") THEN RETURN TOK_MEMORY;
+    IF H = HASH("BEGIN") THEN RETURN TOK_BEGIN;
+    IF H = HASH("END") THEN RETURN TOK_END;
+    IF H = HASH("IF") THEN RETURN TOK_IF;
+    IF H = HASH("THEN") THEN RETURN TOK_THEN;
+    IF H = HASH("ELSE") THEN RETURN TOK_ELSE;
+    IF H = HASH("WHILE") THEN RETURN TOK_WHILE;
+    IF H = HASH("DO") THEN RETURN TOK_DO;
+    IF H = HASH("RETURN") THEN RETURN TOK_RETURN;
+    IF H = HASH("LOAD") THEN RETURN TOK_LOAD;
+    IF H = HASH("STORE") THEN RETURN TOK_STORE;
+    IF H = HASH("ADD") THEN RETURN TOK_ADD;
+    IF H = HASH("SUB") THEN RETURN TOK_SUB;
+    IF H = HASH("MUL") THEN RETURN TOK_MUL;
+    IF H = HASH("DIV") THEN RETURN TOK_DIV;
+    IF H = HASH("AND") THEN RETURN TOK_AND;
+    IF H = HASH("OR") THEN RETURN TOK_OR;
+    IF H = HASH("XOR") THEN RETURN TOK_XOR;
+    IF H = HASH("NOT") THEN RETURN TOK_NOT;
+    IF H = HASH("SHL") THEN RETURN TOK_SHL;
+    IF H = HASH("SHR") THEN RETURN TOK_SHR;
+
+    RETURN TOK_IDENTIFIER;
+END;
+
+
+PROCEDURE LEX;
+
+WORD V;
+WORD I;
+BYTE TEXT[256];
+
+BEGIN
+
+    WHILE IS_SPACE(CURRENT) DO
+        CURRENT = NEXT_BYTE;
+
+    IF CURRENT = 0 THEN
+    BEGIN
+        TOKEN = TOK_EOF;
+        RETURN;
+    END;
+
+    IF IS_DIGIT(CURRENT) THEN
+    BEGIN
+        V = 0;
+
+        WHILE IS_DIGIT(CURRENT) DO
+        BEGIN
+            V = V * 10;
+            V = V + CURRENT - 48;
+            CURRENT = NEXT_BYTE;
+        END;
+
+        TOKEN_VALUE = V;
+        TOKEN = TOK_NUMBER;
+        RETURN;
+    END;
+
+    IF IS_ALPHA(CURRENT) THEN
+    BEGIN
+        I = 0;
+
+        WHILE IS_ALPHA(CURRENT) OR IS_DIGIT(CURRENT) DO
+        BEGIN
+            IF I < 255 THEN
+            BEGIN
+                TEXT[I] = CURRENT;
+                I = I + 1;
+            END;
+
+            CURRENT = NEXT_BYTE;
+        END;
+
+        TEXT[I] = 0;
+        TOKEN = KEYWORD(TEXT);
+
+        IF TOKEN = TOK_IDENTIFIER THEN
+            TOKEN_VALUE = HASH(TEXT);
+
+        RETURN;
+    END;
+
+    IF CURRENT = 40 THEN
+    BEGIN
+        CURRENT = NEXT_BYTE;
+        TOKEN = TOK_LPAREN;
+        RETURN;
+    END;
+
+    IF CURRENT = 41 THEN
+    BEGIN
+        CURRENT = NEXT_BYTE;
+        TOKEN = TOK_RPAREN;
+        RETURN;
+    END;
+
+    IF CURRENT = 91 THEN
+    BEGIN
+        CURRENT = NEXT_BYTE;
+        TOKEN = TOK_LBRACKET;
+        RETURN;
+    END;
+
+    IF CURRENT = 93 THEN
+    BEGIN
+        CURRENT = NEXT_BYTE;
+        TOKEN = TOK_RBRACKET;
+        RETURN;
+    END;
+
+    IF CURRENT = 44 THEN
+    BEGIN
+        CURRENT = NEXT_BYTE;
+        TOKEN = TOK_COMMA;
+        RETURN;
+    END;
+
+    IF CURRENT = 59 THEN
+    BEGIN
+        CURRENT = NEXT_BYTE;
+        TOKEN = TOK_SEMICOLON;
+        RETURN;
+    END;
+
+    IF CURRENT = 58 THEN
+    BEGIN
+        CURRENT = NEXT_BYTE;
+        TOKEN = TOK_COLON;
+        RETURN;
+    END;
+
+    IF CURRENT = 61 THEN
+    BEGIN
+        CURRENT = NEXT_BYTE;
+        TOKEN = TOK_ASSIGN;
+        RETURN;
+    END;
+
+    IF CURRENT = 43 THEN
+    BEGIN
+        CURRENT = NEXT_BYTE;
+        TOKEN = TOK_ADD;
+        RETURN;
+    END;
+
+    IF CURRENT = 45 THEN
+    BEGIN
+        CURRENT = NEXT_BYTE;
+        TOKEN = TOK_SUB;
+        RETURN;
+    END;
+
+    IF CURRENT = 42 THEN
+    BEGIN
+        CURRENT = NEXT_BYTE;
+        TOKEN = TOK_MUL;
+        RETURN;
+    END;
+
+    IF CURRENT = 47 THEN
+    BEGIN
+        CURRENT = NEXT_BYTE;
+        TOKEN = TOK_DIV;
+        RETURN;
+    END;
+
+    ERROR_COUNT = ERROR_COUNT + 1;
+    ERROR_CODE = 1;
+    ERROR_POS = SOURCE_POS;
+
+    CURRENT = NEXT_BYTE;
+
+END;
+
+
+FUNCTION NODE(WORD K, WORD A, WORD B, WORD C, WORD V);
+
+WORD N;
+
+BEGIN
+
+    IF NODE_COUNT >= MAX_NODES THEN
+        RETURN 0;
+
+    N = NODE_COUNT;
+    NODE_COUNT = NODE_COUNT + 1;
+
+    NODE_KIND[N] = K;
+    NODE_A[N] = A;
+    NODE_B[N] = B;
+    NODE_C[N] = C;
+    NODE_VALUE[N] = V;
+
+    RETURN N;
+
+END;
+
+
+FUNCTION ACCEPT(WORD T);
+
+BEGIN
+
+    IF TOKEN = T THEN
+    BEGIN
+        LEX;
+        RETURN 1;
+    END;
+
+    RETURN 0;
+
+END;
+
+
+PROCEDURE EXPECT(WORD T);
+
+BEGIN
+
+    IF TOKEN <> T THEN
+    BEGIN
+        ERROR_COUNT = ERROR_COUNT + 1;
+        ERROR_CODE = T;
+        ERROR_POS = SOURCE_POS;
+        RETURN;
+    END;
+
+    LEX;
+
+END;
+
+
+FUNCTION PRIMARY;
+
+WORD N;
+WORD V;
+
+BEGIN
+
+    IF TOKEN = TOK_NUMBER THEN
+    BEGIN
+        V = TOKEN_VALUE;
+        LEX;
+        RETURN NODE(NODE_NUMBER,0,0,0,V);
+    END;
+
+    IF TOKEN = TOK_IDENTIFIER THEN
+    BEGIN
+        V = TOKEN_VALUE;
+        LEX;
+
+        IF ACCEPT(TOK_LBRACKET) THEN
+        BEGIN
+            N = PRIMARY;
+            EXPECT(TOK_RBRACKET);
+            RETURN NODE(NODE_INDEX,N,0,0,V);
+        END;
+
+        RETURN NODE(NODE_NAME,0,0,0,V);
+    END;
+
+    IF ACCEPT(TOK_LPAREN) THEN
+    BEGIN
+        N = PRIMARY;
+        EXPECT(TOK_RPAREN);
+        RETURN N;
+    END;
+
+    ERROR_COUNT = ERROR_COUNT + 1;
+    ERROR_CODE = 2;
+    ERROR_POS = SOURCE_POS;
+
+    RETURN NODE(NODE_NUMBER,0,0,0,0);
+
+END;
+
+
+FUNCTION EXPRESSION;
+
+WORD A;
+WORD B;
+WORD K;
+
+BEGIN
+
+    A = PRIMARY;
+
+    WHILE
+        (TOKEN = TOK_ADD) OR
+        (TOKEN = TOK_SUB) OR
+        (TOKEN = TOK_MUL) OR
+        (TOKEN = TOK_DIV) OR
+        (TOKEN = TOK_AND) OR
+        (TOKEN = TOK_OR) OR
+        (TOKEN = TOK_XOR) OR
+        (TOKEN = TOK_SHL) OR
+        (TOKEN = TOK_SHR)
+    DO
+    BEGIN
+
+        K = TOKEN;
+        LEX;
+
+        B = PRIMARY;
+
+        IF K = TOK_ADD THEN K = IR_ADD;
+        IF K = TOK_SUB THEN K = IR_SUB;
+        IF K = TOK_MUL THEN K = IR_MUL;
+        IF K = TOK_DIV THEN K = IR_DIV;
+        IF K = TOK_AND THEN K = IR_AND;
+        IF K = TOK_OR THEN K = IR_OR;
+        IF K = TOK_XOR THEN K = IR_XOR;
+        IF K = TOK_SHL THEN K = IR_SHL;
+        IF K = TOK_SHR THEN K = IR_SHR;
+
+        A = NODE(NODE_BINARY,A,B,0,K);
+
+    END;
+
+    RETURN A;
+
+END;
+
+
+FUNCTION STATEMENT;
+
+WORD A;
+WORD B;
+
+BEGIN
+
+    IF TOKEN = TOK_IF THEN
+    BEGIN
+        LEX;
+        A = EXPRESSION;
+        EXPECT(TOK_THEN);
+        B = STATEMENT;
+        RETURN NODE(NODE_IF,A,B,0,0);
+    END;
+
+    IF TOKEN = TOK_WHILE THEN
+    BEGIN
+        LEX;
+        A = EXPRESSION;
+        EXPECT(TOK_DO);
+        B = STATEMENT;
+        RETURN NODE(NODE_WHILE,A,B,0,0);
+    END;
+
+    IF TOKEN = TOK_RETURN THEN
+    BEGIN
+        LEX;
+        A = EXPRESSION;
+        ACCEPT(TOK_SEMICOLON);
+        RETURN NODE(NODE_RETURN,A,0,0,0);
+    END;
+
+    IF TOKEN = TOK_BEGIN THEN
+    BEGIN
+        LEX;
+        A = 0;
+
+        WHILE TOKEN <> TOK_END AND TOKEN <> TOK_EOF DO
+        BEGIN
+            B = STATEMENT;
+            A = NODE(NODE_BLOCK,A,B,0,0);
+        END;
+
+        EXPECT(TOK_END);
+        ACCEPT(TOK_SEMICOLON);
+
+        RETURN A;
+    END;
+
+    A = EXPRESSION;
+
+    IF ACCEPT(TOK_ASSIGN) THEN
+    BEGIN
+        B = EXPRESSION;
+        ACCEPT(TOK_SEMICOLON);
+        RETURN NODE(NODE_ASSIGN,A,B,0,0);
+    END;
+
+    ACCEPT(TOK_SEMICOLON);
+
+    RETURN A;
+
+END;
+
+
+FUNCTION PARSE_KERNEL;
+
+WORD NAME;
+WORD BODY;
+
+BEGIN
+
+    EXPECT(TOK_KERNEL);
+
+    IF TOKEN <> TOK_IDENTIFIER THEN
+    BEGIN
+        ERROR_COUNT = ERROR_COUNT + 1;
+        RETURN 0;
+    END;
+
+    NAME = TOKEN_VALUE;
+    LEX;
+
+    EXPECT(TOK_BEGIN);
+
+    BODY = STATEMENT;
+
+    EXPECT(TOK_END);
+
+    RETURN NODE(NODE_KERNEL,BODY,0,0,NAME);
+
+END;
+
+
+FUNCTION PARSE_PROGRAM;
+
+WORD ROOT;
+WORD K;
+
+BEGIN
+
+    ROOT = 0;
+
+    WHILE TOKEN <> TOK_EOF DO
+    BEGIN
+
+        IF TOKEN = TOK_KERNEL THEN
+            K = PARSE_KERNEL
+        ELSE
+            K = STATEMENT;
+
+        ROOT = NODE(NODE_PROGRAM,ROOT,K,0,0);
+
+    END;
+
+    RETURN ROOT;
+
+END;
+
+
+FUNCTION NEW_REGISTER;
+
+WORD R;
+
+BEGIN
+
+    IF REG_COUNT >= MAX_REGS THEN
+        RETURN 0;
+
+    R = REG_COUNT;
+    REG_COUNT = REG_COUNT + 1;
+
+    REG_CLASS[R] = 0;
+    REG_WIDTH[R] = WORD_BITS;
+    REG_VALUE[R] = 0;
+
+    RETURN R;
+
+END;
+
+
+FUNCTION EMIT(WORD OP, WORD A, WORD B, WORD C, WORD D);
+
+WORD I;
+
+BEGIN
+
+    IF IR_COUNT >= MAX_IR THEN
+        RETURN 0;
+
+    I = IR_COUNT;
+    IR_COUNT = IR_COUNT + 1;
+
+    IR_OP[I] = OP;
+    IR_A[I] = A;
+    IR_B[I] = B;
+    IR_C[I] = C;
+    IR_D[I] = D;
+
+    RETURN I;
+
+END;
+
+
+FUNCTION LOWER_NODE(WORD N);
+
+WORD A;
+WORD B;
+WORD R1;
+WORD R2;
+WORD R3;
+
+BEGIN
+
+    IF N = 0 THEN
+        RETURN 0;
+
+    IF NODE_KIND[N] = NODE_NUMBER THEN
+    BEGIN
+        R1 = NEW_REGISTER;
+        REG_VALUE[R1] = NODE_VALUE[N];
+        EMIT(IR_MOV,R1,NODE_VALUE[N],0,0);
+        RETURN R1;
+    END;
+
+    IF NODE_KIND[N] = NODE_NAME THEN
+    BEGIN
+        R1 = NEW_REGISTER;
+        EMIT(IR_LOAD,R1,NODE_VALUE[N],0,0);
+        RETURN R1;
+    END;
+
+    IF NODE_KIND[N] = NODE_INDEX THEN
+    BEGIN
+        A = LOWER_NODE(NODE_A[N]);
+        R1 = NEW_REGISTER;
+        EMIT(IR_LOAD,R1,NODE_VALUE[N],A,0);
+        RETURN R1;
+    END;
+
+    IF NODE_KIND[N] = NODE_BINARY THEN
+    BEGIN
+
+        A = LOWER_NODE(NODE_A[N]);
+        B = LOWER_NODE(NODE_B[N]);
+        R1 = NEW_REGISTER;
+
+        EMIT(
+            NODE_VALUE[N],
+            R1,
+            A,
+            B
+        );
+
+        RETURN R1;
+
+    END;
+
+    IF NODE_KIND[N] = NODE_ASSIGN THEN
+    BEGIN
+
+        A = LOWER_NODE(NODE_B[N]);
+        B = NODE_A[N];
+
+        IF NODE_KIND[B] = NODE_NAME THEN
+            EMIT(IR_STORE,NODE_VALUE[B],A,0,0)
+        ELSE
+        IF NODE_KIND[B] = NODE_INDEX THEN
+        BEGIN
+            R2 = LOWER_NODE(NODE_A[B]);
+            EMIT(IR_STORE,NODE_VALUE[B],A,R2,0);
+        END;
+
+        RETURN A;
+
+    END;
+
+    IF NODE_KIND[N] = NODE_RETURN THEN
+    BEGIN
+        A = LOWER_NODE(NODE_A[N]);
+        EMIT(IR_RETURN,A,0,0,0);
+        RETURN A;
+    END;
+
+    IF NODE_KIND[N] = NODE_BLOCK THEN
+    BEGIN
+        LOWER_NODE(NODE_A[N]);
+        LOWER_NODE(NODE_B[N]);
+        RETURN 0;
+    END;
+
+    IF NODE_KIND[N] = NODE_KERNEL THEN
+    BEGIN
+        LOWER_NODE(NODE_A[N]);
+        RETURN 0;
+    END;
+
+    IF NODE_KIND[N] = NODE_IF THEN
+    BEGIN
+        A = LOWER_NODE(NODE_A[N]);
+        EMIT(IR_BRANCHZ,A,0,0,0);
+        LOWER_NODE(NODE_B[N]);
+        RETURN 0;
+    END;
+
+    IF NODE_KIND[N] = NODE_WHILE THEN
+    BEGIN
+        A = LOWER_NODE(NODE_A[N]);
+        EMIT(IR_BRANCHZ,A,0,0,0);
+        LOWER_NODE(NODE_B[N]);
+        EMIT(IR_BRANCH,0,0,0,0);
+        RETURN 0;
+    END;
+
+    RETURN 0;
+
+END;
+
+
+PROCEDURE VERIFY_IR;
+
+WORD I;
+
+BEGIN
+
+    I = 0;
+
+    WHILE I < IR_COUNT DO
+    BEGIN
+
+        IF IR_OP[I] > IR_ATOMIC THEN
+        BEGIN
+            ERROR_COUNT = ERROR_COUNT + 1;
+            ERROR_CODE = 3;
+            ERROR_POS = I;
+        END;
+
+        I = I + 1;
+
+    END;
+
+END;
+
+
+PROCEDURE REGISTER_ALLOCATE;
+
+WORD I;
+WORD R;
+
+BEGIN
+
+    R = 0;
+    I = 0;
+
+    WHILE I < IR_COUNT DO
+    BEGIN
+
+        IF IR_A[I] >= REG_COUNT THEN
+            REG_COUNT = IR_A[I] + 1;
+
+        IF IR_B[I] >= REG_COUNT THEN
+            REG_COUNT = IR_B[I] + 1;
+
+        IF IR_C[I] >= REG_COUNT THEN
+            REG_COUNT = IR_C[I] + 1;
+
+        I = I + 1;
+
+    END;
+
+    WHILE R < REG_COUNT DO
+    BEGIN
+        REG_CLASS[R] = 0;
+        REG_WIDTH[R] = WORD_BITS;
+        R = R + 1;
+    END;
+
+END;
+
+
+PROCEDURE LOWER_SM86;
+
+WORD I;
+WORD OP;
+WORD A;
+WORD B;
+WORD C;
+
+BEGIN
+
+    I = 0;
+
+    WHILE I < IR_COUNT DO
+    BEGIN
+
+        OP = IR_OP[I];
+        A = IR_A[I];
+        B = IR_B[I];
+        C = IR_C[I];
+
+        IF OP = IR_MOV THEN
+        BEGIN
+            /* machine operation: register move */
+        END;
+
+        IF OP = IR_LOAD THEN
+        BEGIN
+            /* machine operation: memory load */
+        END;
+
+        IF OP = IR_STORE THEN
+        BEGIN
+            /* machine operation: memory store */
+        END;
+
+        IF OP = IR_ADD THEN
+        BEGIN
+            /* machine operation: integer addition */
+        END;
+
+        IF OP = IR_SUB THEN
+        BEGIN
+            /* machine operation: integer subtraction */
+        END;
+
+        IF OP = IR_MUL THEN
+        BEGIN
+            /* machine operation: integer multiplication */
+        END;
+
+        IF OP = IR_DIV THEN
+        BEGIN
+            /* machine operation: integer division */
+        END;
+
+        IF OP = IR_AND THEN
+        BEGIN
+            /* machine operation: bitwise AND */
+        END;
+
+        IF OP = IR_OR THEN
+        BEGIN
+            /* machine operation: bitwise OR */
+        END;
+
+        IF OP = IR_XOR THEN
+        BEGIN
+            /* machine operation: bitwise XOR */
+        END;
+
+        IF OP = IR_SHL THEN
+        BEGIN
+            /* machine operation: shift left */
+        END;
+
+        IF OP = IR_SHR THEN
+        BEGIN
+            /* machine operation: shift right */
+        END;
+
+        IF OP = IR_BARRIER THEN
+        BEGIN
+            /* machine operation: synchronization */
+        END;
+
+        IF OP = IR_RETURN THEN
+        BEGIN
+            /* machine operation: kernel termination */
+        END;
+
+        I = I + 1;
+
+    END;
+
+END;
+
+
+KERNEL WORD_ARITHMETIC;
+
+BEGIN
+
+    VALUE = SOURCE[LANE_ID];
+
+    VALUE = VALUE + R0;
+
+    VALUE = VALUE * R1;
+
+    DESTINATION[LANE_ID] = VALUE;
+
+END;
+
+
+KERNEL BIT_KERNEL;
+
+BEGIN
+
+    VALUE = SOURCE[LANE_ID];
+
+    VALUE = VALUE AND MASK;
+
+    VALUE = VALUE XOR R0;
+
+    VALUE = VALUE OR R1;
+
+    DESTINATION[LANE_ID] = VALUE;
+
+END;
+
+
+KERNEL STATE_KERNEL;
+
+BEGIN
+
+    STATE = 0;
+    INDEX = 0;
+
+    WHILE INDEX < COUNT DO
+    BEGIN
+
+        VALUE = SOURCE[INDEX];
+
+        STATE =
+            (STATE * R0) +
+            (VALUE * R1);
+
+        DESTINATION[INDEX] = STATE;
+
+        INDEX = INDEX + 1;
+
+    END;
+
+END;
+
+
+KERNEL PARALLEL_KERNEL;
+
+BEGIN
+
+    VALUE =
+        SOURCE[
+            BLOCK_ID +
+            WARP_ID +
+            LANE_ID
+        ];
+
+    BARRIER;
+
+    VALUE =
+        VALUE XOR
+        SHUFFLE(VALUE, LANE_ID XOR 1);
+
+    BARRIER;
+
+    DESTINATION[LANE_ID] = VALUE;
+
+END;
+
+
+PROCEDURE INIT;
+
+BEGIN
+
+    SOURCE_POS = 0;
+    SOURCE_LENGTH = 0;
+
+    NODE_COUNT = 1;
+    IR_COUNT = 0;
+    REG_COUNT = 0;
+
+    ERROR_COUNT = 0;
+
+    KERNEL_COUNT = 0;
+    CURRENT_KERNEL = 0;
+
+    HEAP_BASE = 0;
+    HEAP_CURSOR = HEAP_BASE;
+    HEAP_LIMIT = MAX_SOURCE;
+
+    THREAD_ID = 0;
+    LANE_ID = 0;
+    WARP_ID = 0;
+    BLOCK_ID = 0;
+    GRID_ID = 0;
+
+END;
+
+
+PROCEDURE COMPILE;
+
+WORD ROOT;
+
+BEGIN
+
+    INIT;
+
+    CURRENT = NEXT_BYTE;
+
+    LEX;
+
+    ROOT = PARSE_PROGRAM;
+
+    IF ERROR_COUNT <> 0 THEN
+        RETURN;
+
+    LOWER_NODE(ROOT);
+
+    VERIFY_IR;
+
+    IF ERROR_COUNT <> 0 THEN
+        RETURN;
+
+    REGISTER_ALLOCATE;
+
+    LOWER_SM86;
+
+END;
+
+
+END MODULE;
