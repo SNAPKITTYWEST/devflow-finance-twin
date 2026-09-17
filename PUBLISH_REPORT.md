@@ -1,6 +1,6 @@
 # Publication Report
 
-**Timestamp:** 2026-09-17T09:35:00Z
+**Timestamp:** 2026-09-17T09:42:05Z
 **Branch:** master
 
 ## Summary
@@ -15,7 +15,7 @@
 | Files Rejected | 0 |
 
 ## Files Added
-- `docs/SOVEREIGN_EVALUATION_ENGINE_SPEC.md`
+- `docs/SOVEREIGN_AI_EVALUATION_ENGINE.md`
 
 ## Files Unchanged
 _None_
