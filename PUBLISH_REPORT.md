@@ -1,28 +1,21 @@
 # Publication Report
 
-**Timestamp:** 2026-09-17T05:58:54Z
+**Timestamp:** 2026-09-17T09:35:00Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 10 |
-| Files Added | 8 |
+| Files Discovered | 3 |
+| Files Added | 1 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 2 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `docs/EXAMPLES.md`
-- `docs/PRIMITIVES.md`
-- `docs/README_API.md`
-- `src/api.go`
-- `src/example_abstention.go`
-- `src/example_consistency_validator.go`
-- `src/example_math_routing.go`
-- `src/example_test.go`
+- `docs/SOVEREIGN_EVALUATION_ENGINE_SPEC.md`
 
 ## Files Unchanged
 _None_

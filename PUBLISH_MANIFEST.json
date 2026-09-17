@@ -1,18 +1,11 @@
 {
-  "timestamp": "2026-09-17T05:58:52Z",
+  "timestamp": "2026-09-17T09:34:59Z",
   "repository": "https://github.com/SNAPKITTYWEST/devflow-finance-twin.git",
   "branch": "master",
-  "commit_before": "33367700d2278dbfe36f443a1b6ddaa2c5a0fc24",
-  "commit_after": "8aed5121be73cb7f66be52f66955f1c6b8e90a39",
+  "commit_before": "d9fe118fa8ab28bb72ecdda5902a8f597824ed0a",
+  "commit_after": "0cd536113d283264a715d76270d4ecc105839345",
   "files_added": [
-    "docs/EXAMPLES.md",
-    "docs/PRIMITIVES.md",
-    "docs/README_API.md",
-    "src/api.go",
-    "src/example_abstention.go",
-    "src/example_consistency_validator.go",
-    "src/example_math_routing.go",
-    "src/example_test.go"
+    "docs/SOVEREIGN_EVALUATION_ENGINE_SPEC.md"
   ],
   "files_modified": [
 
@@ -29,6 +22,6 @@
 
   ],
   "sha256": [
-    {"file": "example_test.go", "source_hash": "c36b92f331813f7a72ca3fe2235d2813fa911f69a843a2f03587b01975f88631", "destination_hash": "c36b92f331813f7a72ca3fe2235d2813fa911f69a843a2f03587b01975f88631", "status": "COPIED"},    {"file": "PRIMITIVES.md", "source_hash": "adea5d4873589b60900fe32043f43a4b9f01b2f7b0fad4ffa83e35d1bbe6aff3", "destination_hash": "adea5d4873589b60900fe32043f43a4b9f01b2f7b0fad4ffa83e35d1bbe6aff3", "status": "COPIED"},    {"file": "api.go", "source_hash": "4b074fc4e1be0bf10224dd06fb5020ad36d5caff78bf1fd4e9e6754e48e8eb48", "destination_hash": "4b074fc4e1be0bf10224dd06fb5020ad36d5caff78bf1fd4e9e6754e48e8eb48", "status": "COPIED"},    {"file": "example_abstention.go", "source_hash": "789b2b4bed34e69cde7cb921d72f0e1d9803205b5ddb0eecd024c981a6eceba0", "destination_hash": "789b2b4bed34e69cde7cb921d72f0e1d9803205b5ddb0eecd024c981a6eceba0", "status": "COPIED"},    {"file": "example_consistency_validator.go", "source_hash": "10d81bc4ab85a5937a66333537ffe30bc4a16224d459a424e53edc803c8ece70", "destination_hash": "10d81bc4ab85a5937a66333537ffe30bc4a16224d459a424e53edc803c8ece70", "status": "COPIED"},    {"file": "example_math_routing.go", "source_hash": "36226fc3809ad87e1677ffa65cdb5c916440d66a86777b4cdb6bf3252c99657a", "destination_hash": "36226fc3809ad87e1677ffa65cdb5c916440d66a86777b4cdb6bf3252c99657a", "status": "COPIED"},    {"file": "EXAMPLES.md", "source_hash": "33665dcc6dd98dc2bc5e874e760445a35d5ed2e1cafb5b88a77352637b7c55f4", "destination_hash": "33665dcc6dd98dc2bc5e874e760445a35d5ed2e1cafb5b88a77352637b7c55f4", "status": "COPIED"},    {"file": "PHASE_2_CPU_EXECUTION_ENGINE.asm", "source_hash": "840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25", "destination_hash": "311ceaa6f33a84c8262110677c206acbda52a02d70f35df64ebbf7b83d64d946", "status": "CONFLICT"},    {"file": "README_API.md", "source_hash": "d549bc6138c7825417c21d5208c889e6c09fe10f150323293fef443e9ddbecac", "destination_hash": "d549bc6138c7825417c21d5208c889e6c09fe10f150323293fef443e9ddbecac", "status": "COPIED"},    {"file": "ARCHITECTURE.md", "source_hash": "175c1d9f5065f5da9cbb12071ebfd49aba5d06d1fed7dbc46bd3b9efab9e00c4", "destination_hash": "9896f6609468487178bbe913f0103d4bb061cf9dd86b0845b41931971108ad08", "status": "CONFLICT"}
+    {"file": "SOVEREIGN_EVALUATION_ENGINE_SPEC.md", "source_hash": "6ba27ad272b669087b33a6fa204d95c315d551b096478a4ba881f945456ee370", "destination_hash": "6ba27ad272b669087b33a6fa204d95c315d551b096478a4ba881f945456ee370", "status": "COPIED"},    {"file": "PHASE_2_CPU_EXECUTION_ENGINE.asm", "source_hash": "840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25", "destination_hash": "311ceaa6f33a84c8262110677c206acbda52a02d70f35df64ebbf7b83d64d946", "status": "CONFLICT"},    {"file": "ARCHITECTURE.md", "source_hash": "175c1d9f5065f5da9cbb12071ebfd49aba5d06d1fed7dbc46bd3b9efab9e00c4", "destination_hash": "9896f6609468487178bbe913f0103d4bb061cf9dd86b0845b41931971108ad08", "status": "CONFLICT"}
   ]
 }
