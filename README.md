@@ -27,6 +27,8 @@
   - [Finance Twin & WORM Ledger](#4-finance-twin--worm-ledger)
   - [Go ASP Engine](#5-go-answer-set-programming-engine)
   - [Quantum Computer Simulator](#6-quantum-computer-simulator)
+  - [QFlow Quantum DSL](#6b-qflow-quantum-dsl)
+  - [Quipper & Kraus Stack](#6c-quipper--kraus-quantum-stack-haskell)
   - [FSL Formal Solver](#7-fsl-formal-solver-language)
   - [Fibonacci Braid Ledger](#8-fibonacci-braid-ledger)
   - [Cobalt Compiler](#9-cobalt-haskell-compiler)
@@ -389,6 +391,58 @@ flowchart LR
     DM --> ALG[Algorithms\nVQE · QAOA · Grover\nShor · topological]
 ```
 
+| Module | LOC | Purpose |
+|---|---|---|
+| `vm/simulator.py` | 470 | `DensityMatrix` — state evolution, measurement, partial trace |
+| `gates/__init__.py` | 371 | 24 quantum gates |
+| `core/` | ~400 | Complex numbers, matrix ops, register, state |
+| `algorithms/advanced.py` | ~700 | VQE · QAOA · Grover · Shor |
+| `algorithms/topological.py` | ~700 | Topological quantum algorithms |
+| `error_correction/` | ~400 | Bit-flip · phase-flip · Steane 7,1,3 · surface code |
+| `noise/advanced.py` | 656 | Depolarizing · amplitude damping · Pauli channels |
+| `circuit/` | ~600 | Circuit DAG · optimizer · scheduler |
+| `serialization/` | — | Circuit serialization |
+| `tests/` | ~900 | Full test suite |
+
+---
+
+### 6b. QFlow Quantum DSL
+
+**`qflow/`** · 887 LOC · Haskell quantum-dataflow compiler
+
+A custom quantum dataflow language with full Haskell compiler pipeline: lexer → parser → AST. Circuits expressed as typed dataflow graphs.
+
+| File | LOC | Purpose |
+|---|---|---|
+| `compiler/Parser.hs` | 510 | Recursive descent parser for `.qflow` circuits |
+| `compiler/Lexer.hs` | 171 | Token lexer |
+| `compiler/AST.hs` | 154 | Typed AST nodes |
+| `compiler/Main.hs` | 30 | Entry point |
+| `examples/bell.qflow` | 22 | Bell state example circuit |
+
+```bash
+cd qflow && cabal build && cabal run qflow -- examples/bell.qflow
+```
+
+---
+
+### 6c. Quipper & Kraus Quantum Stack (Haskell)
+
+**`haskell/`** · 1,073 LOC · LiquidHaskell + Quipper
+
+Quipper quantum circuit library integrated with LiquidHaskell refinement types for machine-checked correctness.
+
+| File | LOC | What it proves |
+|---|---|---|
+| `KrausExtractor.hs` | 211 | Quantum channel Kraus decomposition — completeness relation `Σ Kᵢ†Kᵢ = I` |
+| `KrausLH.hs` | 136 | LiquidHaskell refinement types over Kraus operators |
+| `KrausLHTest.hs` | 128 | Harness verifying Kraus completeness with LH |
+| `WeakMeasureCircuit.hs` | 70 | Weak measurement circuit — partial collapse, pointer state |
+| `WeakMeasureKrausLH.hs` | 171 | LH proofs over weak measurement Kraus maps |
+| `PhaseEstimationQuipper.hs` | 72 | Quipper phase estimation circuit (QPE) |
+| `QuipperTcpSenderLH.hs` | 135 | Quipper TCP sender — LH-refined network I/O |
+| `ControlLoopSpecs.lhs` | — | Literate Haskell control loop specs |
+
 ---
 
 ### 7. FSL Formal Solver Language
@@ -501,7 +555,7 @@ flowchart TD
 | Rust | **13,041** | 68 |
 | Metal (GPU shaders) | **11,358** | 18 |
 | Swift | **8,868** | 17 |
-| Haskell | **8,716** | 52 |
+| Haskell / QFlow DSL | **9,676** | 61 | `haskell/` Quipper+Kraus · `qflow/` DSL compiler |
 | C++ | **5,810** | 6 |
 | Algol 68 | **5,796** | 22 |
 | Pascal | **4,673** | 13 |
