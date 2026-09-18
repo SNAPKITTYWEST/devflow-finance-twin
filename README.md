@@ -12,14 +12,23 @@
 
 ## What is this?
 
-A polyglot repository centered on the **Fibonacci Braid Ledger** and an event-sourced financial twin. Alongside the Python ledger engine, it contains cryptographic experiments, quantum simulation, compilers and virtual machines, GPU execution models, logic solvers, classification and evaluation components, and formal-methods artifacts.
+A polyglot systems and mathematical computing repository spanning **transformer implementations, tensor and Jacobian engines, language compilers, virtual machines, GPU and microcode models, Fibonacci Braid Ledger constructions, quantum dynamics, and treasury systems**. The source includes Algol 68, AGOL-86, Pascal, APL, BQN, Haskell, Rust, C/C++, assembly, CUDA/PTX, SystemVerilog, OCCAM, Standard ML, OCaml, Ada/SPARK, COBOL, RPGLE, PL/I, Scala, Go, Julia, Futhark, and formal languages.
 
 These areas have separate entry points and toolchains. The root build does not assemble every directory into one application. Start with the [component guide](#05-component-guide) for source links and integration boundaries, or the [build and test entry points](#08-reproducibility) for a particular subsystem.
 
 ## Navigation
 
 - [Repository atlas](#02-repository-atlas) and [selected file index](#03-selected-file-index)
-- [Finance engine, reasoning, evaluation, compilers, and GPU models](#05-component-guide)
+- [Transformers and neural computation](#transformers-and-neural-computation)
+- [Algol 68 and AGOL-86](#algol-68-and-agol-86), [Pascal](#pascal-transformers-and-tensor-engines), and [array-language decoders](#apl-bqn-and-other-array-language-systems)
+- [Tensor formats and Jacobians](#tensor-formats-jacobians-and-weight-loading)
+- [VSM2500, P2/P3/P4, and GPU execution](#vsm2500-p2p3p4-and-gpu-execution)
+- [Assembly machines and Dylan runtime](#assembly-machines-neural-accelerator-and-dylan-runtime)
+- [Compilers and virtual machines](#compilers-and-virtual-machines)
+- [Fibonacci braid, NAND, and blocklace](#fibonacci-braid-nand-and-blocklace-systems)
+- [Quantum dynamics and scientific computing](#quantum-dynamics-and-scientific-computing)
+- [Banking and treasury implementations](#banking-and-treasury-implementations)
+- [Reasoning](#constraint-execution-and-logic-reasoning), [evaluation](#classification-evaluation-and-event-provenance), and [financial twin](#financial-twin-and-audit-storage)
 - [Language inventory](#07-language-distribution)
 - [Build and test entry points](#08-reproducibility)
 - [Verification scope](#09-verification-scope)
@@ -29,11 +38,11 @@ These areas have separate entry points and toolchains. The root build does not a
 
 | Area | Tracked files | Contents |
 |------|--------------:|----------|
-| [src/](src/) | 163 | Financial twin, audit/boot code, Go integration sources, transformer and hardware experiments |
+| [src/](src/) | 163 | Algol/AGOL/Pascal transformers, CUDA and VSM sources, Julia dynamics, Go integration, and financial twin |
 | [he-binary-functor/](he-binary-functor/) | 199 | Workerman calculus, cryptographic experiments, tensor parsers, hardware models, and formal artifacts |
 | [quantum_computer/](quantum_computer/) | 26 | State and density-matrix simulation, circuits, gates, algorithms, noise, and tests |
 | [constraint-harness/](constraint-harness/) | 41 | MXML validation, execution state machine, DAG scheduler, and audit components |
-| [rust/](rust/) | 37 | FSL constraint IR and solver-related modules |
+| [rust/](rust/) | 37 | FSL constraint/solver modules and the standalone neural/Jacobian core |
 | [asp/](asp/) | 29 | Go parsing, semantics, propagation, solver, and tests |
 | [classifier/](classifier/) | 13 | Go classification, batch inference, routing, and audit sources |
 | [sovereign/](sovereign/) | 10 | Go event-ledger package and documentation |
@@ -70,7 +79,15 @@ The [Workerman Calculus](he-binary-functor/haskell/Workerman/Calculus.hs) define
 ```text
 devflow-finance-twin/
 |
-|-- src/                          # Core engine and polyglot sources
+|-- src/                          # Transformer, machine, numerical, and finance sources
+|   |-- transformer_model.a68     # Algol decoder and supporting root .a68 modules
+|   |-- agol86_model.a86          # AGOL-86 transformer source
+|   |-- TensorCore.pas            # Standalone Pascal tensor engine
+|   |-- vsm2500_core.sv           # VSM hardware description
+|   |-- vsm2500_semantic_cuda.cu  # Semantic machine and neural CUDA operations
+|   |-- p3_binary_microcode_p2_fabric.cpp # Binary microcode / parallel fabric
+|   |-- RWPT.jl                  # Open-system dynamics
+|   |-- wigner_futhark.fut        # Wigner/resampling source
 |   |-- twin.py                   # FinanceTwinEngine
 |   |-- worm.py                   # WormStorageEngine
 |   |-- audit.py                  # CryptographicAuditLayer
@@ -189,7 +206,20 @@ devflow-finance-twin/
 
 # 03. SELECTED FILE INDEX
 
-## Core Engine Files
+## Transformer and machine entry points
+
+| File | Purpose |
+|------|---------|
+| [src/transformer_model.a68](src/transformer_model.a68) | Algol decoder state, weights, forward computation, and loss |
+| [src/agol86_model.a86](src/agol86_model.a86) | AGOL-86 causal attention and residual MLP |
+| [src/pascal/Model.pas](src/pascal/Model.pas) | Pascal decoder class |
+| [src/bqn/transformer.bqn](src/bqn/transformer.bqn) | BQN decoder and Jacobian operators |
+| [src/TensorCore.pas](src/TensorCore.pas) | Tensor arithmetic, shapes, initialization, and persistence |
+| [rust/sovereign_neural_saas_core.rs](rust/sovereign_neural_saas_core.rs) | Embeddings, Jacobian inversion, opcodes, and serialization |
+| [src/vsm2500_semantic_cuda.cu](src/vsm2500_semantic_cuda.cu) | VSM state and semantic/neural device kernels |
+| [18_dylan_runtime.asm](18_dylan_runtime.asm) | Assembly object, class, method, and generic dispatch |
+
+## Financial ledger files
 
 | File | Purpose |
 |------|---------|
@@ -259,31 +289,195 @@ The [recursive models](formal-token-verification/recursive/), [assumptions](form
 
 # 04. ARCHITECTURE
 
-The diagram groups repository themes. It is not a claim that the quantum simulator, FSL solver, and formal projects are all called by the financial runtime. The directly imported Python components are described below.
+The repository is organized around several source families. This map groups them by subject; the component guide below traces their individual files and interfaces.
 
 ```mermaid
-flowchart TD
-    A[Input] --> B[Parsing]
-    B --> C[Validation]
-    C --> D[Core Engine]
-    D --> E[Braid Algebra]
-    E --> F[Transformation]
-    F --> G[Verification]
-    G --> H[Output]
-    D --> I[FinanceTwinEngine]
-    D --> J[WORM Storage]
-    D --> K[Audit Layer]
-    E --> L[Workerman Calculus]
-    E --> M[Custom Crypto]
-    F --> N[Quantum Simulator]
-    F --> O[FSL Solver]
-    F --> P[Constraint DSL]
-    G --> Q[Formal Proofs]
-    G --> R[Test Suite]
+flowchart LR
+    R[Repository] --> T[Transformers and tensors]
+    R --> C[Compilers and language runtimes]
+    R --> G[GPU, assembly and microcode]
+    R --> M[Braid, NAND and formal models]
+    R --> Q[Quantum and numerical systems]
+    R --> L[Logic and evaluation]
+    R --> F[Treasury and ledger systems]
 ```
 ---
 
 # 05. COMPONENT GUIDE
+
+## Transformers and neural computation
+
+The transformer work is spread across several implementations, with explicit tensor operations, causal attention, residual blocks, activations, normalization, output projection, and derivative-related code. The main source families are:
+
+| Implementation | Start here | What the source contains |
+|----------------|------------|--------------------------|
+| Algol 68 modular decoder | [transformer_model.a68](src/transformer_model.a68) | Model configuration, parameter allocation/initialization, embedding, per-layer attention/MLP, final normalization, logits, and loss |
+| Algol 68 tensor/Jacobian model | [src/a68/](src/a68/) | Separate tensor, activation, Jacobian, attention, model, and main modules |
+| AGOL-86 | [agol86_model.a86](src/agol86_model.a86) | Flat tensor storage, GELU, stable softmax, causal multi-head attention, and residual MLP source |
+| Pascal decoder | [Model.pas](src/pascal/Model.pas) | `TDecoderTransformer`, token/position embeddings, block stack, output projection, loss, and perplexity |
+| Dyalog APL decoder | [transformer.apl](apl/apl/transformer.apl) | Array-based softmax, layer normalization, GELU, attention projections, MLP, and decoder demonstration |
+| BQN decoder | [transformer.bqn](src/bqn/transformer.bqn) | Matrix operations, causal attention, decoder blocks, softmax/linear Jacobians, finite-difference helpers, and SGD step |
+| Rust neural core | [sovereign_neural_saas_core.rs](rust/sovereign_neural_saas_core.rs) | Explicit embeddings, Jacobian blocks, inversion, opcode execution, tenant metadata, and binary serialization |
+| Typed-array JavaScript decoder | [jit_webllm_toy_transformer.js](src/jit_webllm_toy_transformer.js) | Explicit `Float32Array` matrix multiplication, attention, normalization, and small decoder model |
+| JAX implementations | [jax_gpt_model.py](src/jax_gpt_model.py), [jax_functional_transformer.py](src/jax_functional_transformer.py) | Parameter initialization, causal attention, logits/loss, gradients, generation or JIT entry points, and shape/attention checks |
+
+These are separate source families. Similar operator names make comparison possible, but the files use their own tensor layouts, configuration records, and runtime assumptions.
+
+### Algol 68 and AGOL-86
+
+The root-level Algol modules describe a decoder as **embedding + position encoding → repeated attention/MLP blocks → final normalization → vocabulary projection and loss**. [transformer_model.a68](src/transformer_model.a68) defines `ModelConfig`, `ModelWeights`, and `ModelState`, with `model_alloc`, `model_normal_init`, `model_layer_forward`, `model_forward`, and `model_loss`. Its default configuration is vocabulary 512, width 128, four attention heads, two layers, feed-forward width 512, and context length 64; `small_config` defines a smaller configuration.
+
+| Part of the Algol stack | Source | Operations and data |
+|------------------------|--------|---------------------|
+| Embedding | [embedding.a68](src/embedding.a68) | Token embedding operations and gradient-related routines |
+| Position encoding | [pos_enc.a68](src/pos_enc.a68) | Sinusoidal tables, learned position parameters, application, backward accumulation, and SGD update |
+| Attention | [attn_core.a68](src/attn_core.a68) | Head/dimension checks, causal masks, score softmax, forward caches, and backward routines |
+| Normalization | [norm.a68](src/norm.a68) | `LNParams`, cached forward calculation, and `ln_backward` |
+| Feed-forward block | [mlp.a68](src/mlp.a68) | GELU and its derivative, MLP forward cache, backward computation, and parameter initialization |
+| Residual composition | [transformer_block.a68](src/transformer_block.a68) | Attention/MLP block composition |
+| Output and loss | [output_head.a68](src/output_head.a68) | Logits, cross-entropy, gradients with respect to inputs/weights, and top-one accuracy |
+| Optimization | [optimizer.a68](src/optimizer.a68) | Adam state, SGD momentum, warmup/scheduling, norm clipping, and gradient-health checks |
+| Inference | [inference.a68](src/inference.a68) | Greedy choice, temperature, top-k/top-p filtering, probability sampling, context extension, and EOS checks |
+| Checkpoints | [serialization.a68](src/serialization.a68) | Header validation, parameter counts, binary arrays, checksums, and round-trip helpers |
+| Evaluation and checks | [evaluation.a68](src/evaluation.a68), [benchmark.a68](src/benchmark.a68), [determinism_suite.a68](src/determinism_suite.a68), [invariant_registry.a68](src/invariant_registry.a68) | Evaluation/benchmark routines, repeatability probes, and numerical invariants |
+
+The separate [src/a68/](src/a68/) layout imports `tensor`, `activ`, `jacobian`, and `attention` into [model.a68](src/a68/model.a68). Its [jacobian.a68](src/a68/jacobian.a68) represents a forward output together with a flattened Jacobian; [attention.a68](src/a68/attention.a68) contains causal masking, head splitting/combining, and attention routines. This layout and the root-level decoder modules should be read as distinct implementations, not interchangeable modules.
+
+**AGOL-86 has its own source file:** [src/agol86_model.a86](src/agol86_model.a86). It defines `Tensor` as flat data plus a two-dimensional shape, row/column access, `gelu`, `softmax`, and `agol86 attention full`, which returns attention scores, probabilities, and output. The companion [src/agol86/](src/agol86/) tree contains AGOL and AGOL86 model/block variants, training drivers, inference/loading, ONNX export, mixed precision, distributed training, a Triton attention source, and central finite-difference Jacobian code. Those companions use PyTorch; they are distinct from the `.a86` source.
+
+### Pascal transformers and tensor engines
+
+The [Pascal stack](src/pascal/) is divided by computational responsibility:
+
+- [TensorCore.pas](src/pascal/TensorCore.pas) supplies the tensor representation used by the neighboring model units.
+- [Activations.pas](src/pascal/Activations.pas), [Attention.pas](src/pascal/Attention.pas), and [TransformerBlock.pas](src/pascal/TransformerBlock.pas) contain activation, attention, residual-block, forward, and backward interfaces. `TTransformerBlock` also exposes `ForwardWithJacobian`.
+- [JacobianCore.pas](src/pascal/JacobianCore.pas) holds derivative-related structures and routines. [Model.pas](src/pascal/Model.pas) combines embeddings and blocks into `TDecoderTransformer`.
+- [Training.pas](src/pascal/Training.pas) defines `TAdamState`, `TAdamOptimizer`, gradient clipping, learning-rate scheduling, and batch helpers; [Main.pas](src/pascal/Main.pas) is the associated program source.
+
+There are two additional Pascal sources outside that directory. [src/TensorCore.pas](src/TensorCore.pas) is a separate tensor unit with rank/shape queries, indexed access, matrix multiplication, transposition, reshaping, reductions, Xavier initialization, finite-value checks, and binary save/load. [transformer_pascal_200.pas](src/transformer_pascal_200.pas) is another transformer unit with layer normalization, GELU, and causal softmax. The duplicate `TensorCore` unit names matter when choosing compiler search paths.
+
+The [Pascal GPU host](src/pascal/gpu_host.pas) and [C CUDA shim](src/cuda/cuda_shim.c) form a separate host/device experiment: allocation, copies, device initialization, and a vector-add launch. The shim calls the kernel in [vector_add.cu](src/cuda/vector_add.cu).
+
+### APL, BQN, and other array-language systems
+
+The [APL decoder](apl/apl/transformer.apl) expresses attention projections, row softmax, layer normalization, GELU, and MLP operations through array primitives. It includes illustrative/simplified portions. The [BQN decoder](src/bqn/transformer.bqn) has named operators including `SoftmaxJac`, `LinearJac`, `MultiHeadAttn`, `TransformerBlock`, `DecoderModel`, and `FiniteDiffJac`.
+
+Array-language work also extends beyond transformers:
+
+| Sources | Contents |
+|---------|----------|
+| [apl/LiquidAssert.apl](apl/LiquidAssert.apl) | Tensor-state assertions for shape, rank, approximate equality, norm, and dimension limits |
+| [he-binary-functor/apl/](he-binary-functor/apl/) | Opcode definitions, execution and braid interpreters, evidence gates, and vectorized operations |
+| [Fibonacci Braid Ledger BQN](he-binary-functor/fibonacci-braid-ledger/bqn/) | Fibonacci, braid, ledger, and test sources |
+| [sovereign_homogeneous.bqn](he-binary-functor/bqn/sovereign_homogeneous.bqn) and [sovereign_tensor.k](he-binary-functor/k/sovereign_tensor.k) | Homogeneous tensor/state-transformation sources in BQN and K |
+| [Uiua artifacts](he-binary-functor/uiua/) | Fibonacci sonification and quantum-entanglement source sketches |
+
+## Compilers and virtual machines
+
+| Project | Source and examples | Current scope |
+|---------|---------------------|---------------|
+| Cobalt | [cobalt-compiler/cobalt.cabal](cobalt-compiler/cobalt.cabal), [demo driver](cobalt-compiler/src/Main.hs) | Haskell compiler/ISA modules, x86 batch assembly, LiquidOps, and an optional LiquidHaskell bridge |
+| Kernel Language | [kernel-language/README.md](kernel-language/README.md), [driver](kernel-language/src/main.c), [.kl examples](kernel-language/examples/) | C lexer/parser, AST-to-IR lowering, and register allocation; the driver emits IR, not a runnable GPU binary |
+| OCCAM/B/BSCL | [occam-b-bscl/](occam-b-bscl/), [wordcode format](occam-b-bscl/docs/WORDCODE.md) | Compiler/IR/emitter sources, concurrency and memory specifications, examples, and C tests; several included headers and the advertised Makefile are absent |
+| ISA-to-JVM | [isa-jvm/README.md](isa-jvm/README.md) | ISA compiler stages, a reference interpreter, and bytecode-related sources |
+| Qflow | [qflow/compiler/](qflow/compiler/), [Bell example](qflow/examples/bell.qflow) | Haskell quantum-dataflow AST, lexer, parser, driver, and Cabal manifest |
+| P-code stack | [src/pcode_vm_full_stack.py](src/pcode_vm_full_stack.py) | Tagged values, stack frames, tensor/value helpers, and VM-related code in a standalone Python source file |
+| Apple/6502/x86 experiments | [apple6502x86/](apple6502x86/) | Assembly boot, memory, monitor, ROM, and diagnostic variants with delivery notes |
+
+Cobalt's [Dense.hs](cobalt-compiler/Cobalt/Dense.hs) parses a subset of Prolog rules into functor structures, expands/crystallizes them, lowers to its ISA, and encodes instructions. [Trilock.hs](cobalt-compiler/Cobalt/Trilock.hs) computes a three-part structural/connectivity/emission identity. The adjacent [ISA modules](cobalt-compiler/ISA/), [LiquidOps](cobalt-compiler/LiquidOps/), [X86BatchAssembler.hs](cobalt-compiler/X86BatchAssembler.hs), refinement transforms, and [Lean4 models](cobalt-compiler/Lean4/) cover different layers of that compiler work.
+
+Kernel Language draws on **BLISS, PL/M, and CORAL 66**. Its C implementation separates lexing, recursive-descent parsing, symbol storage, IR emission, and register allocation. [Oberon modules](kernel-language/oberon/) represent kernel and ML/tensor metadata; the [CPL bridge](kernel-language/runtime/cpl_bridge.c) and [Smalltalk-80-style runtime](kernel-language/runtime/st80_runtime.c) provide host-side metadata/objects. The emitted representation is project IR; SASS/cubin output and loading are separate unfinished stages.
+
+Additional compiler/runtime paths include [XSLT-to-WASM](he-binary-functor/xslt-wasm/) with Rust instruction/string-table code and JavaScript/TypeScript hosts, the [Haskell state-machine kernel](he-binary-functor/kernel/), and [Ada Malbolge firmware](ada/malbolge_firmware.adb). The Malbolge/Enochian material also has [PTX/CUDA execution sources](ptx/malbolge_step_kernel.cu), an [Ada boot layer](ada/enochian_boot.adb), and [Lean integration models](lean/EnochianMalbolgeIntegration.lean).
+
+
+## Tensor formats, Jacobians, and weight loading
+
+The [Ada/SPARK tensor-parser tree](he-binary-functor/tensor-parser/) contains BTEN and MLTR format declarations, parser/validation variants, SHA-256, HMAC-SHA256, CRC64, a Haskell refinement model, and binary fixtures. [format_bten.ads](he-binary-functor/tensor-parser/format_bten.ads) specifies explicit endianness, fixed header/descriptor sizes, bounded offsets/counts/ranks, and dtype tags for floating-point and integer payloads. Fixtures exercise malformed magic, truncation, dtype/rank/count limits, and valid tensor inputs.
+
+Derivative work appears in the [Algol Jacobian module](src/a68/jacobian.a68), [Pascal Jacobian unit](src/pascal/JacobianCore.pas), [BQN decoder](src/bqn/transformer.bqn), [AGOL86 finite differences](src/agol86/agol86_jacobian.py), and [sequential JAX Jacobians](src/jax_sequential_jacobian.py). The [Rust neural core](rust/sovereign_neural_saas_core.rs) adds Jacobian inversion and a `SNWJAC01` binary format with explicit dimension/length/error handling.
+
+The formal side includes [lean_jacobian_tensor_framework.lean](lean/lean_jacobian_tensor_framework.lean), [SHREWDWeightLoader.lean](lean/SHREWDWeightLoader.lean), and [linear-algebra-verification/](linear-algebra-verification/). The [embedding defense protocol](docs/EMBEDDING_DEFENSE_PROTOCOL.md) and [transformer build protocol](docs/STRICT_ISOLATION_TRANSFORMER_BUILD_PROTOCOL.md) supply the associated design requirements.
+
+## VSM2500, P2/P3/P4, and GPU execution
+
+The [VSM2500 specification](src/vsm2500_specification.txt) describes a register-memory-graph machine with structured virtual parameters, semantic opcodes, constraints, provenance, and state transitions. Its 128-bit virtual-parameter fields include identity, domain, state, polarity, binding, scope, transition, and flags.
+
+| Layer | Source | What to inspect |
+|-------|--------|-----------------|
+| P2 parallel fabric | [p2_fabric.cpp](src/p2_fabric.cpp), [p2_hardware_parallel_fabric.cpp](src/p2_hardware_parallel_fabric.cpp) | Lane, instruction, execution-unit, barrier, and phase/state structures |
+| P3 binary microcode | [p3_binary_microcode_p2_fabric.cpp](src/p3_binary_microcode_p2_fabric.cpp) | Instruction classes, ALU/state opcodes, decoding, machine state, and `p3_binary_execute` |
+| P4 micro-operations | [p4_microcode_vsm2500.cpp](src/p4_microcode_vsm2500.cpp) | Control words, P4 state, and `p4_microcode_kernel` |
+| VSM CUDA execution | [vsm2500_cuda_execution_block.cu](src/vsm2500_cuda_execution_block.cu), [vsm2500_isa_kernel.cu](src/vsm2500_isa_kernel.cu) | CUDA representations of execution and ISA operations |
+| Semantic/neural CUDA operations | [vsm2500_semantic_cuda.cu](src/vsm2500_semantic_cuda.cu) | Embedding lookup/transforms, XOR/addition, convolution, ReLU, pooling, fully connected operations, program execution, and binary reduction |
+| H100 bridge source | [vsm2500_h100_sass_bridge.cu](src/vsm2500_h100_sass_bridge.cu) | Device-side bridge material for the virtual machine |
+| Hardware description | [vsm2500_core.sv](src/vsm2500_core.sv) | Packed semantic types, register/memory structures, opcodes, and SystemVerilog modules |
+| Semantic models | [vsm_binary_semantics.lean](lean/vsm_binary_semantics.lean), [vsm_semantic_algebra.lean](lean/vsm_semantic_algebra.lean) | Lean representations of the binary and semantic layers |
+
+P2/P3/P4 are project-defined virtual-machine layers; the P3 source explicitly distinguishes them from NVIDIA's internal H100 microcode.
+
+The GPU work also includes [masked attention and inverted softmax](src/cuda/cuda_softmax_masked.cu), a [finite-difference softmax check](src/cuda/verify_softmax_fd.cu), [PTX kernels and launch sources](ptx/), and [RetroGPU](retro-gpu/). RetroGPU is represented in OCCAM, OCaml, Standard ML, and Modula-2. Its SML modules separate [instructions](retro-gpu/sml/Instruction.sml), [memory](retro-gpu/sml/Memory.sml), [warp state](retro-gpu/sml/Warp.sml), [tensor fragments/transfers](retro-gpu/sml/Tensor.sml), [scheduling](retro-gpu/sml/Scheduler.sml), [GEMM](retro-gpu/sml/GEMM.sml), and a [Hopper target](retro-gpu/sml/Hopper.sml). The Hopper emitter remains a placeholder; the OCaml tree supplies a separate compiler/interpreter model and tests.
+
+## Assembly machines, neural accelerator, and Dylan runtime
+
+The assembly sources cover substantially more than ledger hashing:
+
+| Source | Represented subsystem |
+|--------|-----------------------|
+| [08_neural_accelerator_engine.asm](assembly-120-strict-model/08_neural_accelerator_engine.asm) | Neural buffers, vector/MAC operations, activation routines, matrix/convolution/reduction operations, layer dispatch, and memory-mapped control |
+| [PHASE_2_CPU_EXECUTION_ENGINE.asm](assembly-120-strict-model/PHASE_2_CPU_EXECUTION_ENGINE.asm) | CPU execution-engine source |
+| [09_graphics.asm](09_graphics.asm) | GPU-core state, work queues, shared/cache memory, vertex/index/frame buffers, and graphics pipeline routines |
+| [18_dylan_runtime.asm](18_dylan_runtime.asm) | Object creation, class/slot tables, method invocation, generic/type dispatch, inheritance checks, messages, and virtual-method tables |
+| [15_scheduler.asm](assembly-120-strict-model/15_scheduler.asm), [20_diagnostics.asm](assembly-120-strict-model/20_diagnostics.asm), [19_tests.asm](19_tests.asm) | Scheduling, diagnostics, and assembly test material |
+| [bit_pattern_kernel_avx2.asm](assembly-120-strict-model/bit_pattern_kernel_avx2.asm), [fibonacci_braid_x86.asm](assembly-120-strict-model/fibonacci_braid_x86.asm) | Bit-pattern/SIMD and Fibonacci/braid kernels |
+| [apple6502x86/](apple6502x86/) | Boot, ROM, monitor, memory, and diagnostic assembly variants |
+
+[DYLAN_EXECUTION_MODEL.md](DYLAN_EXECUTION_MODEL.md), the [neuron execution template](NEURON_EXECUTION_TEMPLATE.md), and the phase 5–7 documents describe the broader neural execution, graph transformation, GPU mapping, and visualization designs. They accompany the source rather than serving as a single assembler/build recipe.
+
+## Fibonacci braid, NAND, and blocklace systems
+
+The [Fibonacci Braid Ledger subtree](he-binary-functor/fibonacci-braid-ledger/) contains parallel C, C++, Haskell/LiquidHaskell, BQN, x86, and RISC-V artifacts. The C files split Fibonacci calculation, braid words, and ledger operations; the [C++ directory](he-binary-functor/fibonacci-braid-ledger/cpp/) contains ledger headers, a driver, and tests. [FibRaid.hs](he-binary-functor/fibonacci-braid-ledger/FibRaid.hs), [Ledger.hs](he-binary-functor/fibonacci-braid-ledger/Ledger.hs), and the LiquidHaskell files express related operations and refinement specifications.
+
+The [blocklace implementation](he-binary-functor/block-lace/blocklace_ledger.hpp) represents entries with multiple parent seals, a transition identifier, a braid word, and a self-seal; its sealing routine uses FNV-1a. Adjacent Haskell and Rust files cover refinements and reinvocation.
+
+[GFNAND](he-binary-functor/gfnand/) separates parsing, IR, refinement, metrics, and NAND lowering. Its [NandDag](he-binary-functor/gfnand/src/nand_lowering.rs) stores input/NAND nodes and caches repeated gates. The related [NAND architecture tree](he-binary-functor/nand-architecture/) includes ISA/grammar/binary-format specifications, a Rust VM source, FSL, and Kani harness sources.
+
+Other parts of `he-binary-functor/` have their own roles: [Workerman Calculus](he-binary-functor/haskell/Workerman/Calculus.hs) supplies the expression/refinement/braid language; [PWC Rust](he-binary-functor/rust/pwc_verified/) separates core, transformation, hardware, pipeline, and timing models; [SystemVerilog](he-binary-functor/systemverilog/) contains accelerator/timing and braid-ROM sources; [Why3](he-binary-functor/why3/) holds PWC proof material; [SGL](he-binary-functor/sgl/SGL.hs) defines spherical-geometry types and operations such as haversine distance, bearings, and great-circle intersections.
+
+The subtree also includes [Haskell/assembly rate-limiter sources](he-binary-functor/rate-limiter/), an [Erlang functor caller](he-binary-functor/beam/call_functor.erl), a [C core caller](he-binary-functor/c-core/call_core.c), an [SMT parser](he-binary-functor/src/smt_parser.rs), and additional [Rust manifold/transformation sources](he-binary-functor/rust/). These smaller runtime and language bridges are separate entry points alongside the larger compiler and ledger trees.
+
+## Quantum dynamics and scientific computing
+
+The numerical and quantum sources extend beyond the circuit simulator:
+
+| Source family | Computational content |
+|---------------|-----------------------|
+| [RWPT.jl](src/RWPT.jl) and [Julia harness](src/e2e_sim_harness.jl) | QuantumOptics-based cavity/spin setup, density-matrix propagation, jump updates, and ensemble experiments |
+| [wigner_futhark.fut](src/wigner_futhark.fut) and [FutharkFFI.jl](src/FutharkFFI.jl) | Wigner-transform/resampling source and Julia shared-library interface |
+| [FPGA_API.jl](src/FPGA_API.jl), [FPGAMock.jl](src/FPGAMock.jl), [pulse table](src/pulse_table.csv), [DDS map](src/dds_register_map.csv) | Socket command interface, mock hardware, pulse sequences, and register data |
+| [KrausExtractor.hs](haskell/KrausExtractor.hs), [KrausLH.hs](haskell/KrausLH.hs), [WeakMeasureCircuit.hs](haskell/WeakMeasureCircuit.hs) | Quipper circuit simulation, Kraus extraction, refinement-related checks, and weak-measurement circuits |
+| [PhaseEstimationQuipper.hs](haskell/PhaseEstimationQuipper.hs), [quantum wire network](haskell/quantum_wire_network_1500_lines.hs) | Phase-estimation and explicit quantum-wire constructions |
+| [Jung/RWPT Julia model](src/jung_rwpt_sim.jl) and [Isabelle sources](src/Jungian_Stochastic_Convergence_Full.thy) | Stochastic-dynamics experiments and associated formal statements |
+| [MATLAB quantum/horizon packages](src/snapkitty/) and [MATLAB tests](tests/tests/) | Incoming/outgoing modes, phase, FFT spectra, horizon fluctuations, dissipation, and conservation/resonance test sources |
+| [Verilog-A](he-binary-functor/verilog-a/) | Analog behavioral sources for braid/trigonometric processors, Grover circuits, and topological-lattice models |
+| [Q#](he-binary-functor/qsharp/), [Qrisp](he-binary-functor/qrisp/), [CUDA-Q](he-binary-functor/cuda-q/), [Circom](he-binary-functor/circom/) | Manifold computation and verifier artifacts in separate quantum/circuit languages |
+
+The Haskell extractor exposes JSON and Isabelle output functions. The Julia Futhark bridge expects `futhark/libwigner.so`; building and connecting that native library is a separate integration step. [Qflow](qflow/) supplies a quantum-dataflow parser, while [topos/pipeline.pl](topos/pipeline.pl) expresses staged dataflow/circuit/mapping transition rules.
+
+## Banking and treasury implementations
+
+| Language/system | Sources | Role |
+|-----------------|---------|------|
+| COBOL | [ACHRTRN.cbl](cobol/ACHRTRN.cbl), [LEDGER_POST.cbl](cobol/LEDGER_POST.cbl), [COBILT-ACH-TREASURY.cbl](cobol/COBILT-ACH-TREASURY.cbl) | ACH return records, posting, and treasury operations |
+| COBILT vault/data storage | [COBILT-VAULT.cbl](cobol/COBILT-VAULT.cbl), [COBILT-DATAWORM.cbl](cobol/COBILT-DATAWORM.cbl), [worm_bridge.cob](cobol/worm_bridge.cob) | Vault records, state/hash/sequence metadata, and WORM bridge sources |
+| RPGLE | [LEDGWYRPG.rpgle](rpgle/LEDGWYRPG.rpgle), [LEDREVSRV.rpgle](rpgle/LEDREVSRV.rpgle), [FNLIRTR.rpgle](rpgle/FNLIRTR.rpgle), [eod-driver.rpgle](rpgle/eod-driver.rpgle) | Ledger gateway/reversal, Funnel IR interpretation, and end-of-day processing |
+| PL/I | [treasury_ledger.pli](pli/treasury_ledger.pli), [treasury_records.pli](pli/treasury_records.pli), [functor_worm.pli](pli/functor_worm.pli) | Fixed-layout treasury records, serialization, and storage interfaces |
+| Scala/ZIO | [SovereignTreasuryPipeline.scala](scala/SovereignTreasuryPipeline.scala), [SovereignTreasuryZIO.scala](scala/SovereignTreasuryZIO.scala) | Treasury domain records, serialization/storage, and effectful stream/batch pipeline |
+| C# | [LedgerGateway.cs](csharp/LedgerGateway.cs), [RtpRailAdapter.cs](csharp/RtpRailAdapter.cs) | Ledger gateway and real-time-payment adapter sources |
+| Chisel | [WormHardwareAccelerator.scala](chisel/WormHardwareAccelerator.scala) | Hardware buffer/register interface and hash-folding model |
+| SQL and Funnel | [schema/](schema/), [funnel grammar](docs/funnel-grammar.v01.md), [funnel IR](docs/funnel-ir.md), [examples/](examples/) | Database schemas, language/IR definitions, ledger-post and ACH-return examples |
+
+The [ACH operator runbook](docs/ACHRTRN_OPERATOR_RUNBOOK.md) accompanies the return-processing path. The financial twin described next is another implementation area within this wider repository.
 
 ## Financial twin and audit storage
 
@@ -325,26 +519,6 @@ The Go module at [asp/go.mod](asp/go.mod) is scoped to `asp/`. Files under root 
 
 The [Sovereign evaluation guide](docs/SOVEREIGN_AI_EVALUATION_ENGINE.md) and [evaluation specification](docs/SOVEREIGN_EVALUATION_ENGINE_SPEC.md) describe the wider transcript/constraint/proof workflow. Read them alongside the concrete classifier, ASP, and ledger modules: the tracked tree does not provide one root build that demonstrates the complete workflow. Additional [control DAG](src/control-dag.go), [policy](src/control-policy.go), [sandbox](src/sandbox-module.go), and [archive](src/archive-tools.go) sources are collected under `src/`.
 
-## Compilers and virtual machines
-
-| Project | Source and examples | Current scope |
-|---------|---------------------|---------------|
-| Cobalt | [cobalt-compiler/cobalt.cabal](cobalt-compiler/cobalt.cabal), [demo driver](cobalt-compiler/src/Main.hs) | Haskell compiler/ISA modules, x86 batch assembly, LiquidOps, and an optional LiquidHaskell bridge |
-| Kernel Language | [kernel-language/README.md](kernel-language/README.md), [driver](kernel-language/src/main.c), [.kl examples](kernel-language/examples/) | C lexer/parser, AST-to-IR lowering, and register allocation; the driver emits IR, not a runnable GPU binary |
-| OCCAM/B/BSCL | [occam-b-bscl/](occam-b-bscl/), [wordcode format](occam-b-bscl/docs/WORDCODE.md) | Compiler/IR/emitter sources, concurrency and memory specifications, examples, and C tests; several included headers and the advertised Makefile are absent |
-| ISA-to-JVM | [isa-jvm/README.md](isa-jvm/README.md) | ISA compiler stages, a reference interpreter, and bytecode-related sources |
-| Qflow | [qflow/compiler/](qflow/compiler/), [Bell example](qflow/examples/bell.qflow) | Haskell quantum-dataflow AST, lexer, parser, driver, and Cabal manifest |
-| P-code stack | [src/pcode_vm_full_stack.py](src/pcode_vm_full_stack.py) | Tagged values, stack frames, tensor/value helpers, and VM-related code in a standalone Python source file |
-| Apple/6502/x86 experiments | [apple6502x86/](apple6502x86/) | Assembly boot, memory, monitor, ROM, and diagnostic variants with delivery notes |
-
-Kernel Language's own [status section](kernel-language/README.md#current-status) identifies unfinished lowering, macro expansion, SASS/cubin emission, and runtime loading. These are compiler development artifacts with explicit remaining work.
-
-## GPU models, transformers, and numerical experiments
-
-[retro-gpu/](retro-gpu/) contains OCCAM, OCaml, Standard ML, and Modula-2 material for registers, ALUs, warps, memory, synchronization, and tensor operations. The [OCaml interpreter](retro-gpu/ocaml/src/interpreter/Interpreter.ml) is a reference model with partial instruction handling, not a hardware execution benchmark. Its tests and build recipe are in [retro-gpu/ocaml/](retro-gpu/ocaml/).
-
-Other entry points are [CUDA kernels](src/cuda/), [PTX sources](ptx/), the [VSM2500 specification](src/vsm2500_specification.txt) and adjacent CUDA/SystemVerilog files, [Pascal transformer modules](src/pascal/), [Algol 68 modules](src/a68/), [AGOL-86 Python experiments](src/agol86/), and the [JAX transformer harness](src/jax_transformer_harness.py). These paths contain different implementations and experiments; the root Python requirements file is not a dependency manifest for all of them.
-
 ## Quantum simulation and mathematical artifacts
 
 [quantum_computer/](quantum_computer/) has its own complex numbers, matrices, state/register types, circuit builder, gates, [simulator](quantum_computer/vm/simulator.py), algorithms, noise, error-correction code, and [tests](quantum_computer/tests/). It models quantum states in software.
@@ -359,6 +533,8 @@ Formal material is distributed across [formal-token-verification/](formal-token-
 - [frontend/quantum_shadow_ledger.html](frontend/quantum_shadow_ledger.html) is the browser-facing ledger demonstration. [docs/assets/](docs/assets/) contains videos and images; [assets/](assets/) contains diagrams and other visual assets.
 - [docs/](docs/) contains architecture notes, API/user documentation, evaluation specifications, and phase-by-phase design and verification reports. [docs/README.md](docs/README.md) and [INSTITUTIONAL_README.md](INSTITUTIONAL_README.md) offer other reading routes.
 - [publish.sh](publish.sh), [PUBLISH_MANIFEST.json](PUBLISH_MANIFEST.json), and [PUBLISH_REPORT.md](PUBLISH_REPORT.md) describe artifact intake and publication. [REPOSITORY_ORGANIZATION_MANIFEST.md](REPOSITORY_ORGANIZATION_MANIFEST.md) and [STRAY_FILE_AUDIT.md](STRAY_FILE_AUDIT.md) record organization work; they are not build manifests.
+- [braid/algebra/generator.rs](braid/algebra/generator.rs) and [mathematics/topology/manifold.py](mathematics/topology/manifold.py) contain additional algebra/topology sources outside `he-binary-functor/`.
+- [formal-verification-paper/](formal-verification-paper/) contains the LaTeX paper and Rust theorem-ledger artifact. [scripts/](scripts/) contains Funnel, diagram, build, and verification utilities; [config/](config/) and [config-or-data/](config-or-data/) contain configuration artifacts.
 
 ---
 
@@ -400,33 +576,55 @@ Selected file-extension counts from the tracked snapshot. Headers, generated out
 | Verilog-A | `.va` | 9 |
 | RPGLE | `.rpgle` | 9 |
 | Julia | `.jl` | 9 |
+| C++ | `.cpp`, `.hpp` | 9 |
+| APL | `.apl` | 8 |
+| BQN | `.bqn` | 8 |
+| AGOL-86 | `.a86` | 1 |
+| SystemVerilog | `.sv` | 4 |
+| PTX | `.ptx` | 2 |
+| COBOL | `.cbl`, `.cob` | 8 |
+| PL/I | `.pli` | 3 |
+| Scala / Chisel | `.scala` | 3 |
+| Futhark | `.fut` | 1 |
+| Oberon modules | `.Mod` | 2 |
+| Modula-2 definitions | `.def` | 4 |
+| JavaScript | `.js` | 3 |
+| TypeScript | `.ts` | 4 |
+| WAT | `.wat` | 6 |
+| Coq | `.v` | 3 |
+| Agda | `.agda` | 3 |
+| F* | `.fst` | 2 |
+| Why3 | `.mlw` | 2 |
+| Common Lisp | `.lisp`, `.l` | 2 |
+| Prolog | `.pl` | 4 |
+| ECLiPSe | `.ecl` | 1 |
+| Logtalk | `.lgt` | 1 |
+| Q# | `.qs` | 1 |
+| Qrisp | `.qrisp` | 1 |
+| Circom | `.circom` | 1 |
+| K | `.k` | 1 |
+| Uiua artifacts | `.ua` | 2 |
+| Erlang | `.erl` | 1 |
+| MATLAB / M-family sources | `.m` | 18 |
+| SQL | `.sql` | 2 |
 
 ---
 
 # 08. REPRODUCIBILITY
 
-## Python financial core
+## Choose the source family
 
-The root [requirements.txt](requirements.txt) contains pytest. The financial core uses Python's standard library; it is separate from experiments requiring JAX, PyTorch, CUDA, or other runtimes. Run these commands from the repository root in a Python environment:
+The repository has independent toolchains. Start with the implementation you want to study or build:
 
-```bash
-git clone https://github.com/SNAPKITTYWEST/devflow-finance-twin.git
-cd devflow-finance-twin
-python -m pip install -r requirements.txt
-python src/cli.py --help
-python -m pytest tests/test_stack.py tests/test_cold_boot_icp.py
-python -m pytest quantum_computer/tests/
-```
-
-A small CLI example writes a local demonstration ledger. Use a fresh path when repeating it, because account identifiers must be unique:
-
-```bash
-python src/cli.py --storage demo.worm CREATE_ACCOUNT --account_id treasury --balance 100.0000
-python src/cli.py --storage demo.worm STATUS
-python src/cli.py --storage demo.worm VERIFY_HISTORY
-```
-
-These are source-matched entry points, not a record of passing tests for this snapshot.
+| Source family | Toolchain or build material | Entry point |
+|---------------|-----------------------------|-------------|
+| Algol 68 / AGOL-86 | Dialect/module support must match the source; no root build target for these files | [model](src/transformer_model.a68), [Algol modules](src/a68/), [AGOL source](src/agol86_model.a86) |
+| Pascal transformer | Pascal compiler and the matching local units | [Main.pas](src/pascal/Main.pas); keep the two TensorCore units distinct |
+| APL / BQN | Dyalog APL / CBQN; inspect dialect-specific and illustrative portions | [APL decoder](apl/apl/transformer.apl), [BQN decoder](src/bqn/transformer.bqn) |
+| CUDA / Pascal / Ada bridge | CUDA toolkit, FPC, GNAT/GNATprove | [build script](scripts/scripts/build_all.sh); its relative paths require arranging the expected source layout |
+| VSM / microcode / hardware | CUDA/C++ compilation or a SystemVerilog toolchain, depending on the file | [VSM CUDA](src/vsm2500_semantic_cuda.cu), [SV core](src/vsm2500_core.sv) |
+| Julia / Futhark / Quipper | Julia packages, a matching Futhark shared library, or GHC with Quipper/hmatrix | [RWPT](src/RWPT.jl), [Futhark bridge](src/FutharkFFI.jl), [Kraus extractor](haskell/KrausExtractor.hs) |
+| COBOL / RPGLE / PL/I | Appropriate compiler/runtime and the record/database interfaces expected by each source | [banking guide](#banking-and-treasury-implementations) |
 
 ## Component-specific builds and tests
 
@@ -434,20 +632,24 @@ Commands below assume a POSIX shell for parenthesized subshells, plus the named 
 
 | Component | Entry point | Requirements and scope |
 |-----------|-------------|------------------------|
-| Python baseline | `make test` | Root Makefile runs only `tests/test_stack.py` |
-| Constraint harness | `(cd constraint-harness && python -m pip install -e ".[dev]" && python -m pytest)` | Python 3.10+; optional PyTorch extra is separate |
+| Kernel Language | `make -C kernel-language test` | C compiler and Make; example IR emission checks |
+| Cobalt | `(cd cobalt-compiler && cabal build)` | GHC/Cabal; optional `lh-bridge` flag adds dependencies |
+| RetroGPU OCaml | `make -C retro-gpu/ocaml test` | OCaml, ocamlfind, Make; reference-model tests |
+| WASM/native support | `make all` | Node with `wabt`, GCC, NASM, and archive tools; NASM target uses ELF64 |
+| Rust FSL | `cargo test --manifest-path rust/fsl/Cargo.toml` | Rust/Cargo; targets the FSL crate only |
 | ASP | `(cd asp && go test ./...)` | Go 1.21+ module-local tests |
 | Classifier | `(cd classifier && go test ./...)` | Go 1.21+ module-local tests |
 | Event ledger | `(cd sovereign/ledger && go test ./...)` | Go 1.21+ module-local tests |
-| Rust FSL | `cargo test --manifest-path rust/fsl/Cargo.toml` | Rust/Cargo; targets the FSL crate only |
-| Cobalt | `(cd cobalt-compiler && cabal build)` | GHC/Cabal; optional `lh-bridge` flag adds dependencies |
-| Kernel Language | `make -C kernel-language test` | C compiler and Make; example IR emission checks |
-| RetroGPU OCaml | `make -C retro-gpu/ocaml test` | OCaml, ocamlfind, Make; reference-model tests |
-| WASM/native support | `make all` | Node with `wabt`, GCC, NASM, and archive tools; NASM target uses ELF64 |
+| Constraint harness | `(cd constraint-harness && python -m pip install -e ".[dev]" && python -m pytest)` | Python 3.10+; optional PyTorch extra is separate |
+| Python baseline | `make test` | Root Makefile runs only `tests/test_stack.py` |
 
 There is no repository-wide build or test command covering all languages. `compile_wasm.js` requires the Node `wabt` package, but the root has no package.json. The OCCAM/B README advertises `make`, but its directory has no tracked Makefile and lacks headers included by the compiler. The RetroGPU OCCAM test target names `tests/CompilerTests.occ`, which is absent. Resolve those packaging gaps before using their advertised commands.
 
 Formal sources require project-specific dependencies. For example, [TokenModel.lean](formal-token-verification/lean/TokenModel.lean) imports Mathlib, and [TokenModel.v](formal-token-verification/coq/TokenModel.v) imports Mathematical Components. Use the corresponding project's dependency setup and check individual source files; a blanket `lean4 .` or `coqc .` is not a valid verification procedure.
+
+## Financial CLI and simulator tests
+
+For the financial CLI, run `python src/cli.py --help`. Its standard-library implementation and root pytest dependency cover that subsystem only. The matching test entry points are `python -m pytest tests/test_stack.py tests/test_cold_boot_icp.py` and `python -m pytest quantum_computer/tests/`. They are not tests of the Algol, Pascal, assembly, or other language implementations.
 
 ---
 
