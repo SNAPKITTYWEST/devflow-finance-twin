@@ -2,7 +2,7 @@
 
 ## Fibonacci Braid Ledger Cryptographic System
 
-> **Status:** 1,786 files across 41 directories, 25+ languages, 66+ cryptographic primitives
+> **Repository snapshot:** 1,002 tracked files in 50 top-level directories at `865c011` (2026-09-17). Counts include source, tests, documentation, fixtures, and media.
 > **Principle:** No unsupported claim survives validation.
 > **Authority:** Repository implementation, tests, formal artifacts, and verified assets.
 
@@ -12,19 +12,39 @@
 
 ## What is this?
 
-A polyglot cryptographic ledger system implementing the **Fibonacci Braid Ledger** -- a novel construction combining Fibonacci sequences with braid group operations for financial transaction verification. The repository contains 66+ cryptographic primitives (32 hand-rolled, 34 standard), a quantum computer simulator, formal verification in 7 proof systems, and a banking/finance core engine.
+A polyglot repository centered on the **Fibonacci Braid Ledger** and an event-sourced financial twin. Alongside the Python ledger engine, it contains cryptographic experiments, quantum simulation, compilers and virtual machines, GPU execution models, logic solvers, classification and evaluation components, and formal-methods artifacts.
+
+These areas have separate entry points and toolchains. The root build does not assemble every directory into one application. Start with the [component guide](#05-component-guide) for source links and integration boundaries, or the [build and test entry points](#08-reproducibility) for a particular subsystem.
+
+## Navigation
+
+- [Repository atlas](#02-repository-atlas) and [selected file index](#03-selected-file-index)
+- [Finance engine, reasoning, evaluation, compilers, and GPU models](#05-component-guide)
+- [Language inventory](#07-language-distribution)
+- [Build and test entry points](#08-reproducibility)
+- [Verification scope](#09-verification-scope)
+- [License and covenant](#11-license-and-covenant)
 
 ## What does it contain?
 
-1. **Core Engine** (`src/`) -- 89 files, 52,000+ LOC. FinanceTwinEngine, WORM storage, audit layer, cold boot defenses
-2. **Mathematical Foundation** (`he-binary-functor/`) -- 29 subdirectories. Workerman Calculus (ground truth spec), 6 custom crypto systems, formal proofs
-3. **Quantum Computer** (`quantum_computer/`) -- 27 files, 6,385 LOC. Full simulator with density matrix, 24 gates, error correction
-4. **FSL Formal Solver** (`rust/fsl/`) -- 36 files, 6,000+ LOC. Russian syntax parser, 4 backends (CBMC, CRUX, QA5, Z3)
-5. **Constraint DSL** (`constraint-harness/`) -- 25 files, 2,400 LOC. MXML parser, DAG scheduler, verification engine
-6. **ISA-to-JVM Compiler** (`isa-jvm/`) -- 22 files, 1,660 LOC. Custom ISA with bytecode compiler
-7. **Formal Verification** (`formal-token-verification/`) -- 25 files. Proofs in Agda, Coq, F*, Isabelle, Lean
-8. **Assembly Kernels** (`assembly-120-strict-model/`) -- AVX2 SIMD cryptographic kernel (1,064 lines)
-9. **Banking Layer** (`rpgle/`, `csharp/`) -- ACH, treasury, RTP rail, ledger gateway
+| Area | Tracked files | Contents |
+|------|--------------:|----------|
+| [src/](src/) | 163 | Financial twin, audit/boot code, Go integration sources, transformer and hardware experiments |
+| [he-binary-functor/](he-binary-functor/) | 199 | Workerman calculus, cryptographic experiments, tensor parsers, hardware models, and formal artifacts |
+| [quantum_computer/](quantum_computer/) | 26 | State and density-matrix simulation, circuits, gates, algorithms, noise, and tests |
+| [constraint-harness/](constraint-harness/) | 41 | MXML validation, execution state machine, DAG scheduler, and audit components |
+| [rust/](rust/) | 37 | FSL constraint IR and solver-related modules |
+| [asp/](asp/) | 29 | Go parsing, semantics, propagation, solver, and tests |
+| [classifier/](classifier/) | 13 | Go classification, batch inference, routing, and audit sources |
+| [sovereign/](sovereign/) | 10 | Go event-ledger package and documentation |
+| [kernel-language/](kernel-language/) | 34 | C compiler frontend, IR, register allocation, examples, and specifications |
+| [retro-gpu/](retro-gpu/) | 44 | GPU-oriented language models and reference interpreters |
+| [cobalt-compiler/](cobalt-compiler/) | 28 | Haskell compiler, ISA, assembly, and refinement-related modules |
+| [occam-b-bscl/](occam-b-bscl/) | 26 | Wordcode compiler sources, specifications, examples, and tests |
+| [formal-token-verification/](formal-token-verification/) | 25 | Cross-prover models, assumptions, theorem indexes, and reports |
+| [docs/](docs/) | 67 | Documentation, specifications, reports, and demonstration media |
+
+Counts are recursive tracked-file counts at the snapshot above, not source-only counts or a claim of build completeness. Smaller areas are listed in the atlas and component guide.
 
 ## What mathematical structures does it implement?
 
@@ -41,7 +61,7 @@ A polyglot cryptographic ledger system implementing the **Fibonacci Braid Ledger
 
 ## What is the relationship to Braid Group mathematics?
 
-The repository implements braid group operations as the foundational cryptographic primitive. The **Workerman Calculus** (`he-binary-functor/haskell/Workerman/Calculus.hs`, 657 lines) serves as the ground truth formal specification. All other implementations (Rust, Verilog-A, WASM, CUDA) implement or compile from this specification.
+The [Workerman Calculus](he-binary-functor/haskell/Workerman/Calculus.hs) defines a Haskell expression language with refinement types, substitution, trigonometric annotations, and braid words. Its rewrite routines include inverse cancellation, far commutativity, and Yang-Baxter rewrites. Related Rust, hardware, and formal sources live under [he-binary-functor/](he-binary-functor/). Their presence does not establish that every implementation is compiled from, or proven equivalent to, the Haskell model.
 
 ---
 
@@ -50,27 +70,27 @@ The repository implements braid group operations as the foundational cryptograph
 ```text
 devflow-finance-twin/
 |
-|-- src/                          # Core engine (89 files, 52K+ LOC)
+|-- src/                          # Core engine and polyglot sources
 |   |-- twin.py                   # FinanceTwinEngine
 |   |-- worm.py                   # WormStorageEngine
 |   |-- audit.py                  # CryptographicAuditLayer
 |   |-- cli.py                    # CLI interface
-|   |-- cold_boot.py              # Cold boot attack defenses
-|   |-- icp_anchor.py             # ICP anchor verification
+|   |-- cold_boot.py              # Boot initialization model
+|   |-- icp_anchor.py             # Local ICP-style anchor-chain model
 |   |-- python/                   # Python implementations
 |   |-- native/                   # Native extensions
 |   |-- pascal/                   # Pascal implementations
 |   |-- cuda/                     # CUDA kernels
-|   |-- julia/                    # Julia simulations
+|   |-- *.jl                      # Julia simulations
 |   |-- a68/                      # Algol 68 implementations
-|   |-- agol86/                   # AGOL-86 3D cellular automaton
+|   |-- agol86/                   # AGOL-86 transformer experiments
 |   |-- ebnf/                     # EBNF grammar definitions
 |   |-- bqn/                      # BQN array language
 |
-|-- he-binary-functor/            # Mathematical foundation (29 subdirs)
-|   |-- crypto/                   # 6 custom crypto systems
-|   |-- haskell/                  # Workerman Calculus (ground truth)
-|   |-- lean4/                    # Formal proofs
+|-- he-binary-functor/            # Mathematical and hardware artifacts
+|   |-- crypto/                   # Cryptographic experiments and models
+|   |-- haskell/                  # Workerman Calculus and Haskell models
+|   |-- lean4/                    # Formal artifacts
 |   |-- rust/                     # Rust implementations
 |   |-- verilog-a/                # 9 quantum/analog circuits
 |   |-- nand-architecture/        # NAND# ISA
@@ -79,7 +99,7 @@ devflow-finance-twin/
 |   |-- qsharp/, qrisp/          # Quantum languages
 |   |-- apl/, bqn/, k/, uiua/    # Array languages
 |
-|-- quantum_computer/             # Quantum simulator (27 files, 6,385 LOC)
+|-- quantum_computer/             # Quantum simulator
 |   |-- vm/simulator.py           # DensityMatrix class
 |   |-- gates/                    # 24 quantum gates
 |   |-- algorithms/               # VQE, QAOA, Grover, Shor, topological
@@ -88,45 +108,53 @@ devflow-finance-twin/
 |   |-- circuit/                  # Circuit builder
 |   |-- tests/                    # 3 test files
 |
-|-- rust/fsl/                     # FSL Formal Solver Language (36 files)
-|   |-- parser/                   # Russian syntax parser
-|   |-- backend_crux/             # CRUX backend
-|   |-- backend_qa5/              # QA5 prover backend
-|   |-- backend_cbmc/             # CBMC backend
-|   |-- backend_z3/               # Z3 backend
-|   |-- formal/                   # Formal verification harnesses
+|-- rust/fsl/                     # FSL Formal Solver Language
+|   |-- src/lib.rs               # Constraint IR and solver kernel
+|   |-- src/assert_q/             # Assertion constraints and propagation
+|   |-- src/crux/                 # CRUX, Russian syntax, Z3/Lean modules
+|   |-- src/qa5/                  # Clauses, resolution, unification
+|   |-- src/cbmc.rs               # CBMC-related code
+|   |-- src/eclipse_parlog/       # Constraint logic programming
 |
-|-- constraint-harness/           # Constraint DSL (25 files)
+|-- constraint-harness/           # Constraint DSL
 |   |-- mxml/                     # MXML parser
 |   |-- runtime/                  # Runtime engine
 |   |-- scheduler/                # DAG scheduler
 |   |-- verification/             # Verification engine
 |   |-- audit/                    # Audit sealing
 |
-|-- isa-jvm/                      # ISA-to-JVM compiler (22 files)
+|-- isa-jvm/                      # ISA-to-JVM compiler
 |   |-- compiler/                 # Compiler phases
-|   |-- interpreter/              # Reference interpreter
-|   |-- bytecode/                 # Generated bytecode
+|   |-- runtime/interpreter.py    # Reference interpreter
+|   |-- compiler/bytecode.py      # Bytecode emitter
 |
 |-- assembly-120-strict-model/    # Assembly implementations
-|   |-- bit_pattern_kernel_avx2.asm  # AVX2 SIMD (1,064 lines)
-|   |-- fibonacci_braid_x86.asm     # x86 braid (653 lines)
+|   |-- bit_pattern_kernel_avx2.asm  # AVX2 SIMD
+|   |-- fibonacci_braid_x86.asm     # x86 braid
 |   |-- cbmc_binary_semantics.rs     # CBMC bit-vector model
 |
-|-- formal-token-verification/    # Formal proofs (25 files)
+|-- formal-token-verification/    # Formal proofs
 |   |-- agda/, coq/, fstar/, isabelle/, lean/
-|   |-- recursive/                # Same proof in all 5 systems
+|   |-- recursive/                # Recursive audit models in 5 systems
 |
-|-- rpgle/                        # IBM i RPG (9 files)
-|   |-- ach.rpgle                 # ACH payment processing
-|   |-- ledger.rpgle              # Ledger operations
-|   |-- treasury.rpgle            # Treasury management
+|-- rpgle/                        # IBM i RPG
+|   |-- LEDGWYRPG.rpgle           # Ledger gateway
+|   |-- LEDREVSRV.rpgle           # Ledger reversal service
+|   |-- eod-driver.rpgle          # End-of-day driver
 |
 |-- csharp/                       # C# implementations
 |   |-- LedgerGateway.cs          # Ledger gateway
 |   |-- RtpRailAdapter.cs         # RTP rail adapter
 |
-|-- datalog-engine/               # Datalog engine (9 files)
+|-- asp/                         # Go ASP module
+|-- classifier/                  # Go classifier and audit module
+|-- sovereign/ledger/            # Go event ledger
+|-- kernel-language/             # C compiler frontend and IR
+|-- retro-gpu/                   # GPU models in OCCAM, OCaml, SML, Modula-2
+|-- occam-b-bscl/                 # Wordcode project sources and tests
+|-- apple6502x86/                 # Assembly system experiments
+|-- qflow/                       # Quantum dataflow parser
+|-- datalog-engine/               # Datalog engine
 |-- eclipse/                      # ECLiPSe Prolog Parlog kernel
 |-- lisp/                         # Common Lisp theorem prover
 |-- logtalk/                      # Godel symbolic kernel
@@ -135,11 +163,9 @@ devflow-finance-twin/
 |-- apl/apl/                      # APL transformer
 |-- x86_64/                       # x86_64 assembly
 |-- ptx/                          # CUDA PTX
-|-- cuda-q/                       # CUDA Quantum
 |-- chisel/                       # Chisel hardware
 |-- cobalt-compiler/              # Cobalt compiler
 |-- braid/                        # Braid implementations
-|-- spiral-detection/             # Spiral detection
 |-- linear-algebra-verification/  # Linear algebra
 |-- mathematics/                  # Mathematical definitions
 |-- haskell/                      # Haskell
@@ -154,69 +180,71 @@ devflow-finance-twin/
 |-- config/                       # Configuration
 |-- scripts/                      # Scripts
 |-- examples/                     # Examples
-|-- tests/                        # Test suite (122 Python + 13 Kani)
-|-- assets/                       # SVG diagrams (4 files)
-|-- docs/                         # Documentation (19 files)
+|-- tests/                        # Test suite
+|-- assets/                       # SVG diagrams
+|-- docs/                         # Documentation
 ```
 
 ---
 
-# 03. COMPLETE FILE INDEX
+# 03. SELECTED FILE INDEX
 
 ## Core Engine Files
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `src/twin.py` | 329 | FinanceTwinEngine - main orchestrator |
-| `src/worm.py` | 235 | WormStorageEngine - WORM storage |
-| `src/audit.py` | 127 | CryptographicAuditLayer |
-| `src/cli.py` | 287 | CLI interface |
-| `src/cold_boot.py` | 288 | Cold boot attack defenses |
-| `src/icp_anchor.py` | 371 | ICP anchor verification |
+| File | Purpose |
+|------|---------|
+| `src/twin.py` | FinanceTwinEngine - main orchestrator |
+| `src/worm.py` | WormStorageEngine - WORM storage |
+| `src/audit.py` | CryptographicAuditLayer |
+| `src/cli.py` | CLI interface |
+| `src/cold_boot.py` | Boot initialization model |
+| `src/icp_anchor.py` | Local ICP-style anchor-chain model |
 
 ## Cryptographic Primitives
 
 | Primitive | Location | Type |
 |-----------|----------|------|
-| IAMAC | `he-binary-functor/crypto/iamac.rs` | Message authentication (novel) |
-| Braid Kernel | `he-binary-functor/crypto/braid_kernel.rs` | Braid-based encryption (novel) |
-| Seal Chain | `he-binary-functor/crypto/seal_chain.rs` | Chain of seals (novel) |
-| Malleability | `he-binary-functor/crypto/malleability.rs` | Malleability detection (novel) |
-| Convergence | `he-binary-functor/crypto/convergence.rs` | Convergence proof (novel) |
-| Zeros | `he-binary-functor/crypto/zeros.rs` | Zero-knowledge (novel) |
-| SHA-256 | `he-binary-functor/haskell/SHA256.hs` | Hash (standard) |
-| Poly1305 | `src/poly1305.py` | MAC (standard) |
-| ChaCha20 | `src/chacha20.py` | Stream cipher (standard) |
-| AES-GCM | `src/aes_gcm.py` | Authenticated encryption (standard) |
+| IAMAC | `he-binary-functor/crypto/iamac.rs` | Modular arithmetic and IAMAC computation |
+| Braid Kernel | `he-binary-functor/crypto/kernel.rs` | Braid kernel source |
+| Seal Chain | `he-binary-functor/crypto/seal_chain.rs` | Sealed-step chain using FNV-1a |
+| Malleability | `he-binary-functor/crypto/malleability.rs` | Digest-to-zero-orbit mapping |
+| Convergence | `he-binary-functor/crypto/convergence.rs` | Static epoch/mechanism/bound descriptions |
+| Zeros | `he-binary-functor/crypto/zeros.rs` | Tabulated imaginary parts of zeta zeros |
+| SHA-256 | `wasm/sha256.wat` | WebAssembly text implementation |
+| SHA-256 audit digests | `src/audit.py` | Uses Python's `hashlib` |
 
 ## Quantum Computer
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `quantum_computer/vm/simulator.py` | 455 | DensityMatrix class, gate application, measurement |
-| `quantum_computer/gates/__init__.py` | 450 | 24 quantum gates |
-| `quantum_computer/algorithms/advanced.py` | 700 | VQE, QAOA, Grover, Shor |
-| `quantum_computer/algorithms/topological.py` | 400 | Topological algorithms |
-| `quantum_computer/error_correction/__init__.py` | 450 | Error correction codes |
-| `quantum_computer/noise/__init__.py` | 300 | Noise models |
+| File | Purpose |
+|------|---------|
+| `quantum_computer/vm/simulator.py` | DensityMatrix class, gate application, measurement |
+| `quantum_computer/gates/__init__.py` | 24 quantum gates |
+| `quantum_computer/algorithms/advanced.py` | VQE, QAOA, Grover, Shor |
+| `quantum_computer/algorithms/topological.py` | Topological algorithms |
+| `quantum_computer/error_correction/__init__.py` | Error correction codes |
+| `quantum_computer/noise/__init__.py` | Noise models |
 
 ## APL Transformer
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `apl/apl/transformer.apl` | 138 | Full decoder-only transformer in Dyalog APL |
+| File | Purpose |
+|------|---------|
+| `apl/apl/transformer.apl` | Full decoder-only transformer in Dyalog APL |
 
 ## Formal Verification
 
-| System | Location | Files |
-|--------|----------|-------|
-| Lean 4 | `he-binary-functor/lean4/`, `formal-token-verification/lean/` | 5+ |
-| Coq | `formal-token-verification/coq/` | 5+ |
-| Agda | `formal-token-verification/agda/` | 5+ |
-| F* | `formal-token-verification/fstar/` | 5+ |
-| Isabelle | `formal-token-verification/isabelle/` | 5+ |
-| Kani | `he-binary-functor/nand-architecture/` | 13 |
-| Why3 | `he-binary-functor/why3/` | 5+ |
+| System | Sources |
+|--------|---------|
+| Lean | [he-binary-functor/lean4/](he-binary-functor/lean4/), [formal-token-verification/lean/](formal-token-verification/lean/), [lean/](lean/) |
+| Coq | [formal-token-verification/coq/](formal-token-verification/coq/), [linear-algebra-verification/coq/](linear-algebra-verification/coq/) |
+| Agda | [formal-token-verification/agda/](formal-token-verification/agda/) |
+| F* | [formal-token-verification/fstar/](formal-token-verification/fstar/) |
+| Isabelle | [formal-token-verification/isabelle/](formal-token-verification/isabelle/) and root src/*.thy files |
+| Kani | [NAND harness sources](he-binary-functor/nand-architecture/kani/src/) |
+| Why3 | [he-binary-functor/why3/](he-binary-functor/why3/) |
+
+The [recursive models](formal-token-verification/recursive/), [assumptions](formal-token-verification/ASSUMPTIONS.md), and [verification reports](formal-token-verification/reports/) describe individual proof targets. See [verification scope](#09-verification-scope) before treating an artifact as a checked result.
+
+---
 
 ## SVG Diagrams
 
@@ -230,6 +258,8 @@ devflow-finance-twin/
 ---
 
 # 04. ARCHITECTURE
+
+The diagram groups repository themes. It is not a claim that the quantum simulator, FSL solver, and formal projects are all called by the financial runtime. The directly imported Python components are described below.
 
 ```mermaid
 flowchart TD
@@ -253,86 +283,193 @@ flowchart TD
 ```
 ---
 
-# 06. NOVEL CONTRIBUTIONS
+# 05. COMPONENT GUIDE
 
-1. **Fibonacci Braid Ledger** -- Novel cryptographic construction combining Fibonacci sequences with braid group operations
-2. **Workerman Calculus** -- Ground truth formal specification in Haskell (657 lines)
-3. **32 Custom Cryptographic Primitives** -- Hand-rolled implementations not found in standard libraries
-4. **Quantum Computer Simulator** -- Full 27-file simulator with density matrix, error correction, noise models
-5. **APL Transformer** -- Complete decoder-only transformer in Dyalog APL (138 lines)
-6. **AVX2 SIMD Cryptographic Kernel** -- 1,064-line hand-optimized assembly
-7. **FSL Formal Solver Language** -- Russian syntax parser with 4 backends
-8. **Constraint DSL (MXML)** -- Custom constraint language with runtime, scheduler, verification
-9. **ISA-to-JVM Compiler** -- Custom ISA with bytecode compiler and reference interpreter
-10. **OWL/RDF Semantic Solver** -- Automated reasoning over OWL ontologies
-11. **RCC-8 Spatial Reasoner** -- Region connection calculus
-12. **Multi-System Formal Proofs** -- Same theorems proven in Lean 4, Coq, Agda, F*, Isabelle
-13. **Cold Boot Defenses** -- Hardware attack mitigation
-14. **WORM Storage** -- Write-once-read-many audit storage
-15. **9 Verilog-A Quantum Circuits** -- Quantum dot, Josephson junction, adiabatic qubit gate
+## Financial twin and audit storage
+
+[src/cli.py](src/cli.py) is the command-line entry point for [FinanceTwinEngine](src/twin.py). It exposes account creation, transfers, invoices, status, and history verification. The engine reconstructs financial state from stored events and quantizes monetary values to four decimal places with `Decimal` and half-even rounding.
+
+| Component | Source | Role |
+|-----------|--------|------|
+| Financial state | [twin.py](src/twin.py) | Account balances, transactions, invoices, obligations, command validation, and replay |
+| Event storage | [worm.py](src/worm.py) | Append-oriented JSON records linked by SHA-256 hashes, reading, and integrity checks |
+| Decision seals | [audit.py](src/audit.py) | Canonical JSON digests over event metadata and before/after state hashes |
+| Entropy and optimization interface | [quantum.py](src/quantum.py) | System randomness, seeded test mode, and portfolio experiment helpers |
+| Boot and anchor models | [cold_boot.py](src/cold_boot.py), [icp_anchor.py](src/icp_anchor.py) | Three-phase initialization, record serialization, and local anchor-chain construction |
+| Behavioral tests | [test_stack.py](tests/test_stack.py), [test_cold_boot_icp.py](tests/test_cold_boot_icp.py) | Replay, transfers, tampering, seals, boot stages, and anchor chains |
+
+The Python WORM layer uses a local file; it does not make the underlying disk physically write-once. `ICPAnchorBridge` maintains anchor state in memory; its current implementation does not submit records to a remote Internet Computer canister. The separate [quantum_computer/](quantum_computer/) simulator is not the implementation imported by `twin.py`.
+
+Native counterparts and support artifacts include [C record commit code](src/native/worm_commit.c), the [Zig loader](src/native/wasm_loader.zig), [WAT modules](wasm/), [x86-64 assembly](x86_64/), [Ada sources](ada/), and [Scala sources](scala/). The [root Makefile](Makefile) specifies the native/WASM build targets.
+
+## Constraint execution and logic reasoning
+
+The [constraint harness](constraint-harness/README.md) is a separate Python package. Its [Executor](constraint-harness/runtime/executor.py) parses and validates MXML, evaluates authorization/schema rules, builds a task DAG, schedules work, and checks the results through an explicit state machine. Its CLI exposes `harness validate` and `harness run`; examples are in [constraint-harness/examples/](constraint-harness/examples/).
+
+| Area | Entry point | Contents |
+|------|-------------|----------|
+| MXML constraint harness | [pyproject.toml](constraint-harness/pyproject.toml) | Parser, constitution evaluator, scheduler, command adapters, audit sealing, and local tests |
+| Go answer-set programming | [asp/](asp/) | AST, lexer/parser, semantic checks, propagation, and conflict-driven search with heuristics and restart policies |
+| Grounding sources | [src/grounder.go](src/grounder.go), [src/asp/incremental/](src/asp/incremental/) | Grounding, safety checks, substitutions, and incremental reasoning sources outside the `asp` module directory |
+| Rust FSL | [rust/fsl/src/lib.rs](rust/fsl/src/lib.rs) | Boolean, integer, and bit-vector constraint IR; assertion obligations and solver-related modules |
+| Datalog | [datalog-engine/datalog/](datalog-engine/datalog/) | Python terms/unification code and `.dl` programs, including Souffle examples |
+| Other logic systems | [prolog/](prolog/), [eclipse/](eclipse/), [logtalk/](logtalk/), [lisp/](lisp/), [astre-vault/](astre-vault/) | Separate logic-programming and symbolic-reasoning implementations |
+
+The Go module at [asp/go.mod](asp/go.mod) is scoped to `asp/`. Files under root `src/` include several different Go packages and are not a single module that can be built with a root-level `go build`.
+
+## Classification, evaluation, and event provenance
+
+[classifier/](classifier/) is a Go module containing routing and classification-head interfaces, decision envelopes, batch processing, backend abstractions, and audit records. Start with [model/classifier.go](classifier/model/classifier.go), [batch/batch.go](classifier/batch/batch.go), and [audit/audit.go](classifier/audit/audit.go). The `GPUBackend` in [backends/backend.go](classifier/backends/backend.go) currently encodes inputs with Go loops; its name is not evidence of device execution.
+
+[sovereign/ledger/](sovereign/ledger/) is another Go module. [ledger.go](sovereign/ledger/ledger.go) implements event appends, sequence numbers, hash links, verification, and sealing; [serialization.go](sovereign/ledger/serialization.go) and [io.go](sovereign/ledger/io.go) cover serialization and I/O. Package tests and examples sit beside the implementation.
+
+The [Sovereign evaluation guide](docs/SOVEREIGN_AI_EVALUATION_ENGINE.md) and [evaluation specification](docs/SOVEREIGN_EVALUATION_ENGINE_SPEC.md) describe the wider transcript/constraint/proof workflow. Read them alongside the concrete classifier, ASP, and ledger modules: the tracked tree does not provide one root build that demonstrates the complete workflow. Additional [control DAG](src/control-dag.go), [policy](src/control-policy.go), [sandbox](src/sandbox-module.go), and [archive](src/archive-tools.go) sources are collected under `src/`.
+
+## Compilers and virtual machines
+
+| Project | Source and examples | Current scope |
+|---------|---------------------|---------------|
+| Cobalt | [cobalt-compiler/cobalt.cabal](cobalt-compiler/cobalt.cabal), [demo driver](cobalt-compiler/src/Main.hs) | Haskell compiler/ISA modules, x86 batch assembly, LiquidOps, and an optional LiquidHaskell bridge |
+| Kernel Language | [kernel-language/README.md](kernel-language/README.md), [driver](kernel-language/src/main.c), [.kl examples](kernel-language/examples/) | C lexer/parser, AST-to-IR lowering, and register allocation; the driver emits IR, not a runnable GPU binary |
+| OCCAM/B/BSCL | [occam-b-bscl/](occam-b-bscl/), [wordcode format](occam-b-bscl/docs/WORDCODE.md) | Compiler/IR/emitter sources, concurrency and memory specifications, examples, and C tests; several included headers and the advertised Makefile are absent |
+| ISA-to-JVM | [isa-jvm/README.md](isa-jvm/README.md) | ISA compiler stages, a reference interpreter, and bytecode-related sources |
+| Qflow | [qflow/compiler/](qflow/compiler/), [Bell example](qflow/examples/bell.qflow) | Haskell quantum-dataflow AST, lexer, parser, driver, and Cabal manifest |
+| P-code stack | [src/pcode_vm_full_stack.py](src/pcode_vm_full_stack.py) | Tagged values, stack frames, tensor/value helpers, and VM-related code in a standalone Python source file |
+| Apple/6502/x86 experiments | [apple6502x86/](apple6502x86/) | Assembly boot, memory, monitor, ROM, and diagnostic variants with delivery notes |
+
+Kernel Language's own [status section](kernel-language/README.md#current-status) identifies unfinished lowering, macro expansion, SASS/cubin emission, and runtime loading. These are compiler development artifacts with explicit remaining work.
+
+## GPU models, transformers, and numerical experiments
+
+[retro-gpu/](retro-gpu/) contains OCCAM, OCaml, Standard ML, and Modula-2 material for registers, ALUs, warps, memory, synchronization, and tensor operations. The [OCaml interpreter](retro-gpu/ocaml/src/interpreter/Interpreter.ml) is a reference model with partial instruction handling, not a hardware execution benchmark. Its tests and build recipe are in [retro-gpu/ocaml/](retro-gpu/ocaml/).
+
+Other entry points are [CUDA kernels](src/cuda/), [PTX sources](ptx/), the [VSM2500 specification](src/vsm2500_specification.txt) and adjacent CUDA/SystemVerilog files, [Pascal transformer modules](src/pascal/), [Algol 68 modules](src/a68/), [AGOL-86 Python experiments](src/agol86/), and the [JAX transformer harness](src/jax_transformer_harness.py). These paths contain different implementations and experiments; the root Python requirements file is not a dependency manifest for all of them.
+
+## Quantum simulation and mathematical artifacts
+
+[quantum_computer/](quantum_computer/) has its own complex numbers, matrices, state/register types, circuit builder, gates, [simulator](quantum_computer/vm/simulator.py), algorithms, noise, error-correction code, and [tests](quantum_computer/tests/). It models quantum states in software.
+
+[he-binary-functor/](he-binary-functor/) is the largest tracked subtree in this snapshot. It brings together Workerman Haskell, Rust cryptographic experiments, [tensor parsers and binary fixtures](he-binary-functor/tensor-parser/), [NAND architecture material](he-binary-functor/nand-architecture/), Verilog-A and SystemVerilog sources, array-language implementations, and Lean/Why3 artifacts. Its subdirectory READMEs are the next level of navigation.
+
+Formal material is distributed across [formal-token-verification/](formal-token-verification/), [lean/](lean/), [linear-algebra-verification/](linear-algebra-verification/), [he-binary-functor/lean4/](he-binary-functor/lean4/), and the Isabelle `.thy` files under [src/](src/). Some sources contain `sorry`, axioms, or templates. A source file or historical completion report is not a substitute for a successful checker run with its dependencies and assumptions recorded.
+
+## Banking sources, demonstrations, and documentation
+
+- [rpgle/](rpgle/), [cobol/](cobol/), [csharp/](csharp/), and [pli/](pli/) contain banking, ledger, treasury, and payment-related sources. The [ACH return operator runbook](docs/ACHRTRN_OPERATOR_RUNBOOK.md) and [Funnel examples](examples/) provide additional context.
+- [frontend/quantum_shadow_ledger.html](frontend/quantum_shadow_ledger.html) is the browser-facing ledger demonstration. [docs/assets/](docs/assets/) contains videos and images; [assets/](assets/) contains diagrams and other visual assets.
+- [docs/](docs/) contains architecture notes, API/user documentation, evaluation specifications, and phase-by-phase design and verification reports. [docs/README.md](docs/README.md) and [INSTITUTIONAL_README.md](INSTITUTIONAL_README.md) offer other reading routes.
+- [publish.sh](publish.sh), [PUBLISH_MANIFEST.json](PUBLISH_MANIFEST.json), and [PUBLISH_REPORT.md](PUBLISH_REPORT.md) describe artifact intake and publication. [REPOSITORY_ORGANIZATION_MANIFEST.md](REPOSITORY_ORGANIZATION_MANIFEST.md) and [STRAY_FILE_AUDIT.md](STRAY_FILE_AUDIT.md) record organization work; they are not build manifests.
+
+---
+
+# 06. RESEARCH AND IMPLEMENTATION THEMES
+
+The repository explores Fibonacci/braid ledger constructions, refinement-typed languages, constraint reasoning, audit provenance, quantum simulation, and explicit machine models. Representative starting points are:
+
+- [Fibonacci Braid Ledger notes](docs/FIBONACCI_BRAID_LEDGER.md) and [Workerman Calculus](he-binary-functor/haskell/Workerman/Calculus.hs).
+- [Cryptographic experiment sources and notes](he-binary-functor/crypto/), including IAMAC, seal chains, and malleability/convergence models.
+- [Assembly kernels](assembly-120-strict-model/), [APL transformer](apl/apl/transformer.apl), and [Verilog-A circuits](he-binary-functor/verilog-a/).
+- [Constraint execution](constraint-harness/), [FSL](rust/fsl/), and [ASP](asp/) as distinct approaches to expressing and evaluating obligations.
+- [Formal specifications and counterexamples](formal-token-verification/) alongside executable implementations.
+
+These links identify the work and its source. They do not establish cryptographic security, novelty, equivalence between implementations, or performance results.
 
 ---
 
 # 07. LANGUAGE DISTRIBUTION
 
-| Language | Files | LOC (est.) |
-|----------|-------|------------|
-| Python | 200+ | 15,000+ |
-| Rust | 50+ | 8,000+ |
-| Haskell | 10+ | 2,000+ |
-| Ada/SPARK | 15+ | 3,000+ |
-| Lean 4 | 10+ | 1,500+ |
-| Verilog-A | 9 | 900 |
-| WASM/WAT | 5+ | 1,000+ |
-| APL | 5+ | 300+ |
-| CUDA | 10+ | 1,000+ |
-| x86 ASM | 5+ | 2,000+ |
-| RPGLE | 9 | 1,336 |
-| C# | 2 | 413 |
-| Common Lisp | 2 | 1,400 |
-| ECLiPSe Prolog | 1 | 242 |
-| SWI-Prolog | 1 | 278 |
-| Logtalk | 1 | 254 |
+Selected file-extension counts from the tracked snapshot. Headers, generated outputs, and other extensions are not folded into language totals; these are file counts, not LOC estimates.
+
+| Language/source family | Extensions | Tracked files |
+|------------------------|------------|--------------:|
+| Python | `.py` | 132 |
+| Rust | `.rs` | 68 |
+| Go | `.go` | 67 |
+| Haskell | `.hs` | 52 |
+| C | `.c` | 31 |
+| Lean | `.lean` | 27 |
+| Ada | `.ads`, `.adb` | 36 |
+| Assembly | `.asm`, `.s`, `.nasm` | 31 |
+| Algol 68 | `.a68` | 22 |
+| Standard ML | `.sml` | 14 |
+| Isabelle | `.thy` | 13 |
+| OCCAM | `.occ` | 12 |
+| Pascal | `.pas` | 11 |
+| OCaml | `.ml` | 11 |
+| CUDA | `.cu` | 10 |
+| Verilog-A | `.va` | 9 |
+| RPGLE | `.rpgle` | 9 |
+| Julia | `.jl` | 9 |
 
 ---
 
 # 08. REPRODUCIBILITY
 
+## Python financial core
+
+The root [requirements.txt](requirements.txt) contains pytest. The financial core uses Python's standard library; it is separate from experiments requiring JAX, PyTorch, CUDA, or other runtimes. Run these commands from the repository root in a Python environment:
+
 ```bash
-# Clone
 git clone https://github.com/SNAPKITTYWEST/devflow-finance-twin.git
 cd devflow-finance-twin
-
-# Python dependencies
-pip install -r requirements.txt
-
-# Run tests
-python -m pytest tests/
-
-# Quantum computer tests
+python -m pip install -r requirements.txt
+python src/cli.py --help
+python -m pytest tests/test_stack.py tests/test_cold_boot_icp.py
 python -m pytest quantum_computer/tests/
-
-# Formal verification (requires Lean 4, Coq, Agda, F*, Isabelle)
-cd formal-token-verification/lean && lean4 .
-cd formal-token-verification/coq && coqc .
 ```
+
+A small CLI example writes a local demonstration ledger. Use a fresh path when repeating it, because account identifiers must be unique:
+
+```bash
+python src/cli.py --storage demo.worm CREATE_ACCOUNT --account_id treasury --balance 100.0000
+python src/cli.py --storage demo.worm STATUS
+python src/cli.py --storage demo.worm VERIFY_HISTORY
+```
+
+These are source-matched entry points, not a record of passing tests for this snapshot.
+
+## Component-specific builds and tests
+
+Commands below assume a POSIX shell for parenthesized subshells, plus the named toolchain. On Windows, enter each directory separately before running its command.
+
+| Component | Entry point | Requirements and scope |
+|-----------|-------------|------------------------|
+| Python baseline | `make test` | Root Makefile runs only `tests/test_stack.py` |
+| Constraint harness | `(cd constraint-harness && python -m pip install -e ".[dev]" && python -m pytest)` | Python 3.10+; optional PyTorch extra is separate |
+| ASP | `(cd asp && go test ./...)` | Go 1.21+ module-local tests |
+| Classifier | `(cd classifier && go test ./...)` | Go 1.21+ module-local tests |
+| Event ledger | `(cd sovereign/ledger && go test ./...)` | Go 1.21+ module-local tests |
+| Rust FSL | `cargo test --manifest-path rust/fsl/Cargo.toml` | Rust/Cargo; targets the FSL crate only |
+| Cobalt | `(cd cobalt-compiler && cabal build)` | GHC/Cabal; optional `lh-bridge` flag adds dependencies |
+| Kernel Language | `make -C kernel-language test` | C compiler and Make; example IR emission checks |
+| RetroGPU OCaml | `make -C retro-gpu/ocaml test` | OCaml, ocamlfind, Make; reference-model tests |
+| WASM/native support | `make all` | Node with `wabt`, GCC, NASM, and archive tools; NASM target uses ELF64 |
+
+There is no repository-wide build or test command covering all languages. `compile_wasm.js` requires the Node `wabt` package, but the root has no package.json. The OCCAM/B README advertises `make`, but its directory has no tracked Makefile and lacks headers included by the compiler. The RetroGPU OCCAM test target names `tests/CompilerTests.occ`, which is absent. Resolve those packaging gaps before using their advertised commands.
+
+Formal sources require project-specific dependencies. For example, [TokenModel.lean](formal-token-verification/lean/TokenModel.lean) imports Mathlib, and [TokenModel.v](formal-token-verification/coq/TokenModel.v) imports Mathematical Components. Use the corresponding project's dependency setup and check individual source files; a blanket `lean4 .` or `coqc .` is not a valid verification procedure.
 
 ---
 
-# 09. ZERO-TOLERANCE COMPLETION GATE
+# 09. VERIFICATION SCOPE
 
-- [x] Repository inventory completed (1,786 files, 41 directories)
-- [x] Source corpus analyzed (25+ languages, 60K+ LOC)
-- [x] Major files traced
-- [x] Important symbols traced
-- [x] Dependencies mapped
-- [x] Execution paths traced
-- [x] Tests mapped (122 Python + 13 Kani)
-- [x] Graphics audited (4 SVGs)
-- [x] Mathematical structures mapped
-- [x] Braid Group structures mapped
-- [x] Verification mapped (7 proof systems)
-- [x] Defects documented (6 critical bugs)
+This README update is based on the tracked tree, selected implementation files, build manifests, and test sources at `865c011`. It is a navigation and source review, not a full build, security audit, or cross-language proof run.
+
+| Evidence | What it establishes |
+|----------|---------------------|
+| `git ls-files` inventory | Paths and scoped file counts in this snapshot |
+| Source and manifest inspection | Entry points, represented operations, dependencies, and visible packaging gaps |
+| Test files | Intended checks; their presence does not establish passing results |
+| Proof sources | Statements, assumptions, and proof scripts; some include unfinished proofs or axioms |
+| Phase reports and completion notes | Historical project records, not current execution results |
+
+For example, [lean_jacobian_tensor_framework.lean](lean/lean_jacobian_tensor_framework.lean) includes `sorry` and axioms, and [sovereign_attractor.lean](he-binary-functor/lean4/sovereign_attractor.lean) assumes a braid contraction mapping. Report checker results per artifact together with assumptions. Do not infer a repository-wide proof or deployment status from a filename or status heading.
+
+To refresh the tracked-file total:
+
+```bash
+git ls-files | wc -l
+```
 
 ---
 
