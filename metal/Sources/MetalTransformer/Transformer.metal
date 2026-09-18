@@ -2,7 +2,6 @@
 using namespace metal;
 
 struct ModelDims { uint hidden, intermediate, heads, kv_heads, head_dim, vocab, context; };
-struct QuantMatrix { device const uchar *weights; device const half *scales; uint rows, cols; };
 
 inline float deq_i4(device const uchar *w, device const half *s, uint row, uint col, uint cols) {
     uchar packed = w[row * ((cols + 1) >> 1) + (col >> 1)];
@@ -18,13 +17,9 @@ kernel void embedding(device const half *table [[buffer(0)]], device const uint 
 
 kernel void rmsnorm(device const half *x [[buffer(0)]], device const half *weight [[buffer(1)]], device half *y [[buffer(2)]], constant ModelDims &d [[buffer(3)]], float epsilon [[buffer(4)]], uint i [[thread_position_in_grid]]) {
     if (i >= d.hidden) return;
-    threadgroup float partial[32]; uint lane = i & 31, group = i >> 5;
     float sum = 0.0f;
-    for (uint j = i; j < d.hidden; j += 32) { float v = float(x[j]); sum += v * v; }
-    partial[lane] = sum; threadgroup_barrier(mem_flags::mem_threadgroup);
-    if (lane == 0) { float total = 0.0f; for (uint j=0;j<32;j++) total += partial[j]; partial[0] = rsqrt(total / float(d.hidden) + epsilon); }
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    y[i] = half(float(x[i]) * partial[0] * float(weight[i]));
+    for (uint j = i; j < d.hidden; j += d.hidden) { float v = float(x[j]); sum += v * v; }
+    y[i] = half(float(x[i]) * rsqrt(sum / float(d.hidden) + epsilon) * float(weight[i]));
 }
 
 kernel void rope(device half *q [[buffer(0)]], device half *k [[buffer(1)]], constant ModelDims &d [[buffer(2)]], constant uint &position [[buffer(3)]], uint i [[thread_position_in_grid]]) {
@@ -48,7 +43,7 @@ kernel void qkv_projection_i4(device const uchar *weights [[buffer(0)]], device 
 }
 
 kernel void attention_scores(device const half *q [[buffer(0)]], device const half *kcache [[buffer(1)]], device half *scores [[buffer(2)]], constant uint4 &p [[buffer(3)]], uint i [[thread_position_in_grid]]) {
-    uint query=p.x, key=p.y, head=p.z, dim=p.w; if (i >= query * p.z) return;
+    uint query=p.x, key=p.y, head=p.z, dim=p.w; if (i >= query * head) return;
     uint h=i % head, t=i / head; if (t > query) { scores[i]=half(-INFINITY); return; }
     float dot=0.0f; for(uint j=0;j<dim;j++) dot += float(q[h*dim+j]) * float(kcache[(t*head+h)*dim+j]);
     scores[i]=half(dot * rsqrt(float(dim)));

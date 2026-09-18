@@ -1,14 +1,11 @@
-# Apple Silicon raw Metal target
+import PackageDescription
 
-products: [
-    .executable(name: "MetalTransformer", targets: ["MetalTransformer"])
-]
-
-targets: [
-    .executableTarget(
-        name: "MetalTransformer",
-        path: "Sources/MetalTransformer",
-        resources: [.copy("Transformer.metal")]
-    ),
-    .testTarget(name: "MetalTransformerTests", dependencies: ["MetalTransformer"], path: "Tests")
-]
+let package = Package(
+    name: "MetalTransformer",
+    platforms: [.macOS(.v13)],
+    products: [.library(name: "MetalTransformer", targets: ["MetalTransformer"])],
+    targets: [
+        .target(name: "MetalTransformer", path: "Sources/MetalTransformer", resources: [.copy("Transformer.metal")]),
+        .testTarget(name: "MetalTransformerTests", dependencies: ["MetalTransformer"], path: "Tests")
+    ]
+)
