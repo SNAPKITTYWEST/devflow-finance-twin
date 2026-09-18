@@ -1,0 +1,113 @@
+publish.sh: line 1: ﻿#: command not found
+============================================
+  REPOSITORY PUBLISHER
+  MODE: PUBLISH
+============================================
+
+[0;36m[INFO][0m  Discovered 10 file(s) in .inbox/
+[0;36m[INFO][0m  Checking repository state...
+[1;33m[WARN][0m  Pre-existing uncommitted changes detected:
+?? classifier/
+?? publish_output.log
+
+[0;36m[INFO][0m  Publication will stage ONLY inbox-originated files.
+[1;33m[WARN][0m  CONFLICT detected
+  SOURCE:           ARCHITECTURE.md
+  DESTINATION:      docs/ARCHITECTURE.md
+  SOURCE HASH:      175c1d9f5065f5da9cbb12071ebfd49aba5d06d1fed7dbc46bd3b9efab9e00c4
+  DESTINATION HASH: 9896f6609468487178bbe913f0103d4bb061cf9dd86b0845b41931971108ad08
+  CONFLICT COPY:    .inbox/conflicts/ARCHITECTURE.md
+[0;32m[OK][0m    ADD: .inbox/EXAMPLES.md -> docs/EXAMPLES.md
+[1;33m[WARN][0m  CONFLICT detected
+  SOURCE:           PHASE_2_CPU_EXECUTION_ENGINE.asm
+  DESTINATION:      assembly-120-strict-model/PHASE_2_CPU_EXECUTION_ENGINE.asm
+  SOURCE HASH:      840312e4de83590411b44132a3f5c9954be56aba44034e795c5048620c73ad25
+  DESTINATION HASH: 311ceaa6f33a84c8262110677c206acbda52a02d70f35df64ebbf7b83d64d946
+  CONFLICT COPY:    .inbox/conflicts/PHASE_2_CPU_EXECUTION_ENGINE.conflict-7.asm
+[0;32m[OK][0m    ADD: .inbox/PRIMITIVES.md -> docs/PRIMITIVES.md
+[0;32m[OK][0m    ADD: .inbox/README_API.md -> docs/README_API.md
+[0;32m[OK][0m    ADD: .inbox/api.go -> src/api.go
+[0;32m[OK][0m    ADD: .inbox/example_abstention.go -> src/example_abstention.go
+[0;32m[OK][0m    ADD: .inbox/example_consistency_validator.go -> src/example_consistency_validator.go
+[0;32m[OK][0m    ADD: .inbox/example_math_routing.go -> src/example_math_routing.go
+[0;32m[OK][0m    ADD: .inbox/example_test.go -> src/example_test.go
+[1;33m[WARN][0m  Conflicts detected. Review .inbox/conflicts/ before re-running.
+[0;32m[OK][0m    Manifest written to PUBLISH_MANIFEST.json
+[0;32m[OK][0m    Report written to PUBLISH_REPORT.md
+[0;36m[INFO][0m  Staging 8 file(s)...
+warning: in the working copy of 'docs/EXAMPLES.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/PRIMITIVES.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README_API.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/api.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/example_abstention.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/example_consistency_validator.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/example_math_routing.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/example_test.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'PUBLISH_MANIFEST.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'PUBLISH_REPORT.md', LF will be replaced by CRLF the next time Git touches it
+[0;32m[OK][0m    Staged 10 file(s)
+[0;36m[INFO][0m  Committing: publish: ingest 8 artifacts across docs, src
+[master 8aed512] publish: ingest 8 artifacts across docs, src
+ 10 files changed, 2272 insertions(+), 43 deletions(-)
+ create mode 100644 docs/EXAMPLES.md
+ create mode 100644 docs/PRIMITIVES.md
+ create mode 100644 docs/README_API.md
+ create mode 100644 src/api.go
+ create mode 100644 src/example_abstention.go
+ create mode 100644 src/example_consistency_validator.go
+ create mode 100644 src/example_math_routing.go
+ create mode 100644 src/example_test.go
+warning: in the working copy of 'PUBLISH_MANIFEST.json', LF will be replaced by CRLF the next time Git touches it
+[master ee8446e] publish: ingest 8 artifacts across docs, src
+ Date: Wed Sep 16 23:58:55 2026 -0600
+ 10 files changed, 2272 insertions(+), 43 deletions(-)
+ create mode 100644 docs/EXAMPLES.md
+ create mode 100644 docs/PRIMITIVES.md
+ create mode 100644 docs/README_API.md
+ create mode 100644 src/api.go
+ create mode 100644 src/example_abstention.go
+ create mode 100644 src/example_consistency_validator.go
+ create mode 100644 src/example_math_routing.go
+ create mode 100644 src/example_test.go
+[0;32m[OK][0m    Committed: 8aed5121be73cb7f66be52f66955f1c6b8e90a39
+[0;36m[INFO][0m  Pushing to origin/master...
+
+╔══════════════════════════════════════════╗
+║  PUSH BLOCKED — automated session        ║
+╚══════════════════════════════════════════╝
+  Only manual pushes allowed.
+
+error: failed to push some refs to 'https://github.com/SNAPKITTYWEST/devflow-finance-twin.git'
+
+============================================
+  PUSH FAILED
+============================================
+REMOTE:       origin
+BRANCH:       master
+COMMIT:       ee8446e869cce4778155fec343bd75cdacd769da
+LOCAL STATUS: commit preserved locally
+============================================
+
+The commit is intact. Resolve the push issue and retry:
+  git push origin master
+[0;36m[INFO][0m  Running final verification...
+
+--- git status ---
+ M PUBLISH_REPORT.md
+?? classifier/
+?? publish_output.log
+
+--- git log -1 ---
+ee8446e publish: ingest 8 artifacts across docs, src
+
+--- git remote -v ---
+origin	https://github.com/SNAPKITTYWEST/devflow-finance-twin.git (fetch)
+origin	https://github.com/SNAPKITTYWEST/devflow-finance-twin.git (push)
+
+[0;32m[OK][0m    Final verification passed
+[0;36m[INFO][0m  Cleaning successfully published files from .inbox/...
+[0;32m[OK][0m    Inbox cleaned
+
+============================================
+  PUBLICATION COMPLETE
+============================================
