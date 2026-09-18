@@ -1,0 +1,13 @@
+*.o
+*.air
+*.metallib
+*.dia
+build/
+.build/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+.DS_Store
+*.swp
+*.swo
+*~
