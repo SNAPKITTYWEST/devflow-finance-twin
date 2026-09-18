@@ -1,22 +1,34 @@
 # Publication Report
 
-**Timestamp:** 2026-09-18T05:50:43Z
+**Timestamp:** 2026-09-18T06:30:37Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 4 |
-| Files Added | 2 |
+| Files Discovered | 16 |
+| Files Added | 14 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 2 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `docs/AppleDesignParser_Guide.md`
-- `src/AppleDesignParser_main.swift`
+- `src/AppearanceResolver.swift`
+- `src/CSSParser.swift`
+- `src/ColorClassifier.swift`
+- `src/ColorFormat.swift`
+- `src/ColorNormalizer.swift`
+- `src/HTMLParser.swift`
+- `src/IMPLEMENTATION_CHECKLIST.txt`
+- `src/PARSER_MODULE_SUMMARY.txt`
+- `src/PaletteGenerator.swift`
+- `src/PatternExtractor.swift`
+- `src/SemanticClassifier.swift`
+- `src/api/PublicAPI.swift`
+- `src/cli/CLI.swift`
+- `tests/tests/CompleteTests.swift`
 
 ## Files Unchanged
 _None_
