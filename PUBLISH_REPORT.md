@@ -1,21 +1,22 @@
 # Publication Report
 
-**Timestamp:** 2026-09-17T09:42:05Z
+**Timestamp:** 2026-09-18T05:50:43Z
 **Branch:** master
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-| Files Discovered | 3 |
-| Files Added | 1 |
+| Files Discovered | 4 |
+| Files Added | 2 |
 | Files Modified | 0 |
 | Files Unchanged | 0 |
 | Files Conflicted | 2 |
 | Files Rejected | 0 |
 
 ## Files Added
-- `docs/SOVEREIGN_AI_EVALUATION_ENGINE.md`
+- `docs/AppleDesignParser_Guide.md`
+- `src/AppleDesignParser_main.swift`
 
 ## Files Unchanged
 _None_
