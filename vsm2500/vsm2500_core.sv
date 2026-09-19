@@ -325,7 +325,7 @@ module vsm_core (
       sb_validate       <= 1'b0;
       sb_propagate      <= 1'b0;
       sb_commit         <= 1'b0;
-      sb_rollback       <= 1'b b0;
+      sb_rollback       <= 1'b0;
     end else begin
       rf_we        <= 1'b0;
       sb_create    <= 1'b0;
