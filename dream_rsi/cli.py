@@ -1,6 +1,8 @@
-"""Minimal command-line entry point for the independent reconstruction."""
+"""Command-line entry for the Dream-RSI reconstruction."""
+
 import argparse
 import json
+
 from .core import DreamRSI, RunConfig
 from .discovery import AlgorithmEngineering, MathematicalOptimization, GPUKernelEngineering
 
@@ -12,11 +14,19 @@ def main(argv=None):
     parser.add_argument("--revisions", type=int, default=4)
     parser.add_argument("--domain", choices=["algorithm", "math", "gpu"], default="algorithm")
     args = parser.parse_args(argv)
-    adapter = {"algorithm": AlgorithmEngineering(), "math": MathematicalOptimization(),
-               "gpu": GPUKernelEngineering()}[args.domain]
-    result = DreamRSI(adapter=adapter).run(RunConfig(args.task, args.rounds, args.revisions))
-    print(json.dumps({"worlds": result["worlds"], "policy": result["policy"].__dict__,
-                      "metrics": result["metrics"].__dict__}, indent=2, default=str))
+
+    domain_map = {
+        "algorithm": AlgorithmEngineering(),
+        "math": MathematicalOptimization(),
+        "gpu": GPUKernelEngineering(),
+    }
+    system = DreamRSI(adapter=domain_map[args.domain])
+    result = system.run(RunConfig(args.task, args.rounds, args.revisions))
+    print(json.dumps({
+        "worlds": result["worlds"],
+        "policy": result["policy"].__dict__,
+        "metrics": result["metrics"].__dict__,
+    }, indent=2, default=str))
     return 0
 
 

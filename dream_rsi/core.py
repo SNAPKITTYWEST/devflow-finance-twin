@@ -1,12 +1,11 @@
-"""RSI orchestration, baselines, and metrics."""
-
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 import time
-from .tree import DiscoveryTree
+
+from .discovery import DiscoveryAgent, AlgorithmEngineering
 from .policy import ExplorationPolicy, PolicyDeveloper
-from .discovery import DiscoveryAgent, DomainAdapter, AlgorithmEngineering
 from .replay import ReplayEngine, SimulatorPool, ReplayResult
+from .tree import DiscoveryTree
 
 
 @dataclass
@@ -43,25 +42,35 @@ class DreamRSI:
         self.policy = ExplorationPolicy()
         self.metrics = RunMetrics()
 
-    def online_exploration(self, policy, task):
+    def online_exploration(self, policy: ExplorationPolicy, task: str) -> DiscoveryTree:
         tree = DiscoveryTree(metadata={"task": task, "policy": policy.__dict__})
         frontier = [tree.get(tree.root_id)]
         spent = 0.0
+
         while frontier and len(tree.nodes) - 1 < policy.max_nodes and spent < policy.budget:
             parent = frontier.pop(0)
             decision = policy.decide(parent, frontier, spent)
             if decision.get("stop"):
                 parent.status = "stopped"
                 continue
-            for branch in range(decision.get("branch_count", 0)):
-                candidate = self.discovery.propose(task, {"branch": branch}, parent)
+
+            for branch_index in range(int(decision.get("branch_count", 0))):
+                candidate = self.discovery.propose(task, {"branch": branch_index}, parent)
                 trace = self.discovery.execute(candidate, task)
                 evaluated = self.adapter.evaluate(candidate, task)
-                child = tree.add(parent.node_id, policy_decision=decision,
-                                 branch_id=str(branch), candidate=candidate,
-                                 execution_trace=[trace], evaluator_result=evaluated,
-                                 score=float(evaluated["score"]), status="completed",
-                                 cost=1.0, metadata={"depth": parent.metadata.get("depth", 0) + 1})
+                score = float(evaluated.get("score", 0.0))
+                child = tree.add(
+                    parent.node_id,
+                    policy_decision=decision,
+                    branch_id=str(branch_index),
+                    candidate=candidate,
+                    execution_trace=[trace],
+                    evaluator_result=evaluated,
+                    score=score,
+                    status="completed",
+                    cost=1.0,
+                    metadata={"depth": int(parent.metadata.get("depth", 0)) + 1},
+                )
                 frontier.append(child)
                 spent += 1.0
                 self.metrics.discovery_agent_calls += 1
@@ -69,49 +78,63 @@ class DreamRSI:
                 self.metrics.branches += 1
                 if spent >= policy.budget:
                     break
+
         self.metrics.tree_size += len(tree.nodes)
         self.metrics.compute_budget += spent
         return tree
 
-    def run_round(self, task):
+    def run_round(self, task: str):
         incumbent_score = self.replay.replay(self.policy, self.pool).score if self.pool.trees else 0.0
         tree = self.online_exploration(self.policy, task)
         self.pool.add(tree)
-        incumbent = (self.policy, self.replay.replay(self.policy, self.pool).score)
-        candidates = [incumbent]
-        for index, candidate in enumerate(self.developer.candidates(self.policy)[:4]):
-            result = self.replay.replay(candidate, self.pool)
-            candidates.append((candidate, result.score))
+
+        candidate_set = [(self.policy, self.replay.replay(self.policy, self.pool).score)]
+        for idx in range(self.developer.max_candidates):
+            candidate = self.developer.revise(self.policy, idx)
+            score = self.replay.replay(candidate, self.pool).score
+            candidate_set.append((candidate, score))
             self.metrics.policy_revisions += 1
             self.metrics.replay_evaluations += 1
             self.metrics.offline_evaluations += 1
-        winner, score = self.developer.select_best(candidates)
+
+        winner, score = self.developer.select_best(candidate_set)
         self.policy = winner
         self.metrics.best_solution_score = max(self.metrics.best_solution_score, score)
         self.metrics.policy_improvement += max(0.0, score - incumbent_score)
         self.metrics.generations += 1
-        return {"policy": winner, "score": score, "candidates": [(p.name, s) for p, s in candidates], "tree": tree}
+
+        return {
+            "policy": winner,
+            "score": score,
+            "candidates": [(p.name, s) for p, s in candidate_set],
+            "tree": tree,
+        }
 
     def run(self, config: RunConfig):
         started = time.time()
-        history = [self.run_round(config.task) for _ in range(max(0, config.rounds))]
+        history = [self.run_round(config.task) for _ in range(max(0, int(config.rounds)))]
         self.metrics.wall_clock_seconds = time.time() - started
-        return {"history": history, "metrics": self.metrics, "worlds": len(self.pool), "policy": self.policy}
+        return {
+            "history": history,
+            "metrics": self.metrics,
+            "worlds": len(self.pool),
+            "policy": self.policy,
+        }
 
 
 class RecursiveFixedExploration:
-    """Baseline: same fixed policy each round; still uses the same discovery agent."""
+    """Baseline: fixed policy with no adaptation."""
+
     def __init__(self, system):
         self.system = system
 
-    def run(self, config):
-        policy = self.system.policy
-        for _ in range(config.rounds):
-            tree = self.system.online_exploration(policy, config.task)
+    def run(self, config: RunConfig):
+        for _ in range(max(0, int(config.rounds))):
+            tree = self.system.online_exploration(self.system.policy, config.task)
             self.system.pool.add(tree)
         return self.system.metrics
 
 
 class SimpleTESBaseline(RecursiveFixedExploration):
-    """Simple fixed breadth-first candidate selection baseline."""
+    """Simple fixed breadth-first style baseline."""
     pass
