@@ -17,7 +17,7 @@ WASM_MODULES = wasm/runtime.wasm wasm/isa.wasm wasm/worm_frame.wasm \
 NATIVE_OBJS = src/native/worm_commit.o
 
 # NASM objects
-ASM_OBJS = x86_64/treasury_serialization.o
+ASM_OBJS = languages/x86_64/treasury_serialization.o
 
 # Static library
 LIBRARY = lib/libworm.a
@@ -30,7 +30,7 @@ all: wasm native asm $(LIBRARY)
 
 wasm:
 	@echo "=== Compiling WASM modules ==="
-	node compile_wasm.js
+	node scripts/compile_wasm.js
 
 # ── Native C compilation ──────────────────────────────────────────────────────
 
@@ -41,7 +41,7 @@ native: $(NATIVE_OBJS)
 
 # ── NASM assembly compilation ─────────────────────────────────────────────────
 
-x86_64/%.o: x86_64/%.nasm
+languages/x86_64/%.o: languages/x86_64/%.nasm
 	$(NASM) $(NFLAGS) $< -o $@
 
 asm: $(ASM_OBJS)

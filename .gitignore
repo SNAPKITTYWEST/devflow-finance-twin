@@ -28,3 +28,43 @@ target/
 
 # Publisher inbox (staging area for publish.sh)
 .inbox/
+
+# Secrets and credentials — never commit these
+*.key
+*.pem
+*.cert
+*.crt
+*.p12
+*.pfx
+*.jks
+*.asc
+*.gpg
+secrets/
+credentials/
+.secrets/
+*.secret
+*_secret.json
+*_credentials.json
+
+# Go build artifacts
+go.sum
+*.test
+
+# Swift / Xcode
+.build/
+*.xcodeproj/
+*.xcworkspace/
+DerivedData/
+
+# Haskell
+.stack-work/
+dist-newstyle/
+*.hi
+*.o
+
+# Node / WASM toolchain
+node_modules/
+*.wasm.map
+
+# Docker
+.dockerignore
