@@ -13,8 +13,8 @@
 # Ignorantia juris non excusat.
 # ========================================================================
 
-from mxml.schema import TaskDecl
-from scheduler.dag import build_dag, DAGError
+from mxml import TaskDecl
+from scheduler import build_dag, DAGError
 import pytest
 
 

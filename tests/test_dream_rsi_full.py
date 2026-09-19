@@ -1,9 +1,5 @@
 """Tests for the full direct implementation layers."""
-from dream_rsi.core.orchestrator import RSIOrchestrator
-from dream_rsi.discovery.agent import AlgorithmEvaluator, FixedDiscoveryAgent
-from dream_rsi.metrics.collector import Metrics
-from dream_rsi.policy.engine import PolicyDeveloper, ScoredPolicy, SearchPolicy
-from dream_rsi.replay.engine import HistoricalReplay
+from dream_rsi import RSIOrchestrator, AlgorithmEvaluator, FixedDiscoveryAgent, Metrics, PolicyDeveloper, ScoredPolicy, SearchPolicy, HistoricalReplay
 
 
 def test_incumbent_guarantee_with_regression():

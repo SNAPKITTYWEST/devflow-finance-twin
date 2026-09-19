@@ -1,8 +1,7 @@
 # PHASE 6: GPU GRAPH TRANSFORMATION LAYER
 ## CAT-N-ID ↔ GPU Location Bidirectional Mapping
 
-**Agent**: AGENT-1, PHASE 6: Dylan Graph Transformation + GPU Identity Engineer  
-**Mission**: Maintain biological graph semantics (CAT-N-ID, CAT-S-ID) while transforming to GPU-compatible sparse structures  
+**Purpose**: Maintain biological graph semantics (CAT-N-ID, CAT-S-ID) while transforming to GPU-compatible sparse structures  
 **Date**: 2026-09-13  
 **Status**: Architecture Complete
 

@@ -336,9 +336,9 @@ Verified by: Run simulation twice, compare spike_log byte-for-byte.
   - Verification checklist
   - Debugging utilities
 
-### 7.2 Code (Not written — per CLAUDE.md)
+### 7.2 Code (Not included in specification)
 
-Claude does not write code. These specifications ready for downstream implementation team:
+These specifications cover the design for downstream implementation:
 - [ ] C++20 neural simulation engine (20K LOC estimated)
 - [ ] CUDA kernels for HH integration (5K LOC)
 - [ ] Integration tests and benchmarks (5K LOC)
@@ -400,10 +400,7 @@ Claude does not write code. These specifications ready for downstream implementa
 
 ---
 
-**Workflow**: snapkitty-phase-5  
-**Generated**: 2026-09-13  
-**Agent**: AGENT-3 (Neural Dynamics + Large-Scale Execution Engineer)  
-**Approval**: ORCHESTRATOR-2 (Formal Verification)
+**Date**: 2026-09-13
 
 ---
 

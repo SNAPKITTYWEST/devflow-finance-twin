@@ -22,10 +22,10 @@ import json
 import sys
 from pathlib import Path
 
-from mxml.parser import parse_mxml, MXMLParseError
-from mxml.validator import validate_mxml, ValidationError
-from runtime.executor import Executor
-from audit.seal import seal_decision
+from mxml import parse_mxml, MXMLParseError
+from mxml import validate_mxml, ValidationError
+from runtime import Executor
+from audit import seal_decision
 
 
 def cmd_validate(path: str) -> int:

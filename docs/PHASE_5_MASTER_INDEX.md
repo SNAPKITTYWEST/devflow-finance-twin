@@ -1,6 +1,5 @@
 # PHASE 5: MASTER INDEX & DOCUMENT MAP
 
-**Officer**: ORCHESTRATOR-2, Formal Verification & Adversarial Audit Officer  
 **Date**: 2026-09-13  
 **Total Specification**: ~4,900 lines across 5 documents  
 **Classification**: Restricted - Phase 5 Verification Only
@@ -457,23 +456,11 @@ Phase 7: Report & Sign-Off (1 day)
 **Next Review**: Upon Phase 5 completion
 
 **Update Protocol**:
-1. Only ORCHESTRATOR-2 can update specification
-2. All updates require new version number (SemVer)
-3. Changes tracked in audit trail
-4. No retroactive modification (WORM principle)
+1. All updates require new version number (SemVer)
+2. Changes tracked in audit trail
+3. No retroactive modification (WORM principle)
 
 ---
-
-## CONTACT & ESCALATION
-
-**Primary Officer**: ORCHESTRATOR-2 (Formal Verification & Adversarial Audit Officer)
-
-**Escalation Path**:
-1. Issues with specification → ORCHESTRATOR-2
-2. Issues with execution → ORCHESTRATOR-2
-3. Issues with audit integrity → ORCHESTRATOR-2 → Board Review
-
-**Sign-Off Authority**: ORCHESTRATOR-2 (digital signature, RSA-4096)
 
 ---
 
@@ -494,5 +481,4 @@ This master index provides navigation through ~4,900 lines of Phase 5 formal ver
 ---
 
 **Document Status**: Master Index Complete  
-**Issued**: 2026-09-13  
-**Officer**: ORCHESTRATOR-2, Formal Verification & Adversarial Audit Officer
+**Issued**: 2026-09-13

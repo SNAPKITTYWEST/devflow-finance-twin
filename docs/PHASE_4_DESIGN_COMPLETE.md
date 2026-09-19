@@ -9,19 +9,19 @@
 
 ## Executive Summary
 
-PHASE 4 transformed the Phase 3 connectome (158 neurons, 102 synapses, 10 circuits) into a complete executable neural network design. All five agents completed parallel design phases:
+PHASE 4 transformed the Phase 3 connectome (158 neurons, 102 synapses, 10 circuits) into a complete executable neural network design covering five parallel design areas:
 
-1. **AGENT-1** (Dylan): Neuron execution object model with CAT-N identity preservation
-2. **AGENT-2** (Ada/SPARK): WORM cryptographic storage layer with canonical serialization
-3. **AGENT-3** (Neural Dynamics): Temporal evolution engine (Hodgkin-Huxley, IAF, IAF+modulation)
-4. **ORCHESTRATOR-1**: Biological evidence validation framework (70 claims mapped)
-5. **ORCHESTRATOR-2**: Formal verification—all invariants I1, I17-I20 specified
+1. Neuron execution object model with CAT-N identity preservation (Dylan)
+2. WORM cryptographic storage layer with canonical serialization (Ada/SPARK)
+3. Temporal evolution engine (Hodgkin-Huxley, IAF, IAF+modulation)
+4. Biological evidence validation framework (70 claims mapped)
+5. Formal verification — all invariants I1, I17-I20 specified
 
 ---
 
 ## Architectural Decisions
 
-### I. Neuron Execution Model (AGENT-1)
+### I. Neuron Execution Model
 
 **Static Properties (immutable per CAT-N-ID):**
 - neuron_id (CAT-N-XXXXXXXXXXXXXXXX)
@@ -74,7 +74,7 @@ PHASE 4 transformed the Phase 3 connectome (158 neurons, 102 synapses, 10 circui
 
 ---
 
-### II. WORM State Integrity Layer (AGENT-2)
+### II. WORM State Integrity Layer
 
 **Canonical Serialization (deterministic, big-endian, float-canonicalized):**
 
@@ -146,7 +146,7 @@ serialize_neuron_state(state) :=
 
 ---
 
-### III. Neural Dynamics Execution (AGENT-3)
+### III. Neural Dynamics Execution
 
 **Time Evolution Models:**
 
@@ -228,7 +228,7 @@ for each timestep t:
 
 ---
 
-### IV. Biological Evidence Validation Framework (ORCHESTRATOR-1)
+### IV. Biological Evidence Validation Framework
 
 **Evidence Ledger (70 claims from Phase 3, now mapped to Phase 4):**
 
@@ -283,7 +283,7 @@ for each timestep t:
 
 ---
 
-### V. Formal Verification Framework (ORCHESTRATOR-2)
+### V. Formal Verification Framework
 
 **Invariants I1, I17-I20 (APPROVED):**
 

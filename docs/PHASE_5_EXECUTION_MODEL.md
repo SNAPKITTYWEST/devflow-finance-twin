@@ -3,7 +3,6 @@
 
 **Date**: 2026-09-13  
 **Workflow**: snapkitty-phase-5-execution-model  
-**Agent**: AGENT-3 (Neural Dynamics + Large-Scale Execution Engineer)  
 **Scope**: 760-million-neuron brain architecture with individual state preservation and recurrent connectivity  
 **Constraint**: No DAG-ification; delay-based causality preservation
 
@@ -1029,7 +1028,7 @@ class StateSnapshot:
   global_timestep: uint64
   wall_clock_timestamp_ns: uint64
   
-  // Per-neuron state (canonical serialization, Phase 4 AGENT-2)
+  // Per-neuron state (canonical serialization, Phase 4 Ada/SPARK WORM layer)
   neuron_states: Map<CatNID, {
     V: float64,
     I: float64,
@@ -1441,7 +1440,7 @@ Conclusion: I18 VERIFIED ✓
 4. Full audit trail:
    Every spike carries: source_neuron, source_synapse, transmitter, receptor
    Reverse trace: (spike_id) → (event) → (synapse) → (source_neuron)
-   All links immutable and cryptographically sealed (Phase 4 AGENT-2)
+   All links immutable and cryptographically sealed (Phase 4 Ada/SPARK WORM layer)
 
 Conclusion: I19 VERIFIED ✓
 ```
@@ -1559,11 +1558,9 @@ PHASE 5 specifies a scalable, deterministic, biologically-faithful neural dynami
 
 **Causality Preserved**: Delay-based event propagation enforces causality without removing cycles.
 
-**Ready for Implementation**: Pseudocode, algorithms, and proofs fully specified. Code implementation awaits downstream agents.
+Pseudocode, algorithms, and proofs fully specified.
 
 ---
 
-**Workflow**: snapkitty-phase-5-execution-model  
 **Date**: 2026-09-13  
-**Status**: SPECIFICATION COMPLETE  
-**Next**: Phase 6 Implementation (Dylan DSL + CUDA kernels + Ada/SPARK integration)
+**Status**: SPECIFICATION COMPLETE

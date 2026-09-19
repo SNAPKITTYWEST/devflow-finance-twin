@@ -16,8 +16,8 @@
 """MXML parse and validation tests."""
 
 import pytest
-from mxml.parser import parse_mxml, MXMLParseError
-from mxml.validator import validate_mxml, ValidationError  # noqa: F401
+from mxml import parse_mxml, MXMLParseError
+from mxml import validate_mxml, ValidationError  # noqa: F401
 
 
 VALID = """<?xml version="1.0"?>

@@ -19,12 +19,7 @@ import uuid
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from dream_rsi.core import DreamRSI, RunConfig
-from dream_rsi.core.orchestrator import RSIOrchestrator
-from dream_rsi.persistence.worlds import WorldStore
-from dream_rsi.policy.engine import SearchPolicy
-from dream_rsi.replay.engine import HistoricalReplay
-from dream_rsi.tree import DiscoveryTree
+from dream_rsi import DreamRSI, RunConfig, RSIOrchestrator, WorldStore, SearchPolicy, HistoricalReplay, DiscoveryTree
 
 
 @contextmanager

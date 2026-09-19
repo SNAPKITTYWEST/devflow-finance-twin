@@ -3,10 +3,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 
-from dream_rsi.core import DreamRSI, RunConfig
-from dream_rsi.policy import ExplorationPolicy
-from dream_rsi.replay import ReplayEngine, SimulatorPool
-from dream_rsi.tree import DiscoveryTree
+from dream_rsi import DreamRSI, RunConfig, ExplorationPolicy, ReplayEngine, DiscoveryTree
+from dream_rsi.replay.legacy import SimulatorPool  # legacy contract — needs .trees interface
 
 
 def test_tree_round_trip_and_validation():

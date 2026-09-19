@@ -4,11 +4,7 @@ import math
 
 import pytest
 
-from dream_rsi.core import DreamRSI, RunConfig
-from dream_rsi.core.orchestrator import RSIOrchestrator
-from dream_rsi.policy.engine import SearchPolicy
-from dream_rsi.replay.engine import HistoricalReplay
-from dream_rsi.simulator.pool import SimulationBudget, SimulatorPool
+from dream_rsi import DreamRSI, RunConfig, RSIOrchestrator, SearchPolicy, HistoricalReplay, SimulationBudget, SimulatorPool
 from dream_rsi.tree import DiscoveryTree, TreeNode
 
 
@@ -82,14 +78,14 @@ def test_legacy_zero_revisions():
 
 @pytest.mark.parametrize("budget", [math.nan, math.inf, -1, 0])
 def test_invalid_budgets_rejected_in_both_generations(budget):
-    from dream_rsi.policy.legacy import ExplorationPolicy
+    from dream_rsi import ExplorationPolicy
     for factory in (SearchPolicy, ExplorationPolicy):
         with pytest.raises(ValueError):
             factory(budget=budget)
 
 
 def test_legacy_config_applies_fractional_budget_and_node_limit():
-    from dream_rsi.policy.legacy import ExplorationPolicy
+    from dream_rsi import ExplorationPolicy
     system = DreamRSI()
     system.policy = ExplorationPolicy(max_nodes=3, budget=20, stop_threshold=1)
     assert len(system.online_exploration(system.policy, "limit").nodes) <= 4
@@ -98,8 +94,8 @@ def test_legacy_config_applies_fractional_budget_and_node_limit():
 
 
 def test_legacy_replay_enforces_cost_limit():
-    from dream_rsi.policy.legacy import ExplorationPolicy
-    from dream_rsi.replay.legacy import ReplayEngine, SimulatorPool as LegacyPool
+    from dream_rsi import ExplorationPolicy, ReplayEngine
+    from dream_rsi.replay.legacy import SimulatorPool as LegacyPool
     tree = DiscoveryTree()
     tree.add(tree.root_id, cost=10, score=.5, metadata={"depth": 1})
     assert ReplayEngine().replay(ExplorationPolicy(budget=1), LegacyPool([tree])).cost <= 1

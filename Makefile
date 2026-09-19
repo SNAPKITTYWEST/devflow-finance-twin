@@ -110,6 +110,10 @@ lint:
 	@python -m py_compile src/quantum.py && echo "quantum.py: OK"
 	@python -m py_compile src/cli.py && echo "cli.py: OK"
 
+lint-imports:
+	@echo "=== Checking for deep import violations ==="
+	@python scripts/check_deep_imports.py
+
 # ── Clean ─────────────────────────────────────────────────────────────────────
 
 clean:

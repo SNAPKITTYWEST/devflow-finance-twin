@@ -16,6 +16,7 @@
 from .states import State, can_transition, LEGAL_TRANSITIONS
 from .transitions import StateMachine, AuditEvent, IllegalTransitionError
 from .context import ExecutionContext
+from .executor import Executor
 
 __all__ = [
     "State",
@@ -25,4 +26,5 @@ __all__ = [
     "AuditEvent",
     "IllegalTransitionError",
     "ExecutionContext",
+    "Executor",
 ]

@@ -1,9 +1,5 @@
 """Phase 2 and 3 failure-mode tests."""
-from dream_rsi.core.orchestrator import RSIOrchestrator
-from dream_rsi.policy.engine import PolicyDeveloper, ScoredPolicy, SearchPolicy
-from dream_rsi.replay.engine import HistoricalReplay
-from dream_rsi.simulator.pool import SimulationBudget, SimulatorPool
-from dream_rsi.tree import DiscoveryTree
+from dream_rsi import RSIOrchestrator, PolicyDeveloper, ScoredPolicy, SearchPolicy, HistoricalReplay, SimulationBudget, SimulatorPool, DiscoveryTree
 
 
 def test_regression_retains_incumbent():

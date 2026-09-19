@@ -21,8 +21,8 @@ import concurrent.futures
 import time
 from typing import Any
 
-from mxml.schema import RuntimeConfig
-from scheduler.dag import DAG
+from mxml import RuntimeConfig
+from .dag import DAG
 
 
 class Scheduler:

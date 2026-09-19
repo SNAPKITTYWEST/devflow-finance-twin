@@ -429,7 +429,7 @@ void record_state_with_integrity(
   IntegrityChain& chain,
   WORMStorage& worm
 ) {
-  // Canonical serialization (from Phase 4 AGENT-2)
+  // Canonical serialization (from Phase 4 Ada/SPARK WORM layer)
   std::vector<uint8_t> canonical = snapshot.serialize();
   
   // HMAC-SHA-256 tag

@@ -1,4 +1,4 @@
 """Shared simulator APIs."""
-from .pool import SimulatorPool
+from .pool import SimulationBudget, SimulatorPool
 
-__all__ = ["SimulatorPool"]
+__all__ = ["SimulationBudget", "SimulatorPool"]

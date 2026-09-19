@@ -1,7 +1,7 @@
 package model
 
 import (
-	"classifier/primitives"
+	"devflow-finance-twin/classifier/primitives"
 	"errors"
 	"fmt"
 	"math"

@@ -20,7 +20,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from mxml.schema import MXMLDocument
+from mxml import MXMLDocument
 
 
 @dataclass

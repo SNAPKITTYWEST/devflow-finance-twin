@@ -14,7 +14,7 @@
 # ========================================================================
 
 from pathlib import Path
-from runtime.executor import Executor
+from runtime import Executor
 
 
 def test_basic_run():

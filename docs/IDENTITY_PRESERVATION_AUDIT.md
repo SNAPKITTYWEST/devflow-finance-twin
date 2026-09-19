@@ -710,7 +710,6 @@ All 158 neurons and 102 synapses maintained immutable CAT-N/S-*
 identity throughout simulation. Complete traceability preserved. 
 Execution trace sealed for WORM archival.
 
-Signed by: AGENT-1 (Biological Connectome + Dylan Execution Model Engineer)
 Timestamp: 2024-09-13T15:42:30Z
 ```
 

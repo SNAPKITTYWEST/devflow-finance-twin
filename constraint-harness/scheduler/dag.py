@@ -20,7 +20,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Iterable
 
-from mxml.schema import TaskDecl
+from mxml import TaskDecl
 
 
 class DAGError(Exception):

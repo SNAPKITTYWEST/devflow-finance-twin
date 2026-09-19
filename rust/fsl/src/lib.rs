@@ -21,12 +21,61 @@
 
 #![allow(dead_code, unused_imports, unused_variables)]
 
-pub mod cbmc;
-pub mod cbmc_binary_semantics;
-pub mod crux;
-pub mod qa5;
-pub mod assert_q;
-pub mod eclipse_parlog;
+mod cbmc;
+mod cbmc_binary_semantics;
+mod crux;
+mod qa5;
+mod assert_q;
+mod eclipse_parlog;
+
+// cbmc: CBMC GOTO adapter — core types and driver functions
+pub use cbmc::{
+    GotoProgram, GotoFunction, UnrollConfig, CbmcToFsl,
+    Type as CbmcType, Constant as CbmcConstant, ExprCBMC,
+    UnaryOp as CbmcUnaryOp, BinaryOp as CbmcBinaryOp,
+    cbmc_check, run_cbmc_fsl_pipeline,
+};
+
+// cbmc_binary_semantics: binary evaluator public surface
+pub use cbmc_binary_semantics::{
+    BitVec, Memory, BinaryEvaluator,
+    run_binary_semantics,
+};
+
+// crux: CRUX·SILA·OMEGA pipeline — top-level driver items
+pub use crux::{
+    OmegaSmasher, run_crux_pipeline, CruxResult,
+    MVarId, FVarId, TacticState, TacticContext, TacticConfig,
+};
+
+// qa5: reactive first-order prover — public API
+pub use qa5::{
+    Clause, Literal as Qa5Literal, Sign, LitArg, make_clause,
+    UnifyResult, unify, apply_subst,
+    resolve, tautology_p,
+    ReactiveEvent, ReactiveCell, add_observer, notify_observers,
+    qa5_prove, ProofResult, QA5Config,
+    RacketClause, RacketBindings, RacketTerm, ProofTrace, convert_clause,
+};
+
+// assert_q: constraint DSL — core types and solver
+pub use assert_q::{
+    Formula as AqFormula, FormulaOp, ConstraintOp,
+    Constraint as AqConstraint, ConstraintStatus, ConstraintStore,
+    propagate as aq_propagate,
+    solve as aq_solve, extract_model, SatResult,
+    ReactiveStore as AqReactiveStore,
+};
+
+// eclipse_parlog: CLP(FD) + Parlog fused kernel
+pub use eclipse_parlog::{
+    Domain, DomainStore,
+    ArithConstraint, eval_constraint, reify_constraint,
+    SuspensionStore, suspend_goal, wake_var, propagate_store,
+    alldifferent, element, cumulative, exactly, atmost, lex_le,
+    SearchStrategy, search_vars, indomain, first_fail_select, minimize_cost,
+    Mode, GuardedClause, ParlogEngine, par_and, committed_or, Stream,
+};
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::fmt;

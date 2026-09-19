@@ -2,7 +2,6 @@
 
 **Status**: EXECUTION SPECIFICATION COMPLETE  
 **Date**: 2026-09-13  
-**Agent**: ORCHESTRATOR-2 (Formal Verification + Adversarial GPU Auditor)
 
 ---
 
@@ -356,7 +355,6 @@ Each attack (C, D, E, F, G, H, I, J) follows the same 5-phase structure:
 ║      Formal Verification & Adversarial GPU Auditor             ║
 ║                                                                ║
 ║      Date: 2026-09-13                                          ║
-║      Agent: ORCHESTRATOR-2                                     ║
 ║      Status: SPECIFICATION COMPLETE                            ║
 ╚════════════════════════════════════════════════════════════════╝
 
@@ -825,8 +823,6 @@ Total Test Duration: ~40 minutes (all 8 scales)
 Status: COMPLETE
 
 Generated: 2026-09-13
-Agent: ORCHESTRATOR-2 (Formal Verification + Adversarial GPU Auditor)
-Workflow: snapkitty-phase-6-gpu-audit
 
 ═══════════════════════════════════════════════════════════════
 ```
