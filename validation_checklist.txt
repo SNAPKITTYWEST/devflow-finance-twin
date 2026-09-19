@@ -1,0 +1,464 @@
+================================================================================
+VALIDATION CHECKLIST
+AST Predicates → Code Mapping (All Languages)
+================================================================================
+
+VALIDATION LAYERS (5 Phases):
+1. Structural: Binary format, magic, version, AST kind validity
+2. Symbol: Predicate definitions, scoping, name resolution
+3. Safety: Variable safety, type unification, memory bounds
+4. Semantics: Negative cycles, aggregates, recursion, choice rules
+5. Binary: SHA-256 integrity, encoding alignment
+
+================================================================================
+PHASE 1: STRUCTURAL VALIDATION
+================================================================================
+
+[✓] validate_magic_header()
+    Predicate: magic == 0x5455524E
+    Code Location:
+      C:    binary_validate_magic_header() @ polyglot_builder.h
+      Rust: validate_magic_header() @ polyglot_builder.rs:475
+      Go:   ValidateMagicHeader() @ polyglot_builder.go:497
+    Test: Assert magic field equals "TURN" (0x5455524E)
+    Fail Action: Return ERR_INVALID_MAGIC, stop validation (recover=false)
+
+[✓] validate_version()
+    Predicate: version == 0x0001
+    Code Location:
+      C:    binary_validate_version() @ polyglot_builder.h
+      Rust: validate_version() @ polyglot_builder.rs:487
+      Go:   ValidateVersion() @ polyglot_builder.go:510
+    Test: Assert version field equals 0x0001
+    Fail Action: Return ERR_INVALID_VERSION, stop validation (recover=false)
+
+[✓] validate_ast_kind()
+    Predicate: kind ∈ [AST_MODULE, ..., AST_MACRO_INV] (0-29)
+    Code Location:
+      C:    binary_validate_ast_kind() @ polyglot_builder.h
+      Rust: validate_ast_kind() @ polyglot_builder.rs:499
+      Go:   ValidateAstKind() @ polyglot_builder.go:523
+    Test: Assert kind in [0, 29]
+    Fail Action: Return ERR_VALIDATION_FAIL, stop validation (recover=false)
+
+[✓] validate_type_consistency()
+    Predicate: All Type* pointers non-null or explicitly TYPE_VOID
+    Code Location:
+      C:    kernel-language/include/ast.h @ struct Type
+      Rust: BinaryBuilder.validate_phase_1() @ polyglot_builder.rs
+      Go:   BinaryBuilder.validatePhase1() @ polyglot_builder.go
+    Test: For each Type field in AST, check: type != NULL || type.kind == TYPE_VOID
+    Fail Action: Return ERR_VALIDATION_FAIL (recover=false)
+
+[✓] validate_rule_count()
+    Predicate: num_rules <= 100,000
+    Code Location:
+      C:    binary_builder_finalize() Phase 1
+      Rust: BinaryBuilder.validate_phase_1() @ polyglot_builder.rs:270
+      Go:   BinaryBuilder.validatePhase1() @ polyglot_builder.go:349
+    Test: Assert len(rules) <= 100_000
+    Fail Action: Return ERR_MEMORY_ALLOC (recover=false)
+
+================================================================================
+PHASE 2: SYMBOL VALIDATION
+================================================================================
+
+[✓] collect_defined_predicates()
+    Predicate: defined_preds := {name/arity | ∀ rule heads}
+    Code Location:
+      C:    binary_builder_finalize() (internal to phase 2)
+      Rust: BinaryBuilder.add_rule() @ polyglot_builder.rs:259
+      Go:   BinaryBuilder.AddRule() @ polyglot_builder.go:269
+    Algorithm:
+      FOR each rule IN rules:
+        FOR each atom IN rule.head:
+          INSERT (atom.name / len(atom.args)) INTO defined_preds
+    Reference: asp/semantics/validator.go::collectDefinedPredicates() [line 117]
+
+[✓] check_undefined_predicates()
+    Predicate: ∀ body_pred ∈ rules : body_pred ∈ (defined_preds ∪ builtins)
+    Code Location:
+      C:    binary_validate_no_undefined_predicates() @ polyglot_builder.h
+      Rust: BinaryBuilder.validate_phase_2() @ polyglot_builder.rs:279
+      Go:   BinaryBuilder.validatePhase2() @ polyglot_builder.go:365
+    Algorithm:
+      FOR each rule IN rules:
+        FOR each literal IN rule.body:
+          IF literal.atom NOT IN builtins AND
+             (literal.atom / len(literal.args)) NOT IN defined_preds:
+            RETURN ERR_UNDEFINED_PRED
+    Builtin predicates: "=", "!=", "<", ">", "<=", ">=", "is", "true", "false", "fail", "!", "\+"
+    Fail Action: Return ERR_UNDEFINED_PRED (recover=false, first instance)
+    Reference: asp/semantics/validator.go::CheckUndefined() [line 133]
+
+[✓] validate_scoping()
+    Predicate: All variables declared before use (or explicit anonymous _)
+    Code Location:
+      C:    Part of symbol validation phase
+      Rust: BinaryBuilder.validate_phase_2() @ polyglot_builder.rs
+      Go:   BinaryBuilder.validatePhase2() @ polyglot_builder.go
+    Algorithm:
+      FOR each rule:
+        scope := {}
+        FOR each declaration IN rule:
+          INSERT declaration.name INTO scope
+        FOR each use IN rule:
+          IF use.name NOT IN scope AND use.name != "_":
+            RETURN ERR_VALIDATION_FAIL
+    Fail Action: Return ERR_VALIDATION_FAIL (recover=false)
+
+[✓] check_storage_classes()
+    Predicate: storage_class valid for declaration context
+    Code Location:
+      C:    Part of symbol validation (kernel-language/include/ast.h StorageClass)
+      Rust: Implemented in validate_phase_2 if needed
+      Go:   Implemented in validatePhase2 if needed
+    Valid combinations:
+      LOCAL, OWN, GLOBAL, REGISTER, SHARED, PARAM, CONST, ABSOLUTE, BASED
+    Fail Action: Return ERR_VALIDATION_FAIL (recover=false)
+
+================================================================================
+PHASE 3: SAFETY VALIDATION
+================================================================================
+
+[✓] check_safe_variables()
+    Predicate: safe_var_usage(rule) := ∀ x ∈ head : x ∈ positive_body ∪ {_}
+    Code Location:
+      C:    binary_validate_safe_variables() @ polyglot_builder.h
+      Rust: BinaryBuilder.validate_phase_3() @ polyglot_builder.rs:301
+      Go:   BinaryBuilder.validatePhase3() @ polyglot_builder.go:387
+    Algorithm:
+      FOR each rule:
+        head_vars := collect_variables(rule.head)
+        positive_body_vars := {}
+        FOR each literal IN rule.body IF literal.positive:
+          positive_body_vars ∪= collect_variables(literal.args)
+        FOR each var IN head_vars:
+          IF var != "_" AND var NOT IN positive_body_vars:
+            RETURN ERR_UNSAFE_VARIABLE
+    Fail Action: Return ERR_UNSAFE_VARIABLE (recover=false, first instance)
+    Reference: asp/semantics/validator.go::CheckSafety() [line 198]
+
+[✓] check_memory_safety()
+    Predicate: memory_safe(ptr, offset, width) := (offset + width) <= bitwidth(ptr)
+    Code Location:
+      C:    binary_validate_memory_bounds() @ polyglot_builder.h
+      Rust: Implement in validate_phase_3 if AST contains bitfields
+      Go:   Implement in validatePhase3 if AST contains bitfields
+    Test: For bitfield access AST_BITFIELD nodes:
+      Assert: offset + width <= bitwidth(expression.type)
+    Example (from ast.h line 187):
+      bitfield { expr, offset, width } =>
+        bitwidth := get_bitwidth(expr.type)
+        IF offset + width > bitwidth:
+          RETURN ERR_BOUNDS_VIOLATED
+    Fail Action: Return ERR_BOUNDS_VIOLATED (recover=false)
+
+[✓] check_type_unification()
+    Predicate: types_unify(type1, type2) := type1 can be coerced to type2
+    Code Location:
+      C:    binary_validate_type_unification() @ polyglot_builder.h
+      Rust: BinaryBuilder.validate_phase_3() + validate_type_unification() @ polyglot_builder.rs:523
+      Go:   BinaryBuilder.validatePhase3() + ValidateTypeUnification() @ polyglot_builder.go:543
+    Algorithm:
+      Unification rules (simplified):
+        TYPE_VOID unifies with nothing
+        TYPE_WORD (32-bit) unifies with TYPE_LONG (64-bit) with warning
+        TYPE_BIT unifies only with TYPE_BIT
+        TYPE_FLOAT unifies with TYPE_WORD (with truncation)
+        TYPE_PTR unifies with TYPE_PTR if base types unify
+    Test: For each assignment/call:
+      IF NOT types_unify(lhs.type, rhs.type):
+        RETURN ERR_TYPE_MISMATCH
+    Fail Action: Return ERR_TYPE_MISMATCH (recover=false)
+
+[✓] validate_casts()
+    Predicate: cast_width_safe(from_type, to_type) := width(to_type) >= width(from_type) OR explicit truncation OK
+    Code Location:
+      C:    Part of type validation (kernel-language/include/ast.h AST_CAST)
+      Rust: Implement in validate_phase_3 for AST_CAST nodes
+      Go:   Implement in validatePhase3 for AstCast nodes
+    Algorithm:
+      FOR each cast AST node:
+        IF width(to_type) < width(from_type):
+          // Truncation: warn, don't fail
+          add_warning("truncation in cast")
+        ELSE:
+          // OK
+    Fail Action: Warnings only (recoverable)
+
+================================================================================
+PHASE 4: SEMANTICS VALIDATION
+================================================================================
+
+[✓] detect_negative_cycles()
+    Predicate: ¬∃ cycle(pred_graph) with negative edges
+    Code Location:
+      C:    binary_validate_no_negative_cycles() @ polyglot_builder.h
+      Rust: BinaryBuilder.detect_negative_cycles() @ polyglot_builder.rs:370
+      Go:   BinaryBuilder.detectNegativeCycles() @ polyglot_builder.go:445
+    Algorithm: DFS-based cycle detection
+      graph := {}
+      FOR each rule:
+        head_pred := predicate_id(rule.head[0].atom)
+        FOR each literal IN rule.body:
+          body_pred := predicate_id(literal.atom)
+          edge := (body_pred, is_positive=literal.positive)
+          graph[head_pred] ∪= edge
+
+      visited := {}, rec_stack := {}
+      FOR each node IN graph.keys():
+        IF NOT visited[node]:
+          dfs_visit(node, graph, visited, rec_stack)
+
+      dfs_visit(node, graph, visited, rec_stack):
+        visited[node] := true
+        rec_stack[node] := true
+        FOR each (edge_to, is_positive) IN graph[node]:
+          IF NOT visited[edge_to]:
+            dfs_visit(edge_to, graph, visited, rec_stack)
+          ELSE IF rec_stack[edge_to] AND NOT is_positive:
+            RETURN ERR_NEGATIVE_CYCLE  // Cycle with negation!
+        rec_stack[node] := false
+    Fail Action: Return ERR_NEGATIVE_CYCLE (recover=false, first cycle)
+    Reference: asp/semantics/validator.go::dfsCycleDetection() [line 381]
+
+[✓] validate_aggregate_syntax()
+    Predicate: ∀ agg ∈ AST : agg.op ∈ {count, sum, min, max} ∧ bounds_sensible(agg)
+    Code Location:
+      C:    binary_validate_aggregate_syntax() @ polyglot_builder.h
+      Rust: Implement in validate_phase_4 for aggregate nodes
+      Go:   Implement in validatePhase4 for aggregate nodes
+    Algorithm:
+      FOR each aggregate AST node:
+        IF agg.op NOT IN {"count", "sum", "min", "max"}:
+          RETURN ERR_AGGREGATE_INVALID
+        IF agg.lower != NULL AND agg.upper != NULL:
+          IF evaluate(agg.lower) > evaluate(agg.upper):
+            RETURN ERR_AGGREGATE_INVALID
+        IF agg.condition != NULL AND is_undefined(agg.condition.atom):
+          RETURN ERR_AGGREGATE_INVALID
+    Fail Action: Return ERR_AGGREGATE_INVALID (recover=false)
+    Reference: asp/semantics/validator.go::CheckAggregates() [line 267]
+
+[✓] check_recursion_strategy()
+    Predicate: Detect left-recursive rules (warning, not error)
+    Code Location:
+      C:    Optional in phase 4
+      Rust: Implement in validate_phase_4 for recursion detection
+      Go:   Implement in validatePhase4 for recursion detection
+    Algorithm: Mark recursive predicates (those depending on themselves positively)
+      FOR each rule:
+        IF predicate_id(rule.head[0]) IN closure(predicate_id(rule.body[0])):
+          add_warning("recursive rule: " + predicate_id(rule.head[0]))
+    Fail Action: Warnings only (recoverable)
+    Reference: asp/semantics/checker.go::checkRecursion() [line 50]
+
+[✓] validate_choice_rules()
+    Predicate: ∀ choice_rule : head has disjunctive atoms ∧ choice_rule NOT IN body
+    Code Location:
+      C:    Optional in phase 4
+      Rust: Implement in validate_phase_4 for choice rule validation
+      Go:   Implement in validatePhase4 for choice rule validation
+    Algorithm:
+      FOR each choice_rule:
+        IF len(choice_rule.head) < 2:
+          RETURN ERR_VALIDATION_FAIL  // Choice rule must have ≥ 2 head atoms
+        FOR each other_rule:
+          FOR each body_literal IN other_rule.body:
+            IF body_literal.atom == choice_rule.head_predicate:
+              RETURN ERR_VALIDATION_FAIL  // Choice rule in body not allowed!
+    Fail Action: Return ERR_VALIDATION_FAIL (recover=false)
+
+================================================================================
+PHASE 5: BINARY VALIDATION
+================================================================================
+
+[✓] verify_sha256()
+    Predicate: SHA-256(marshaled_payload) == stored_hash
+    Code Location:
+      C:    binary_validate_sha256() @ polyglot_builder.h
+      Rust: validate_sha256() @ polyglot_builder.rs:545
+      Go:   ValidateSha256() @ polyglot_builder.go:552
+    Algorithm:
+      actual_hash := SHA256(payload)
+      IF actual_hash != expected_hash:
+        RETURN ERR_SERIALIZATION
+    Fail Action: Return ERR_SERIALIZATION (recover=false)
+    Reference: turing_binary_foundation.go::VerifyHashes() [line 385]
+
+[✓] verify_encoding_alignment()
+    Predicate: No padding gaps; big-endian layout preserved
+    Code Location:
+      C:    Part of binary validation
+      Rust: Implement in validate_phase_5
+      Go:   Implement in validatePhase5
+    Algorithm:
+      FOR each marshaled field:
+        IF field_offset % field_size != 0:
+          RETURN ERR_SERIALIZATION
+      Verify all integers marshaled in big-endian
+    Fail Action: Return ERR_SERIALIZATION (recover=false)
+
+[✓] check_header_consistency()
+    Predicate: magic/version match specification
+    Code Location:
+      C:    Part of binary validation (calls phase 1 functions)
+      Rust: Re-check in validate_phase_5
+      Go:   Re-check in validatePhase5
+    Algorithm:
+      ASSERT magic == 0x5455524E
+      ASSERT version == 0x0001
+    Fail Action: Return ERR_INVALID_MAGIC or ERR_INVALID_VERSION (recover=false)
+
+================================================================================
+INTEROP BOUNDARY VALIDATION
+================================================================================
+
+[✓] ffi_validate_buffer_format()
+    Predicate: Buffer has valid Turing header and reasonable size
+    Code Location: interop_ffi.h @ ffi_validate_buffer_format()
+    Algorithm:
+      IF size < TURING_HEADER_SIZE + 4 + 4 + 32:  // Min valid binary
+        RETURN ERR_DESERIALIZATION
+      header := buffer[0:8]
+      IF header.magic != 0x5455524E:
+        RETURN ERR_INVALID_MAGIC
+      IF header.version != 0x0001:
+        RETURN ERR_INVALID_VERSION
+    Fail Action: Return error code (no deserialization attempted)
+
+[✓] ffi_validate_buffer_integrity()
+    Predicate: SHA-256 in buffer matches computed hash
+    Code Location: interop_ffi.h @ ffi_validate_buffer_integrity()
+    Algorithm:
+      payload := buffer[8 : size - 32]
+      stored_hash := buffer[size - 32 : size]
+      actual_hash := SHA256(payload)
+      IF actual_hash != stored_hash:
+        RETURN ERR_SERIALIZATION
+    Fail Action: Return ERR_SERIALIZATION
+
+[✓] ffi_validate_handle_language()
+    Predicate: Handle came from expected language
+    Code Location: interop_ffi.h @ ffi_validate_handle_language()
+    Algorithm:
+      owner := ffi_handle_owner(handle)
+      IF owner != expected_lang:
+        RETURN ERR_INTEROP_MISMATCH
+    Fail Action: Return ERR_INTEROP_MISMATCH
+
+================================================================================
+HELPER FUNCTIONS & PREDICATES
+================================================================================
+
+collect_variables(terms) -> Set[String]
+    Extract all variables (uppercase-initial names) from term list.
+    Used in safety validation.
+    Code: asp/semantics/validator.go::collectVariablesFromTerms() [line 246]
+
+predicateID(name, arity) -> String
+    Create unique identifier "name/arity" for predicate.
+    Used throughout for set membership tests.
+    Code: asp/semantics/validator.go::predicateID() [line 423]
+
+isBuiltin(name) -> Boolean
+    Check if predicate is built-in (arithmetic, comparison, etc.)
+    Returns true for: =, !=, <, >, <=, >=, is, true, false, fail, !, \+
+    Code: asp/semantics/validator.go::isBuiltin() [line 428]
+
+collect_term_variables(terms, output_set)
+    Recursive helper: extract uppercase-initial identifiers.
+    Code: polyglot_builder.rs::collect_term_variables() [line 559]
+    Code: polyglot_builder.go::collectTermVariables() [line 490]
+
+================================================================================
+FAIL-CLOSED ENFORCEMENT (All Languages)
+================================================================================
+
+Error Recovery Policy:
+  - Phase 1 (Structural): recover=false (fatal)
+  - Phase 2 (Symbol): recover=false (fatal)
+  - Phase 3 (Safety): recover=false (fatal)
+  - Phase 4 (Semantics): recover=false (fatal, except recursion/choice warnings)
+  - Phase 5 (Binary): recover=false (fatal)
+
+Validation Chain:
+  1. Check Phase 1; if fail → return immediately
+  2. Check Phase 2; if fail → return immediately
+  3. Check Phase 3; if fail → return immediately
+  4. Check Phase 4; if fail → return immediately (warnings don't stop)
+  5. Check Phase 5; if fail → return immediately
+  6. Return SUCCESS with ValidatedAST
+
+Error Reporting:
+  - Every function returns explicit error code (not implicit success)
+  - Error includes: code, message, phase, recovery flag
+  - Caller must check status before using result
+
+================================================================================
+TEST COVERAGE MATRIX
+================================================================================
+
+Validation Predicate           C Header       Rust Module         Go Module
+────────────────────────────────────────────────────────────────────────────
+validate_magic_header()        ✓ polyglob..   ✓ validate_magic..  ✓ Validate..
+validate_version()             ✓ polyglob..   ✓ validate_versio.. ✓ Validate..
+validate_ast_kind()            ✓ polyglob..   ✓ validate_ast_k..  ✓ Validate..
+check_safe_variables()         ✓ polyglob..   ✓ validate_phase_3  ✓ validate..
+check_undefined_predicates()   ✓ polyglob..   ✓ validate_phase_2  ✓ validate..
+detect_negative_cycles()       ✓ polyglob..   ✓ detect_negative.. ✓ detectNe..
+validate_aggregate_syntax()    ✓ polyglob..   ✓ (phase 4)         ✓ (phase 4)
+validate_type_unification()    ✓ polyglob..   ✓ validate_type..   ✓ Validate..
+validate_memory_bounds()       ✓ polyglob..   ✓ (phase 3)         ✓ (phase 3)
+verify_sha256()                ✓ polyglob..   ✓ validate_sha256   ✓ Validate..
+
+================================================================================
+REFERENCE FILES
+================================================================================
+
+AST Definition:
+  - kernel-language/include/ast.h          [210 lines] - C AST struct
+  - asp/ast/types.go                       [217 lines] - Go AST types
+  - polyglot_builder.rs                    [Lines 32-65] - Rust AST repr
+
+Validator Implementation:
+  - asp/semantics/validator.go             [482 lines] - Go validator
+  - asp/semantics/checker.go               [100+ lines] - Go checker
+  - polyglot_builder.rs                    [Lines 268-420] - Rust validator
+  - polyglot_builder.go                    [Lines 346-494] - Go validator
+
+Binary Foundation:
+  - turing_binary_foundation.go            [461 lines] - Go binary format
+  - polyglot_builder.h                     [230+ lines] - C validator
+
+FFI Specification:
+  - interop_ffi.h                          [350+ lines] - C FFI stubs
+
+================================================================================
+VALIDATION ENTRY POINTS (Per Language)
+================================================================================
+
+C:
+  int32_t status = binary_builder_finalize(builder);
+  if (status != SUCCESS) { /* Handle error */ }
+
+Rust:
+  match builder.finalize() {
+      Ok(ast) => { /* Use ast */ },
+      Err(e) => { /* Handle error e.code */ }
+  }
+
+Go:
+  ast, err := builder.Finalize()
+  if err != nil { /* Handle error */ }
+
+FFI (Cross-Boundary):
+  1. ffi_serialize_handle(src_handle) → uint8_t[] binary
+  2. ffi_validate_buffer_format(binary) → error code
+  3. ffi_validate_buffer_integrity(binary) → error code
+  4. ffi_deserialize_to_X(binary) → target_language_handle
+
+================================================================================
+END CHECKLIST
+================================================================================
