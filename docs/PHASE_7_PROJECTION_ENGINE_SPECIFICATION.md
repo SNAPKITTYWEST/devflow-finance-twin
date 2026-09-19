@@ -47,7 +47,7 @@ Automatic LOD selection: Neuron count in viewport → determines projection deta
 
 **Simplest, fully deterministic projection:**
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 **Verification**: Run 1M times with same input → all outputs are bit-identical.
 
@@ -57,7 +57,7 @@ See [projection_engine.cpp](projection_engine.cpp)
 
 **Isometric projection for 3D depth cues:**
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 **Canonical Matrix Verification**:
 ```
@@ -75,7 +75,7 @@ All matrix elements verified to match IEEE 754 canonical form.
 
 **Perspective projection with full camera control:**
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 **Determinism Proof**: 
 - All matrix elements are IEEE 754 canonically rounded
@@ -90,7 +90,7 @@ See [projection_engine.cpp](projection_engine.cpp)
 
 **Show only neurons in a named circuit, project with spatial context:**
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 **Determinism**: Inherited from base projection method + deterministic circuit filtering (binary search).
 
@@ -100,7 +100,7 @@ See [projection_engine.cpp](projection_engine.cpp)
 
 **Show only neurons in a named cortical layer (L1-L6):**
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 **Determinism**: Inherited from perspective projection + deterministic layer filtering (z-range check).
 
@@ -110,7 +110,7 @@ See [projection_engine.cpp](projection_engine.cpp)
 
 **Show only neurons in a named brain region (V1, M1, CA1, etc.):**
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 **Determinism**: Binary search is deterministic; same neuron set always produces same result.
 
@@ -120,7 +120,7 @@ See [projection_engine.cpp](projection_engine.cpp)
 
 **Project neurons based on recent firing activity (active neurons toward center):**
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 **Determinism Warning**: Activity-driven projection is deterministic only if firing rates are recorded (not computed on-the-fly). See **Behavioral Trace Playback** (Section 9) for frame-by-frame activity data.
 
@@ -137,19 +137,19 @@ All floating-point values use IEEE 754 double-precision (64-bit):
 
 **Canonical rounding mode**: IEEE 754 Round-to-Nearest, Ties-to-Even (default).
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ### 3.2 Matrix Canonical Form (Column-Major, IEEE 754)
 
 All matrices stored in column-major order with IEEE 754 doubles:
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ### 3.3 Parameter Artifact Format
 
 Projection parameters stored as immutable, sealed artifacts (like Phase 6):
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ---
 
@@ -225,7 +225,7 @@ STAGE_2_GPU_PARTITION_LOADER
 
 ### 4.3 Stage 3: GPU Projection Kernel (Compute Shader)
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ### 4.4 Stage 4: Render Projected Neurons (Graphics Pipeline)
 
@@ -417,11 +417,11 @@ STAGE_5_COMPOSITE
 
 ### 5.1 LOD Selection Algorithm
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ### 5.2 LOD-Specific Rendering
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ---
 
@@ -459,7 +459,7 @@ DISPLAY COORDINATES (pixels):
 
 ### 6.3 Transformation Pipeline
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ### 6.4 Determinism in Coordinate Transformation
 
@@ -474,15 +474,15 @@ All transformations use IEEE 754 double-precision:
 
 ### 7.1 Membrane Potential → Color Mapping
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ### 7.2 Firing Rate → Size Mapping
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ### 7.3 Recent Activity → Opacity Mapping
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ---
 
@@ -490,11 +490,11 @@ See [projection_engine.cpp](projection_engine.cpp)
 
 ### 8.1 User Input Handling
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ### 8.2 Neuron Highlighting & Inspection
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ---
 
@@ -502,11 +502,11 @@ See [projection_engine.cpp](projection_engine.cpp)
 
 ### 9.1 Activity Frame Archive Structure
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ### 9.2 Trace Playback Algorithm
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ### 9.3 Determinism in Trace Playback
 
@@ -529,11 +529,11 @@ TRACE PLAYBACK DETERMINISM:
 
 ### 10.1 Bit-for-Bit Reproducibility Test
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ### 10.2 Output Artifact Format (Determinism-Verified)
 
-See [projection_engine.cpp](projection_engine.cpp)
+See [projection_engine.cpp](../gpu/projection_engine.cpp)
 
 ---
 
