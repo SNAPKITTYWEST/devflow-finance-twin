@@ -78,6 +78,8 @@ Each GPU buffer:
 
 ### GPU Node Table (CUDA Memory Layout)
 
+See [gpu_architecture_kernels.cu](gpu_architecture_kernels.cu) for all data structures and kernel implementations. Excerpt:
+
 ```cuda
 // CUDA kernel: one neuron record per node
 // Located in GPU global memory

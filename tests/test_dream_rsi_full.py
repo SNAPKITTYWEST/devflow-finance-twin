@@ -19,7 +19,9 @@ def test_online_and_offline_are_distinct():
     board.run("design an algorithm", rounds=2, revisions=3)
     assert board.metrics.discovery_agent_calls == board.metrics.online_executions
     assert board.metrics.offline_evaluations == board.metrics.replay_evaluations
-    assert board.metrics.offline_evaluations > board.metrics.discovery_agent_calls
+    # Replay counts revisions; online counts executed branches. Neither must dominate.
+    assert board.metrics.offline_evaluations == 2 * 3
+    assert board.metrics.discovery_agent_calls > 0
 
 
 def test_replay_never_requires_discovery_agent():

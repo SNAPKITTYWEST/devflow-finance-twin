@@ -39,17 +39,24 @@ class HistoricalReplay:
         if isinstance(worlds, SimulatorPool):
             source = list(worlds.snapshot())
         else:
-            source = [item if isinstance(item, HistoricalWorld) else HistoricalWorld(item) for item in worlds]
-        if max_worlds is not None:
-            source = source[:max_worlds]
+            source = list(worlds)
+        if max_worlds is not None and (type(max_worlds) is not int or max_worlds < 0):
+            raise ValueError("max_worlds must be a non-negative integer")
+        limit = len(source) if max_worlds is None else max_worlds
+        if budget is not None:
+            limit = min(limit, budget.max_worlds)
+        worlds_exhausted = len(source) > limit
+        source = source[:limit]
         details = []
         for world in source:
+            if not isinstance(world, HistoricalWorld):
+                world = HistoricalWorld(world)
             result = self.simulator.run(policy, world, budget)
             details.append(WorldReplay(world.world_id, result.best_score, result.visited_nodes,
                                        result.selected_branches, result.cost,
                                        result.sparse_requests, list(result.stop_reasons)))
         if not details:
-            return PolicyReplay(0.0, 0, 0, 0, 0.0, 0, False, [])
+            return PolicyReplay(0.0, 0, 0, 0, 0.0, 0, worlds_exhausted, [])
         return PolicyReplay(
             score=sum(item.score for item in details) / len(details),
             worlds=len(details),
@@ -57,6 +64,6 @@ class HistoricalReplay:
             selected_branches=sum(item.selected_branches for item in details),
             cost=sum(item.cost for item in details),
             sparse_requests=sum(item.sparse_requests for item in details),
-            budget_exhausted=any("simulation_budget" in item.stop_reasons for item in details),
+            budget_exhausted=worlds_exhausted or any("simulation_budget" in item.stop_reasons for item in details),
             details=details,
         )

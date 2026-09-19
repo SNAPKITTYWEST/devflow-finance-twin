@@ -6,6 +6,12 @@ It is not Google's or DeepMind's proprietary implementation. It does not claim a
 
 ## Package layout
 
+Current references: [RSI APIs and layout](dream_rsi/README.md),
+[Lua source map](lua/README.md), [audit and edge cases](docs/audits/RSI_LUA_AUDIT.md),
+and [measured benchmarks](benchmarks/rsi_lua/results/SUMMARY.md).
+The eight original flat RSI modules are preserved as package-local `legacy.py`
+files so they no longer collide with layered package imports.
+
 ```text
 dream_rsi/
 ├── core/          online orchestration and recursive loop
@@ -47,14 +53,16 @@ Historical replay, no discovery-agent calls
 Incumbent-safe selection and deployment
 ```
 
-The discovery agent solves the domain task. The policy-development agent changes only exploration control: branching, ordering, parallel grouping, termination, and budget allocation.
+The supplied discovery agent generates hash-derived stand-in proposals; domain
+evaluators assign synthetic scores. The policy developer changes controller
+parameters. Parallel-group fields are metadata, and online traversal remains FIFO.
 
 ## Recursive loop
 
 Each round performs:
 
 1. Run bounded online exploration with the deployed policy.
-2. Persist the resulting tree as a historical world.
+2. Retain the resulting tree as an in-memory historical world (JSONL persistence is a separate caller operation).
 3. Add the world to the simulator pool.
 4. Keep the deployed policy as candidate zero.
 5. Generate at most `M` policy revisions.
@@ -71,7 +79,8 @@ if winner.score < candidate_set[0].score:
     winner = candidate_set[0]
 ```
 
-Therefore the deployed replay score cannot decrease under the same replay objective.
+Therefore selection cannot decrease replay score on the same historical pool.
+Scores can decrease across rounds as new worlds change that pool.
 
 ## Online/offline separation
 
@@ -117,14 +126,14 @@ Only the evaluator changes. The tree, policy, replay, budget, metrics, and selec
 
 For controlled comparisons, use identical task, initial policy, discovery agent, evaluator, rounds, and budget.
 
-## Failure-mode guarantees
+## Failure modes and current limits
 
-- **Policy regression:** incumbent remains deployed.
-- **Replay overfitting:** candidates are evaluated over the accumulated simulator pool.
+- **Policy regression:** selection retains at least the incumbent score on the same pool.
+- **Replay overfitting:** accumulated worlds are reused; there is no held-out generalization guarantee.
 - **Tree sparsity:** missing branches are counted, never invented.
-- **Infinite exploration:** depth, node, and cost limits terminate online and replay work.
+- **Exploration limits:** branch batches can overshoot node limits and replay can overspend cost; `SimulationBudget.max_worlds` is unused.
 - **Candidate explosion:** `PolicyDeveloper.maximum_candidates` and per-run revision limits bound policy search.
-- **Malformed worlds:** tree validation rejects broken parent/child links before persistence or simulation.
+- **Malformed worlds:** validation checks forward child links but accepts some cycles and disconnected nodes. See the executable audit cases.
 
 ## Run
 
@@ -132,6 +141,10 @@ For controlled comparisons, use identical task, initial policy, discovery agent,
 python -m dream_rsi.cli "improve a sorting algorithm" --rounds 3 --revisions 4
 python -m pytest tests/test_dream_rsi.py tests/test_dream_rsi_full.py tests/test_dream_rsi_phase23.py
 ```
+
+The CLI uses the legacy implementation, whose `--revisions` value is currently
+ignored. The layered `RSIOrchestrator.run(..., revisions=...)` honors that limit.
+Run the full scoped audit and benchmarks using [these instructions](benchmarks/rsi_lua/README.md).
 
 ## Source-faithfulness split
 

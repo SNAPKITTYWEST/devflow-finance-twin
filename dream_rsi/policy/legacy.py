@@ -3,6 +3,7 @@ from typing import Any, Dict, Iterable, List, Tuple
 import copy
 import hashlib
 import json
+import math
 
 
 @dataclass(frozen=True)
@@ -18,6 +19,10 @@ class ExplorationPolicy:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
+        if any(type(value) is not int for value in (self.branch_factor, self.max_depth, self.max_nodes, self.parallel_groups)):
+            raise ValueError("search limits must be integers")
+        if not 0 <= self.stop_threshold <= 1 or self.branch_order not in ("score_desc", "score_asc", "fifo"):
+            raise ValueError("invalid score threshold or ordering")
         if self.branch_factor < 1:
             raise ValueError("branch_factor must be >= 1")
         if self.max_depth < 0:
@@ -26,7 +31,7 @@ class ExplorationPolicy:
             raise ValueError("max_nodes must be >= 1")
         if self.parallel_groups < 1:
             raise ValueError("parallel_groups must be >= 1")
-        if self.budget <= 0:
+        if not math.isfinite(self.budget) or self.budget <= 0:
             raise ValueError("budget must be > 0")
 
     def decide(self, node, frontier, spent: float) -> Dict[str, Any]:
@@ -38,7 +43,7 @@ class ExplorationPolicy:
             return {"stop": True, "reason": "depth"}
         if node.score >= self.stop_threshold:
             return {"stop": True, "reason": "threshold"}
-        branches = min(self.branch_factor, max(0, self.max_nodes - len(frontier)))
+        branches = min(self.branch_factor, max(0, self.max_nodes - len(frontier)), int(self.budget - spent))
         return {
             "stop": branches <= 0,
             "branch_count": max(0, branches),

@@ -46,6 +46,8 @@ THREAD BLOCK CONFIGURATION:
 
 ### 2.1 Kernel Source Code (CUDA)
 
+See [gpu_projection_kernels.cu](gpu_projection_kernels.cu) for the full source of all kernels. Excerpt:
+
 ```cuda
 // Kernel_Orthogonal2D_Projection
 // Input: 3D neuron positions (GPU buffer)

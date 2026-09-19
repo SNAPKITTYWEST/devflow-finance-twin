@@ -3,8 +3,8 @@
 from dataclasses import dataclass, asdict
 from typing import Any, Dict, List, Optional
 
-from .core import DreamRSI, RunConfig, RunMetrics, RecursiveFixedExploration, SimpleTESBaseline
-from .discovery import AlgorithmEngineering, MathematicalOptimization, GPUKernelEngineering
+from ..core.legacy import DreamRSI, RunConfig, RunMetrics, RecursiveFixedExploration, SimpleTESBaseline
+from ..discovery.legacy import AlgorithmEngineering, MathematicalOptimization, GPUKernelEngineering
 
 
 @dataclass

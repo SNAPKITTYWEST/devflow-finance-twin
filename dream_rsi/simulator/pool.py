@@ -1,6 +1,7 @@
 """Bounded simulation primitives for historical-world replay."""
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional, Tuple
+import math
 
 from ..tree import DiscoveryTree, TreeNode
 from ..policy.engine import PolicyDecision, SearchPolicy
@@ -13,7 +14,9 @@ class SimulationBudget:
     max_worlds: int = 128
 
     def __post_init__(self):
-        if self.max_nodes < 1 or self.max_cost <= 0 or self.max_worlds < 1:
+        if type(self.max_nodes) is not int or type(self.max_worlds) is not int:
+            raise ValueError("node and world limits must be integers")
+        if self.max_nodes < 1 or not math.isfinite(self.max_cost) or self.max_cost <= 0 or self.max_worlds < 1:
             raise ValueError("simulation limits must be positive")
 
 
@@ -36,7 +39,7 @@ class HistoricalWorld:
         valid, error = tree.validate()
         if not valid:
             raise ValueError(error)
-        self.tree = tree
+        self.tree = DiscoveryTree.from_dict(tree.to_dict())
 
     @property
     def world_id(self):
@@ -65,11 +68,19 @@ class WorldSimulator:
 
     def run(self, policy: SearchPolicy, world: HistoricalWorld,
             budget: Optional[SimulationBudget] = None) -> SimulationState:
+        valid, error = world.tree.validate()
+        if not valid:
+            raise ValueError(error)
         budget = budget or SimulationBudget(max_nodes=policy.max_nodes, max_cost=policy.budget)
+        budget = SimulationBudget(min(budget.max_nodes, policy.max_nodes),
+                                  min(budget.max_cost, policy.budget), budget.max_worlds)
         state = SimulationState()
         frontier = [world.root()]
         while frontier and not state.exhausted(budget):
             node = frontier.pop(0)
+            if node.cost > budget.max_cost - state.cost:
+                state.stop_reasons.append("simulation_budget")
+                break
             state.visited_nodes += 1
             state.cost += max(0.0, float(node.cost))
             state.best_score = max(state.best_score, float(node.score))
@@ -117,6 +128,10 @@ class SimulatorPool:
         return tuple(self.worlds)
 
     def bounded(self, maximum):
+        if type(maximum) is not int or maximum < 0:
+            raise ValueError("world limit must be a non-negative integer")
+        if maximum == 0:
+            return SimulatorPool()
         return SimulatorPool(item.tree for item in self.worlds[-maximum:])
 
     def __len__(self):

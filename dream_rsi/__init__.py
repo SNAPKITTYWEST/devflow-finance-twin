@@ -8,7 +8,7 @@ from .discovery import (
     MathematicalOptimization,
     GPUKernelEngineering,
 )
-from .policy import ExplorationPolicy, PolicyDeveloper
+from .policy.legacy import ExplorationPolicy, PolicyDeveloper
 from .replay import ReplayEngine, ReplayResult, SimulatorPool
 from .tree import DiscoveryTree, TreeNode
 

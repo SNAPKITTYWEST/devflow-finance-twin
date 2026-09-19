@@ -66,10 +66,10 @@ def test_online_and_offline_counts_are_distinct():
     assert board.metrics.replay_evaluations == 8
 
 
-def test_policy_score_never_regresses_after_round():
+def test_policy_score_never_regresses_on_the_same_worlds():
     board = RSIOrchestrator()
-    previous = 0.0
     for _ in range(3):
+        incumbent = board.policy
         result = board.run_round("monotonic", revisions=4)
-        assert result["score"] >= previous
-        previous = result["score"]
+        baseline = board.replay.replay(incumbent, board.worlds).score
+        assert result["score"] >= baseline

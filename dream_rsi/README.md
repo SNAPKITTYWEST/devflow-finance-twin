@@ -4,7 +4,45 @@ This is an independent, auditable reconstruction of the **mechanism** in the sup
 
 ## Status
 
-The first functional slice is implemented under `dream_rsi/`. It is deliberately compact rather than padded to an arbitrary LOC target. The next expansion should add production adapters, distributed persistence, experiment reporting, and a larger validation suite without changing the invariants below.
+Two implementation generations are preserved here. The first slice now lives in
+each package's `legacy.py`; layered implementations have descriptive filenames.
+The import collisions have been repaired. Budget and tree-validation defects
+remain open in the [source audit](../docs/audits/RSI_LUA_AUDIT.md).
+
+## Organization and API selection
+
+| Concern | First implementation | Layered implementation |
+|---|---|---|
+| Loop | `core/legacy.py`: `DreamRSI`, `RunConfig` | `core/orchestrator.py`: `RSIOrchestrator` |
+| Discovery | `discovery/legacy.py`: `DiscoveryAgent` | `discovery/agent.py`: `FixedDiscoveryAgent` |
+| Policy | `policy/legacy.py`: `ExplorationPolicy`, `PolicyDeveloper` | `policy/engine.py`: `SearchPolicy`, `PolicyDeveloper` |
+| Replay | `replay/legacy.py`: `ReplayEngine`, `SimulatorPool` | `replay/engine.py`: `HistoricalReplay`; `simulator/pool.py` |
+| Evaluation | `evaluation/legacy.py` | `evaluation/protocol.py` |
+| Metrics | `metrics/legacy.py` | `metrics/collector.py` |
+| Persistence | `persistence/legacy.py`: `WorldStore` | `persistence/worlds.py`: `WorldStore` |
+| Experiments | `experiments/legacy.py`: `ExperimentRunner` | `experiments/runner.py`: `ExperimentRunner` |
+
+`tree.py` is shared. No implementation was discarded. The relocation manifest is
+in [docs/audits](../docs/audits/rsi-relocations.json).
+
+Top-level `dream_rsi` exports and the CLI select the first implementation.
+`dream_rsi.experiments.ExperimentRunner` and `dream_rsi.persistence.WorldStore`
+also retain its API; `LayeredExperimentRunner` names the layered runner.
+`dream_rsi.policy.PolicyDeveloper` is the layered developer, whereas the
+top-level `dream_rsi.PolicyDeveloper` is legacy. Use explicit implementation
+module imports when composing components; the two policy/agent types are not
+interchangeable. Existing layered imports continue to work unchanged.
+
+For the layered loop:
+
+```python
+from dream_rsi.core.orchestrator import RSIOrchestrator
+
+result = RSIOrchestrator().run("synthetic task", rounds=3, revisions=4)
+print(result["metrics"])
+```
+
+## Legacy CLI
 
 Run it with:
 
@@ -39,15 +77,26 @@ The same RSI machinery supports `AlgorithmEngineering`, `MathematicalOptimizatio
 
 - **DOCUMENTED:** the two-agent separation, evolving policies, discovery trees, historical replay, accumulated worlds, and incumbent-preserving selection described in the supplied brief.
 - **INFERRED:** tree fields, score aggregation across worlds, sparsity handling, budget accounting, and adapter boundaries.
-- **RECONSTRUCTED:** the deterministic hash-free in-memory implementation, synthetic domain evaluators, mutation operators, and CLI.
+- **RECONSTRUCTED:** hash-derived proposals, synthetic domain evaluators, mutation operators, and CLI. Proposal inputs include random parent UUIDs, so repeated tasks alone do not reproduce identical runs.
 
 ## Failure modes
 
 - **Policy regression:** the incumbent is retained by `PolicyDeveloper.select_best`.
-- **Replay overfitting:** candidates are scored against the complete `SimulatorPool`, not one tree.
+- **Replay overfitting:** candidates are scored against historical worlds; this does not establish generalization to unseen worlds.
 - **Tree sparsity:** unavailable branches are not fabricated; `sparse_requests` is counted.
-- **Infinite exploration:** depth, node, and cost budgets stop online and replay traversal.
-- **Candidate explosion:** revision count and replay work are bounded by the developer and run configuration.
+- **Exploration bounds:** limits exist, but branch batches and costly nodes can overshoot; see the executable audit cases.
+- **Candidate explosion:** developers cap candidate counts. Legacy `RunConfig.revisions` is ignored, and layered `SimulationBudget.max_worlds` is unused.
+
+## Tests and benchmarks
+
+```sh
+python -m pytest tests/test_dream_rsi.py tests/test_dream_rsi_extensions.py tests/test_dream_rsi_full.py tests/test_dream_rsi_phase23.py tests/test_dream_rsi_audit.py -q -rx
+python benchmarks/rsi_lua/run.py
+```
+
+The audit suite distinguishes passing tests from strict expected failures for
+unresolved defects. [Benchmark instructions](../benchmarks/rsi_lua/README.md)
+explain fixture IDs, timing, operation counts, and synthetic-score limitations.
 
 ## Exact LOC count
 

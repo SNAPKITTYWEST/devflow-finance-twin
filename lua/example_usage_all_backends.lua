@@ -95,6 +95,7 @@ local function example_composite_pipeline()
     -- Build component operations
     local encode = binary.builder.new(0x0300)
         :set_dimensions(0, 2048)
+        :set_params(string.pack("<I8I2I1", 2048, 1, 8))
         :build()
 
     local mul = binary.builder.new(0x0020)
@@ -205,7 +206,7 @@ local function example_iteration()
     local iteration = binary.builder.new(0xF003)  -- ITERATE
         :add_child(loop_body)
         :set_dimensions(128, 128)
-        :set_params(string.char(0x00, 0x00, 0x00, 0x64))  -- u32: 100
+        :set_params(string.pack("<I4", 100))  -- u32: 100
         :build()
 
     print("Iteration structure:")
@@ -450,7 +451,7 @@ local function example_performance_characteristics()
     local ast = binary.api.create_encrypted_pipeline()
     local start = os.clock()
     for i = 1, 100 do
-        binary.serialize(ast)
+        assert(binary.serialize(ast))
     end
     local elapsed = (os.clock() - start) * 1000
     print(string.format("  Serialization (100 iterations): %.2f ms (%.2f µs per op)", elapsed, elapsed * 10))
@@ -459,7 +460,7 @@ local function example_performance_characteristics()
     local serialized = binary.serialize(ast)
     start = os.clock()
     for i = 1, 100 do
-        binary.deserialize(serialized)
+        assert(binary.deserialize(serialized))
     end
     elapsed = (os.clock() - start) * 1000
     print(string.format("  Deserialization (100 iterations): %.2f ms (%.2f µs per op)", elapsed, elapsed * 10))
@@ -467,7 +468,7 @@ local function example_performance_characteristics()
     -- Time validation
     start = os.clock()
     for i = 1, 1000 do
-        binary.validate(serialized)
+        assert(binary.validate(serialized))
     end
     elapsed = (os.clock() - start) * 1000
     print(string.format("  Validation (1000 iterations): %.2f ms (%.2f µs per op)", elapsed, elapsed))
@@ -512,7 +513,7 @@ local function main()
     print_section("SUMMARY")
     print(string.format("  Total examples: 10"))
     print(string.format("  Coverage: Arithmetic, composition, control flow, ISA, validation, introspection"))
-    print(string.format("  Status: All examples completed successfully")
+    print(string.format("  Status: All examples completed successfully"))
     print("\n")
 end
 

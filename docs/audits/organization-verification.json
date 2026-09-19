@@ -1,0 +1,72 @@
+[
+  {
+    "file": "dream_rsi/core/legacy.py",
+    "check": "original implementation preserved; only relative imports changed",
+    "passed": true
+  },
+  {
+    "file": "dream_rsi/discovery/legacy.py",
+    "check": "original implementation preserved; only relative imports changed",
+    "passed": true
+  },
+  {
+    "file": "dream_rsi/evaluation/legacy.py",
+    "check": "original implementation preserved; only relative imports changed",
+    "passed": true
+  },
+  {
+    "file": "dream_rsi/experiments/legacy.py",
+    "check": "original implementation preserved; only relative imports changed",
+    "passed": true
+  },
+  {
+    "file": "dream_rsi/metrics/legacy.py",
+    "check": "original implementation preserved; only relative imports changed",
+    "passed": true
+  },
+  {
+    "file": "dream_rsi/persistence/legacy.py",
+    "check": "original implementation preserved; only relative imports changed",
+    "passed": true
+  },
+  {
+    "file": "dream_rsi/policy/legacy.py",
+    "check": "original implementation preserved; only relative imports changed",
+    "passed": true
+  },
+  {
+    "file": "dream_rsi/replay/legacy.py",
+    "check": "original implementation preserved; only relative imports changed",
+    "passed": true
+  },
+  {
+    "file": "lua/example_usage_all_backends.lua",
+    "check": "source unchanged",
+    "passed": true
+  },
+  {
+    "file": "lua/metabinary.lua",
+    "check": "source unchanged",
+    "passed": true
+  },
+  {
+    "file": "lua/metabinary_builder_facade.lua",
+    "check": "source unchanged",
+    "passed": true
+  },
+  {
+    "file": "lua/metabinary_complete.lua",
+    "check": "source unchanged",
+    "passed": true
+  },
+  {
+    "file": "lua/metabinary_ffi_bindings.lua",
+    "check": "source unchanged",
+    "passed": true
+  },
+  {
+    "file": "lua/metabinary_final_assembly.lua",
+    "check": "source unchanged",
+    "passed": true
+  }
+]

@@ -1,7 +1,6 @@
 # FORMAL VERIFICATION FRAMEWORK — PHASE 4 EXECUTION
 ## Independent Audit of Neural Dynamics Execution Model
 
-**Auditor:** ORCHESTRATOR-2 (Formal Verification + Adversarial Auditor)  
 **Date:** 2026-09-13  
 **Status:** COMPREHENSIVE SPECIFICATION + ADVERSARIAL TESTING PROTOCOL  
 **Authority:** NEURAL_DYNAMICS_EXECUTION.md (kernel-language specification)
@@ -1458,7 +1457,6 @@ The following MUST be resolved before sign-off:
 
 **AUDIT STATUS:** SPECIFICATION COMPLETE, AWAITING IMPLEMENTATION VERIFICATION
 
-**Signed by:** ORCHESTRATOR-2 (Formal Verification + Adversarial Auditor)  
 **Authority:** Independent verification framework  
 **Date:** 2026-09-13  
 **Version:** 1.0 (Final Specification)

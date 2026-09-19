@@ -52,7 +52,7 @@ function builder_facade.validators.validate_params(opcode, params)
         [0x0200] = 1,    -- MOD_SWITCH (u8)
         [0x0201] = 8,    -- RESCALE (u64)
         [0x0202] = 0,    -- MOD_UP
-        [0x0300] = 9,    -- ENCODE (u64 + u16 + u8)
+        [0x0300] = 11,    -- ENCODE (u64 + u16 + u8)
         [0x0302] = 4,    -- ENCRYPT (u32)
         [0x0303] = 4,    -- DECRYPT (u32)
         [0x0401] = 8,    -- NOISE_ASSERT (u64)
@@ -186,6 +186,7 @@ function Builder:set_params(params)
         error("Cannot modify builder after build()")
     end
 
+    params = params or ""
     local valid, msg = builder_facade.validators.validate_params(self.opcode, params)
     if not valid then
         if self.validation_mode == "strict" then
@@ -206,16 +207,7 @@ function Builder:add_child(child)
 
     table.insert(self.children, child)
 
-    -- Revalidate arity after adding child
-    local valid, msg = builder_facade.validators.validate_child_arity(self.opcode, #self.children)
-    if not valid then
-        table.remove(self.children)
-        if self.validation_mode == "strict" then
-            error(msg)
-        else
-            io.stderr:write(string.format("WARNING: %s\n", msg))
-        end
-    end
+    -- Exact arity is checked at build(), after incremental construction.
 
     return self
 end
@@ -237,7 +229,7 @@ function Builder:with_pure_flag(is_pure)
 end
 
 function Builder:set_backend(backend)
-    if backend ~= "c" and backend ~= "rust" and backend ~= "go" then
+    if backend ~= "lua" and backend ~= "c" and backend ~= "rust" and backend ~= "go" then
         error("Invalid backend: " .. backend)
     end
     self.backend = backend
@@ -259,7 +251,7 @@ function Builder:validate()
     if not valid then return false, msg end
 
     -- Update flags based on children
-    self.flags = 0
+    self.flags = self.flags & 0x04
     if #self.children > 0 then self.flags = self.flags | 0x01 end
     if #self.children == 0 then self.flags = self.flags | 0x02 end
 
@@ -304,8 +296,7 @@ end
 
 function Builder:serialize()
     local ast = self:build()
-    -- Serialization would call binary.serialize() from main module
-    return ast
+    return require("metabinary").serialize(ast)
 end
 
 function Builder:describe()
@@ -353,7 +344,7 @@ function builder_facade.factory.relinearization(relin_id, input_width, output_wi
     return Builder.new(0x0100, {
         input_width = input_width,
         output_width = output_width,
-        params = string.char((relin_id >> 8) & 0xFF, relin_id & 0xFF), -- Pack as u16
+        params = string.pack("<I2", relin_id), -- Pack as u16
     })
 end
 
@@ -361,15 +352,15 @@ function builder_facade.factory.key_switching(ks_id, input_width, output_width)
     return Builder.new(0x0101, {
         input_width = input_width,
         output_width = output_width,
-        params = string.char((ks_id >> 8) & 0xFF, ks_id & 0xFF),
+        params = string.pack("<I2", ks_id),
     })
 end
 
 function builder_facade.factory.rotate(shift, mask, input_width, output_width)
     -- shift (i16) and mask (u16)
     local params = ""
-    params = params .. string.char((shift >> 8) & 0xFF, shift & 0xFF)
-    params = params .. string.char((mask >> 8) & 0xFF, mask & 0xFF)
+    params = params .. string.pack("<i2", shift)
+    params = params .. string.pack("<I2", mask)
 
     return Builder.new(0x0102, {
         input_width = input_width,
@@ -384,7 +375,7 @@ function builder_facade.factory.encode(plaintext_size, scale, precision)
     for i = 0, 7 do
         params = params .. string.char((plaintext_size >> (i * 8)) & 0xFF)
     end
-    params = params .. string.char((scale >> 8) & 0xFF, scale & 0xFF)
+    params = params .. string.pack("<I2", scale)
     params = params .. string.char(precision & 0xFF)
 
     return Builder.new(0x0300, {
@@ -397,12 +388,7 @@ function builder_facade.factory.decrypt(key_id, input_width, output_width)
     return Builder.new(0x0303, {
         input_width = input_width,
         output_width = output_width,
-        params = string.char(
-            (key_id >> 24) & 0xFF,
-            (key_id >> 16) & 0xFF,
-            (key_id >> 8) & 0xFF,
-            key_id & 0xFF
-        ),
+        params = string.pack("<I4", key_id),
     })
 end
 
@@ -441,12 +427,7 @@ end
 
 function builder_facade.factory.iterate(body, iterations, input_width, output_width)
     -- iterations packed as u32
-    local params = string.char(
-        (iterations >> 24) & 0xFF,
-        (iterations >> 16) & 0xFF,
-        (iterations >> 8) & 0xFF,
-        iterations & 0xFF
-    )
+    local params = string.pack("<I4", iterations)
 
     local builder = Builder.new(0xF003, {
         input_width = input_width,

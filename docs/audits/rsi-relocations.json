@@ -1,0 +1,50 @@
+[
+    {
+        "source":  "dream_rsi/core.py",
+        "destination":  "dream_rsi/core/legacy.py",
+        "sha256":  "23DAA994A0871F4001C1734645F1D07BD5CFE185E1BA799763745CE4AF1EA62E",
+        "move_verified":  true
+    },
+    {
+        "source":  "dream_rsi/discovery.py",
+        "destination":  "dream_rsi/discovery/legacy.py",
+        "sha256":  "0A7082E24641AB9C9FE3CAA9687DFC9B5435BB8DA9D77FD74D6FDC17799B9FF6",
+        "move_verified":  true
+    },
+    {
+        "source":  "dream_rsi/evaluation.py",
+        "destination":  "dream_rsi/evaluation/legacy.py",
+        "sha256":  "CCB1D12D5E2E3220B1656BE64E377F923423DD35D3B45B4AA4E30C12DB0A12F9",
+        "move_verified":  true
+    },
+    {
+        "source":  "dream_rsi/experiments.py",
+        "destination":  "dream_rsi/experiments/legacy.py",
+        "sha256":  "841317ED43060F90BB53093A628E748A217EDF30FEC4215D848C3A1719541C3C",
+        "move_verified":  true
+    },
+    {
+        "source":  "dream_rsi/metrics.py",
+        "destination":  "dream_rsi/metrics/legacy.py",
+        "sha256":  "6D8AFF645F64A65C4810C593407CB6F04A0D10031F1F92F2D6280C77E76276AD",
+        "move_verified":  true
+    },
+    {
+        "source":  "dream_rsi/persistence.py",
+        "destination":  "dream_rsi/persistence/legacy.py",
+        "sha256":  "F190D88C73347C516B1411CE5C4B4B441A013C42FF860EAD894C8F71256E6B04",
+        "move_verified":  true
+    },
+    {
+        "source":  "dream_rsi/policy.py",
+        "destination":  "dream_rsi/policy/legacy.py",
+        "sha256":  "800D51ECFDED18CA42E990DB92DCF254BA2D8EA57D24BBD848F18E1EB4C78C70",
+        "move_verified":  true
+    },
+    {
+        "source":  "dream_rsi/replay.py",
+        "destination":  "dream_rsi/replay/legacy.py",
+        "sha256":  "46EB71049AEB6A9F9ED914199F7552875978862572978D665EB3CFBDAC30257C",
+        "move_verified":  true
+    }
+]

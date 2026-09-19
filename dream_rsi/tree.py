@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 import json
 import uuid
+import math
 
 
 def utc_now() -> str:
@@ -49,6 +50,8 @@ class DiscoveryTree:
         if parent_id not in self.nodes:
             raise KeyError(f"unknown parent node: {parent_id}")
         node = TreeNode(parent_id=parent_id, **fields)
+        if node.node_id in self.nodes:
+            raise ValueError("duplicate node ID")
         self.nodes[node.node_id] = node
         self.nodes[parent_id].children.append(node.node_id)
         return node
@@ -62,13 +65,36 @@ class DiscoveryTree:
     def validate(self):
         if self.root_id not in self.nodes:
             return False, "missing root"
-        for node in self.nodes.values():
+        if self.nodes[self.root_id].parent_id is not None:
+            return False, "root must not have a parent"
+        for key, node in self.nodes.items():
+            if key != node.node_id:
+                return False, "node ID does not match dictionary key"
+            if (not isinstance(node.cost, (int, float)) or not isinstance(node.score, (int, float))
+                    or not math.isfinite(node.cost) or node.cost < 0 or not math.isfinite(node.score)):
+                return False, "node cost and score must be finite; cost must be non-negative"
+            if len(node.children) != len(set(node.children)):
+                return False, "duplicate child link"
+            if key != self.root_id:
+                parent = self.nodes.get(node.parent_id)
+                if parent is None or key not in parent.children:
+                    return False, "missing reverse parent link"
             for child_id in node.children:
                 child = self.nodes.get(child_id)
                 if child is None:
                     return False, f"child {child_id} missing"
                 if child.parent_id != node.node_id:
                     return False, f"broken parent link for {child_id}"
+        visited = set()
+        pending = [self.root_id]
+        while pending:
+            node_id = pending.pop()
+            if node_id in visited:
+                return False, "cycle or repeated node"
+            visited.add(node_id)
+            pending.extend(self.nodes[node_id].children)
+        if len(visited) != len(self.nodes):
+            return False, "disconnected nodes"
         return True, None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -88,7 +114,14 @@ class DiscoveryTree:
         tree = cls(payload.get("tree_id"), payload.get("metadata"))
         tree.created_at = payload.get("created_at", utc_now())
         tree.root_id = payload.get("root_id", tree.root_id)
-        tree.nodes = {node["node_id"]: TreeNode.from_dict(node) for node in payload.get("nodes", [])}
+        tree.nodes = {}
+        for node in payload.get("nodes", []):
+            if node["node_id"] in tree.nodes:
+                raise ValueError("duplicate node ID")
+            tree.nodes[node["node_id"]] = TreeNode.from_dict(node)
+        valid, error = tree.validate()
+        if not valid:
+            raise ValueError(error)
         return tree
 
     @classmethod

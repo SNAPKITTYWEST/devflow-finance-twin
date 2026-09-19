@@ -1,8 +1,8 @@
 from pathlib import Path
 import json
 
-from .tree import DiscoveryTree
-from .replay import SimulatorPool
+from ..tree import DiscoveryTree
+from ..replay.legacy import SimulatorPool
 
 
 class WorldStore:

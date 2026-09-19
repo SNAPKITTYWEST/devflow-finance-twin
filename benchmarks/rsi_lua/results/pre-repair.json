@@ -1,0 +1,1204 @@
+{
+  "timestamp_utc": "2026-09-19T01:30:41.520408+00:00",
+  "git_head": "391364b511afb5c967ad621877ca18c3c8bbfa7b",
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+  "logical_cpus": 8,
+  "clock": "perf_counter_ns wall time",
+  "scope": "local synthetic CPU workloads; no real discovery, GPU execution, or native FFI performance",
+  "source_sha256": {
+    "benchmarks/rsi_lua/lua_audit.lua": "1bb2c69872fbf8b4330aeed37bbaba0c2cb20d16225fe71dd6dd921a1973039c",
+    "benchmarks/rsi_lua/run.py": "6fab4c6e4f9b07482e99f019a30764bfe68e091b5f1d7d7608fc6b4f15a34782",
+    "benchmarks/rsi_lua/summarize.py": "759c437ae5135770dbb9dfa15d7af36db894e84e9902cf1589c2581679ecaa8e",
+    "dream_rsi/__init__.py": "e536b4d91c7d99658a7f39229e6efc134440e586c43766daffe2459f7618bf6c",
+    "dream_rsi/cli.py": "1547bbb9d42656ec6b664c2c304079128edc66058eeb994df5ece9737a373d36",
+    "dream_rsi/core/__init__.py": "b1f226d874593ef68cfd7a1e09c58cf4637a65b50dbea436ede9096511b19d51",
+    "dream_rsi/core/legacy.py": "ef82a5a2e5bab40a3f874b7b5cfea12ec79d10e0b4cdcd25e02b28ab818b5754",
+    "dream_rsi/core/orchestrator.py": "27e10eb69dff0428b9c0b4b595078178fadb8b55b20eab369f94e39186bcf7b6",
+    "dream_rsi/discovery/__init__.py": "3f0a412072334a41387c06e377bc1ce9c09fe49ccffc9be5217fe696b18cbcc0",
+    "dream_rsi/discovery/agent.py": "dfc5b9ae3ad3c2a3ac5b59324fc1e4b69a6ef6fd0dc026100dbc199f8ddc6f09",
+    "dream_rsi/discovery/legacy.py": "0a7082e24641ab9c9fe3caa9687dfc9b5435bb8da9d77fd74d6fdc17799b9ff6",
+    "dream_rsi/evaluation/__init__.py": "2a7559db951a8c4033d59373530b7e81c90c12da38bda6b696cd7064b6bb6aed",
+    "dream_rsi/evaluation/legacy.py": "ccb1d12d5e2e3220b1656be64e377f923423dd35d3b45b4aa4e30c12db0a12f9",
+    "dream_rsi/evaluation/protocol.py": "f26aa62cacfb827dc6c1139fb4394bb84bb8ddea4f92588667e0c95ac9ad7466",
+    "dream_rsi/experiments/__init__.py": "adb001c8581881f51653d81908c279cabf652186632a3b268c5679b84cd1de23",
+    "dream_rsi/experiments/baselines.py": "201ca27eb4dc38fd7b64c060185714b32503e5872d8d7b9ddc07c93db790d95b",
+    "dream_rsi/experiments/legacy.py": "873b353096ce9e54a99ef6345ff325c982d2b47d5e5ebbe3ceaf32597ac236bc",
+    "dream_rsi/experiments/runner.py": "cc98dc712400d23d4b3f0b0fe48a7ad0dc0cc81eb861919fde267ee59aa4a8f4",
+    "dream_rsi/metrics/__init__.py": "f58275a9030771dfb2d8010fd2fb4a395fbdf158a8d00713a31ebfc33e4106c1",
+    "dream_rsi/metrics/collector.py": "33363c144d19307199a960d36588996b3cbedac83d079caf2e42973eb07702b9",
+    "dream_rsi/metrics/legacy.py": "7b176f4807c888179bb86506bf34b9491ae3f26a55e138b096428854d8da3786",
+    "dream_rsi/persistence/__init__.py": "de5dc416992df5e30434fcf92298023a99e4f5b382a700f52219309588062b78",
+    "dream_rsi/persistence/legacy.py": "ca60243b5f6569e07000c2ae86c2aea9a2c2b57a83bd265e397867a3865a110b",
+    "dream_rsi/persistence/worlds.py": "0deca5b377071e6599c19aca063694e15d18d95bed1fa549da70e9a2223d256f",
+    "dream_rsi/policy/__init__.py": "5ab8784552c1726e57fd38923ac69bbe558774b4505fa99d2c82cb03cc997791",
+    "dream_rsi/policy/engine.py": "d6746d2fc3f6e84f3df4a8b378b4759667792f4a7f0014335a70962b3303eef5",
+    "dream_rsi/policy/legacy.py": "800d51ecfded18ca42e990db92dcf254ba2d8ea57d24bbd848f18e1eb4c78c70",
+    "dream_rsi/replay/__init__.py": "a338c8e4f3418532b37891fd05d501885656f1ccb857093d7018246e5107b37d",
+    "dream_rsi/replay/engine.py": "843a853ea70a3be8c624622f60e79721ea25ba4bf41b2b6825eb797cd3bc2259",
+    "dream_rsi/replay/legacy.py": "24fc25fbb4a23bd157adf9f099c4ae07209369c34eb78001e2d42f0fe2a10011",
+    "dream_rsi/simulator/__init__.py": "7f2b214feeaadb79a7a2baff99961ee8990208b2866e9d4a16c10119c4101111",
+    "dream_rsi/simulator/pool.py": "b6d61b3fef7a78b824412de32b8563b765225f4531cfe6c437ed3c84df986f4b",
+    "dream_rsi/tree.py": "cafe921dd0922733b02f95fcc3f1fc2437562184d9379fce3821e563514cf9ef",
+    "lua/example_usage_all_backends.lua": "c60d9fe103dedd61439f0f7f0767be8d5fdc28b720f598dffba4e95b77ec7149",
+    "lua/metabinary.lua": "b7572db6d87dee43bd20c97793e91a7f7bd01fe30542e2c53c0cdd70061338bc",
+    "lua/metabinary_builder_facade.lua": "1043ba47621c065fe679b9e48415634ca5e602863e748252a804f646669745dd",
+    "lua/metabinary_complete.lua": "45cb45d0e4ece385e1759ecf74a36d4218bad7b18d57a864d98aaa4c9c28e69f",
+    "lua/metabinary_ffi_bindings.lua": "7d3767218dc0a4740d6530d153262a33e2278275dc689e4a157970d15cea3ed8",
+    "lua/metabinary_final_assembly.lua": "e8fa51fce6c4d7f383819fe023038b68f41e14fbad2b8f2d8ea7f26200821676"
+  },
+  "rsi": [
+    {
+      "name": "rsi.layered.rounds_1.revisions_0",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.00037326,
+        0.00030908,
+        0.00029968,
+        0.00030822,
+        0.00030026,
+        0.00029706,
+        0.00043854
+      ],
+      "median_seconds": 0.00030822,
+      "min_seconds": 0.00029706,
+      "max_seconds": 0.00043854,
+      "work": {
+        "discovery_agent_calls": 14,
+        "online_executions": 14,
+        "offline_evaluations": 0,
+        "replay_evaluations": 0,
+        "policy_revisions": 0,
+        "generations": 1,
+        "branches": 14,
+        "tree_nodes": 15,
+        "worlds": 1,
+        "compute_budget": 14.0,
+        "best_solution_score": 0.911945098757731,
+        "policy_improvement": 0.911945098757731
+      }
+    },
+    {
+      "name": "rsi.layered.rounds_1.revisions_4",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.0006339799999999999,
+        0.0005956000000000001,
+        0.00154506,
+        0.0005748,
+        0.0005325800000000001,
+        0.00054162,
+        0.0005025
+      ],
+      "median_seconds": 0.0005748,
+      "min_seconds": 0.0005025,
+      "max_seconds": 0.00154506,
+      "work": {
+        "discovery_agent_calls": 14,
+        "online_executions": 14,
+        "offline_evaluations": 4,
+        "replay_evaluations": 4,
+        "policy_revisions": 4,
+        "generations": 1,
+        "branches": 14,
+        "tree_nodes": 15,
+        "worlds": 1,
+        "compute_budget": 14.0,
+        "best_solution_score": 0.911945098757731,
+        "policy_improvement": 0.911945098757731
+      }
+    },
+    {
+      "name": "rsi.layered.rounds_1.revisions_8",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.00068924,
+        0.00076486,
+        0.00071066,
+        0.00071612,
+        0.0007178600000000001,
+        0.00070872,
+        0.0008347999999999999
+      ],
+      "median_seconds": 0.00071612,
+      "min_seconds": 0.00068924,
+      "max_seconds": 0.0008347999999999999,
+      "work": {
+        "discovery_agent_calls": 14,
+        "online_executions": 14,
+        "offline_evaluations": 8,
+        "replay_evaluations": 8,
+        "policy_revisions": 8,
+        "generations": 1,
+        "branches": 14,
+        "tree_nodes": 15,
+        "worlds": 1,
+        "compute_budget": 14.0,
+        "best_solution_score": 0.911945098757731,
+        "policy_improvement": 0.911945098757731
+      }
+    },
+    {
+      "name": "rsi.layered.rounds_10.revisions_0",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.005703720000000001,
+        0.00562324,
+        0.0056774,
+        0.00554696,
+        0.0056033,
+        0.0059732,
+        0.0056713399999999995
+      ],
+      "median_seconds": 0.0056713399999999995,
+      "min_seconds": 0.00554696,
+      "max_seconds": 0.0059732,
+      "work": {
+        "discovery_agent_calls": 140,
+        "online_executions": 140,
+        "offline_evaluations": 0,
+        "replay_evaluations": 0,
+        "policy_revisions": 0,
+        "generations": 10,
+        "branches": 140,
+        "tree_nodes": 150,
+        "worlds": 10,
+        "compute_budget": 140.0,
+        "best_solution_score": 0.911945098757731,
+        "policy_improvement": 0.971254318716363
+      }
+    },
+    {
+      "name": "rsi.layered.rounds_10.revisions_4",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.012072620000000001,
+        0.01222458,
+        0.01142488,
+        0.01249402,
+        0.011435339999999999,
+        0.01275678,
+        0.011508019999999999
+      ],
+      "median_seconds": 0.012072620000000001,
+      "min_seconds": 0.01142488,
+      "max_seconds": 0.01275678,
+      "work": {
+        "discovery_agent_calls": 140,
+        "online_executions": 140,
+        "offline_evaluations": 40,
+        "replay_evaluations": 40,
+        "policy_revisions": 40,
+        "generations": 10,
+        "branches": 140,
+        "tree_nodes": 150,
+        "worlds": 10,
+        "compute_budget": 140.0,
+        "best_solution_score": 0.911945098757731,
+        "policy_improvement": 0.971254318716363
+      }
+    },
+    {
+      "name": "rsi.layered.rounds_10.revisions_8",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.01825356,
+        0.018635060000000002,
+        0.01846074,
+        0.019056880000000002,
+        0.019872880000000002,
+        0.01960166,
+        0.0191676
+      ],
+      "median_seconds": 0.019056880000000002,
+      "min_seconds": 0.01825356,
+      "max_seconds": 0.019872880000000002,
+      "work": {
+        "discovery_agent_calls": 140,
+        "online_executions": 140,
+        "offline_evaluations": 80,
+        "replay_evaluations": 80,
+        "policy_revisions": 80,
+        "generations": 10,
+        "branches": 140,
+        "tree_nodes": 150,
+        "worlds": 10,
+        "compute_budget": 140.0,
+        "best_solution_score": 0.911945098757731,
+        "policy_improvement": 0.971254318716363
+      }
+    },
+    {
+      "name": "rsi.layered.rounds_50.revisions_0",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.08706694000000001,
+        0.0873965,
+        0.08436204,
+        0.08618909999999999,
+        0.08695576,
+        0.08630995999999999,
+        0.08593018
+      ],
+      "median_seconds": 0.08630995999999999,
+      "min_seconds": 0.08436204,
+      "max_seconds": 0.0873965,
+      "work": {
+        "discovery_agent_calls": 686,
+        "online_executions": 686,
+        "offline_evaluations": 0,
+        "replay_evaluations": 0,
+        "policy_revisions": 0,
+        "generations": 50,
+        "branches": 686,
+        "tree_nodes": 736,
+        "worlds": 50,
+        "compute_budget": 686.0,
+        "best_solution_score": 0.9270578397081835,
+        "policy_improvement": 1.042672658369988
+      }
+    },
+    {
+      "name": "rsi.layered.rounds_50.revisions_4",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.22004224,
+        0.21687428,
+        0.21864172,
+        0.21911734,
+        0.22015668000000002,
+        0.21831844,
+        0.22244086
+      ],
+      "median_seconds": 0.21911734,
+      "min_seconds": 0.21687428,
+      "max_seconds": 0.22244086,
+      "work": {
+        "discovery_agent_calls": 686,
+        "online_executions": 686,
+        "offline_evaluations": 200,
+        "replay_evaluations": 200,
+        "policy_revisions": 200,
+        "generations": 50,
+        "branches": 686,
+        "tree_nodes": 736,
+        "worlds": 50,
+        "compute_budget": 686.0,
+        "best_solution_score": 0.9270578397081835,
+        "policy_improvement": 1.042672658369988
+      }
+    },
+    {
+      "name": "rsi.layered.rounds_50.revisions_8",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.36541024,
+        0.3628756,
+        0.3653123,
+        0.37186722,
+        0.37334012,
+        0.37678446,
+        0.3725037
+      ],
+      "median_seconds": 0.37186722,
+      "min_seconds": 0.3628756,
+      "max_seconds": 0.37678446,
+      "work": {
+        "discovery_agent_calls": 686,
+        "online_executions": 686,
+        "offline_evaluations": 400,
+        "replay_evaluations": 400,
+        "policy_revisions": 400,
+        "generations": 50,
+        "branches": 686,
+        "tree_nodes": 736,
+        "worlds": 50,
+        "compute_budget": 686.0,
+        "best_solution_score": 0.9270578397081835,
+        "policy_improvement": 1.042672658369988
+      }
+    },
+    {
+      "name": "rsi.legacy.rounds_1.default_revisions",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.00041057999999999996,
+        0.00036172,
+        0.00030518,
+        0.00029612000000000003,
+        0.00034174,
+        0.0003338,
+        0.00032302
+      ],
+      "median_seconds": 0.0003338,
+      "min_seconds": 0.00029612000000000003,
+      "max_seconds": 0.00041057999999999996,
+      "work": {
+        "discovery_agent_calls": 8,
+        "generations": 1,
+        "compute_budget": 8.0,
+        "best_solution_score": 0.985733,
+        "branches": 8,
+        "tree_size": 9,
+        "policy_revisions": 4,
+        "replay_evaluations": 4,
+        "online_executions": 8,
+        "offline_evaluations": 4,
+        "policy_improvement": 0.985733
+      }
+    },
+    {
+      "name": "rsi.legacy.rounds_10.default_revisions",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.0038583199999999997,
+        0.00386226,
+        0.00371768,
+        0.0040402599999999995,
+        0.00402526,
+        0.00398206,
+        0.00415536
+      ],
+      "median_seconds": 0.00398206,
+      "min_seconds": 0.00371768,
+      "max_seconds": 0.00415536,
+      "work": {
+        "discovery_agent_calls": 74,
+        "generations": 10,
+        "compute_budget": 74.0,
+        "best_solution_score": 0.985733,
+        "branches": 74,
+        "tree_size": 84,
+        "policy_revisions": 40,
+        "replay_evaluations": 40,
+        "online_executions": 74,
+        "offline_evaluations": 40,
+        "policy_improvement": 1.0592809214285714
+      }
+    },
+    {
+      "name": "rsi.legacy.rounds_50.default_revisions",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.06463105999999999,
+        0.06594002,
+        0.06864044,
+        0.0675833,
+        0.06722320000000001,
+        0.06447682,
+        0.06408578000000001
+      ],
+      "median_seconds": 0.06594002,
+      "min_seconds": 0.06408578000000001,
+      "max_seconds": 0.06864044,
+      "work": {
+        "discovery_agent_calls": 394,
+        "generations": 50,
+        "compute_budget": 394.0,
+        "best_solution_score": 0.985733,
+        "branches": 394,
+        "tree_size": 444,
+        "policy_revisions": 200,
+        "replay_evaluations": 200,
+        "online_executions": 394,
+        "offline_evaluations": 200,
+        "policy_improvement": 1.103378077984478
+      }
+    },
+    {
+      "name": "rsi.replay.worlds_1.nodes_63",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.00015403999999999998,
+        0.00016146000000000002,
+        0.00015858000000000002,
+        0.00014549999999999999,
+        0.00013784,
+        0.000142,
+        0.00014494
+      ],
+      "median_seconds": 0.00014549999999999999,
+      "min_seconds": 0.00013784,
+      "max_seconds": 0.00016146000000000002,
+      "work": {
+        "worlds": 1,
+        "visited": 63,
+        "cost": 62.0,
+        "score": 0.25
+      }
+    },
+    {
+      "name": "rsi.replay.worlds_10.nodes_63",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.0014353599999999999,
+        0.00132134,
+        0.0013746,
+        0.0014128,
+        0.00137404,
+        0.0013666400000000001,
+        0.00133474
+      ],
+      "median_seconds": 0.00137404,
+      "min_seconds": 0.00132134,
+      "max_seconds": 0.0014353599999999999,
+      "work": {
+        "worlds": 10,
+        "visited": 630,
+        "cost": 620.0,
+        "score": 0.25
+      }
+    },
+    {
+      "name": "rsi.replay.worlds_100.nodes_63",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.01556116,
+        0.01489714,
+        0.0156636,
+        0.01593324,
+        0.01542658,
+        0.01610014,
+        0.01761856
+      ],
+      "median_seconds": 0.0156636,
+      "min_seconds": 0.01489714,
+      "max_seconds": 0.01761856,
+      "work": {
+        "worlds": 100,
+        "visited": 6300,
+        "cost": 6200.0,
+        "score": 0.25
+      }
+    },
+    {
+      "name": "rsi.json_roundtrip.nodes_63",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.00177994,
+        0.00193382,
+        0.0017016199999999998,
+        0.00179064,
+        0.00169878,
+        0.0017179799999999998,
+        0.00295324
+      ],
+      "median_seconds": 0.00177994,
+      "min_seconds": 0.00169878,
+      "max_seconds": 0.00295324,
+      "work": {
+        "nodes": 63
+      }
+    },
+    {
+      "name": "rsi.jsonl_roundtrip.nodes_63",
+      "status": "measured",
+      "samples": 7,
+      "batch": 5,
+      "seconds_per_operation": [
+        0.00753924,
+        0.007381939999999999,
+        0.0073227,
+        0.007674640000000001,
+        0.0071703,
+        0.00735798,
+        0.00941992
+      ],
+      "median_seconds": 0.007381939999999999,
+      "min_seconds": 0.0071703,
+      "max_seconds": 0.00941992,
+      "work": {
+        "worlds": 1,
+        "nodes": 63
+      }
+    }
+  ],
+  "lua": {
+    "executable": "C:\\Users\\jessi\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\texlua.exe",
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": "{\"version\":\"Lua 5.3\",\"kind\":\"runtime\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:37: packer emits 28 bytes; declared size is 32\",\"status\":\"fail\",\"name\":\"metabinary.header_size\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:40: builder returns plain table without methods\",\"status\":\"fail\",\"name\":\"metabinary.builder_methods\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:45: INSUFFICIENT_DATA\",\"status\":\"fail\",\"name\":\"metabinary.leaf_roundtrip\",\"kind\":\"check\"}\n{\"detail\":\"./lua/metabinary.lua:487: attempt to get length of a nil value (field 'params')\",\"status\":\"fail\",\"name\":\"metabinary.missing_params\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:54: numeric zero is truthy: pure bit set\",\"status\":\"fail\",\"name\":\"metabinary.impure_flag\",\"kind\":\"check\"}\n{\"detail\":\"\",\"status\":\"pass\",\"name\":\"metabinary.truncated_input\",\"kind\":\"check\"}\n{\"detail\":\"\",\"status\":\"pass\",\"name\":\"metabinary.nand_all_words_roundtrip\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:72: returns next offset (29), not consumed bytes (28)\",\"status\":\"fail\",\"name\":\"metabinary.consumed_bytes\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:78: validate accepts changed integrity and trailing bytes\",\"status\":\"fail\",\"name\":\"metabinary.tampered_integrity_rejected\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:84: INSUFFICIENT_DATA\",\"status\":\"fail\",\"name\":\"metabinary.two_children_roundtrip\",\"kind\":\"check\"}\n{\"iterations\":10000,\"seconds\":0.013,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":1,\"name\":\"metabinary.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.015,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":2,\"name\":\"metabinary.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.014,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":3,\"name\":\"metabinary.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.013,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":4,\"name\":\"metabinary.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.016,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":5,\"name\":\"metabinary.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.015,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":6,\"name\":\"metabinary.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.014,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":7,\"name\":\"metabinary.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.04,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":1,\"name\":\"metabinary.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.041,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":2,\"name\":\"metabinary.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.039,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":3,\"name\":\"metabinary.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.039,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":4,\"name\":\"metabinary.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.039,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":5,\"name\":\"metabinary.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.039,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":6,\"name\":\"metabinary.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.039,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":7,\"name\":\"metabinary.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.068,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":1,\"name\":\"metabinary.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.063,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":2,\"name\":\"metabinary.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.064,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":3,\"name\":\"metabinary.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.064,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":4,\"name\":\"metabinary.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.063,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":5,\"name\":\"metabinary.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.064,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":6,\"name\":\"metabinary.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.064,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":7,\"name\":\"metabinary.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.012,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":1,\"name\":\"metabinary.query_leaf\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.011,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":2,\"name\":\"metabinary.query_leaf\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.011,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":3,\"name\":\"metabinary.query_leaf\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.011,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":4,\"name\":\"metabinary.query_leaf\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.012,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":5,\"name\":\"metabinary.query_leaf\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.011,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":6,\"name\":\"metabinary.query_leaf\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.011,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":7,\"name\":\"metabinary.query_leaf\",\"status\":\"measured\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:37: packer emits 28 bytes; declared size is 32\",\"status\":\"fail\",\"name\":\"metabinary_complete.header_size\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:40: builder returns plain table without methods\",\"status\":\"fail\",\"name\":\"metabinary_complete.builder_methods\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:45: INSUFFICIENT_DATA\",\"status\":\"fail\",\"name\":\"metabinary_complete.leaf_roundtrip\",\"kind\":\"check\"}\n{\"detail\":\"./lua/metabinary_complete.lua:470: attempt to get length of a nil value (field 'params')\",\"status\":\"fail\",\"name\":\"metabinary_complete.missing_params\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:54: numeric zero is truthy: pure bit set\",\"status\":\"fail\",\"name\":\"metabinary_complete.impure_flag\",\"kind\":\"check\"}\n{\"detail\":\"\",\"status\":\"pass\",\"name\":\"metabinary_complete.truncated_input\",\"kind\":\"check\"}\n{\"detail\":\"\",\"status\":\"pass\",\"name\":\"metabinary_complete.nand_all_words_roundtrip\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:72: returns next offset (29), not consumed bytes (28)\",\"status\":\"fail\",\"name\":\"metabinary_complete.consumed_bytes\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:78: validate accepts changed integrity and trailing bytes\",\"status\":\"fail\",\"name\":\"metabinary_complete.tampered_integrity_rejected\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:84: INSUFFICIENT_DATA\",\"status\":\"fail\",\"name\":\"metabinary_complete.two_children_roundtrip\",\"kind\":\"check\"}\n{\"iterations\":10000,\"seconds\":0.013,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":1,\"name\":\"metabinary_complete.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.012,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":2,\"name\":\"metabinary_complete.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.013,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":3,\"name\":\"metabinary_complete.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.013,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":4,\"name\":\"metabinary_complete.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.012,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":5,\"name\":\"metabinary_complete.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.012,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":6,\"name\":\"metabinary_complete.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.012,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":7,\"name\":\"metabinary_complete.header_pack_only\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.039,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":1,\"name\":\"metabinary_complete.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.041,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":2,\"name\":\"metabinary_complete.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.04,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":3,\"name\":\"metabinary_complete.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.039,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":4,\"name\":\"metabinary_complete.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.039,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":5,\"name\":\"metabinary_complete.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.039,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":6,\"name\":\"metabinary_complete.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":10000,\"seconds\":0.04,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":7,\"name\":\"metabinary_complete.serialize_only_invalid_wire\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.062,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":1,\"name\":\"metabinary_complete.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.061,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":2,\"name\":\"metabinary_complete.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.06,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":3,\"name\":\"metabinary_complete.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.06,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":4,\"name\":\"metabinary_complete.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.059,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":5,\"name\":\"metabinary_complete.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.061,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":6,\"name\":\"metabinary_complete.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":1000,\"seconds\":0.061,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":7,\"name\":\"metabinary_complete.nand_decode_256_words\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.01,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":1,\"name\":\"metabinary_complete.query_leaf\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.011,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":2,\"name\":\"metabinary_complete.query_leaf\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.01,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":3,\"name\":\"metabinary_complete.query_leaf\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.01,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":4,\"name\":\"metabinary_complete.query_leaf\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.011,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":5,\"name\":\"metabinary_complete.query_leaf\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.01,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":6,\"name\":\"metabinary_complete.query_leaf\",\"status\":\"measured\"}\n{\"iterations\":100000,\"seconds\":0.01,\"clock\":\"os.clock CPU seconds\",\"kind\":\"benchmark\",\"sample\":7,\"name\":\"metabinary_complete.query_leaf\",\"status\":\"measured\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:101: serialize returns an AST table\",\"status\":\"fail\",\"name\":\"facade.serialize_returns_bytes\",\"kind\":\"check\"}\n{\"detail\":\"\",\"status\":\"pass\",\"name\":\"final_assembly_load\",\"kind\":\"check\"}\n{\"detail\":\"...ts\\\\devflow-finance-twin\\\\benchmarks\\\\rsi_lua\\\\lua_audit.lua:106: lua/example_usage_all_backends.lua:516: ')' expected (to close '(' at line 515) near 'print'\",\"status\":\"fail\",\"name\":\"examples_syntax\",\"kind\":\"check\"}\n",
+    "records": [
+      {
+        "version": "Lua 5.3",
+        "kind": "runtime"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:37: packer emits 28 bytes; declared size is 32",
+        "status": "fail",
+        "name": "metabinary.header_size",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:40: builder returns plain table without methods",
+        "status": "fail",
+        "name": "metabinary.builder_methods",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:45: INSUFFICIENT_DATA",
+        "status": "fail",
+        "name": "metabinary.leaf_roundtrip",
+        "kind": "check"
+      },
+      {
+        "detail": "./lua/metabinary.lua:487: attempt to get length of a nil value (field 'params')",
+        "status": "fail",
+        "name": "metabinary.missing_params",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:54: numeric zero is truthy: pure bit set",
+        "status": "fail",
+        "name": "metabinary.impure_flag",
+        "kind": "check"
+      },
+      {
+        "detail": "",
+        "status": "pass",
+        "name": "metabinary.truncated_input",
+        "kind": "check"
+      },
+      {
+        "detail": "",
+        "status": "pass",
+        "name": "metabinary.nand_all_words_roundtrip",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:72: returns next offset (29), not consumed bytes (28)",
+        "status": "fail",
+        "name": "metabinary.consumed_bytes",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:78: validate accepts changed integrity and trailing bytes",
+        "status": "fail",
+        "name": "metabinary.tampered_integrity_rejected",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:84: INSUFFICIENT_DATA",
+        "status": "fail",
+        "name": "metabinary.two_children_roundtrip",
+        "kind": "check"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.013,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 1,
+        "name": "metabinary.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.015,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 2,
+        "name": "metabinary.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.014,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 3,
+        "name": "metabinary.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.013,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 4,
+        "name": "metabinary.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.016,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 5,
+        "name": "metabinary.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.015,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 6,
+        "name": "metabinary.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.014,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 7,
+        "name": "metabinary.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.04,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 1,
+        "name": "metabinary.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.041,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 2,
+        "name": "metabinary.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.039,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 3,
+        "name": "metabinary.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.039,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 4,
+        "name": "metabinary.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.039,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 5,
+        "name": "metabinary.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.039,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 6,
+        "name": "metabinary.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.039,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 7,
+        "name": "metabinary.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.068,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 1,
+        "name": "metabinary.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.063,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 2,
+        "name": "metabinary.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.064,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 3,
+        "name": "metabinary.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.064,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 4,
+        "name": "metabinary.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.063,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 5,
+        "name": "metabinary.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.064,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 6,
+        "name": "metabinary.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.064,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 7,
+        "name": "metabinary.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.012,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 1,
+        "name": "metabinary.query_leaf",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.011,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 2,
+        "name": "metabinary.query_leaf",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.011,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 3,
+        "name": "metabinary.query_leaf",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.011,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 4,
+        "name": "metabinary.query_leaf",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.012,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 5,
+        "name": "metabinary.query_leaf",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.011,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 6,
+        "name": "metabinary.query_leaf",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.011,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 7,
+        "name": "metabinary.query_leaf",
+        "status": "measured"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:37: packer emits 28 bytes; declared size is 32",
+        "status": "fail",
+        "name": "metabinary_complete.header_size",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:40: builder returns plain table without methods",
+        "status": "fail",
+        "name": "metabinary_complete.builder_methods",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:45: INSUFFICIENT_DATA",
+        "status": "fail",
+        "name": "metabinary_complete.leaf_roundtrip",
+        "kind": "check"
+      },
+      {
+        "detail": "./lua/metabinary_complete.lua:470: attempt to get length of a nil value (field 'params')",
+        "status": "fail",
+        "name": "metabinary_complete.missing_params",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:54: numeric zero is truthy: pure bit set",
+        "status": "fail",
+        "name": "metabinary_complete.impure_flag",
+        "kind": "check"
+      },
+      {
+        "detail": "",
+        "status": "pass",
+        "name": "metabinary_complete.truncated_input",
+        "kind": "check"
+      },
+      {
+        "detail": "",
+        "status": "pass",
+        "name": "metabinary_complete.nand_all_words_roundtrip",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:72: returns next offset (29), not consumed bytes (28)",
+        "status": "fail",
+        "name": "metabinary_complete.consumed_bytes",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:78: validate accepts changed integrity and trailing bytes",
+        "status": "fail",
+        "name": "metabinary_complete.tampered_integrity_rejected",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:84: INSUFFICIENT_DATA",
+        "status": "fail",
+        "name": "metabinary_complete.two_children_roundtrip",
+        "kind": "check"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.013,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 1,
+        "name": "metabinary_complete.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.012,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 2,
+        "name": "metabinary_complete.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.013,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 3,
+        "name": "metabinary_complete.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.013,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 4,
+        "name": "metabinary_complete.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.012,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 5,
+        "name": "metabinary_complete.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.012,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 6,
+        "name": "metabinary_complete.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.012,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 7,
+        "name": "metabinary_complete.header_pack_only",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.039,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 1,
+        "name": "metabinary_complete.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.041,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 2,
+        "name": "metabinary_complete.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.04,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 3,
+        "name": "metabinary_complete.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.039,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 4,
+        "name": "metabinary_complete.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.039,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 5,
+        "name": "metabinary_complete.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.039,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 6,
+        "name": "metabinary_complete.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 10000,
+        "seconds": 0.04,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 7,
+        "name": "metabinary_complete.serialize_only_invalid_wire",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.062,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 1,
+        "name": "metabinary_complete.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.061,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 2,
+        "name": "metabinary_complete.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.06,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 3,
+        "name": "metabinary_complete.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.06,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 4,
+        "name": "metabinary_complete.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.059,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 5,
+        "name": "metabinary_complete.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.061,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 6,
+        "name": "metabinary_complete.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 1000,
+        "seconds": 0.061,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 7,
+        "name": "metabinary_complete.nand_decode_256_words",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.01,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 1,
+        "name": "metabinary_complete.query_leaf",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.011,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 2,
+        "name": "metabinary_complete.query_leaf",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.01,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 3,
+        "name": "metabinary_complete.query_leaf",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.01,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 4,
+        "name": "metabinary_complete.query_leaf",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.011,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 5,
+        "name": "metabinary_complete.query_leaf",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.01,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 6,
+        "name": "metabinary_complete.query_leaf",
+        "status": "measured"
+      },
+      {
+        "iterations": 100000,
+        "seconds": 0.01,
+        "clock": "os.clock CPU seconds",
+        "kind": "benchmark",
+        "sample": 7,
+        "name": "metabinary_complete.query_leaf",
+        "status": "measured"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:101: serialize returns an AST table",
+        "status": "fail",
+        "name": "facade.serialize_returns_bytes",
+        "kind": "check"
+      },
+      {
+        "detail": "",
+        "status": "pass",
+        "name": "final_assembly_load",
+        "kind": "check"
+      },
+      {
+        "detail": "...ts\\devflow-finance-twin\\benchmarks\\rsi_lua\\lua_audit.lua:106: lua/example_usage_all_backends.lua:516: ')' expected (to close '(' at line 515) near 'print'",
+        "status": "fail",
+        "name": "examples_syntax",
+        "kind": "check"
+      }
+    ],
+    "status": "completed"
+  }
+}

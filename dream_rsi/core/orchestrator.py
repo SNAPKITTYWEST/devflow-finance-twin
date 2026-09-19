@@ -1,11 +1,13 @@
 """Production-style orchestrator for the online/offline RSI loop."""
 from typing import Any, Dict, List
+import math
 
 from ..tree import DiscoveryTree
 from ..policy.engine import PolicyDeveloper, ScoredPolicy, SearchPolicy
 from ..discovery.agent import FixedDiscoveryAgent, DomainEvaluator, AlgorithmEvaluator
 from ..replay.engine import HistoricalReplay
 from ..metrics.collector import Metrics, Timer
+from ..evaluation.protocol import validate_score
 
 
 class RSIOrchestrator:
@@ -35,8 +37,14 @@ class RSIOrchestrator:
                 parent.status = "stopped"
                 continue
             for branch in range(decision.branch_count):
+                if len(tree.nodes) - 1 >= policy.max_nodes or spent >= policy.budget:
+                    break
                 candidate = self.discovery.propose(task, branch, parent.node_id)
                 execution = self.discovery.execute(candidate)
+                if not math.isfinite(execution.cost) or execution.cost < 0:
+                    raise ValueError("execution cost must be finite and non-negative")
+                if execution.cost > policy.budget - spent:
+                    raise ValueError("execution cost exceeds remaining budget")
                 evaluated = self.evaluator.evaluate(execution, task)
                 child = tree.add(
                     parent.node_id,
@@ -45,7 +53,7 @@ class RSIOrchestrator:
                     candidate=candidate.__dict__,
                     execution_trace=[execution.__dict__],
                     evaluator_result=dict(evaluated),
-                    score=float(evaluated.get("score", 0.0)),
+                    score=validate_score(evaluated.get("score", 0.0)) if evaluated.get("valid", True) else 0.0,
                     status="completed",
                     cost=float(execution.cost),
                     metadata={"depth": int(parent.metadata.get("depth", 0)) + 1},
@@ -62,10 +70,10 @@ class RSIOrchestrator:
         return tree
 
     def run_round(self, task: str, revisions: int = None) -> Dict[str, Any]:
-        before = self.replay.replay(self.policy, self.worlds).score
         tree = self.explore_online(task)
         self.worlds.append(tree)
-        incumbent = ScoredPolicy(self.policy, self.replay.replay(self.policy, self.worlds).score)
+        replayed = self.replay.replay(self.policy, self.worlds)
+        incumbent = ScoredPolicy(self.policy, replayed.score, replayed.cost, replayed.worlds)
         candidates = [incumbent]
         for candidate in self.developer.generate(self.policy, revisions):
             result = self.replay.replay(candidate, self.worlds)
@@ -78,7 +86,7 @@ class RSIOrchestrator:
         self.metrics.generations += 1
         self.metrics.worlds = len(self.worlds)
         self.metrics.best_solution_score = max(self.metrics.best_solution_score, selected.score)
-        self.metrics.policy_improvement += max(0.0, selected.score - before)
+        self.metrics.policy_improvement += max(0.0, selected.score - incumbent.score)
         return {"policy": selected.policy, "score": selected.score, "candidates": candidates, "tree": tree}
 
     def run(self, task: str, rounds: int = 3, revisions: int = 4) -> Dict[str, Any]:

@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterable, List, Sequence, Tuple
 import copy
 import hashlib
 import json
+import math
 
 
 @dataclass(frozen=True)
@@ -29,9 +30,11 @@ class SearchPolicy:
     parallel_group_size: int = 1
 
     def __post_init__(self):
+        if any(type(value) is not int for value in (self.max_depth, self.max_nodes, self.branch_factor, self.parallel_group_size)):
+            raise ValueError("search limits must be integers")
         if self.max_depth < 0 or self.max_nodes < 1 or self.branch_factor < 1:
             raise ValueError("invalid search limits")
-        if self.budget <= 0 or not 0 <= self.stop_score <= 1:
+        if not math.isfinite(self.budget) or self.budget <= 0 or not 0 <= self.stop_score <= 1 or self.parallel_group_size < 1:
             raise ValueError("invalid budget or stop score")
         if self.ordering not in ("score_desc", "score_asc", "fifo"):
             raise ValueError("unknown branch ordering")
@@ -75,6 +78,8 @@ class PolicyDeveloper:
         self.maximum_candidates = max(0, int(maximum_candidates))
 
     def generate(self, incumbent: SearchPolicy, limit: int = None) -> List[SearchPolicy]:
+        if limit is not None and (type(limit) is not int or limit < 0):
+            raise ValueError("revision limit must be a non-negative integer")
         limit = self.maximum_candidates if limit is None else min(limit, self.maximum_candidates)
         mutations = (
             {"branch_factor": min(8, incumbent.branch_factor + 1)},

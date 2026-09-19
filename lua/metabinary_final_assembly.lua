@@ -1,7 +1,7 @@
 -- Lua Final Assembly Module
 -- Complete integrated Lua + binary implementation
 -- Combines metabinary.lua + FFI bindings + builder facade
--- Production-ready unified interface with backend selection
+-- Prototype unified interface; native validation requires matching libraries
 
 local metabinary = require("metabinary")
 local ffi_bindings = require("metabinary_ffi_bindings")
@@ -14,7 +14,7 @@ local final_assembly = {}
 -- ============================================================================
 
 final_assembly.config = {
-    backend = "c",          -- Default backend: "c", "rust", "go"
+    backend = "lua",        -- Lua codec; native names request additional validation
     auto_select = false,    -- Auto-select best backend
     validation_mode = "strict",
     enable_profiling = false,
@@ -136,51 +136,21 @@ final_assembly.validation = {}
 
 function final_assembly.validation.validate_block(data, backend)
     backend = backend or final_assembly.config.backend
-
-    if final_assembly.config.enable_diagnostics then
-        io.stderr:write(string.format("[VALIDATION] Using backend: %s\n", backend))
+    local valid, msg, header = metabinary.validate(data)
+    if not valid then return false, msg, header end
+    if backend == "lua" then return true, "OK", header end
+    local binding = ffi_bindings[backend]
+    if not binding or type(binding.validate) ~= "function" then return false, "Unknown backend: " .. tostring(backend) end
+    local result, err = binding.validate(data, #data)
+    if not result then return false, err or "Native validation unavailable" end
+    if tonumber(result.status) ~= 0 then
+        return false, "Native validation failed with status " .. tostring(result.status)
     end
-
-    if backend == "rust" then
-        -- Rust backend provides additional safety checks
-        local result = ffi_bindings.rust.validate(data, #data)
-        if result then
-            if result.status == 0 then
-                return true, result.header
-            else
-                return false, string.format("Validation failed with status %d", result.status)
-            end
-        end
-    else
-        -- Fallback to Lua validation or other backends
-        local valid, msg, header = metabinary.validate(data)
-        return valid, msg, header
-    end
+    return true, "OK", result.header
 end
 
 function final_assembly.validation.validate_and_dispatch(data, backend)
-    backend = backend or final_assembly.config.backend
-
-    -- Step 1: Quick header validation
-    if #data < 32 then
-        return false, "Insufficient data for header"
-    end
-
-    -- Step 2: Dispatch to appropriate backend validator
-    local constraints_valid, constraints_msg = final_assembly.validation.validate_block(data, backend)
-    if not constraints_valid then
-        return false, "Constraint validation failed: " .. constraints_msg
-    end
-
-    -- Step 3: Check structural integrity (if backend provides it)
-    if backend == "rust" then
-        local integrity_check = ffi_bindings.rust.validate(data, #data)
-        if integrity_check and integrity_check.status ~= 0 then
-            return false, "Integrity check failed"
-        end
-    end
-
-    return true, "All validations passed"
+    return final_assembly.validation.validate_block(data, backend)
 end
 
 -- ============================================================================
@@ -203,19 +173,8 @@ function final_assembly.serialization.serialize(ast, backend)
         return nil, err
     end
 
-    -- If backend selected, validate serialized data
-    if backend == "rust" and ffi_bindings.rust.is_available() then
-        local valid, msg = ffi_bindings.rust.validate(serialized, #serialized)
-        if valid then
-            if final_assembly.config.enable_diagnostics then
-                io.stderr:write("[SERIALIZE] Rust validation passed\n")
-            end
-        else
-            if final_assembly.config.enable_diagnostics then
-                io.stderr:write(string.format("[SERIALIZE] Rust validation warning: %s\n", msg))
-            end
-        end
-    end
+    local valid, msg = final_assembly.validation.validate_block(serialized, backend)
+    if not valid then return nil, msg end
 
     return serialized
 end
@@ -231,6 +190,11 @@ function final_assembly.serialization.deserialize(data, backend)
     local ast, err, consumed = metabinary.deserialize(data)
     if not ast then
         return nil, err
+    end
+
+    if backend ~= "lua" then
+        local valid, msg = final_assembly.validation.validate_block(data:sub(1, consumed), backend)
+        if not valid then return nil, msg end
     end
 
     if final_assembly.config.enable_diagnostics then

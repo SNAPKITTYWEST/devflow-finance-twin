@@ -166,15 +166,6 @@ local function unpack_u8(data, offset)
 end
 
 -- Blake3 mock for testing (real implementation would use external library)
-local function blake3_hash(data)
-    -- In production, this would call a real BLAKE3 implementation
-    -- For now, return a deterministic 64-bit hash
-    local hash = 0x0123456789ABCDEF
-    for i = 1, #data do
-        hash = (hash * 31 + string.byte(data, i)) & 0xFFFFFFFFFFFFFFFF
-    end
-    return hash & 0xFFFFFFFFFFFFFFFF
-end
 
 -- ============================================================================
 -- BLOCK HEADER STRUCTURE
@@ -200,37 +191,7 @@ function binary.structures.header_size()
     return 32 -- Fixed 32-byte header
 end
 
-function binary.structures.header_pack(header)
-    local buf = ""
-    buf = buf .. pack_u16_le(header.opcode)
-    buf = buf .. pack_u8(header.version)
-    buf = buf .. pack_u8(header.flags)
-    buf = buf .. pack_u32_le(header.input_width)
-    buf = buf .. pack_u32_le(header.output_width)
-    buf = buf .. pack_u32_le(header.param_len)
-    buf = buf .. pack_u16_le(header.child_count)
-    buf = buf .. pack_u16_le(header.reserved)
-    -- Integrity (8 bytes) - will be filled by validate_and_finalize
-    buf = buf .. pack_u64_le(header.integrity)
-    return buf
-end
 
-function binary.structures.header_unpack(data, offset)
-    offset = offset or 1
-    local header = binary.structures.header_new()
-
-    header.opcode, offset = unpack_u16_le(data, offset)
-    header.version, offset = unpack_u8(data, offset)
-    header.flags, offset = unpack_u8(data, offset)
-    header.input_width, offset = unpack_u32_le(data, offset)
-    header.output_width, offset = unpack_u32_le(data, offset)
-    header.param_len, offset = unpack_u32_le(data, offset)
-    header.child_count, offset = unpack_u16_le(data, offset)
-    header.reserved, offset = unpack_u16_le(data, offset)
-    header.integrity, offset = unpack_u64_le(data, offset)
-
-    return header, offset
-end
 
 -- ============================================================================
 -- BLOCK FUNCTOR STRUCTURE
@@ -312,7 +273,7 @@ function binary.predicates.param_len_matches_opcode(opcode, param_len)
         [0x0200] = 8,    -- MOD_SWITCH: u8
         [0x0201] = 64,   -- RESCALE: u64
         [0x0202] = 0,    -- MOD_UP: no params
-        [0x0300] = 72,   -- ENCODE: u64 + u16 + u8
+        [0x0300] = 88,   -- ENCODE: u64 + u16 + u8
         [0x0302] = 32,   -- ENCRYPT: u32
         [0x0303] = 32,   -- DECRYPT: u32
         [0x0401] = 64,   -- NOISE_ASSERT: u64
@@ -388,186 +349,21 @@ function binary.predicates.flags_consistency(flags, child_count)
 end
 
 -- Predicate: integrity check
-function binary.predicates.verify_integrity(header, params, children_bytes)
-    local computed = blake3_hash(
-        binary.structures.header_pack(header) .. params .. children_bytes
-    )
-    return header.integrity == computed, string.format("INTEGRITY_MISMATCH: expected %x, got %x", header.integrity, computed)
-end
 
 -- ============================================================================
 -- VALIDATION ENGINE
 -- ============================================================================
 
-function binary.validate(data)
-    if type(data) ~= "string" or #data < 32 then
-        return false, "INSUFFICIENT_DATA", nil
-    end
-
-    local header, offset = binary.structures.header_unpack(data, 1)
-
-    -- Check header validity
-    local valid, msg = binary.predicates.valid_header(header)
-    if not valid then
-        return false, "HEADER_VALIDATION_FAILED: " .. msg, header
-    end
-
-    -- Check opcode
-    if not binary.predicates.valid_opcode(header.opcode) then
-        return false, "INVALID_OPCODE", header
-    end
-
-    -- Check width constraints
-    valid, msg = binary.predicates.width_valid(header.input_width, header.output_width)
-    if not valid then
-        return false, "WIDTH_CONSTRAINT_FAILED: " .. msg, header
-    end
-
-    -- Check parameter length matches opcode
-    valid, msg = binary.predicates.param_len_matches_opcode(header.opcode, header.param_len)
-    if not valid then
-        return false, "PARAM_LEN_CONSTRAINT_FAILED: " .. msg, header
-    end
-
-    -- Check child arity matches opcode
-    valid, msg = binary.predicates.child_arity_matches_opcode(header.opcode, header.child_count)
-    if not valid then
-        return false, "CHILD_ARITY_CONSTRAINT_FAILED: " .. msg, header
-    end
-
-    -- Check flags consistency
-    valid, msg = binary.predicates.flags_consistency(header.flags, header.child_count)
-    if not valid then
-        return false, "FLAGS_CONSISTENCY_FAILED: " .. msg, header
-    end
-
-    -- Extract and validate parameters
-    local param_bytes = math.ceil(header.param_len / 8)
-    if offset - 1 + param_bytes > #data then
-        return false, "INSUFFICIENT_DATA_FOR_PARAMS", header
-    end
-
-    local params = data:sub(offset, offset + param_bytes - 1)
-    offset = offset + param_bytes
-
-    -- Recursively deserialize children
-    local children = {}
-    for i = 1, header.child_count do
-        if offset > #data then
-            return false, "INSUFFICIENT_DATA_FOR_CHILDREN", header
-        end
-        local child_data = data:sub(offset)
-        local valid_child, msg_child, child_header = binary.validate(child_data)
-        if not valid_child then
-            return false, "CHILD_VALIDATION_FAILED: " .. msg_child, header
-        end
-        table.insert(children, child_header)
-        -- Calculate consumed bytes for this child (this is approximate)
-        offset = offset + 32 + math.ceil(child_header.param_len / 8)
-    end
-
-    return true, "OK", header
-end
 
 -- ============================================================================
 -- SERIALIZATION
 -- ============================================================================
 
-function binary.serialize(ast)
-    -- ast should be a block structure
-    if not ast or not ast.opcode then
-        return nil, "INVALID_AST"
-    end
-
-    local header = binary.structures.header_new()
-    header.opcode = ast.opcode
-    header.version = ast.version or 0x01
-    header.input_width = ast.input_width or 0
-    header.output_width = ast.output_width or 0
-    header.param_len = (#ast.params or "") * 8
-    header.child_count = #(ast.children or {})
-
-    -- Update flags
-    binary.structures.block_set_flags(
-        header,
-        header.child_count > 0,
-        header.child_count == 0,
-        (ast.flags or 0) & 0x04
-    )
-
-    -- Serialize children
-    local children_bytes = ""
-    for _, child in ipairs(ast.children or {}) do
-        local child_bytes, err = binary.serialize(child)
-        if not child_bytes then
-            return nil, err
-        end
-        children_bytes = children_bytes .. child_bytes
-    end
-
-    -- Compute integrity
-    local header_bytes = binary.structures.header_pack(header)
-    local params = ast.params or ""
-    header.integrity = blake3_hash(header_bytes .. params .. children_bytes)
-
-    -- Repack header with integrity
-    local final_header = binary.structures.header_pack(header)
-
-    return final_header .. params .. children_bytes
-end
 
 -- ============================================================================
 -- DESERIALIZATION
 -- ============================================================================
 
-function binary.deserialize(data)
-    if type(data) ~= "string" or #data < 32 then
-        return nil, "INSUFFICIENT_DATA"
-    end
-
-    local offset = 1
-    local header, new_offset = binary.structures.header_unpack(data, offset)
-    offset = new_offset
-
-    -- Extract parameters
-    local param_bytes = math.ceil(header.param_len / 8)
-    if offset + param_bytes - 1 > #data then
-        return nil, "INSUFFICIENT_DATA_FOR_PARAMS"
-    end
-
-    local params = data:sub(offset, offset + param_bytes - 1)
-    offset = offset + param_bytes
-
-    -- Recursively deserialize children
-    local children = {}
-    for i = 1, header.child_count do
-        if offset > #data then
-            return nil, "INSUFFICIENT_DATA_FOR_CHILDREN"
-        end
-        local child_data = data:sub(offset)
-        local child_ast, err, consumed = binary.deserialize(child_data)
-        if not child_ast then
-            return nil, err
-        end
-        table.insert(children, child_ast)
-        offset = offset + consumed
-    end
-
-    local ast = {
-        opcode = header.opcode,
-        version = header.version,
-        flags = header.flags,
-        input_width = header.input_width,
-        output_width = header.output_width,
-        param_len = header.param_len,
-        params = params,
-        child_count = header.child_count,
-        children = children,
-        integrity = header.integrity,
-    }
-
-    return ast, nil, offset
-end
 
 -- ============================================================================
 -- BUILDER PATTERN
@@ -576,7 +372,7 @@ end
 binary.builder = {}
 
 function binary.builder.new(opcode)
-    return {
+    return setmetatable({
         opcode = opcode or 0x0001,
         version = 0x01,
         flags = 0x00,
@@ -584,7 +380,7 @@ function binary.builder.new(opcode)
         output_width = 0,
         params = "",
         children = {},
-    }
+    }, {__index = binary.builder})
 end
 
 function binary.builder:set_dimensions(input_width, output_width)
@@ -618,7 +414,9 @@ function binary.builder:build()
         input_width = self.input_width,
         output_width = self.output_width,
         params = self.params,
+        param_len = #self.params * 8,
         children = self.children,
+        child_count = #self.children,
     }
     return ast
 end
@@ -736,8 +534,8 @@ function binary.introspect.structure(ast)
         flags = ast.flags,
         input_width = ast.input_width,
         output_width = ast.output_width,
-        param_len = ast.param_len,
-        param_bytes = math.ceil(ast.param_len / 8),
+        param_len = ast.param_len or #(ast.params or "") * 8,
+        param_bytes = #(ast.params or ""),
         child_count = ast.child_count or #(ast.children or {}),
         integrity = ast.integrity,
     }
@@ -765,31 +563,13 @@ function binary.introspect.offset(ast, field_name)
         param_len = 12,
         child_count = 16,
         reserved = 18,
-        integrity = 20,
+        integrity = 24,
         params = 32,
     }
     return offsets[field_name]
 end
 
-function binary.introspect.size(ast)
-    -- Calculate total serialized size
-    local header_size = 32
-    local param_size = math.ceil((ast.param_len or 0) / 8)
-    local children_size = 0
 
-    for _, child in ipairs(ast.children or {}) do
-        children_size = children_size + binary.introspect.size(child)
-    end
-
-    return header_size + param_size + children_size
-end
-
-function binary.introspect.hash(ast)
-    -- Compute Blake3 hash of serialized AST
-    local serialized, err = binary.serialize(ast)
-    if not serialized then return nil, err end
-    return blake3_hash(serialized)
-end
 
 function binary.introspect.opcode_info(opcode)
     return {
@@ -799,30 +579,6 @@ function binary.introspect.opcode_info(opcode)
     }
 end
 
-function binary.introspect.tree(ast, depth)
-    depth = depth or 0
-    local indent = string.rep("  ", depth)
-    local info = binary.introspect.structure(ast)
-
-    local lines = {}
-    table.insert(lines, string.format(
-        "%s[%s] in=%d out=%d children=%d",
-        indent,
-        info.opcode_name,
-        info.input_width,
-        info.output_width,
-        info.child_count
-    ))
-
-    for _, child in ipairs(ast.children or {}) do
-        local subtree = binary.introspect.tree(child, depth + 1)
-        for _, line in ipairs(subtree) do
-            table.insert(lines, line)
-        end
-    end
-
-    return lines
-end
 
 -- ============================================================================
 -- QUERY & ANALYSIS
@@ -830,56 +586,14 @@ end
 
 binary.query = {}
 
-function binary.query.find_all_opcodes(ast, opcode)
-    -- Find all nodes with given opcode
-    local results = {}
 
-    local function traverse(node)
-        if node.opcode == opcode then
-            table.insert(results, node)
-        end
-        for _, child in ipairs(node.children or {}) do
-            traverse(child)
-        end
-    end
 
-    traverse(ast)
-    return results
-end
 
-function binary.query.depth(ast)
-    -- Calculate tree depth
-    local max_child_depth = 0
-    for _, child in ipairs(ast.children or {}) do
-        max_child_depth = math.max(max_child_depth, binary.query.depth(child))
-    end
-    return 1 + max_child_depth
-end
-
-function binary.query.leaf_count(ast)
-    -- Count leaf nodes
-    if #(ast.children or {}) == 0 then
-        return 1
-    end
-
-    local count = 0
-    for _, child in ipairs(ast.children or {}) do
-        count = count + binary.query.leaf_count(child)
-    end
-    return count
-end
-
-function binary.query.node_count(ast)
-    -- Count total nodes
-    local count = 1
-    for _, child in ipairs(ast.children or {}) do
-        count = count + binary.query.node_count(child)
-    end
-    return count
-end
 
 -- ============================================================================
 -- EXPORT
 -- ============================================================================
+
+require("metabinary_codec").install(binary)
 
 return binary

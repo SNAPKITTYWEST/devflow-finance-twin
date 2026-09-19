@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from .tree import DiscoveryTree
-from .policy import ExplorationPolicy
+from ..tree import DiscoveryTree
+from ..policy.legacy import ExplorationPolicy
 
 
 @dataclass
@@ -18,13 +18,15 @@ class ReplayResult:
 
 class SimulatorPool:
     def __init__(self, trees: Optional[List[DiscoveryTree]] = None):
-        self.trees: List[DiscoveryTree] = list(trees or [])
+        self.trees: List[DiscoveryTree] = []
+        for tree in trees or []:
+            self.add(tree)
 
     def add(self, tree: DiscoveryTree):
         valid, reason = tree.validate()
         if not valid:
             raise ValueError(reason)
-        self.trees.append(tree)
+        self.trees.append(DiscoveryTree.from_dict(tree.to_dict()))
 
     def __len__(self) -> int:
         return len(self.trees)
@@ -55,6 +57,9 @@ class ReplayEngine:
         return ReplayResult(score, visited_nodes, branches, cost, sparse, len(pool.trees), {"world_scores": world_scores})
 
     def _replay_tree(self, policy: ExplorationPolicy, tree: DiscoveryTree) -> Dict[str, Any]:
+        valid, reason = tree.validate()
+        if not valid:
+            raise ValueError(reason)
         frontier = [tree.get(tree.root_id)]
         visited = 0
         branch_count = 0
@@ -64,6 +69,8 @@ class ReplayEngine:
 
         while frontier and visited < policy.max_nodes:
             node = frontier.pop(0)
+            if node.cost > policy.budget - total_cost:
+                break
             visited += 1
             best = max(best, float(node.score))
             total_cost += float(node.cost)
@@ -81,7 +88,7 @@ class ReplayEngine:
 
             if policy.branch_order == "score_desc":
                 children.sort(key=lambda item: item.score, reverse=True)
-            else:
+            elif policy.branch_order == "score_asc":
                 children.sort(key=lambda item: item.score)
 
             frontier.extend(children[:requested])

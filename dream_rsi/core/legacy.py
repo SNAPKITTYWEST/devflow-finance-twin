@@ -1,11 +1,13 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Dict, List
 import time
+import math
 
-from .discovery import DiscoveryAgent, AlgorithmEngineering
-from .policy import ExplorationPolicy, PolicyDeveloper
-from .replay import ReplayEngine, SimulatorPool, ReplayResult
-from .tree import DiscoveryTree
+from ..discovery.legacy import DiscoveryAgent, AlgorithmEngineering
+from ..policy.legacy import ExplorationPolicy, PolicyDeveloper
+from ..replay.legacy import ReplayEngine, SimulatorPool, ReplayResult
+from ..tree import DiscoveryTree
+from ..evaluation.protocol import validate_score
 
 
 @dataclass
@@ -14,6 +16,12 @@ class RunConfig:
     rounds: int = 3
     revisions: int = 4
     online_budget: float = 8.0
+
+    def __post_init__(self):
+        if type(self.rounds) is not int or self.rounds < 0 or type(self.revisions) is not int or self.revisions < 0:
+            raise ValueError("rounds and revisions must be non-negative integers")
+        if not math.isfinite(self.online_budget) or self.online_budget <= 0:
+            raise ValueError("online_budget must be finite and positive")
 
 
 @dataclass
@@ -55,10 +63,13 @@ class DreamRSI:
                 continue
 
             for branch_index in range(int(decision.get("branch_count", 0))):
+                if len(tree.nodes) - 1 >= policy.max_nodes or spent + 1 > policy.budget:
+                    break
                 candidate = self.discovery.propose(task, {"branch": branch_index}, parent)
                 trace = self.discovery.execute(candidate, task)
                 evaluated = self.adapter.evaluate(candidate, task)
-                score = float(evaluated.get("score", 0.0))
+                accepted = all(evaluated.get(key, True) for key in ("valid", "correct", "feasible"))
+                score = validate_score(evaluated.get("score", 0.0)) if accepted else 0.0
                 child = tree.add(
                     parent.node_id,
                     policy_decision=decision,
@@ -83,13 +94,14 @@ class DreamRSI:
         self.metrics.compute_budget += spent
         return tree
 
-    def run_round(self, task: str):
-        incumbent_score = self.replay.replay(self.policy, self.pool).score if self.pool.trees else 0.0
+    def run_round(self, task: str, revisions=None):
         tree = self.online_exploration(self.policy, task)
         self.pool.add(tree)
 
         candidate_set = [(self.policy, self.replay.replay(self.policy, self.pool).score)]
-        for idx in range(self.developer.max_candidates):
+        incumbent_score = candidate_set[0][1]
+        limit = self.developer.max_candidates if revisions is None else min(revisions, self.developer.max_candidates)
+        for idx in range(limit):
             candidate = self.developer.revise(self.policy, idx)
             score = self.replay.replay(candidate, self.pool).score
             candidate_set.append((candidate, score))
@@ -111,9 +123,10 @@ class DreamRSI:
         }
 
     def run(self, config: RunConfig):
-        started = time.time()
-        history = [self.run_round(config.task) for _ in range(max(0, int(config.rounds)))]
-        self.metrics.wall_clock_seconds = time.time() - started
+        started = time.perf_counter()
+        self.policy = replace(self.policy, budget=config.online_budget)
+        history = [self.run_round(config.task, config.revisions) for _ in range(config.rounds)]
+        self.metrics.wall_clock_seconds = time.perf_counter() - started
         return {
             "history": history,
             "metrics": self.metrics,
@@ -129,6 +142,7 @@ class RecursiveFixedExploration:
         self.system = system
 
     def run(self, config: RunConfig):
+        self.system.policy = replace(self.system.policy, budget=config.online_budget)
         for _ in range(max(0, int(config.rounds))):
             tree = self.system.online_exploration(self.system.policy, config.task)
             self.system.pool.add(tree)

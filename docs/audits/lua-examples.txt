@@ -1,0 +1,238 @@
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║  Metabinary Complete Module - Example Usage                                  ║
+║  AST → Binary → Lua Integration                                          ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+================================================================================
+  EXAMPLE 1: Simple Arithmetic (ADD Operation)
+================================================================================
+AST created:
+  Opcode: 0x0010 (ADD)
+  Input Width: 128 bits
+  Output Width: 128 bits
+  Children: 0
+
+Serialized successfully: 32 bytes
+
+Binary representation (first 64 bytes):
+------------------------------------------------------------
+10 00 01 02 80 00 00 00 80 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 80 E3 3B 9B 14 D6 42 64 
+
+Deserialized successfully
+  Opcode: 0x0010 (ADD)
+  Input Width: 128
+  Output Width: 128
+
+Validation: PASS (OK)
+
+================================================================================
+  EXAMPLE 2: Composite Pipeline (Encode → Multiply → Relinearize → Decrypt)
+================================================================================
+Pipeline structure:
+[COMPOSE] in=0 out=128 children=4
+  [ENCODE] in=0 out=2048 children=0
+  [MUL] in=2048 out=2048 children=0
+  [RELINEARIZE] in=2048 out=2048 children=0
+  [DECRYPT] in=2048 out=128 children=0
+
+Pipeline Analysis:
+------------------------------------------------------------
+  Total nodes: 5
+  Leaf nodes: 4
+  Tree depth: 2
+  Opcodes used:
+    - 0xF000: COMPOSE
+    - 0x0300: ENCODE
+    - 0x0020: MUL
+    - 0x0100: RELINEARIZE
+    - 0x0303: DECRYPT
+
+Pipeline serialized: 177 bytes
+Introspected size: 177 bytes
+
+Binary representation (first 128 bytes):
+------------------------------------------------------------
+00 F0 01 01 00 00 00 00 80 00 00 00 00 00 00 00 
+04 00 00 00 00 00 00 00 43 AC E1 7E 75 D5 9D F7 
+00 03 01 02 00 00 00 00 00 08 00 00 58 00 00 00 
+00 00 00 00 00 00 00 00 DE A2 E6 90 ED C0 E3 A1 
+00 08 00 00 00 00 00 00 01 00 08 20 00 01 02 00 
+08 00 00 00 08 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 80 12 0A D1 FA 88 D3 9F 00 01 01 02 00 
+08 00 00 00 08 00 00 10 00 00 00 00 00 00 00 00 
+... (49 more bytes)
+
+Validation: PASS (OK)
+
+================================================================================
+  EXAMPLE 3: Conditional (IF-THEN-ELSE)
+================================================================================
+Conditional structure:
+[CONDITIONAL] in=2048 out=2048 children=3
+  [NOISE_ASSERT] in=2048 out=1 children=0
+  [ADD] in=2048 out=2048 children=0
+  [MUL] in=2048 out=2048 children=0
+
+Serialized: 136 bytes
+Validation: PASS (OK)
+
+================================================================================
+  EXAMPLE 4: Iteration (ITERATE with Loop Body)
+================================================================================
+Iteration structure:
+[ITERATE] in=128 out=128 children=1
+  [ADD] in=128 out=128 children=0
+
+Analysis: 2 nodes, depth 2
+Serialized: 68 bytes
+
+================================================================================
+  EXAMPLE 5: NAND ISA Program
+================================================================================
+NAND program:
+  [0] LDI
+  [1] LDI
+  [2] NAND
+  [3] HALT
+
+Encoded program: 8 bytes
+
+Binary representation:
+------------------------------------------------------------
+05 40 03 41 01 02 00 10 
+
+Decoded program:
+  [0] LDI
+  [1] LDI
+  [2] NAND
+  [3] HALT
+
+================================================================================
+  EXAMPLE 6: Constraint Validation
+================================================================================
+
+Valid constraints:
+------------------------------------------------------------
+  0x0010: ADD (valid: true)
+  0x0100: RELINEARIZE (valid: true)
+  0xF000: COMPOSE (valid: true)
+  0x9999: UNKNOWN (valid: false)
+
+Width validation:
+------------------------------------------------------------
+  in=0, out=0 (both zero): INVALID
+  in=128, out=128 (both equal): OK
+  in=256, out=128 (input > output): OK
+  in=-1, out=128 (negative input): INVALID
+
+Child arity validation:
+------------------------------------------------------------
+  ADD: 0 children (ADD: 0 children): OK
+  COMPOSE: 2 children (COMPOSE: 2 children): OK
+  CONDITIONAL: 3 children (CONDITIONAL: 3 children): OK
+  ITERATE: 1 children (ITERATE: 1 child): OK
+
+================================================================================
+  EXAMPLE 7: Introspection & Analysis
+================================================================================
+
+Structure Information:
+------------------------------------------------------------
+[COMPOSE] in=0 out=128 children=3
+  [ENCODE] in=0 out=2048 children=0
+  [ADD] in=2048 out=2048 children=0
+  [DECRYPT] in=2048 out=128 children=0
+
+Detailed Analysis:
+------------------------------------------------------------
+  Total nodes: 4
+  Leaf nodes: 3
+  Tree depth: 2
+
+Size Metrics:
+------------------------------------------------------------
+  Serialized size: 143 bytes
+  Estimated binary size: ~175 bytes
+
+Hash:
+------------------------------------------------------------
+  Blake3 hash: 1024804AF0838914
+
+================================================================================
+  EXAMPLE 8: Backend Configuration (Demonstration)
+================================================================================
+
+Current Configuration:
+------------------------------------------------------------
+  Active backend: lua
+  Validation mode: strict
+  Profiling enabled: false
+  Diagnostics enabled: false
+
+Available backends:
+------------------------------------------------------------
+  - Lua (native, always available)
+  - C (requires libmetabinary.so/dll - for maximum speed)
+  - Rust (requires libmetabinary_rust.so/dll - for maximum safety)
+  - Go (requires libmetabinary_go.so/dll - for cross-platform support)
+
+Backend registration example:
+------------------------------------------------------------
+  -- Register C backend (when available)
+  binary.backends.register_c()
+
+  -- Set preferred backend
+  binary.backends.set_preferred('c')
+
+================================================================================
+  EXAMPLE 9: Error Handling & Edge Cases
+================================================================================
+
+Invalid AST handling:
+------------------------------------------------------------
+Built AST with minimal params:
+  Opcode: 0x0010
+  Children: 0
+
+Deserialization errors:
+------------------------------------------------------------
+  empty data: FAIL (INSUFFICIENT_DATA)
+  insufficient data: FAIL (INSUFFICIENT_DATA)
+  invalid header: FAIL (NONZERO_HEADER_PADDING)
+
+Round-trip consistency:
+------------------------------------------------------------
+  Original opcode: 0xF000
+  Deserialized opcode: 0xF000
+  Children match: true
+  Round-trip OK: true
+
+================================================================================
+  EXAMPLE 10: Performance Characteristics
+================================================================================
+
+Operation timing estimates (Lua backend):
+------------------------------------------------------------
+  Serialization (100 iterations): 8.00 ms (80.00 µs per op)
+  Deserialization (100 iterations): 7.00 ms (70.00 µs per op)
+  Validation (1000 iterations): 104.00 ms (104.00 µs per op)
+
+Memory usage estimates:
+------------------------------------------------------------
+  Simple arithmetic AST: ~32 bytes
+  Complex pipeline AST: ~143 bytes
+  Average per node: ~28 bytes
+
+================================================================================
+  SUMMARY
+================================================================================
+  Total examples: 10
+  Coverage: Arithmetic, composition, control flow, ISA, validation, introspection
+  Status: All examples completed successfully
+
+

@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from .core import RunMetrics
+from ..core.legacy import RunMetrics
 
 METRIC_NAMES = (
     "discovery_agent_calls",

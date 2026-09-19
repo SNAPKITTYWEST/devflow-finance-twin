@@ -5,6 +5,11 @@
 local ffi = require("ffi")
 local ffi_bindings = {}
 
+-- Some FFI implementations do not compare a null cdata pointer equal to nil.
+local function is_null(pointer)
+    return pointer == nil or tonumber(ffi.cast("uintptr_t", pointer)) == 0
+end
+
 -- ============================================================================
 -- FFI C DECLARATIONS
 -- ============================================================================
@@ -73,9 +78,14 @@ ffi_bindings.c = {}
 
 local function load_c_backend(lib_path)
     -- Try to load C library
-    lib_path = lib_path or "libmetabinary.so" -- Unix
-    if ffi.os == "Windows" then
-        lib_path = lib_path or "metabinary.dll"
+    if lib_path == nil then
+        if ffi.os == "Windows" then
+            lib_path = "metabinary.dll"
+        elseif ffi.os == "OSX" then
+            lib_path = "libmetabinary.dylib"
+        else
+            lib_path = "libmetabinary.so"
+        end
     end
 
     local ok, lib = pcall(ffi.load, lib_path)
@@ -136,9 +146,9 @@ function ffi_bindings.c.serialize(block, size_ptr)
     local size_out = ffi.new("u32[1]")
 
     local result = ffi_bindings.c.lib.c_serialize_block(block, size_out, error_ptr)
-    if result == nil then
-        local err = ffi.string(error_ptr[0]) or "Unknown error"
-        ffi_bindings.c.lib.c_free(error_ptr[0])
+    if is_null(result) then
+        local err = not is_null(error_ptr[0]) and ffi.string(error_ptr[0]) or "Unknown error"
+        if not is_null(error_ptr[0]) then ffi_bindings.c.lib.c_free(error_ptr[0]) end
         return nil, err
     end
 
@@ -153,9 +163,9 @@ function ffi_bindings.c.deserialize(data, size)
     end
     local error_ptr = ffi.new("char*[1]")
     local block = ffi_bindings.c.lib.c_deserialize_block(data, size, error_ptr)
-    if block == nil then
-        local err = ffi.string(error_ptr[0]) or "Unknown error"
-        ffi_bindings.c.lib.c_free(error_ptr[0])
+    if is_null(block) then
+        local err = not is_null(error_ptr[0]) and ffi.string(error_ptr[0]) or "Unknown error"
+        if not is_null(error_ptr[0]) then ffi_bindings.c.lib.c_free(error_ptr[0]) end
         return nil, err
     end
     return block
@@ -202,9 +212,14 @@ ffi.cdef [[
 
 local function load_rust_backend(lib_path)
     -- Try to load Rust library (compiled as C ABI)
-    lib_path = lib_path or "libmetabinary_rust.so"
-    if ffi.os == "Windows" then
-        lib_path = lib_path or "metabinary_rust.dll"
+    if lib_path == nil then
+        if ffi.os == "Windows" then
+            lib_path = "metabinary_rust.dll"
+        elseif ffi.os == "OSX" then
+            lib_path = "libmetabinary_rust.dylib"
+        else
+            lib_path = "libmetabinary_rust.so"
+        end
     end
 
     local ok, lib = pcall(ffi.load, lib_path)
@@ -237,7 +252,7 @@ function ffi_bindings.rust.serialize(block)
     local error_code = ffi.new("u32[1]")
 
     local result = ffi_bindings.rust.lib.rust_serialize_block(block, size_out, error_code)
-    if result == nil then
+    if is_null(result) then
         return nil, string.format("Serialization failed with code %d", error_code[0])
     end
 
@@ -252,7 +267,7 @@ function ffi_bindings.rust.deserialize(data, size)
     end
     local error_code = ffi.new("u32[1]")
     local block = ffi_bindings.rust.lib.rust_deserialize_block(data, size, error_code)
-    if block == nil then
+    if is_null(block) then
         return nil, string.format("Deserialization failed with code %d", error_code[0])
     end
     return block
@@ -311,11 +326,14 @@ ffi.cdef [[
 
 local function load_go_backend(lib_path)
     -- Try to load Go library (exported via CGO)
-    lib_path = lib_path or "libmetabinary_go.so"
-    if ffi.os == "Windows" then
-        lib_path = lib_path or "metabinary_go.dll"
-    elseif ffi.os == "OSX" then
-        lib_path = lib_path or "libmetabinary_go.dylib"
+    if lib_path == nil then
+        if ffi.os == "Windows" then
+            lib_path = "metabinary_go.dll"
+        elseif ffi.os == "OSX" then
+            lib_path = "libmetabinary_go.dylib"
+        else
+            lib_path = "libmetabinary_go.so"
+        end
     end
 
     local ok, lib = pcall(ffi.load, lib_path)
@@ -361,7 +379,7 @@ function ffi_bindings.go.deserialize(data, size)
     end
     local error_code = ffi.new("u32[1]")
     local block = ffi_bindings.go.lib.go_deserialize_block(data, size, error_code)
-    if block == nil then
+    if is_null(block) then
         return nil, string.format("Deserialization failed with code %d", error_code[0])
     end
     return block

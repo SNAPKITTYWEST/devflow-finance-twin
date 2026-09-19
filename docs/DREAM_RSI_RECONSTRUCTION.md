@@ -2,6 +2,10 @@
 
 ## Overview
 
+For the current source layout, tested limits, and unresolved edge cases, read the
+[RSI package guide](../dream_rsi/README.md) and [RSI/Lua audit](audits/RSI_LUA_AUDIT.md).
+Both implementation generations use synthetic hash-based domain scores.
+
 This package reconstructs the public Dream-RSI mechanism as a compact, auditable policy-improvement loop. The discovery agent remains fixed during a run. The policy-development agent revises only the controller logic. Offline replay uses historical trees and no live discovery calls.
 
 ## Architecture
@@ -39,7 +43,10 @@ Online work is expensive and executes the real discovery agent. Offline work is 
 
 ## Candidate-selection guarantee
 
-The currently deployed policy is always included in the candidate set, so a new policy can only replace it if it scores at least as well. This preserves the invariant that the score of the deployed policy does not regress after a policy update.
+The currently deployed policy is included in the candidate set. Selection does
+not reduce its replay score on that same historical pool. Adding a new world
+changes the average, so scores across successive rounds can decrease. This is
+not a guarantee of improved real-world task performance.
 
 ## Experimental methodology
 

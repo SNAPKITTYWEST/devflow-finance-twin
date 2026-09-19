@@ -1,0 +1,15 @@
+C:\Users\jessi\AppData\Local\Programs\Python\Python312\Lib\site-packages\pytest_asyncio\plugin.py:299: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the "fixture" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to "function" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+.............................xxxxxxxx                                    [100%]
+=========================== short test summary info ===========================
+XFAIL tests/test_dream_rsi_audit.py::test_online_node_limit_inside_branch_batch - RSI-02: branch batches can exceed max_nodes
+XFAIL tests/test_dream_rsi_audit.py::test_tree_rejects_orphan - RSI-03: validation accepts disconnected nodes
+XFAIL tests/test_dream_rsi_audit.py::test_tree_rejects_cycle - RSI-03: validation accepts a self-cycle at root
+XFAIL tests/test_dream_rsi_audit.py::test_replay_honors_world_budget - RSI-04: budget.max_worlds is unused
+XFAIL tests/test_dream_rsi_audit.py::test_replay_does_not_overspend - RSI-05: simulator charges cost after admitting node
+XFAIL tests/test_dream_rsi_audit.py::test_policy_rejects_nan_budget - RSI-06: NaN passes budget validation
+XFAIL tests/test_dream_rsi_audit.py::test_zero_pool_bound_is_empty - RSI-07: [-0:] selects every world
+XFAIL tests/test_dream_rsi_audit.py::test_legacy_zero_revisions - RSI-08: legacy RunConfig.revisions is unused
+29 passed, 8 xfailed in 0.39s
