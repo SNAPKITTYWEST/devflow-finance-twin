@@ -34,7 +34,7 @@ set -Eeuo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INBOX="${REPO_ROOT}/.inbox"
 CONFLICT_DIR="${INBOX}/conflicts"
-MANIFEST_FILE="${REPO_ROOT}/PUBLISH_MANIFEST.json"
+MANIFEST_FILE="${REPO_ROOT}/docs/PUBLISH_MANIFEST.json"
 REPORT_FILE="${REPO_ROOT}/PUBLISH_REPORT.md"
 
 DRY_RUN=0
@@ -825,7 +825,7 @@ git_stage() {
     log_info "Staging ${#STAGED_PATHS[@]} file(s)..."
 
     # Also stage manifest and report
-    STAGED_PATHS+=("PUBLISH_MANIFEST.json" "PUBLISH_REPORT.md")
+    STAGED_PATHS+=("docs/PUBLISH_MANIFEST.json" "PUBLISH_REPORT.md")
 
     for path in "${STAGED_PATHS[@]}"; do
         git -C "$REPO_ROOT" add -- "$path"
@@ -885,7 +885,7 @@ git_commit() {
     # Update manifest with commit hash
     if [[ -f "$MANIFEST_FILE" ]]; then
         sed -i "s/\"commit_after\": \"PENDING\"/\"commit_after\": \"${commit_hash}\"/" "$MANIFEST_FILE"
-        git -C "$REPO_ROOT" add -- "PUBLISH_MANIFEST.json"
+        git -C "$REPO_ROOT" add -- "docs/PUBLISH_MANIFEST.json"
         git -C "$REPO_ROOT" commit --amend --no-edit
     fi
 
@@ -1104,7 +1104,7 @@ PATH SAFETY
   Never executes incoming files.
 
 OUTPUTS
-  PUBLISH_MANIFEST.json   Machine-readable publication record
+  docs/PUBLISH_MANIFEST.json   Machine-readable publication record
   PUBLISH_REPORT.md       Human-readable publication summary
 HELP_EOF
 }

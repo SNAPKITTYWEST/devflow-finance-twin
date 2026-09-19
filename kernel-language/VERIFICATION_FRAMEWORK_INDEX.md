@@ -1,6 +1,5 @@
 # PHASE 4 FORMAL VERIFICATION FRAMEWORK — DOCUMENT INDEX
 
-**Authority:** ORCHESTRATOR-2 (Formal Verification + Adversarial Auditor)  
 **Date:** 2026-09-13  
 **Classification:** Formal Specification — Complete  
 **Status:** Ready for Implementation Verification
@@ -310,7 +309,6 @@ FINAL REPORT:
 
 **Current Version:** 1.0 (Final Specification)  
 **Date:** 2026-09-13  
-**Authority:** ORCHESTRATOR-2  
 
 ### Update Procedure
 

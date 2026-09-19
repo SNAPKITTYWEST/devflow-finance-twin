@@ -1,7 +1,6 @@
 # ADVERSARIAL ATTACK TEST PLAN — PHASE 4 EXECUTION
 ## Comprehensive Attack Scenarios & Defense Validation
 
-**Test Authority:** ORCHESTRATOR-2 (Formal Verification + Adversarial Auditor)  
 **Date:** 2026-09-13  
 **Coverage:** All 13 attack scenarios across 5 threat vectors  
 **Framework:** FORMAL_VERIFICATION_FRAMEWORK_PHASE4.md (Part 2)
