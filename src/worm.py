@@ -120,7 +120,6 @@ class WormStorageEngine:
         with self._lock:
             try:
                 prev_hash = self.get_last_hash()
-                canonical_payload = json.dumps(payload, sort_keys=True, separators=(',', ':'))
 
                 record = {
                     "prev_hash": prev_hash,
@@ -144,22 +143,18 @@ class WormStorageEngine:
 
                 self._check_size_limit(record_bytes)
 
-                # Atomic append: write to temp file, then rename
                 tmp_path = self.storage_path.with_suffix(".worm.tmp")
                 try:
-                    with open(tmp_path, "a", encoding="utf-8") as f:
-                        f.write(serialized)
+                    if self.storage_path.exists():
+                        with open(self.storage_path, "rb") as src:
+                            existing = src.read()
+                    else:
+                        existing = b""
+                    with open(tmp_path, "wb") as f:
+                        f.write(existing)
+                        f.write(serialized.encode("utf-8"))
                         f.flush()
                         os.fsync(f.fileno())
-                    # Append existing content if file was new
-                    if tmp_path.stat().st_size > record_bytes and self.storage_path.exists():
-                        with open(self.storage_path, "r", encoding="utf-8") as src:
-                            existing = src.read()
-                        with open(tmp_path, "w", encoding="utf-8") as f:
-                            f.write(existing)
-                            f.write(serialized)
-                            f.flush()
-                            os.fsync(f.fileno())
                     os.replace(tmp_path, self.storage_path)
                 except OSError as e:
                     if tmp_path.exists():
@@ -242,9 +237,15 @@ class WormStorageEngine:
 
     def record_count(self) -> int:
         """Return the number of records in the WORM log."""
-        return len(self.read_all())
+        if not self.storage_path.exists():
+            return 0
+        count = 0
+        with open(self.storage_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    count += 1
+        return count
 
     def tail(self, n: int = 10) -> List[Dict[str, Any]]:
         """Return the last n records."""
-        records = self.read_all()
-        return records[-n:] if n < len(records) else records
+        return self.read_all()[-n:]
