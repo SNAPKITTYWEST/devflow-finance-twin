@@ -1,0 +1,29 @@
+[package]
+name = "nraay-tensor"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Binary Semantic Governance tensor with virtual slicing and temporal safety"
+license = "MIT OR Apache-2.0 OR GPL-3.0-or-later"
+
+[dependencies]
+thiserror = "2"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[test]]
+name = "integration"
+path = "tests/integration.rs"
+
+[[example]]
+name = "basic_usage"
+path = "examples/basic_usage.rs"
+
+[[example]]
+name = "slicing"
+path = "examples/slicing.rs"
+
+[[example]]
+name = "materialization"
+path = "examples/materialization.rs"
