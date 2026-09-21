@@ -1,0 +1,69 @@
+# ---------------------------------------------------------------------------
+# Dockerfile.node — Production image for the Node.js Telegram bot
+#
+# Uses a two-stage build:
+#   Stage 1 — installer: installs only production dependencies with npm ci
+#   Stage 2 — runtime: runs as a non-root user with a minimal node:lts image
+#
+# Security hardening:
+#   - Non-root user (node, uid 1000)
+#   - Read-only filesystem (mount /tmp as tmpfs in compose)
+#   - Only production deps installed (--omit=dev)
+#   - node:lts-alpine3.20 base for minimal attack surface
+#   - NODE_ENV=production disables source maps / dev middleware
+#
+# License: GPL-3.0-or-later OR Apache-2.0
+# ---------------------------------------------------------------------------
+
+# ---- Stage 1: dependency installer -----------------------------------------
+FROM node:lts-alpine3.20 AS installer
+
+# Install native build tools only if any npm package requires gyp compilation.
+RUN apk add --no-cache python3 make g++
+
+WORKDIR /install
+
+# Copy manifests first for Docker layer caching.
+COPY node/package.json node/package-lock.json* ./
+
+# Install production dependencies deterministically.
+RUN npm ci --omit=dev --ignore-scripts && \
+    # Clean npm cache to reduce layer size.
+    npm cache clean --force
+
+# ---- Stage 2: production runtime -------------------------------------------
+FROM node:lts-alpine3.20 AS runtime
+
+# Security: run as the built-in unprivileged 'node' user.
+USER node
+
+WORKDIR /app
+
+# Copy pre-installed node_modules from the installer stage.
+COPY --from=installer --chown=node:node /install/node_modules ./node_modules
+
+# Copy application source.
+COPY --chown=node:node node/src/ ./src/
+COPY --chown=node:node node/package.json ./
+
+# Environment defaults (overridden at runtime via docker-compose or k8s secrets).
+ENV NODE_ENV=production \
+    LOG_LEVEL=info \
+    OLLAMA_API_URL=http://ollama:11434 \
+    OLLAMA_MODEL=llama2 \
+    PORT=3000
+
+# Health-check: call the bot's /healthz HTTP endpoint.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD wget -qO- http://localhost:${PORT}/healthz || exit 1
+
+EXPOSE ${PORT}
+
+LABEL org.opencontainers.image.title="telegram-bot-sdk-node" \
+      org.opencontainers.image.description="Node.js Telegram bot — devflow-finance-twin" \
+      org.opencontainers.image.source="https://github.com/SNAPKITTYWEST/devflow-finance-twin" \
+      org.opencontainers.image.licenses="GPL-3.0-or-later OR Apache-2.0"
+
+# Use tini as PID 1 to forward signals correctly (alpine ships it).
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "src/index.js"]

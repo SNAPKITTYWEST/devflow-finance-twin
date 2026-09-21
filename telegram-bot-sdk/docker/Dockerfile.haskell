@@ -1,0 +1,92 @@
+# ---------------------------------------------------------------------------
+# Dockerfile.haskell — Multi-stage Haskell Stack build for the Haskell bot
+#
+# Stages:
+#   1. stack-resolver — pins the GHC / Stackage resolver and installs system
+#      libraries required by the haskell-telegram-api / STM dependencies.
+#   2. dependency-builder — builds only the Haskell *library* dependencies so
+#      this layer is cached on code-only changes.
+#   3. app-builder — builds the final executable.
+#   4. runtime — copies only the executable into a minimal Debian slim image.
+#
+# The resulting binary is dynamically linked against glibc (matching the
+# runtime base image) but has no Haskell runtime overhead beyond what GHC
+# bakes in at link time.
+#
+# License: GPL-3.0-or-later OR Apache-2.0
+# ---------------------------------------------------------------------------
+
+# ---- Stage 1: base with Stack + system dependencies -----------------------
+FROM haskell:9.6-slim-buster AS stack-base
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libssl-dev \
+    libffi-dev \
+    zlib1g-dev \
+    pkg-config \
+    ca-certificates \
+    curl \
+    git \
+ && rm -rf /var/lib/apt/lists/*
+
+# Use a fixed Stack LTS snapshot for reproducibility.
+ENV STACK_RESOLVER=lts-22.39
+WORKDIR /build
+
+# ---- Stage 2: dependency pre-build -----------------------------------------
+FROM stack-base AS dep-builder
+
+# Copy only the manifest files so this expensive layer is cached.
+COPY haskell/stack.yaml haskell/telegram-bot.cabal ./
+
+# Tell Stack to skip GHC download — it is already in the base image.
+RUN stack setup --system-ghc && \
+    stack build --only-dependencies --system-ghc 2>&1 | tee /build/dep-build.log
+
+# ---- Stage 3: application builder ------------------------------------------
+FROM dep-builder AS app-builder
+
+# Copy full source tree.
+COPY haskell/ .
+
+# Build and install to a predictable location.
+RUN stack install \
+    --system-ghc \
+    --local-bin-path /build/bin \
+    --ghc-options="-O2 -Wall -Wcompat" \
+ && strip /build/bin/telegram-bot
+
+# ---- Stage 4: minimal runtime image ----------------------------------------
+FROM debian:bookworm-slim AS runtime
+
+# Install only the dynamic runtime libraries the Haskell binary links against.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libssl3 \
+    libffi8 \
+    zlib1g \
+    ca-certificates \
+ && rm -rf /var/lib/apt/lists/* \
+ && adduser --disabled-password --gecos "" --uid 10001 botuser
+
+WORKDIR /app
+
+COPY --from=app-builder --chown=botuser:botuser /build/bin/telegram-bot ./
+
+# Environment defaults.
+ENV LOG_LEVEL=info \
+    OLLAMA_API_URL=http://ollama:11434 \
+    OLLAMA_MODEL=llama2
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+    CMD curl -sf http://localhost:8080/healthz || exit 1
+
+EXPOSE 8080
+
+USER botuser
+
+LABEL org.opencontainers.image.title="telegram-bot-sdk-haskell" \
+      org.opencontainers.image.description="Haskell Telegram bot — devflow-finance-twin" \
+      org.opencontainers.image.source="https://github.com/SNAPKITTYWEST/devflow-finance-twin" \
+      org.opencontainers.image.licenses="GPL-3.0-or-later OR Apache-2.0"
+
+ENTRYPOINT ["./telegram-bot"]

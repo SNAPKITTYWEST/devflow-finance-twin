@@ -64,6 +64,18 @@ impl From<reqwest::Error> for BotError {
     }
 }
 
+impl From<sqlx::Error> for BotError {
+    fn from(err: sqlx::Error) -> Self {
+        BotError::IntegrationError(err.to_string())
+    }
+}
+
+impl From<uuid::Error> for BotError {
+    fn from(err: uuid::Error) -> Self {
+        BotError::SerializationError(err.to_string())
+    }
+}
+
 /// Specialized Result type for bot operations
 pub type Result<T> = std::result::Result<T, BotError>;
 

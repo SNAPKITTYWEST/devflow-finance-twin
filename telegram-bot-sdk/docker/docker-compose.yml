@@ -1,0 +1,237 @@
+# ---------------------------------------------------------------------------
+# docker-compose.yml
+#
+# Runs all three Telegram bot implementations alongside:
+#   - Ollama (local LLM inference)
+#   - A shared SQLite volume (mounted into each bot)
+#   - A Caddy reverse-proxy (optional TLS termination for webhook mode)
+#
+# Usage:
+#   docker compose up --build              # start everything
+#   docker compose up bot-rust             # start only the Rust bot
+#   docker compose --profile with-proxy up # also start Caddy
+#
+# All three bots share the same TELEGRAM_BOT_TOKEN by design; only ONE should
+# receive updates at a time (use TELEGRAM_ACTIVE_BOT env var to select which).
+# Alternatively, register three separate bot tokens via BotFather.
+#
+# License: GPL-3.0-or-later OR Apache-2.0
+# ---------------------------------------------------------------------------
+
+version: "3.9"
+
+# ---------------------------------------------------------------------------
+# Named volumes
+# ---------------------------------------------------------------------------
+volumes:
+  sqlite_data:
+    driver: local
+  ollama_data:
+    driver: local
+
+# ---------------------------------------------------------------------------
+# Shared network
+# ---------------------------------------------------------------------------
+networks:
+  bot_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "172.28.0.0/24"
+
+# ---------------------------------------------------------------------------
+# Reusable configuration fragments
+# ---------------------------------------------------------------------------
+x-bot-common: &bot-common
+  restart: unless-stopped
+  networks:
+    - bot_net
+  depends_on:
+    ollama:
+      condition: service_healthy
+  env_file:
+    - ../.env
+  volumes:
+    - sqlite_data:/data/sqlite:rw
+  environment:
+    OLLAMA_API_URL: "http://ollama:11434"
+    OLLAMA_MODEL: "${OLLAMA_MODEL:-llama2}"
+    DATABASE_URL: "sqlite:///data/sqlite/bot.db"
+    LOG_LEVEL: "${LOG_LEVEL:-info}"
+
+# ---------------------------------------------------------------------------
+# Services
+# ---------------------------------------------------------------------------
+services:
+
+  # --------------------------------------------------------------------------
+  # Rust bot
+  # --------------------------------------------------------------------------
+  bot-rust:
+    <<: *bot-common
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.rust
+    container_name: bot-rust
+    image: devflow/bot-rust:${IMAGE_TAG:-latest}
+    environment:
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN_RUST:-${TELEGRAM_BOT_TOKEN}}"
+      RUST_LOG: "${RUST_LOG:-info}"
+      PORT: "8081"
+    ports:
+      - "${RUST_HOST_PORT:-18081}:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=bot-rust"
+
+  # --------------------------------------------------------------------------
+  # Node.js bot
+  # --------------------------------------------------------------------------
+  bot-node:
+    <<: *bot-common
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.node
+    container_name: bot-node
+    image: devflow/bot-node:${IMAGE_TAG:-latest}
+    environment:
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN_NODE:-${TELEGRAM_BOT_TOKEN}}"
+      NODE_ENV: production
+      PORT: "3000"
+    ports:
+      - "${NODE_HOST_PORT:-13000}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=bot-node"
+
+  # --------------------------------------------------------------------------
+  # Haskell bot
+  # --------------------------------------------------------------------------
+  bot-haskell:
+    <<: *bot-common
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.haskell
+    container_name: bot-haskell
+    image: devflow/bot-haskell:${IMAGE_TAG:-latest}
+    environment:
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN_HASKELL:-${TELEGRAM_BOT_TOKEN}}"
+      PORT: "8082"
+    ports:
+      - "${HASKELL_HOST_PORT:-18082}:8082"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8082/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=bot-haskell"
+
+  # --------------------------------------------------------------------------
+  # Ollama — local LLM inference engine
+  # --------------------------------------------------------------------------
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    networks:
+      - bot_net
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      OLLAMA_HOST: "0.0.0.0"
+    ports:
+      - "${OLLAMA_HOST_PORT:-11434}:11434"
+    # GPU acceleration (enable if NVIDIA runtime is available).
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/ | grep -q 'Ollama' || exit 1"]
+      interval: 30s
+      timeout: 15s
+      start_period: 60s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+        labels: "service=ollama"
+
+  # --------------------------------------------------------------------------
+  # SQLite admin UI (optional, profile: with-admin)
+  # --------------------------------------------------------------------------
+  sqlite-web:
+    image: coleifer/sqlite-web:latest
+    container_name: sqlite-web
+    profiles:
+      - with-admin
+    restart: unless-stopped
+    networks:
+      - bot_net
+    volumes:
+      - sqlite_data:/data/sqlite:ro
+    environment:
+      SQLITE_DATABASE: /data/sqlite/bot.db
+    ports:
+      - "${SQLITEWEB_HOST_PORT:-18080}:8080"
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  # --------------------------------------------------------------------------
+  # Caddy reverse proxy / TLS termination (optional, profile: with-proxy)
+  # --------------------------------------------------------------------------
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    profiles:
+      - with-proxy
+    restart: unless-stopped
+    networks:
+      - bot_net
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - /var/data/caddy/data:/data
+      - /var/data/caddy/config:/config
+    environment:
+      BOT_NODE_HOST: "bot-node:3000"
+      BOT_RUST_HOST: "bot-rust:8081"
+      BOT_HASKELL_HOST: "bot-haskell:8082"
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"

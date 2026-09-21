@@ -1,0 +1,88 @@
+# ---------------------------------------------------------------------------
+# Dockerfile.rust — Multi-stage production build for the Rust Telegram bot
+#
+# Stage 1: dependency caching layer
+#   Builds only Cargo.toml / Cargo.lock so Docker layer cache is reused on
+#   code-only changes.
+#
+# Stage 2: full build
+#   Compiles the workspace in --release mode with musl for a fully static
+#   binary.
+#
+# Stage 3: minimal runtime
+#   Copies only the stripped binary into a distroless/scratch image.
+#
+# License: GPL-3.0-or-later OR Apache-2.0
+# ---------------------------------------------------------------------------
+
+# ---- Stage 1: cargo chef (dependency cache) --------------------------------
+FROM rust:1.85-slim-bookworm AS chef
+RUN cargo install cargo-chef --locked
+WORKDIR /build
+
+# ---- Stage 2: planner (compute recipe from Cargo manifests) ----------------
+FROM chef AS planner
+COPY rust/Cargo.toml rust/Cargo.lock* ./
+# Create a stub lib.rs so cargo-chef can parse the workspace graph.
+RUN mkdir -p src && echo "fn main() {}" > src/main.rs
+RUN cargo chef prepare --recipe-path recipe.json
+
+# ---- Stage 3: dependency builder -------------------------------------------
+FROM chef AS dependency-builder
+COPY --from=planner /build/recipe.json recipe.json
+# Build dependencies only; this layer is cached unless Cargo.lock changes.
+RUN cargo chef cook --release --recipe-path recipe.json
+
+# ---- Stage 4: application builder ------------------------------------------
+FROM chef AS app-builder
+
+# Install musl target for a fully static binary.
+RUN rustup target add x86_64-unknown-linux-musl
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    musl-tools \
+    pkg-config \
+    libssl-dev \
+    ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Pull in pre-built dependencies from the caching stage.
+COPY --from=dependency-builder /build/target target
+COPY --from=dependency-builder /usr/local/cargo /usr/local/cargo
+
+# Copy full source.
+COPY rust/ .
+
+# Build the release binary statically linked.
+ENV RUSTFLAGS="-C target-feature=+crt-static"
+RUN cargo build --release --target x86_64-unknown-linux-musl
+
+# Strip debug symbols to minimise image size.
+RUN strip target/x86_64-unknown-linux-musl/release/telegram-bot-sdk
+
+# ---- Stage 5: minimal runtime image ----------------------------------------
+FROM scratch AS runtime
+
+# CA certificates are needed for HTTPS calls to the Telegram API.
+COPY --from=app-builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# Copy only the stripped static binary.
+COPY --from=app-builder \
+    /build/target/x86_64-unknown-linux-musl/release/telegram-bot-sdk \
+    /usr/local/bin/telegram-bot
+
+# Non-root UID (scratch images have no /etc/passwd; numeric UID is portable).
+USER 65534:65534
+
+# Expose the health-check port (not the Telegram webhook; bots use long-polling
+# by default, but a /healthz endpoint is provided by the SDK).
+EXPOSE 8080
+
+# Metadata labels.
+LABEL org.opencontainers.image.title="telegram-bot-sdk-rust" \
+      org.opencontainers.image.description="Rust Telegram bot — devflow-finance-twin" \
+      org.opencontainers.image.source="https://github.com/SNAPKITTYWEST/devflow-finance-twin" \
+      org.opencontainers.image.licenses="GPL-3.0-or-later OR Apache-2.0"
+
+ENTRYPOINT ["/usr/local/bin/telegram-bot"]

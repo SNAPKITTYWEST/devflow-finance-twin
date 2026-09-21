@@ -1,0 +1,41 @@
+{
+  "name": "@snapkitty/telegram-bot-sdk-node",
+  "version": "1.0.0",
+  "description": "Node.js/TypeScript reference implementation of the Telegram Bot SDK with agent capabilities, scrum board integration, and Ollama LLM fallback",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test src/**/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "dotenv": "^16.4.5",
+    "node-fetch": "^3.3.2",
+    "telegraf": "^4.16.3",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/node": "^20.12.2",
+    "@types/uuid": "^9.0.8"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "telegraf",
+    "agent",
+    "scrum",
+    "ollama",
+    "snapkitty"
+  ],
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SNAPKITTYWEST/devflow-finance-twin"
+  }
+}
