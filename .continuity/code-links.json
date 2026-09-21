@@ -1,0 +1,52 @@
+{
+  "links": [
+    {
+      "linkedDecisionIds": [
+        "1789778887945-cd20yv",
+        "1789778887946-bho0pe",
+        "1789778887946-egd3wx",
+        "1789778887993-j9oca6"
+      ],
+      "location": {
+        "filePath": "SOVEREIGN_AI_EVALUATION_ENGINE.md",
+        "lineNumber": 1,
+        "symbolName": "backfill-linked",
+        "symbolType": "file"
+      }
+    },
+    {
+      "linkedDecisionIds": [
+        "1789778887945-egmgh6",
+        "1789778887946-lqigwc",
+        "1789778887946-ph08ux",
+        "1789778887993-63erk6"
+      ],
+      "location": {
+        "filePath": "SOVEREIGN_EVALUATION_ENGINE_SPEC.md",
+        "lineNumber": 1,
+        "symbolName": "backfill-linked",
+        "symbolType": "file"
+      }
+    },
+    {
+      "linkedDecisionIds": [
+        "1789778887945-kfjl14",
+        "1789778887946-8cvg2l",
+        "1789778887946-oevqtl",
+        "1789778887993-fpf70p"
+      ],
+      "location": {
+        "filePath": "PHASE_4_DESIGN_COMPLETE.md",
+        "lineNumber": 1,
+        "symbolName": "backfill-linked",
+        "symbolType": "file"
+      }
+    }
+  ],
+  "meta": {
+    "backfillVersion": 1,
+    "backfillCompletedAt": "2026-09-19T01:03:01.836Z",
+    "backfillLinksCreated": 12,
+    "backfillDecisionsScanned": 60
+  }
+}

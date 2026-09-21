@@ -1,0 +1,87 @@
+{
+  "manifest_version": "v1",
+  "model_name": "sovereign-glm-block",
+  "architecture": "GLMInvertedBlock (self-attn + mlp + layernorm)",
+  "total_parameters": 33472,
+  "training": {
+    "steps": 6,
+    "initial_loss": 2.054298,
+    "final_loss": 1.901829
+  },
+  "quantization": {
+    "source": "FP32",
+    "int4_footprint_bytes": 16736
+  },
+  "files": [
+    {
+      "filename": "sovereign_glm_block.safetensors",
+      "format": "safetensors",
+      "size_bytes": 134800,
+      "sha256": "2af82b29f092338a06d8ad343e3d3b1727065597c489dc8e78e6d532c965c90d"
+    }
+  ],
+  "tensor_inventory": {
+    "attn.in_proj_weight": {
+      "dtype": "torch.float32",
+      "shape": [192, 64]
+    },
+    "attn.in_proj_bias": {
+      "dtype": "torch.float32",
+      "shape": [192]
+    },
+    "attn.out_proj.weight": {
+      "dtype": "torch.float32",
+      "shape": [64, 64]
+    },
+    "attn.out_proj.bias": {
+      "dtype": "torch.float32",
+      "shape": [64]
+    },
+    "ln1.weight": {
+      "dtype": "torch.float32",
+      "shape": [64]
+    },
+    "ln1.bias": {
+      "dtype": "torch.float32",
+      "shape": [64]
+    },
+    "mlp.0.weight": {
+      "dtype": "torch.float32",
+      "shape": [128, 64]
+    },
+    "mlp.0.bias": {
+      "dtype": "torch.float32",
+      "shape": [128]
+    },
+    "mlp.2.weight": {
+      "dtype": "torch.float32",
+      "shape": [64, 128]
+    },
+    "mlp.2.bias": {
+      "dtype": "torch.float32",
+      "shape": [64]
+    },
+    "ln2.weight": {
+      "dtype": "torch.float32",
+      "shape": [64]
+    },
+    "ln2.bias": {
+      "dtype": "torch.float32",
+      "shape": [64]
+    }
+  },
+  "knowledge_tree_summary": {
+    "primitives": {
+      "AI_Weights": ["Tensors", "Containers", "Quantization"],
+      "Lip_Sync": ["Audio_Units", "Visual_Units"]
+    },
+    "systems": {
+      "Model_Distribution": 2,
+      "Animation_Pipeline": 1
+    },
+    "domains": [
+      "ML Engineering & Model Architecture",
+      "Real-time Interactive Engine Development"
+    ]
+  }
+}
