@@ -1,0 +1,51 @@
+[package]
+name = "tensor-core"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Formal tensor/array library with pure mathematical verification"
+license = "MIT OR Apache-2.0 OR GPL-3.0-or-later"
+
+[dependencies]
+ndarray = { version = "0.17", features = ["rayon", "approx"] }
+ndarray-rand = "0.16"
+thiserror = "2"
+rand = "0.9"
+
+[dependencies.ndarray-linalg]
+version = "0.18"
+optional = true
+default-features = false
+features = ["openblas-static"]
+
+[dev-dependencies]
+ndarray-stats = "0.5"
+
+[features]
+default = []
+linalg = ["dep:ndarray-linalg"]
+full = ["linalg"]
+
+[[example]]
+name = "creation_and_views"
+path = "examples/creation_and_views.rs"
+
+[[example]]
+name = "elementwise_and_broadcast"
+path = "examples/elementwise_and_broadcast.rs"
+
+[[example]]
+name = "reductions"
+path = "examples/reductions.rs"
+
+[[example]]
+name = "matmul"
+path = "examples/matmul.rs"
+
+[[example]]
+name = "batch_contraction"
+path = "examples/batch_contraction.rs"
+
+[[example]]
+name = "parallel_operations"
+path = "examples/parallel_operations.rs"
