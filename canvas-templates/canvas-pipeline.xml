@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<canvas name="SwiftUI Data Pipeline" version="1.0">
+  <metadata>
+    <author>Canvas example</author>
+    <date>2026-09-20</date>
+    <description>Reference SwiftUI pipeline used to exercise the XSLT engine.</description>
+  </metadata>
+
+  <architecture>
+    <layer name="UI Layer (SwiftUI)">
+      <layer name="ViewModel (@StateObject)">
+        <layer name="Repository (Protocol)">
+          <layer name="Data Source (API/DB)"/>
+        </layer>
+      </layer>
+    </layer>
+  </architecture>
+
+  <component name="DataModel">
+    <property key="fields">id: UUID, name: String, timestamp: Date</property>
+    <property key="conformance">Codable, Hashable, Sendable</property>
+    <property key="constraints">Must be a value type (struct)</property>
+  </component>
+
+  <component name="ViewModel">
+    <property key="responsibility">State management, data fetching, error handling</property>
+    <property key="threading">@MainActor for @Published updates</property>
+    <property key="lifecycle">init, deinit with cleanup</property>
+  </component>
+
+  <swift-stub target="DataFetchTemplate.loadData()">
+    <signature access="public" name="fetchData" returns="Void">
+      <param name="repository" type="DataRepository"/>
+    </signature>
+    <hole id="H1" description="Load initial state" type="LoadingState&lt;[DataModel]&gt;">
+      <expected>@Published var state: LoadingState&lt;[DataModel]&gt; = .idle</expected>
+      <placeholder>// HOLE[H1]: Define @Published property</placeholder>
+    </hole>
+    <hole id="H2" description="Fetch from repository with error handling" type="async throws">
+      <expected>state = .loading; state = .success(data)</expected>
+      <placeholder>// HOLE[H2]: Implement async fetch</placeholder>
+    </hole>
+    <hole id="H3" description="Handle fetch error gracefully" type="Error">
+      <expected>state = .error(AppError)</expected>
+      <placeholder>// HOLE[H3]: Implement error case</placeholder>
+    </hole>
+  </swift-stub>
+
+</canvas>

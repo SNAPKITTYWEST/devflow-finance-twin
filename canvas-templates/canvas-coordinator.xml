@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<canvas name="Backend Coordinator + Swift + Assembly" version="1.0">
+  <metadata>
+    <author>Coordinator stack</author>
+    <date>2026-09-20</date>
+    <description>Backend owns the step machine. Swift owns presentation. Assembly owns CRC32.</description>
+  </metadata>
+
+  <architecture>
+    <layer name="Backend Coordinator API">
+      <layer name="Session + step machine">
+        <layer name="Command / Event contract"/>
+      </layer>
+      <layer name="AppCoordinator (Swift)">
+        <layer name="Auth / Sync / Work children"/>
+        <layer name="AssemblyBridge.crc32"/>
+      </layer>
+    </layer>
+  </architecture>
+
+  <component name="Backend coordinator">
+    <property key="role">Source of truth for the next legal command</property>
+    <property key="steps">boot, authenticate, hydrate, work, complete</property>
+    <property key="endpoints">POST /sessions, GET /sessions/{id}, POST /sessions/{id}/advance</property>
+    <property key="invariant">Client never invents the next step</property>
+  </component>
+
+  <component name="On-device coordinators">
+    <property key="protocol">Coordinator: children, start(), stop()</property>
+    <property key="root">AppCoordinator opens a session and dispatches ServerCommand</property>
+    <property key="children">AuthCoordinator, SyncCoordinator, WorkCoordinator</property>
+    <property key="threading">@MainActor for UI; BackendClient is an actor</property>
+  </component>
+
+  <component name="Assembly hot path">
+    <property key="symbol">crc32_asm</property>
+    <property key="abi">AAPCS64: x0 = buf, x1 = len, w0 = crc</property>
+    <property key="poly">IEEE 0xEDB88320, init/final XOR 0xFFFFFFFF</property>
+    <property key="why">Allocation-free checksum before task_done</property>
+  </component>
+
+  <swift-stub target="WorkCoordinator.finish(payload:)">
+    <signature access="private" name="finish" returns="Void">
+      <param name="payload" type="Data"/>
+    </signature>
+    <hole id="H1" description="Checksum the payload with the ARM64 routine" type="UInt32">
+      <expected>let digest = AssemblyBridge.crc32(of: payload)</expected>
+      <placeholder>let digest = /* HOLE[H1] */</placeholder>
+    </hole>
+    <hole id="H2" description="Advance the backend coordinator with task_done" type="CoordinatorSnapshot">
+      <expected>try await client.advance(sessionId:sessionId, event:"task_done", checksum:checksum)</expected>
+      <placeholder>let snap = try await /* HOLE[H2] */</placeholder>
+    </hole>
+    <hole id="H3" description="Hand the returned command back to AppCoordinator" type="(CoordinatorSnapshot) -&gt; Void">
+      <expected>onSnapshot(snap)</expected>
+      <placeholder>/* HOLE[H3] dispatch snap */</placeholder>
+    </hole>
+  </swift-stub>
+
+  <assembly-stub symbol="crc32_asm" abi="AAPCS64">
+    <hole id="A1" description="Byte loop: crc ^= byte; 8 reflected bits; poly 0xEDB88320" type="UInt32">
+      <expected>return crc XOR 0xFFFFFFFF in w0</expected>
+      <placeholder>// HOLE[A1]: implement _crc32_asm here</placeholder>
+    </hole>
+  </assembly-stub>
+
+</canvas>

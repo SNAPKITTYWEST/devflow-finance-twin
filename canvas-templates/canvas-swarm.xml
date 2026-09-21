@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<canvas name="Apple UX Swarm BEAM Dylan Metal" version="1.0">
+  <metadata>
+    <author>Evoke swarm / Woz integrator</author>
+    <date>2026-09-20</date>
+    <description>BEAM OTP coordinator, Dylan CRC frames, Metal avatars, SwiftUI HIG shell.</description>
+  </metadata>
+
+  <architecture>
+    <layer name="Elixir BEAM OTP">
+      <layer name="Agent DynamicSupervisor">
+        <layer name="Dylan codec + CRC32"/>
+      </layer>
+      <layer name="TCP listener :4488">
+        <layer name="Backpressure gate"/>
+      </layer>
+    </layer>
+  </architecture>
+
+  <component name="Dylan frame">
+    <property key="layout">DYLA | agent16 | op | flags | seq16 | len16 | payload | crc32</property>
+    <property key="crc">IEEE 0xEDB88320, same poly as AssemblyBridge and :erlang.crc32</property>
+    <property key="transport">uint32 BE length prefix, nodelay TCP, no JSON</property>
+  </component>
+
+  <component name="Metal avatar engine">
+    <property key="particles">65536 shared-mode buffer</property>
+    <property key="budget">8.33ms frame, compute then point-sprite pass</property>
+    <property key="ops">0x0A attract, 0x0D weld to frame rect, 0x0E glass ripple</property>
+  </component>
+
+  <component name="SwiftUI HIG shell">
+    <property key="state">@Observable AgentUIState driven by AsyncStream of DylanFrame</property>
+    <property key="motion">spring response 0.35 damping 0.86</property>
+    <property key="vibrancy">NSVisualEffectView hudWindow behindWindow</property>
+  </component>
+
+  <swift-stub target="AgentUIState.apply">
+    <signature access="public" name="apply" returns="Void">
+      <param name="frame" type="DylanFrame"/>
+    </signature>
+    <hole id="S1" description="Decode avatar target from LE float pair" type="CGPoint">
+      <expected>DylanPayload.point(frame.payload)</expected>
+      <placeholder>// HOLE[S1] point payload</placeholder>
+    </hole>
+    <hole id="S2" description="Drive Metal directive buffer from last applied frame" type="DylanDirective">
+      <expected>directive.target = avatarTarget; directive.op = lastOp</expected>
+      <placeholder>// HOLE[S2] upload uniforms</placeholder>
+    </hole>
+  </swift-stub>
+
+  <assembly-stub symbol="crc32_asm" abi="AAPCS64">
+    <hole id="A1" description="CRC of Dylan body bytes before the trailer" type="UInt32">
+      <expected>AssemblyBridge.crc32(of: body)</expected>
+      <placeholder>// HOLE[A1] reuse existing kernel</placeholder>
+    </hole>
+  </assembly-stub>
+
+</canvas>

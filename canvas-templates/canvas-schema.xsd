@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later OR Apache-2.0 -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="unqualified">
+
+  <!-- Root element -->
+  <xs:element name="canvas">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="metadata"      type="metadataType"      minOccurs="0"/>
+        <xs:element name="architecture"   type="architectureType"  minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="component"      type="componentType"     minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="swift-stub"     type="swiftStubType"     minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="assembly-stub"  type="assemblyStubType"  minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="name"    type="xs:string" use="required"/>
+      <xs:attribute name="version" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- metadata -->
+  <xs:complexType name="metadataType">
+    <xs:sequence>
+      <xs:element name="author"      type="xs:string" minOccurs="0"/>
+      <xs:element name="date"        type="xs:string" minOccurs="0"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- architecture (contains nested layers) -->
+  <xs:complexType name="architectureType">
+    <xs:sequence>
+      <xs:element name="layer" type="layerType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- layer (recursive) -->
+  <xs:complexType name="layerType">
+    <xs:sequence>
+      <xs:element name="layer" type="layerType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <!-- component -->
+  <xs:complexType name="componentType">
+    <xs:sequence>
+      <xs:element name="property" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <!-- property (key + text content) -->
+  <xs:complexType name="propertyType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="key" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- swift-stub -->
+  <xs:complexType name="swiftStubType">
+    <xs:sequence>
+      <xs:element name="signature" type="signatureType" minOccurs="0"/>
+      <xs:element name="hole"      type="holeType"      minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="target" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <!-- signature -->
+  <xs:complexType name="signatureType">
+    <xs:sequence>
+      <xs:element name="param" type="paramType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="access"  type="xs:string"  default="internal"/>
+    <xs:attribute name="name"    type="xs:string"  use="required"/>
+    <xs:attribute name="returns" type="xs:string"  default="Void"/>
+    <xs:attribute name="async"   type="xs:boolean" default="false"/>
+    <xs:attribute name="throws"  type="xs:boolean" default="false"/>
+  </xs:complexType>
+
+  <!-- param -->
+  <xs:complexType name="paramType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <!-- hole (shared between swift-stub and assembly-stub) -->
+  <xs:complexType name="holeType">
+    <xs:sequence>
+      <xs:element name="expected"    type="xs:string" minOccurs="0"/>
+      <xs:element name="placeholder" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id"          type="xs:string" use="required"/>
+    <xs:attribute name="description" type="xs:string"/>
+    <xs:attribute name="type"        type="xs:string"/>
+  </xs:complexType>
+
+  <!-- assembly-stub -->
+  <xs:complexType name="assemblyStubType">
+    <xs:sequence>
+      <xs:element name="hole" type="holeType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="symbol" type="xs:string" use="required"/>
+    <xs:attribute name="abi"    type="xs:string"/>
+  </xs:complexType>
+
+</xs:schema>
