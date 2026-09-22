@@ -5,6 +5,7 @@ edition = "2024"
 rust-version = "1.85"
 description = "Binary Semantic Governance tensor with virtual slicing and temporal safety"
 license = "MIT OR Apache-2.0 OR GPL-3.0-or-later"
+readme = "README.md"
 
 [dependencies]
 thiserror = "2"

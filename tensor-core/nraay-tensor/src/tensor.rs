@@ -361,10 +361,8 @@ impl NraayTensor {
                 self.data = Arc::new(new_data);
                 self.owns_storage = true;
             } else {
-                // Exclusive; safe to mutate
-                // SAFETY: We have exclusive access to the data
-                unsafe {
-                    let ptr = Arc::get_mut(&mut self.data).unwrap();
+                // Exclusive; safe to mutate via Arc::get_mut (refcount==1 checked above).
+                if let Some(ptr) = Arc::get_mut(&mut self.data) {
                     ptr[idx] = value;
                 }
             }
@@ -381,6 +379,42 @@ impl NraayTensor {
     /// Get Arc strong count (for testing reference counting)
     pub fn refcount(&self) -> usize {
         Arc::strong_count(&self.data)
+    }
+
+    /// Copy element values from `src` (same shape) into this tensor's logical view.
+    /// Materializes self first so writes land on an exclusive contiguous buffer.
+    /// Used by the ML layer to store gradient buffers.
+    pub fn set_raw_from(&mut self, src: &NraayTensor) -> Result<()> {
+        if self.shape != src.shape {
+            return Err(NraayError::ShapeMismatch {
+                expected: self.shape.clone(),
+                actual: src.shape.clone(),
+            });
+        }
+        self.materialize()?;
+        let mut coord = vec![0usize; self.shape.len()];
+        loop {
+            let v = src.get(&coord)?;
+            self.set(&coord, v)?;
+            // Increment multi-index (row-major odometer).
+            let mut d = self.shape.len();
+            loop {
+                if d == 0 {
+                    return Ok(());
+                }
+                d -= 1;
+                coord[d] += 1;
+                if coord[d] < self.shape[d] {
+                    break;
+                }
+                coord[d] = 0;
+            }
+        }
+    }
+
+    /// Weak observer (𝒲): non-owning handle that never prevents deallocation.
+    pub fn downgrade(&self) -> std::sync::Weak<Vec<f32>> {
+        Arc::downgrade(&self.data)
     }
 }
 
@@ -448,7 +482,7 @@ mod tests {
         t.transpose(&[1, 0]).unwrap();
         assert!(!t.is_contiguous());
 
-        let refcount_before = t.refcount();
+        let _refcount_before = t.refcount();
         t.materialize().unwrap();
         assert!(t.is_contiguous());
         assert_eq!(t.strides(), &[2, 1]);

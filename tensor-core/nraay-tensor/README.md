@@ -1,6 +1,25 @@
 # NraayTensor: Binary Semantic Governance with Temporal Safety
 
+[![Tests](https://img.shields.io/badge/tests-43%20passed-brightgreen)](#testing)
+[![Rust](https://img.shields.io/badge/rust-1.85%2B-orange)](https://www.rust-lang.org/)
+[![Edition](https://img.shields.io/badge/edition-2024-blue)](https://blog.rust-lang.org/2025/05/15/Rust-1.87.0.html)
+[![License](https://img.shields.io/badge/license-MIT%20%7C%20Apache--2.0%20%7C%20GPL--3.0-informational)](#license)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/SNAPKITTYWEST/devflow-finance-twin)
+
 A formally verified tensor library implementing Ahmad's specification for decoupling logical tensor views from physical memory management.
+
+## Crate Manifest
+
+| Module | Path | Purpose |
+|--------|------|---------|
+| Core tensor | `src/tensor.rs` | `NraayTensor`, virtual slicing, materialization, `set_raw_from`, `downgrade` |
+| Errors | `src/error.rs` | `NraayError` (bounds, shape, ownership) |
+| Temporal safety lemmas | `src/lemmas.rs` | 5 executable lemmas + `prove_all()` (buffer lifetime, non-interference, exclusive post-mat, governance consistency, weak observer) |
+| RAW_ROUTE router | `src/raw_route.rs` | RegionTable stickiness, sparse-edge scoring, least-loaded fallback |
+| Pure-ML layer | `src/ml.rs` | `Dense`, `MLP`, activations, MSE + backprop from scratch on `NraayTensor` |
+| Integration tests | `tests/integration.rs` | 17 end-to-end governance tests |
+
+Public surface is re-exported via `nraay_tensor::prelude`.
 
 ## Overview
 
@@ -176,7 +195,7 @@ Illustrates Copy-on-Write semantics and buffer isolation.
 ## Testing
 
 ```bash
-# Run all tests (17 comprehensive tests)
+# Run all tests (43 total: 26 unit + 17 integration)
 cargo test
 
 # Run integration tests

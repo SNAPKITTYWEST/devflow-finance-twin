@@ -68,7 +68,7 @@ fn test_6_non_contiguous_slice() {
 
 #[test]
 fn test_7_cow_isolation() {
-    let mut t = NraayTensor::new(vec![4, 4]).unwrap();
+    let t = NraayTensor::new(vec![4, 4]).unwrap();
     let mut s = t.slice(&[(0, 2, 1), (0, 4, 1)]).unwrap();
 
     let t_data_before = Arc::clone(&t.data());
@@ -152,7 +152,7 @@ fn test_buffer_lifetime_safety() {
 
 #[test]
 fn test_materialization_non_interference() {
-    let mut t = NraayTensor::new(vec![4, 4]).unwrap();
+    let t = NraayTensor::new(vec![4, 4]).unwrap();
     let s1 = t.slice(&[(0, 2, 1), (0, 4, 1)]).unwrap();
     let mut s2 = t.slice(&[(2, 4, 1), (0, 4, 1)]).unwrap();
 
@@ -169,7 +169,7 @@ fn test_materialization_non_interference() {
 
 #[test]
 fn test_exclusive_ownership_post_materialize() {
-    let mut t = NraayTensor::new(vec![2, 3]).unwrap();
+    let t = NraayTensor::new(vec![2, 3]).unwrap();
     let mut s = t.slice(&[(0, 2, 1), (0, 3, 1)]).unwrap();
 
     // Before: shared
